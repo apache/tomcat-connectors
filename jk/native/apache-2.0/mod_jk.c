@@ -314,7 +314,7 @@ static int JK_METHOD ws_read(jk_ws_service_t *s,
 #ifdef AS400
     int long rv = OK;
     if (rv = ap_change_request_body_xlate(p->r, 65535, 65535)) /* turn off request body translation*/
-    {		 
+    {        
         ap_log_error(APLOG_MARK, APLOG_STARTUP | APLOG_NOERRNO, 0, NULL,
                      "mod_jk: Error on ap_change_request_body_xlate, rc=%d \n",
                      rv);
@@ -384,7 +384,7 @@ static int JK_METHOD ws_write(jk_ws_service_t *s,
             }
 #ifdef AS400
             rc = ap_change_response_body_xlate(p->r, 65535, 65535); /* turn off response body translation*/
-	    if(rc){
+        if(rc){
                 ap_log_error(APLOG_MARK, APLOG_STARTUP | APLOG_NOERRNO, 0, NULL,
                              "mod_jk: Error on ap_change_response_body_xlate, rc=%d \n", rc);
                  return JK_FALSE;
@@ -453,7 +453,7 @@ static void jk_error_exit(const char *file,
 static int get_content_length(request_rec *r)
 {
     if(r->clength > 0) {
-        return r->clength;
+        return (int)r->clength;
     } else if(r->main == NULL || r->main == r) {
         char *lenp = (char *)apr_table_get(r->headers_in, "Content-Length");
 
@@ -507,13 +507,13 @@ static int init_ws_service(apache_private_data_t *private_data,
     /* get server name */
     /* s->server_name= (char *)(r->hostname ? r->hostname : r->server->server_hostname); */
     /* XXX : à la jk2 */
-	s->server_name  = (char *)ap_get_server_name(r);
+    s->server_name  = (char *)ap_get_server_name(r);
 
     /* get the real port (otherwise redirect failed) */
     apr_sockaddr_port_get(&port,r->connection->local_addr);
     s->server_port = port;
     /* XXX : à la jk2 ???*/
-	/* s->server_port  = ap_get_server_port(r); */
+    /* s->server_port  = ap_get_server_port(r); */
 
     s->server_software = (char *)ap_get_server_version();
 
@@ -806,9 +806,7 @@ static const char *jk_worker_property(cmd_parms *cmd,
                                       const char *value)
 {
     server_rec *s = cmd->server;
-    struct stat statbuf;
     char *oldv;
-    int rc;
 
     jk_server_conf_t *conf =
         (jk_server_conf_t *)ap_get_module_config(s->module_config, &jk_module);
@@ -950,8 +948,8 @@ static const char *process_item(request_rec *r,
     return cp ? cp : "-";
 }
 
-static int request_log_transaction(request_rec *r,
-                                  jk_server_conf_t *conf)
+static void request_log_transaction(request_rec *r,
+                                    jk_server_conf_t *conf)
 {
     request_log_format_item *items;
     char *str, *s;
@@ -978,6 +976,7 @@ static int request_log_transaction(request_rec *r,
     *s = 0;
     
     jk_log(conf->log, JK_LOG_REQUEST, "%s", str);
+    
 }
 
 /*****************************************************************
@@ -1080,7 +1079,7 @@ static const char *clf_log_bytes_sent(request_rec *r, char *a)
         return "-";
     }              
     else {        
-	return apr_off_t_toa(r->pool, r->bytes_sent);
+    return apr_off_t_toa(r->pool, r->bytes_sent);
     }              
 }                  
     
@@ -1090,7 +1089,7 @@ static const char *log_bytes_sent(request_rec *r, char *a)
         return "0";
     }              
     else {        
-	return apr_psprintf(r->pool, "%" APR_OFF_T_FMT, r->bytes_sent);
+    return apr_psprintf(r->pool, "%" APR_OFF_T_FMT, r->bytes_sent);
     }              
 }
 
@@ -1218,7 +1217,6 @@ static char *parse_request_log_item(apr_pool_t *p,
                                     const char **sa)
 {
     const char *s = *sa;
-    int i;
     struct log_item_list *l;
 
     if (*s != '%') {
@@ -1571,8 +1569,8 @@ static const command_rec jk_cmds[] =
         "JkLogStampFormat", jk_set_log_fmt, NULL, RSRC_CONF,
         "The Jakarta Tomcat module log format, follow strftime synthax"),
     AP_INIT_TAKE1(
-    	"JkRequestLogFormat", jk_set_request_log_format, NULL, RSRC_CONF,
-     	"The Jakarta mod_jk module request log format string"),
+        "JkRequestLogFormat", jk_set_request_log_format, NULL, RSRC_CONF,
+        "The Jakarta mod_jk module request log format string"),
 
     /*
      * Automatically Alias webapp context directories into the Apache
@@ -1871,7 +1869,11 @@ static apr_status_t jk_apr_pool_cleanup(void *data)
 
         if (conf)
         {
-            wc_close(conf->log);
+            /* On pool cleanup pass NULL for the jk_logger to
+               prevent segmentation faults on Windows because
+               we can't guarantee what order pools get cleaned
+               up between APR implementations. */
+            wc_close(NULL);
             if (conf->worker_properties)
                 map_free(&conf->worker_properties);
             if (conf->uri_to_context)
@@ -1879,12 +1881,7 @@ static apr_status_t jk_apr_pool_cleanup(void *data)
             if (conf->automount)
                 map_free(&conf->automount);
             if (conf->uw_map)
-                uri_worker_map_free(&conf->uw_map, conf->log);
-            /* Since we are now using apache to do logging, this 
-             * cleanup will just cause problems so don't do it
-             *
-             * jk_close_file_logger(&conf->log);
-             */
+                uri_worker_map_free(&conf->uw_map, NULL);
         }
         s = s->next;
     }
@@ -2078,6 +2075,13 @@ static int JK_METHOD jk_log_to_file(jk_logger_t *l,
 ** +-------------------------------------------------------+
 */
 
+static apr_status_t jklog_cleanup(void *d)
+{
+    /* set the main_log to NULL */
+    main_log = NULL;
+    return APR_SUCCESS;
+}
+
 static void open_jklog(server_rec *s, apr_pool_t *p)
 {
     jk_server_conf_t *conf;
@@ -2138,6 +2142,7 @@ static void open_jklog(server_rec *s, apr_pool_t *p)
         conf->log = jkl;
         if (main_log == NULL)
             main_log = conf->log;
+        apr_pool_cleanup_register(p, main_log, jklog_cleanup, jklog_cleanup);
         return;
     }
 
@@ -2234,6 +2239,7 @@ static int jk_post_config(apr_pool_t *pconf,
     for (; s; s = s->next) {
         open_jklog(s, pconf);
     }
+
     return OK;
 }
 
@@ -2263,7 +2269,7 @@ static int jk_translate(request_rec *r)
             if(worker) {
                 r->handler=apr_pstrdup(r->pool,JK_HANDLER);
                 apr_table_setn(r->notes, JK_WORKER_ID, worker);
-		
+        
                 /* This could be a sub-request, possibly from mod_dir */
                 if(r->main)
                     apr_table_setn(r->main->notes, JK_WORKER_ID, worker);
@@ -2357,7 +2363,7 @@ static int jk_map_to_storage(request_rec *r)
         /* Only if sub-request for a directory, most likely from mod_dir */
         if (r->main && r->main->filename &&
             !*apr_filename_of_pathname(r->main->filename)){
-	
+    
             /* The filename from the main request will be set to what should
              * be picked up, aliases included. Tomcat will need to know about
              * those aliases or things won't work for them. Normal files should
@@ -2385,12 +2391,20 @@ static int jk_map_to_storage(request_rec *r)
 
 static void jk_register_hooks(apr_pool_t *p)
 {
-    ap_hook_handler(jk_handler, NULL, NULL, APR_HOOK_MIDDLE);
+    /* Make sure mod_alias runs before mod_jk to make sure that
+       Alias's are mapped before mod_jk tries to process the request */
+    static const char * const aszPre[] = { "mod_alias.c", NULL };
+
+    /* Make sure mod_dir runs after mod_jk so that a
+       DirectoryIndex index.jsp works */
+    static const char * const aszPost[] = { "mod_dir.c", NULL };
+
+    ap_hook_handler(jk_handler,aszPre,aszPost,APR_HOOK_MIDDLE);
     ap_hook_post_config(jk_post_config,NULL,NULL,APR_HOOK_MIDDLE);
     ap_hook_child_init(jk_child_init,NULL,NULL,APR_HOOK_MIDDLE);
-    ap_hook_translate_name(jk_translate,NULL,NULL,APR_HOOK_FIRST);
+    ap_hook_translate_name(jk_translate,aszPre,aszPost,APR_HOOK_MIDDLE);
 #if (MODULE_MAGIC_NUMBER_MAJOR > 20010808)
-    ap_hook_map_to_storage(jk_map_to_storage, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_map_to_storage(jk_map_to_storage,aszPre,aszPost,APR_HOOK_MIDDLE);
 #endif
 }
 
