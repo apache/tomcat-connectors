@@ -189,11 +189,6 @@ public class HandlerRequest extends JkHandler
      */
     public static final int HOSTBUFFER = 10;
 
-    /**
-     * Thread lock.
-     */
-    private static Object lock = new Object();
-
     HandlerDispatch dispatch;
     String ajpidDir="conf";
     
@@ -456,9 +451,7 @@ public class HandlerRequest extends JkHandler
             req.setResponse(res);
             ep.setRequest( req );
             if( registerRequests ) {
-                synchronized(lock) {
-                    ep.getSource().registerRequest(req, ep, count++);
-                }
+                ep.getSource().registerRequest(req, ep, count++);
             }
         }
         return req;
