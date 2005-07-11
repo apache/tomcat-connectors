@@ -94,9 +94,13 @@ fi
 
 # Export text docs
 cd ../native
-${TOOL} ../build/docs/install/printer/apache1.html >BUILDING
-${TOOL} ../build/docs/install/printer/apache2.html >>BUILDING
-${TOOL} ../build/docs/install/printer/iis.html >>BUILDING
+echo "See http://jakarta.apache.org/tomcat/connectors-doc/howto/apache.html for Apache" >BUILDING
+echo "See http://jakarta.apache.org/tomcat/connectors-doc/howto/iis.html for iis" >>BUILDING
+echo "http://jakarta.apache.org/tomcat/connectors-doc/howto/domino.html for Domino" >>BUILDING
+echo "http://jakarta.apache.org/tomcat/connectors-doc/howto/nes.html for Netscape/iPlanet/SunOne" >>BUILDING
+# ${TOOL} ../build/docs/install/printer/apache1.html >BUILDING
+# ${TOOL} ../build/docs/install/printer/apache2.html >>BUILDING
+# ${TOOL} ../build/docs/install/printer/iis.html >>BUILDING
 ${TOOL} ../build/docs/printer/changelog.html >CHANGES
 ${TOOL} ../build/docs/news/printer/20050101.html >NEWS
 ${TOOL} ../build/docs/news/printer/20041100.html >>NEWS
