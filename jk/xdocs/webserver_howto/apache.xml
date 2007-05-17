@@ -492,8 +492,8 @@ will not work.
 <p>
 Using JkOptions <b>ForwardURICompat</b>, the forwarded URI will
 be decoded by Apache httpd. Encoded characters will be decoded and
-explicit path components like /.. will already be removed.
-This is less spec compliant and is not safe if you are using
+explicit path components like ".." will already be resolved.
+This is less spec compliant and is <b>not safe</b> if you are using
 prefix JkMount. This option will allow to rewrite URIs with
 mod_rewrite before forwarding.
 
@@ -508,7 +508,7 @@ mod_rewrite before forwarding.
 <p>
 Using JkOptions <b>ForwardURIEscaped</b>, the forwarded URI will
 be the encoded form of the URI used by ForwardURICompat.
-Explicit path components like /.. will already be removed.
+Explicit path components like ".." will already be resolved.
 This will not work in combination with URL encoded session IDs,
 but it will allow to rewrite URIs with mod_rewrite before forwarding.
 

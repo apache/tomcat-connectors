@@ -437,13 +437,13 @@ options(vhost) = plus_options(global) - minus_options(global) + plus_options(vho
 </p>
 
 <p>
-Using JkOptions <b>ForwardURICompatUnparsed</b>, the forwarded URI 
+Using JkOptions <b>ForwardURICompatUnparsed</b>, the forwarded URI
 will be unparsed. It's spec compliant and also the safest option.
 It will always forward the original request URI, so rewriting
 URIs with mod_rewrite and then forwarding the rewritten URI
 will not work.
 
-<source>  
+<source>
   JkOptions     +ForwardURICompatUnparsed
 </source>
 
@@ -454,12 +454,12 @@ will not work.
 <p>
 Using JkOptions <b>ForwardURICompat</b>, the forwarded URI will
 be decoded by Apache httpd. Encoded characters will be decoded and
-explicit path components like /.. will already be removed.
-This is less spec compliant and is not safe if you are using
+explicit path components like ".." will already be resolved.
+This is less spec compliant and is <b>not safe</b> if you are using
 prefix JkMount. This option will allow to rewrite URIs with
 mod_rewrite before forwarding.
 
-<source>  
+<source>
   JkOptions     +ForwardURICompat
 </source>
 
@@ -470,11 +470,11 @@ mod_rewrite before forwarding.
 <p>
 Using JkOptions <b>ForwardURIEscaped</b>, the forwarded URI will
 be the encoded form of the URI used by ForwardURICompat.
-Explicit path components like /.. will already be removed.
+Explicit path components like ".." will already be resolved.
 This will not work in combination with URL encoded session IDs,
 but it will allow to rewrite URIs with mod_rewrite before forwarding.
 
-<source>  
+<source>
   JkOptions     +ForwardURIEscaped
 </source>
 
@@ -483,7 +483,7 @@ but it will allow to rewrite URIs with mod_rewrite before forwarding.
 </p>
 
 <p>
-JkOptions <b>ForwardDirectories</b> is used in conjunction with <b>DirectoryIndex</b> 
+JkOptions <b>ForwardDirectories</b> is used in conjunction with <b>DirectoryIndex</b>
 directive of Apache web server. As such mod_dir should be available to Apache,
 statically or dynamically (DSO)
 <br/>
