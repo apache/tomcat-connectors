@@ -1460,7 +1460,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
             }
         }
     }
-    else if (is_inited && (dwNotificationType == SF_NOTIFY_LOG)) {
+    else if (dwNotificationType == SF_NOTIFY_LOG) {
         if (pfc->pFilterContext) {
             isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
             HTTP_FILTER_LOG  *pl = (HTTP_FILTER_LOG *)pvNotification;
