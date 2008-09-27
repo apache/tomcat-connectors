@@ -1178,7 +1178,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         if (!is_mapread)
             is_inited = JK_FALSE;
     }
-    if (!is_inited && !is_mapread) {
+    if (!is_inited) {
         /* In case the initialization failed
          * return error. This will make entire IIS
          * unusable like with Apache servers
