@@ -111,7 +111,9 @@ static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
 #define SHM_SIZE_TAG                ("shm_size")
 #define WORKER_MOUNT_RELOAD_TAG     ("worker_mount_reload")
 #define STRIP_SESSION_TAG           ("strip_session")
+#ifndef AUTOMATIC_AUTH_NOTIFICATION
 #define AUTH_COMPLETE_TAG           ("auth_complete")
+#endif
 #define REJECT_UNSAFE_TAG           ("reject_unsafe")
 #define WATCHDOG_INTERVAL_TAG       ("watchdog_interval")
 
@@ -211,8 +213,9 @@ static int  worker_mount_reload = JK_URIMAP_DEF_RELOAD;
 static char rewrite_rule_file[MAX_PATH * 2] = {0};
 static size_t shm_config_size = 0;
 static int  strip_session = 0;
-static DWORD auth_notification_flags = 0;
+#ifndef AUTOMATIC_AUTH_NOTIFICATION
 static int  use_auth_notification_flags = 1;
+#endif
 static int  reject_unsafe = 0;
 static int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
@@ -240,6 +243,15 @@ struct isapi_log_data_t {
     char uri[INTERNET_MAX_URL_LENGTH];
     char query[INTERNET_MAX_URL_LENGTH];
 };
+
+typedef struct iis_info_t iis_info_t;
+struct iis_info_t {
+    int major;                  /* The major version */
+    int minor;                  /* The minor version */
+    DWORD filter_notify_event;  /* The primary filter SF_NOTIFY_* event */
+};
+
+static iis_info_t iis_info;
 
 static int JK_METHOD start_response(jk_ws_service_t *s,
                                     int status,
@@ -285,7 +297,7 @@ static int base64_encode_cert_len(int len);
 static int base64_encode_cert(char *encoded,
                               const char *string, int len);
 
-static int get_auth_flags();
+static int get_iis_info(iis_info_t *info);
 
 static char x2c(const char *what)
 {
@@ -803,7 +815,7 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
     if (!is_inited) {
         rv = initialize_extension();
     }
-    if (auth_notification_flags == SF_NOTIFY_AUTH_COMPLETE) {
+    if (iis_info.filter_notify_event == SF_NOTIFY_AUTH_COMPLETE) {
         pVer->dwFlags = SF_NOTIFY_ORDER_HIGH |
                         SF_NOTIFY_SECURE_PORT |
                         SF_NOTIFY_NONSECURE_PORT |
@@ -1186,7 +1198,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
          SetLastError(ERROR_INVALID_FUNCTION);
          return SF_STATUS_REQ_ERROR;
     }
-    if (auth_notification_flags == dwNotificationType) {
+    if (iis_info.filter_notify_event == dwNotificationType) {
         char uri[INTERNET_MAX_URL_LENGTH];
         char snuri[INTERNET_MAX_URL_LENGTH] = "/";
         char Host[INTERNET_MAX_URL_LENGTH] = "";
@@ -1208,7 +1220,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         DWORD szPort = sizeof(Port);
         DWORD szTranslate = sizeof(Translate);
 
-        if (auth_notification_flags == SF_NOTIFY_AUTH_COMPLETE) {
+        if (iis_info.filter_notify_event == SF_NOTIFY_AUTH_COMPLETE) {
             GetHeader =
                 ((PHTTP_FILTER_AUTH_COMPLETE_INFO) pvNotification)->GetHeader;
             SetHeader =
@@ -1743,6 +1755,7 @@ static int init_jk(char *serverName)
     /* Logging the initialization type: registry or properties file in virtual dir
      */
     if (JK_IS_DEBUG_LEVEL(logger)) {
+        jk_log(logger, JK_LOG_DEBUG, "Detected IIS version %d.%d", iis_info.major, iis_info.minor);
         if (using_ini_file) {
             jk_log(logger, JK_LOG_DEBUG, "Using ini file %s.", ini_file_name);
         }
@@ -1759,6 +1772,13 @@ static int init_jk(char *serverName)
         jk_log(logger, JK_LOG_DEBUG, "Using rewrite rule file %s.",
                rewrite_rule_file);
         jk_log(logger, JK_LOG_DEBUG, "Using uri select %d.", uri_select_option);
+
+        jk_log(logger, JK_LOG_DEBUG, "Using notification event %s (0x%08x)",
+               (iis_info.filter_notify_event == SF_NOTIFY_AUTH_COMPLETE) ?
+               "SF_NOTIFY_AUTH_COMPLETE" :
+               ((iis_info.filter_notify_event == SF_NOTIFY_PREPROC_HEADERS) ?
+               "SF_NOTIFY_PREPROC_HEADERS" : "UNKNOWN"),
+               iis_info.filter_notify_event);
 
         jk_log(logger, JK_LOG_DEBUG, "Using uri header %s.", URI_HEADER_NAME);
         jk_log(logger, JK_LOG_DEBUG, "Using query header %s.", QUERY_HEADER_NAME);
@@ -1882,7 +1902,9 @@ static int initialize_extension(void)
 {
 
     if (read_registry_init_data()) {
-        auth_notification_flags = get_auth_flags();
+        if (get_iis_info(&iis_info) != JK_TRUE) {
+            jk_log(logger, JK_LOG_ERROR, "Could not retrieve IIS version from registry");
+        }
         is_inited = JK_TRUE;
     }
     return is_inited;
@@ -1957,7 +1979,9 @@ static int read_registry_init_data(void)
     shm_config_size = (size_t) get_config_int(src, SHM_SIZE_TAG, 0);
     worker_mount_reload = get_config_int(src, WORKER_MOUNT_RELOAD_TAG, JK_URIMAP_DEF_RELOAD);
     strip_session = get_config_bool(src, STRIP_SESSION_TAG, JK_FALSE);
+#ifndef AUTOMATIC_AUTH_NOTIFICATION
     use_auth_notification_flags = get_config_int(src, AUTH_COMPLETE_TAG, 1);
+#endif
     reject_unsafe = get_config_bool(src, REJECT_UNSAFE_TAG, JK_FALSE);
     watchdog_interval = get_config_int(src, WATCHDOG_INTERVAL_TAG, 0);
     if (using_ini_file) {
@@ -2422,29 +2446,45 @@ static int base64_encode_cert(char *encoded,
     return (int)(p - encoded);
 }
 
-static int get_auth_flags()
+/**
+* Determine version info and the primary notification event
+*/
+static int get_iis_info(iis_info_t* iis_info)
 {
     HKEY hkey;
     long rc;
-    int maj, sz;
-    int rv = SF_NOTIFY_PREPROC_HEADERS;
-    int use_auth = JK_FALSE;
-    /* Retrieve the IIS version Major */
+    int rv = JK_FALSE;
+
+    iis_info->major = 0;
+    iis_info->minor = 0;
+    iis_info->filter_notify_event = SF_NOTIFY_PREPROC_HEADERS;
+
+    /* Retrieve the IIS version Major/Minor */
     rc = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
                       W3SVC_REGISTRY_KEY, (DWORD) 0, KEY_READ, &hkey);
-    if (ERROR_SUCCESS != rc) {
-        return rv;
-    }
-    sz = sizeof(int);
-    rc = RegQueryValueEx(hkey, "MajorVersion", NULL, NULL,
-                         (LPBYTE) & maj, &sz);
-    if (ERROR_SUCCESS != rc) {
-        CloseHandle(hkey);
-        return rv;
+    if (ERROR_SUCCESS == rc) {
+        if (get_registry_config_number(hkey, "MajorVersion", &iis_info->major) == JK_TRUE) {
+#ifdef AUTOMATIC_AUTH_NOTIFICATION
+            if (iis_info->major > 4)
+#else
+            if (use_auth_notification_flags && iis_info->major > 4)
+#endif
+                iis_info->filter_notify_event = SF_NOTIFY_AUTH_COMPLETE;
+            if (get_registry_config_number(hkey, "MinorVersion", &iis_info->minor) == JK_TRUE) {
+
+#ifdef AUTOMATIC_AUTH_NOTIFICATION
+                /* SF_NOTIFY_AUTH_COMPLETE causes redirect failures
+                 * (ERROR_INVALID_PARAMETER) on IIS 5.1 with OPTIONS/PUT
+                 * and is only available from IIS 5+
+                 */
+                if (iis_info->major == 5 && iis_info->minor == 1) {
+                    iis_info->filter_notify_event = SF_NOTIFY_PREPROC_HEADERS;
+                }
+#endif
+                rv = JK_TRUE;
+            }
+        }
     }
     CloseHandle(hkey);
-    if (use_auth_notification_flags && maj > 4)
-        rv = SF_NOTIFY_AUTH_COMPLETE;
-
     return rv;
 }
