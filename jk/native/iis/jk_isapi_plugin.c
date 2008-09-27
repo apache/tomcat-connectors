@@ -51,7 +51,12 @@
 
 #include <strsafe.h>
 
-#define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION
+#ifdef ALLOW_CHUNKING
+#define SUFFIX "-CHUNKING"
+#else
+#define SUFFIX "-NO_CHUNKING"
+#endif
+#define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION SUFFIX
 #define SHM_DEF_NAME   "JKISAPISHMEM"
 #define DEFAULT_WORKER_NAME ("ajp13")
 
@@ -117,6 +122,20 @@ static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
 #define REJECT_UNSAFE_TAG           ("reject_unsafe")
 #define WATCHDOG_INTERVAL_TAG       ("watchdog_interval")
 #define ENABLE_CHUNKED_ENCODING_TAG ("enable_chunked_encoding")
+/* HTTP standard headers */
+#define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE     ("Transfer-Encoding: chunked")
+#define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE_LEN (26)
+#define TRANSFER_ENCODING_HEADER_NAME                 ("Transfer-Encoding")
+#define TRANSFER_ENCODING_HEADER_NAME_LEN             (17)
+#define TRANSFER_ENCODING_IDENTITY_VALUE              ("identity")
+#define TRANSFER_ENCODING_CHUNKED_VALUE               ("chunked")
+#define TRANSFER_ENCODING_CHUNKED_VALUE_LEN           (7)
+
+#define CONTENT_LENGTH_HEADER_NAME                    ("Content-Length")
+#define CONTENT_LENGTH_HEADER_NAME_LEN                (14)
+
+#define CONNECTION_HEADER_NAME      ("Connection")
+#define CONNECTION_CLOSE_VALUE      ("Close")
 
 #define TRANSLATE_HEADER            ("Translate:")
 #define TRANSLATE_HEADER_NAME       ("Translate")
@@ -129,6 +148,9 @@ static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
 /* Transfer-Encoding: chunked content trailer */
 #define CHUNKED_ENCODING_TRAILER     ("0\r\n\r\n")
 #define CHUNKED_ENCODING_TRAILER_LEN (5)
+
+/* Hex of chunk length (one char per byte) + CRLF + terminator. */
+#define CHUNK_HEADER_BUFFER_SIZE     (sizeof(unsigned int)*2+CRLF_LEN+1)
 
 #define BAD_REQUEST     -1
 #define BAD_PATH        -2
@@ -221,9 +243,7 @@ static int  strip_session = 0;
 #ifndef AUTOMATIC_AUTH_NOTIFICATION
 static int  use_auth_notification_flags = 1;
 #endif
-/* Whether chunked encoding has been enabled in the settings */
 static int  chunked_encoding_enabled = JK_FALSE;
-
 static int  reject_unsafe = 0;
 static int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
@@ -309,6 +329,8 @@ static int base64_encode_cert(char *encoded,
                               const char *string, int len);
 
 static int get_iis_info(iis_info_t *info);
+
+static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned int write_length);
 
 static char x2c(const char *what)
 {
@@ -627,11 +649,14 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
         int rv = JK_TRUE;
         isapi_private_data_t *p = s->ws_private;
         if (!s->response_started) {
-            char *status_str;
-            DWORD status_str_len;
+            char *status_str = NULL;
             char *headers_str = NULL;
-            BOOL keep_alive = FALSE;
+            BOOL keep_alive = FALSE;     /* Whether the downstream or us can supply content length */
+            BOOL rc;
+            size_t i, len_of_headers = 0;
+
             s->response_started = JK_TRUE;
+
             if (JK_IS_DEBUG_LEVEL(logger)) {
                 jk_log(logger, JK_LOG_DEBUG, "Starting response for URI '%s' (protocol %s)",
                        s->req_uri, s->protocol);
@@ -645,44 +670,132 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
             }
             status_str = (char *)malloc((6 + strlen(reason)));
             StringCbPrintf(status_str, 6 + strlen(reason), "%d %s", status, reason);
-            status_str_len = (DWORD)strlen(status_str);
+
+            if (chunked_encoding_enabled) {
+                /* Check if we've got an HTTP/1.1 response */
+                if (!strcasecmp(s->protocol, "HTTP/1.1")) {
+                    keep_alive = TRUE;
+                    /* Chunking only when HTTP/1.1 client and enabled */
+                    p->chunk_content = JK_TRUE;
+                }
+            }
 
             /*
              * Create response headers string
              */
-            if (num_of_headers) {
-                size_t i, len_of_headers = 0;
-                for (i = 0, len_of_headers = 0; i < num_of_headers; i++) {
-                    len_of_headers += strlen(header_names[i]);
-                    len_of_headers += strlen(header_values[i]);
-                    len_of_headers += 4;   /* extra for colon, space and crlf */
-                }
 
-                len_of_headers += 3;       /* crlf and terminating null char */
-                headers_str = (char *)malloc(len_of_headers);
-                headers_str[0] = '\0';
+            /* Calculate length of headers block */
+            for (i = 0; i < num_of_headers; i++) {
+                len_of_headers += strlen(header_names[i]);
+                len_of_headers += strlen(header_values[i]);
+                len_of_headers += 4;   /* extra for colon, space and crlf */
+            }
 
+            if (p->chunk_content) {
                 for (i = 0; i < num_of_headers; i++) {
-                    StringCbCat(headers_str, len_of_headers, header_names[i]);
-                    StringCbCat(headers_str, len_of_headers, ": ");
-                    StringCbCat(headers_str, len_of_headers, header_values[i]);
-                    StringCbCat(headers_str, len_of_headers, CRLF);
+                    /* Check the downstream response to see whether
+                     * it's appropriate the chunk the response content
+                     * and whether it supports keeping the connection open.
+
+                     * This implements the rules for HTTP/1.1 message length determination
+                     * with the exception of multipart/byteranges media types.
+                     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.4
+                     */
+                    if (!strcasecmp(CONTENT_LENGTH_HEADER_NAME, header_names[i])) {
+                        p->chunk_content = JK_FALSE;
+                        if (JK_IS_DEBUG_LEVEL(logger))
+                            jk_log(logger, JK_LOG_DEBUG, "Response specifies Content-Length" );
+                    }
+                    else if (!strcasecmp(CONNECTION_HEADER_NAME, header_names[i])
+                            && !strcasecmp(CONNECTION_CLOSE_VALUE, header_values[i])) {
+                        keep_alive = FALSE;
+                        p->chunk_content = JK_FALSE;
+                        if (JK_IS_DEBUG_LEVEL(logger))
+                            jk_log(logger, JK_LOG_DEBUG, "Response specifies Connection: Close" );
+                    }
+                    else if (!strcasecmp(TRANSFER_ENCODING_HEADER_NAME, header_names[i])
+                            && !strcasecmp(TRANSFER_ENCODING_IDENTITY_VALUE, header_values[i])) {
+                        /* HTTP states that this must include 'chunked' as the last value.
+                            * 'identity' is the same as absence of the header */
+                        p->chunk_content = JK_FALSE;
+                        if (JK_IS_DEBUG_LEVEL(logger))
+                            jk_log(logger, JK_LOG_DEBUG, "Response specifies Transfer-Encoding" );
+                    }
                 }
+
+                /* Provide room in the buffer for the Transfer-Encoding header if we use it. */
+                len_of_headers += TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE_LEN + 2;
+            }
+
+            /* Allocate and init the headers string */
+            len_of_headers += 3;       /* crlf and terminating null char */
+            headers_str = (char *)malloc(len_of_headers);
+            headers_str[0] = '\0';
+
+            /* Copy headers into headers block for sending */
+            for (i = 0; i < num_of_headers; i++) {
+                StringCbCat(headers_str, len_of_headers, header_names[i]);
+                StringCbCat(headers_str, len_of_headers, ": ");
+                StringCbCat(headers_str, len_of_headers, header_values[i]);
                 StringCbCat(headers_str, len_of_headers, CRLF);
             }
-            else {
-                headers_str = CRLF;
+
+            if (p->chunk_content) {
+                /* Configure the response if chunked encoding is used */
+                if (JK_IS_DEBUG_LEVEL(logger))
+                    jk_log(logger, JK_LOG_DEBUG, "Using Transfer-Encoding: chunked");
+
+                /** We will supply the transfer-encoding to allow IIS to keep the connection open */
+                keep_alive = TRUE;
+
+                /* Indicate to the client that the content will be chunked
+                - We've already reserved space for this */
+                StringCbCat(headers_str, len_of_headers, TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE);
+                StringCbCat(headers_str, len_of_headers, CRLF);
             }
 
-            if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
-                                                 HSE_REQ_SEND_RESPONSE_HEADER,
-                                                 status_str,
-                                                 &status_str_len,
-                                                 (LPDWORD)headers_str)) {
+            /* Terminate the headers */
+            StringCbCat(headers_str, len_of_headers, CRLF);
 
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG, "%ssing Keep-Alive", (keep_alive ? "U" : "Not u"));
+
+            if (keep_alive) {
+                HSE_SEND_HEADER_EX_INFO hi;
+
+                /* Fill in the response */
+                hi.pszStatus = status_str;
+                hi.pszHeader = headers_str;
+                hi.cchStatus = (DWORD)strlen(status_str);
+                hi.cchHeader = (DWORD)strlen(headers_str);
+
+                /*
+                 * Using the extended form of the API means we have to get this right,
+                 * i.e. IIS won't keep connections open if there's a Content-Length and close them if there isn't.
+                 */
+                hi.fKeepConn = keep_alive;
+
+                /* Send the response to the client */
+                rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                                                      HSE_REQ_SEND_RESPONSE_HEADER_EX,
+                                                      &hi,
+                                                      NULL, NULL);
+            }
+            else {
+                DWORD status_str_len = strlen(status_str);
+                /* Old style response - forces Connection: close if Tomcat response doesn't
+                   specify necessary details to allow keep alive */
+                rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                                                      HSE_REQ_SEND_RESPONSE_HEADER,
+                                                      status_str,
+                                                      &status_str_len,
+                                                      (LPDWORD)headers_str);
+            }
+
+            if (!rc) {
                 jk_log(logger, JK_LOG_ERROR,
-                       "HSE_REQ_SEND_RESPONSE_HEADER failed with error=%d (0x%08x)",
-                       GetLastError(), GetLastError());
+                       "HSE_REQ_SEND_RESPONSE_HEADER%s failed with error=%d (0x%08x)",
+                       (keep_alive ? "_EX" : ""), GetLastError(), GetLastError());
                 rv = JK_FALSE;
             }
             if (headers_str)
@@ -805,6 +918,12 @@ static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned
     return JK_TRUE;
 }
 
+/*
+ * Write content to the response.
+ * If chunked encoding has been enabled and the client supports it
+ *(and it's appropriate for the response), then this will write a
+ * single "Transfer-Encoding: chunked" chunk
+ */
 static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l)
 {
     JK_TRACE_ENTER(logger);
@@ -827,9 +946,91 @@ static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l)
             start_response(s, 200, NULL, NULL, NULL, 0);
         }
 
-        if (isapi_write_client(p, buf, l) == JK_FALSE) {
-            JK_TRACE_EXIT(logger);
-            return JK_FALSE;
+        if (p->chunk_content == JK_FALSE) {
+            if (isapi_write_client(p, buf, l) == JK_FALSE) {
+                JK_TRACE_EXIT(logger);
+                return JK_FALSE;
+            }
+        }
+        else {
+            char chunk_header[CHUNK_HEADER_BUFFER_SIZE];
+
+            /* Construct chunk header : HEX CRLF*/
+            StringCbPrintf(chunk_header, CHUNK_HEADER_BUFFER_SIZE, "%X%s", l, CRLF);
+
+            if (iis_info.major >= 6) {
+                HSE_RESPONSE_VECTOR response_vector;
+                HSE_VECTOR_ELEMENT response_elements[3];
+
+                response_elements[0].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+                response_elements[0].pvContext = chunk_header;
+                response_elements[0].cbOffset = 0;
+                response_elements[0].cbSize = strlen(chunk_header);
+
+                response_elements[1].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+                response_elements[1].pvContext = (PVOID)buf;
+                response_elements[1].cbOffset = 0;
+                response_elements[1].cbSize = l;
+
+                response_elements[2].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+                response_elements[2].pvContext = CRLF;
+                response_elements[2].cbOffset = 0;
+                response_elements[2].cbSize = CRLF_LEN;
+
+                response_vector.dwFlags = HSE_IO_SYNC;
+                response_vector.pszStatus = NULL;
+                response_vector.pszHeaders = NULL;
+                response_vector.nElementCount = 3;
+                response_vector.lpElementArray = response_elements;
+
+                if (JK_IS_DEBUG_LEVEL(logger))
+                    jk_log(logger, JK_LOG_DEBUG,
+                           "Using vector write for chunk encoded %d byte chunk", l);
+
+                if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                    HSE_REQ_VECTOR_SEND,
+                    &response_vector,
+                    (LPDWORD)NULL,
+                    (LPDWORD)NULL)) {
+                        jk_log(logger, JK_LOG_ERROR,
+                               "Vector write of chunk encoded response failed with %d (0x%08x)",
+                               GetLastError(), GetLastError());
+                        JK_TRACE_EXIT(logger);
+                        return JK_FALSE;
+                }
+            } else {
+                /* Write chunk header */
+                if (JK_IS_DEBUG_LEVEL(logger))
+                    jk_log(logger, JK_LOG_DEBUG,
+                    "Using chunked encoding - writing chunk header for %d byte chunk", l);
+
+                if (!isapi_write_client(p, chunk_header, (unsigned int)strlen(chunk_header))) {
+                    jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk header failed");
+                    JK_TRACE_EXIT(logger);
+                    return JK_FALSE;
+                }
+
+                /* Write chunk body (or simple body block) */
+                if (JK_IS_DEBUG_LEVEL(logger)) {
+                    jk_log(logger, JK_LOG_DEBUG, "Writing %s of size %d",
+                           (p->chunk_content ? "chunk body" : "simple response"), l);
+                }
+                if (!isapi_write_client(p, buf, l)) {
+                    jk_log(logger, JK_LOG_ERROR, "WriteClient for response body chunk failed");
+                    JK_TRACE_EXIT(logger);
+                    return JK_FALSE;
+                }
+                /* Write chunk trailer */
+                if (JK_IS_DEBUG_LEVEL(logger)) {
+                    jk_log(logger, JK_LOG_DEBUG, "Using chunked encoding - writing chunk trailer");
+                }
+
+                if (!isapi_write_client(p, CRLF, CRLF_LEN)) {
+                    jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk trailer failed");
+                    JK_TRACE_EXIT(logger);
+                    return JK_FALSE;
+                }
+            }
         }
 
         JK_TRACE_EXIT(logger);
@@ -2096,7 +2297,9 @@ static int read_registry_init_data(void)
 #endif
     reject_unsafe = get_config_bool(src, REJECT_UNSAFE_TAG, JK_FALSE);
     watchdog_interval = get_config_int(src, WATCHDOG_INTERVAL_TAG, 0);
+#ifdef ALLOW_CHUNKING
     chunked_encoding_enabled = get_config_bool(src, ENABLE_CHUNKED_ENCODING_TAG, JK_FALSE);
+#endif
 
     if (using_ini_file) {
         jk_map_free(&map);
