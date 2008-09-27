@@ -75,17 +75,25 @@
 #define WORKER_HEADER_NAME_BASE           ("TOMCATWORKER")
 #define TOMCAT_TRANSLATE_HEADER_NAME_BASE ("TOMCATTRANSLATE")
 #define CONTENT_LENGTH                    ("CONTENT_LENGTH:")
+
+/* The HTTP_ form of the header for use in ExtensionProc */
+#define HTTP_HEADER_PREFIX       "HTTP_"
+#define HTTP_HEADER_PREFIX_LEN   5
+
 /* The template used to construct our unique headers
  * from the base name and module instance
  */
-#define HEADER_TEMPLATE      ("%s%p:")
-#define HTTP_HEADER_TEMPLATE ("HTTP_%s%p")
+#define HEADER_TEMPLATE      "%s%p:"
+#define HTTP_HEADER_TEMPLATE HTTP_HEADER_PREFIX "%s%p"
 
 static char URI_HEADER_NAME[MAX_PATH];
 static char QUERY_HEADER_NAME[MAX_PATH];
 static char WORKER_HEADER_NAME[MAX_PATH];
 static char TOMCAT_TRANSLATE_HEADER_NAME[MAX_PATH];
 
+/* The variants of the special headers after IIS adds
+ * "HTTP_" to the front of them
+ */
 static char HTTP_URI_HEADER_NAME[MAX_PATH];
 static char HTTP_QUERY_HEADER_NAME[MAX_PATH];
 static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
@@ -107,10 +115,13 @@ static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
 #define REJECT_UNSAFE_TAG           ("reject_unsafe")
 #define WATCHDOG_INTERVAL_TAG       ("watchdog_interval")
 
-
 #define TRANSLATE_HEADER            ("Translate:")
 #define TRANSLATE_HEADER_NAME       ("Translate")
 #define TRANSLATE_HEADER_NAME_LC    ("translate")
+
+/* HTTP protocol CRLF */
+#define CRLF                        ("\r\n")
+#define CRLF_LEN                    (2)
 
 #define BAD_REQUEST     -1
 #define BAD_PATH        -2
@@ -193,17 +204,17 @@ static char *CONTENT_TYPE = "Content-Type:text/html\r\n\r\n";
 static char extension_uri[INTERNET_MAX_URL_LENGTH] =
     "/jakarta/isapi_redirect.dll";
 static char log_file[MAX_PATH * 2];
-static int log_level = JK_LOG_DEF_LEVEL;
+static int  log_level = JK_LOG_DEF_LEVEL;
 static char worker_file[MAX_PATH * 2];
 static char worker_mount_file[MAX_PATH * 2] = {0};
 static int  worker_mount_reload = JK_URIMAP_DEF_RELOAD;
 static char rewrite_rule_file[MAX_PATH * 2] = {0};
 static size_t shm_config_size = 0;
-static int strip_session = 0;
+static int  strip_session = 0;
 static DWORD auth_notification_flags = 0;
-static int   use_auth_notification_flags = 1;
-static int reject_unsafe = 0;
-static int watchdog_interval = 0;
+static int  use_auth_notification_flags = 1;
+static int  reject_unsafe = 0;
+static int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
 
 #define URI_SELECT_OPT_PARSED       0
@@ -262,7 +273,7 @@ static int get_registry_config_parameter(HKEY hkey,
                                          const char *tag, char *b, DWORD sz);
 
 static int get_registry_config_number(HKEY hkey, const char *tag,
-                                         int *val);
+                                      int *val);
 
 
 static int get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
@@ -580,8 +591,6 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                                     const char *const *header_values,
                                     unsigned int num_of_headers)
 {
-    static char crlf[3] = { (char)13, (char)10, '\0' };
-
     JK_TRACE_ENTER(logger);
     if (status < 100 || status > 1000) {
         jk_log(logger, JK_LOG_ERROR,
@@ -600,6 +609,10 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
             char *headers_str = NULL;
             BOOL keep_alive = FALSE;
             s->response_started = JK_TRUE;
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG, "Starting response for URI '%s' (protocol %s)",
+                       s->req_uri, s->protocol);
+            }
 
             /*
              * Create the status line
@@ -630,12 +643,12 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                     StringCbCat(headers_str, len_of_headers, header_names[i]);
                     StringCbCat(headers_str, len_of_headers, ": ");
                     StringCbCat(headers_str, len_of_headers, header_values[i]);
-                    StringCbCat(headers_str, len_of_headers, crlf);
+                    StringCbCat(headers_str, len_of_headers, CRLF);
                 }
-                StringCbCat(headers_str, len_of_headers, crlf);
+                StringCbCat(headers_str, len_of_headers, CRLF);
             }
             else {
-                headers_str = crlf;
+                headers_str = CRLF;
             }
 
             if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
@@ -645,8 +658,8 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                                                  (LPDWORD)headers_str)) {
 
                 jk_log(logger, JK_LOG_ERROR,
-                       "HSE_REQ_SEND_RESPONSE_HEADER failed with error=%08x",
-                       GetLastError());
+                       "HSE_REQ_SEND_RESPONSE_HEADER failed with error=%d (0x%08x)",
+                       GetLastError(), GetLastError());
                 rv = JK_FALSE;
             }
             if (headers_str)
@@ -724,7 +737,7 @@ static int JK_METHOD read(jk_ws_service_t *s,
                 }
                 else {
                     jk_log(logger, JK_LOG_ERROR,
-                           "ReadClient failed with %08x", GetLastError());
+                           "ReadClient failed with %d (0x%08x)", GetLastError(), GetLastError());
                     JK_TRACE_EXIT(logger);
                     return JK_FALSE;
                 }
@@ -759,7 +772,7 @@ static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l)
                 if (!p->lpEcb->WriteClient(p->lpEcb->ConnID,
                                            buf + written, &try_to_write, 0)) {
                     jk_log(logger, JK_LOG_ERROR,
-                           "WriteClient failed with %08x", GetLastError());
+                           "WriteClient failed with %d (0x%08x)", GetLastError(), GetLastError());
                     JK_TRACE_EXIT(logger);
                     return JK_FALSE;
                 }
@@ -805,7 +818,7 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
                         SF_NOTIFY_PREPROC_HEADERS;
     }
 
-    StringCbCopy(pVer->lpszFilterDesc, SF_MAX_FILTER_DESC_LEN, VERSION_STRING);
+    StringCbCopy(pVer->lpszFilterDesc, SF_MAX_FILTER_DESC_LEN, (VERSION_STRING));
     return rv;
 }
 
@@ -1463,7 +1476,7 @@ BOOL WINAPI GetExtensionVersion(HSE_VERSION_INFO * pVer)
 {
     pVer->dwExtensionVersion = MAKELONG(HSE_VERSION_MINOR, HSE_VERSION_MAJOR);
 
-    StringCbCopy(pVer->lpszExtensionDesc, HSE_MAX_EXT_DLL_NAME_LEN, VERSION_STRING);
+    StringCbCopy(pVer->lpszExtensionDesc, HSE_MAX_EXT_DLL_NAME_LEN, (VERSION_STRING));
 
 
     if (!is_inited) {
@@ -1652,6 +1665,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    // Instance Handle of the DLL
         StringCbPrintf(WORKER_HEADER_NAME, MAX_PATH, HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
         StringCbPrintf(TOMCAT_TRANSLATE_HEADER_NAME, MAX_PATH, HEADER_TEMPLATE, TOMCAT_TRANSLATE_HEADER_NAME_BASE, hInst);
 
+        /* Construct the HTTP_ headers that will be seen in ExtensionProc */
         StringCbPrintf(HTTP_URI_HEADER_NAME, MAX_PATH, HTTP_HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_QUERY_HEADER_NAME, MAX_PATH, HTTP_HEADER_TEMPLATE, QUERY_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_WORKER_HEADER_NAME, MAX_PATH, HTTP_HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
@@ -1711,7 +1725,7 @@ static int init_jk(char *serverName)
     }
     StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME);
 
-    jk_log(logger, JK_LOG_INFO, "Starting %s", VERSION_STRING );
+    jk_log(logger, JK_LOG_INFO, "Starting %s", (VERSION_STRING));
 
     if (*serverName) {
         size_t i;
@@ -1860,7 +1874,7 @@ static int init_jk(char *serverName)
                 return rc;
             }
         }
-        jk_log(logger, JK_LOG_INFO, "%s initialized", (VERSION_STRING) );
+        jk_log(logger, JK_LOG_INFO, "%s initialized", (VERSION_STRING));
     }
     return rc;
 }
@@ -2035,7 +2049,7 @@ static int get_registry_config_number(HKEY hkey,
         return JK_FALSE;
     }
 
-    *val = data;
+    *val = (int)data;
 
     return JK_TRUE;
 }
@@ -2195,7 +2209,6 @@ static int init_ws_service(isapi_private_data_t * private_data,
         if (cnt) {
             char *headers_buf = huge_buf;
             unsigned int i;
-            size_t len_of_http_prefix = strlen("HTTP_");
             BOOL need_content_length_header = (s->content_length == 0);
 
             cnt -= 2;           /* For our two special headers:
@@ -2216,12 +2229,13 @@ static int init_ws_service(isapi_private_data_t * private_data,
             for (i = 0, tmp = headers_buf; *tmp && i < cnt;) {
                 int real_header = JK_TRUE;
 
-                /* Skipp the HTTP_ prefix to the beginning of th header name */
-                tmp += len_of_http_prefix;
+                /* Skip the HTTP_ prefix to the beginning of the header name */
+                tmp += HTTP_HEADER_PREFIX_LEN;
 
                 if (!strnicmp(tmp, URI_HEADER_NAME, strlen(URI_HEADER_NAME))
                     || !strnicmp(tmp, WORKER_HEADER_NAME,
                                  strlen(WORKER_HEADER_NAME))) {
+                    /* Skip redirector headers */
                     real_header = JK_FALSE;
                 }
                 else if (!strnicmp(tmp, QUERY_HEADER_NAME,
@@ -2258,7 +2272,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 *tmp = '\0';
                 tmp++;
 
-                /* Skip all the WS chars after the ':' to the beginning of th header value */
+                /* Skip all the WS chars after the ':' to the beginning of the header value */
                 while (' ' == *tmp || '\t' == *tmp || '\v' == *tmp) {
                     tmp++;
                 }
@@ -2273,7 +2287,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 *tmp = '\0';
                 tmp++;
 
-                /* skipp CR LF */
+                /* skip CR LF */
                 while (*tmp == '\n' || *tmp == '\r') {
                     tmp++;
                 }
@@ -2416,7 +2430,7 @@ static int get_auth_flags()
     int maj, sz;
     int rv = SF_NOTIFY_PREPROC_HEADERS;
     int use_auth = JK_FALSE;
-    /* Retreive the IIS version Major */
+    /* Retrieve the IIS version Major */
     rc = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
                       W3SVC_REGISTRY_KEY, (DWORD) 0, KEY_READ, &hkey);
     if (ERROR_SUCCESS != rc) {
