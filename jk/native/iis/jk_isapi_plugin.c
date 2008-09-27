@@ -1869,9 +1869,8 @@ static int init_jk(char *serverName)
             watchdog_handle = CreateThread(NULL, 0, watchdog_thread,
                                            NULL, 0, &wi);
             if (!watchdog_handle) {
-                rc = GetLastError();
-                jk_log(logger, JK_LOG_ERROR, "Error creating Watchdog thread");
-                return rc;
+                jk_log(logger, JK_LOG_EMERG, "Error %d (0x%08x) creating Watchdog thread",
+                       GetLastError(), GetLastError());
             }
         }
         jk_log(logger, JK_LOG_INFO, "%s initialized", (VERSION_STRING));
