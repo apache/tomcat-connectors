@@ -116,6 +116,7 @@ static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
 #endif
 #define REJECT_UNSAFE_TAG           ("reject_unsafe")
 #define WATCHDOG_INTERVAL_TAG       ("watchdog_interval")
+#define ENABLE_CHUNKED_ENCODING_TAG ("enable_chunked_encoding")
 
 #define TRANSLATE_HEADER            ("Translate:")
 #define TRANSLATE_HEADER_NAME       ("Translate")
@@ -124,6 +125,10 @@ static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
 /* HTTP protocol CRLF */
 #define CRLF                        ("\r\n")
 #define CRLF_LEN                    (2)
+
+/* Transfer-Encoding: chunked content trailer */
+#define CHUNKED_ENCODING_TRAILER     ("0\r\n\r\n")
+#define CHUNKED_ENCODING_TRAILER_LEN (5)
 
 #define BAD_REQUEST     -1
 #define BAD_PATH        -2
@@ -216,6 +221,9 @@ static int  strip_session = 0;
 #ifndef AUTOMATIC_AUTH_NOTIFICATION
 static int  use_auth_notification_flags = 1;
 #endif
+/* Whether chunked encoding has been enabled in the settings */
+static int  chunked_encoding_enabled = JK_FALSE;
+
 static int  reject_unsafe = 0;
 static int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
@@ -235,6 +243,7 @@ struct isapi_private_data_t
     jk_pool_t p;
 
     unsigned int bytes_read_so_far;
+    int chunk_content;          /* Whether we're responding with Transfer-Encoding: chunked content */
     LPEXTENSION_CONTROL_BLOCK lpEcb;
 };
 
@@ -264,6 +273,8 @@ static int JK_METHOD read(jk_ws_service_t *s,
                           void *b, unsigned int l, unsigned int *a);
 
 static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l);
+
+static int JK_METHOD done(jk_ws_service_t *s);
 
 static int init_ws_service(isapi_private_data_t * private_data,
                            jk_ws_service_t *s, char **worker_name);
@@ -764,37 +775,136 @@ static int JK_METHOD read(jk_ws_service_t *s,
     return JK_FALSE;
 }
 
+/*
+ * Writes a buffer to the ISAPI response.
+ */
+static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned int write_length)
+{
+    unsigned int written = 0;
+    DWORD try_to_write = 0;
+
+    JK_TRACE_ENTER(logger);
+
+    if (JK_IS_DEBUG_LEVEL(logger))
+        jk_log(logger, JK_LOG_DEBUG, "Writing %d bytes of data to client", write_length);
+
+    while (written < write_length) {
+        try_to_write = write_length - written;
+        if (!p->lpEcb->WriteClient(p->lpEcb->ConnID,
+                                   (LPVOID)(buf + written), &try_to_write, HSE_IO_SYNC)) {
+            jk_log(logger, JK_LOG_ERROR,
+                   "WriteClient failed with %d (0x%08x)", GetLastError(), GetLastError());
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;
+        }
+        written += try_to_write;
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG, "Wrote %d bytes of data successfully", try_to_write);
+    }
+    JK_TRACE_EXIT(logger);
+    return JK_TRUE;
+}
+
 static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l)
 {
     JK_TRACE_ENTER(logger);
 
+    if (!l) {
+        JK_TRACE_EXIT(logger);
+        return JK_TRUE;
+    }
+
     if (s && s->ws_private && b) {
         isapi_private_data_t *p = s->ws_private;
+        const char *buf = (const char *)b;
 
-        if (l) {
-            unsigned int written = 0;
-            char *buf = (char *)b;
+        if (!p) {
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;
+        }
 
-            if (!s->response_started) {
-                start_response(s, 200, NULL, NULL, NULL, 0);
-            }
+        if (!s->response_started) {
+            start_response(s, 200, NULL, NULL, NULL, 0);
+        }
 
-            while (written < l) {
-                DWORD try_to_write = l - written;
-                if (!p->lpEcb->WriteClient(p->lpEcb->ConnID,
-                                           buf + written, &try_to_write, 0)) {
-                    jk_log(logger, JK_LOG_ERROR,
-                           "WriteClient failed with %d (0x%08x)", GetLastError(), GetLastError());
-                    JK_TRACE_EXIT(logger);
-                    return JK_FALSE;
-                }
-                written += try_to_write;
-            }
+        if (isapi_write_client(p, buf, l) == JK_FALSE) {
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;
         }
 
         JK_TRACE_EXIT(logger);
         return JK_TRUE;
 
+    }
+
+    JK_LOG_NULL_PARAMS(logger);
+    JK_TRACE_EXIT(logger);
+    return JK_FALSE;
+}
+
+/**
+ * In the case of a Transfer-Encoding: chunked response, this will write the terminator chunk.
+ */
+static int JK_METHOD done(jk_ws_service_t *s)
+{
+    JK_TRACE_ENTER(logger);
+
+    if (s && s->ws_private) {
+        isapi_private_data_t *p = s->ws_private;
+
+        if (p->chunk_content == JK_FALSE) {
+            JK_TRACE_EXIT(logger);
+            return JK_TRUE;
+        }
+
+        /* Write last chunk + terminator */
+        if (iis_info.major >= 6) {
+            HSE_RESPONSE_VECTOR response_vector;
+            HSE_VECTOR_ELEMENT response_elements[1];
+
+            response_elements[0].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+            response_elements[0].pvContext = CHUNKED_ENCODING_TRAILER;
+            response_elements[0].cbOffset = 0;
+            response_elements[0].cbSize = CHUNKED_ENCODING_TRAILER_LEN;
+
+            /* HSE_IO_FINAL_SEND lets IIS process the response to the client before we return */
+            response_vector.dwFlags = HSE_IO_SYNC | HSE_IO_FINAL_SEND;
+            response_vector.pszStatus = NULL;
+            response_vector.pszHeaders = NULL;
+            response_vector.nElementCount = 1;
+            response_vector.lpElementArray = response_elements;
+
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG,
+                       "Using vector write to terminate chunk encoded response.");
+
+            if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                                                 HSE_REQ_VECTOR_SEND,
+                                                 &response_vector,
+                                                 (LPDWORD)NULL,
+                                                 (LPDWORD)NULL)) {
+                    jk_log(logger, JK_LOG_ERROR,
+                           "Vector termination of chunk encoded response failed with %d (0x%08x)",
+                           GetLastError(), GetLastError());
+                    JK_TRACE_EXIT(logger);
+                    return JK_FALSE;
+            }
+        }
+        else {
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG, "Terminating chunk encoded response");
+
+            if (!isapi_write_client(p, CHUNKED_ENCODING_TRAILER, CHUNKED_ENCODING_TRAILER_LEN)) {
+                jk_log(logger, JK_LOG_ERROR,
+                       "WriteClient for chunked response terminator failed with %d (0x%08x)",
+                       GetLastError(), GetLastError());
+                JK_TRACE_EXIT(logger);
+                return JK_FALSE;
+            }
+        }
+
+        JK_TRACE_EXIT(logger);
+        return JK_TRUE;
     }
 
     JK_LOG_NULL_PARAMS(logger);
@@ -1535,6 +1645,7 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
 
         private_data.bytes_read_so_far = 0;
         private_data.lpEcb = lpEcb;
+        private_data.chunk_content = JK_FALSE;
 
         s.ws_private = &private_data;
         s.pool = &private_data.p;
@@ -1772,6 +1883,7 @@ static int init_jk(char *serverName)
         jk_log(logger, JK_LOG_DEBUG, "Using rewrite rule file %s.",
                rewrite_rule_file);
         jk_log(logger, JK_LOG_DEBUG, "Using uri select %d.", uri_select_option);
+        jk_log(logger, JK_LOG_DEBUG, "Using%s chunked encoding.", (chunked_encoding_enabled ? "" : " no"));
 
         jk_log(logger, JK_LOG_DEBUG, "Using notification event %s (0x%08x)",
                (iis_info.filter_notify_event == SF_NOTIFY_AUTH_COMPLETE) ?
@@ -1984,6 +2096,8 @@ static int read_registry_init_data(void)
 #endif
     reject_unsafe = get_config_bool(src, REJECT_UNSAFE_TAG, JK_FALSE);
     watchdog_interval = get_config_int(src, WATCHDOG_INTERVAL_TAG, 0);
+    chunked_encoding_enabled = get_config_bool(src, ENABLE_CHUNKED_ENCODING_TAG, JK_FALSE);
+
     if (using_ini_file) {
         jk_map_free(&map);
     }
@@ -2089,6 +2203,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
     s->start_response = start_response;
     s->read = read;
     s->write = write;
+    s->done = done;
 
     if (!(huge_buf = jk_pool_alloc(&private_data->p, MAX_PACKET_SIZE))) {
         JK_TRACE_EXIT(logger);
