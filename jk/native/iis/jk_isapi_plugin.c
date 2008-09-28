@@ -626,7 +626,7 @@ static void write_error_response(PHTTP_FILTER_CONTEXT pfc, char *status,
     pfc->ServerSupportFunction(pfc,
                                SF_REQ_SEND_RESPONSE_HEADER,
                                status, 0, 0);
-    pfc->WriteClient(pfc, msg, &len, 0);
+    pfc->WriteClient(pfc, msg, &len, HSE_IO_SYNC);
 }
 
 static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
@@ -640,7 +640,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
                                      (LPDWORD)CONTENT_TYPE);
         len = (DWORD)(sizeof(HTML_ERROR_500) - 1);
         lpEcb->WriteClient(lpEcb->ConnID,
-                           HTML_ERROR_503, &len, 0);
+                           HTML_ERROR_503, &len, HSE_IO_SYNC);
     }
     else if (err == 503) {
         lpEcb->ServerSupportFunction(lpEcb->ConnID,
@@ -650,7 +650,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
                                      (LPDWORD)CONTENT_TYPE);
         len = (DWORD)(sizeof(HTML_ERROR_503) - 1);
         lpEcb->WriteClient(lpEcb->ConnID,
-                           HTML_ERROR_503, &len, 0);
+                           HTML_ERROR_503, &len, HSE_IO_SYNC);
     }
     else {
         return;
