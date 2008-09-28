@@ -1155,20 +1155,11 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
     if (!is_inited) {
         rv = initialize_extension();
     }
-    if (iis_info.filter_notify_event == SF_NOTIFY_AUTH_COMPLETE) {
-        pVer->dwFlags = SF_NOTIFY_ORDER_HIGH |
-                        SF_NOTIFY_SECURE_PORT |
-                        SF_NOTIFY_NONSECURE_PORT |
-                        SF_NOTIFY_PREPROC_HEADERS |
-                        SF_NOTIFY_LOG |
-                        SF_NOTIFY_AUTH_COMPLETE;
-    }
-    else {
-        pVer->dwFlags = SF_NOTIFY_ORDER_HIGH |
-                        SF_NOTIFY_SECURE_PORT |
-                        SF_NOTIFY_NONSECURE_PORT |
-                        SF_NOTIFY_PREPROC_HEADERS;
-    }
+    pVer->dwFlags = SF_NOTIFY_ORDER_HIGH |
+                    SF_NOTIFY_SECURE_PORT |
+                    SF_NOTIFY_NONSECURE_PORT |
+                    SF_NOTIFY_LOG |
+                    iis_info.filter_notify_event;
 
     StringCbCopy(pVer->lpszFilterDesc, SF_MAX_FILTER_DESC_LEN, (VERSION_STRING));
     return rv;
