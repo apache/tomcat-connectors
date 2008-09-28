@@ -2181,7 +2181,7 @@ static int init_jk(char *serverName)
 #ifdef AUTOMATIC_POOL_SIZE
     def_cache_size = determine_iis_thread_count();
     if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG, "Setting default connection_pool_size to %u",
+        jk_log(logger, JK_LOG_DEBUG, "Setting default connection_pool_size to %d",
                def_cache_size );
     }
     jk_set_worker_def_cache_size(def_cache_size);
