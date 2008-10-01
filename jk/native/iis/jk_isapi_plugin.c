@@ -640,7 +640,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
                                      (LPDWORD)CONTENT_TYPE);
         len = (DWORD)(sizeof(HTML_ERROR_500) - 1);
         lpEcb->WriteClient(lpEcb->ConnID,
-                           HTML_ERROR_503, &len, HSE_IO_SYNC);
+                           HTML_ERROR_500, &len, HSE_IO_SYNC);
     }
     else if (err == 503) {
         lpEcb->ServerSupportFunction(lpEcb->ConnID,
