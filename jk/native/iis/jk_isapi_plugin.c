@@ -312,12 +312,12 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                                     const char *const *header_values,
                                     unsigned int num_of_headers);
 
-static int JK_METHOD read(jk_ws_service_t *s,
+static int JK_METHOD iis_read(jk_ws_service_t *s,
                           void *b, unsigned int l, unsigned int *a);
 
-static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l);
+static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l);
 
-static int JK_METHOD done(jk_ws_service_t *s);
+static int JK_METHOD iis_done(jk_ws_service_t *s);
 
 static int init_ws_service(isapi_private_data_t * private_data,
                            jk_ws_service_t *s, char **worker_name);
@@ -841,7 +841,7 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
     return JK_FALSE;
 }
 
-static int JK_METHOD read(jk_ws_service_t *s,
+static int JK_METHOD iis_read(jk_ws_service_t *s,
                           void *b, unsigned int l, unsigned int *a)
 {
     JK_TRACE_ENTER(logger);
@@ -953,7 +953,7 @@ static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned
  *(and it's appropriate for the response), then this will write a
  * single "Transfer-Encoding: chunked" chunk
  */
-static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l)
+static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l)
 {
     JK_TRACE_ENTER(logger);
 
@@ -1075,7 +1075,7 @@ static int JK_METHOD write(jk_ws_service_t *s, const void *b, unsigned int l)
 /**
  * In the case of a Transfer-Encoding: chunked response, this will write the terminator chunk.
  */
-static int JK_METHOD done(jk_ws_service_t *s)
+static int JK_METHOD iis_done(jk_ws_service_t *s)
 {
     JK_TRACE_ENTER(logger);
 
@@ -2568,9 +2568,9 @@ static int init_ws_service(isapi_private_data_t * private_data,
     JK_TRACE_ENTER(logger);
 
     s->start_response = start_response;
-    s->read = read;
-    s->write = write;
-    s->done = done;
+    s->read  = iis_read;
+    s->write = iis_write;
+    s->done  = iis_done;
 
     if (!(huge_buf = jk_pool_alloc(&private_data->p, MAX_PACKET_SIZE))) {
         JK_TRACE_EXIT(logger);
