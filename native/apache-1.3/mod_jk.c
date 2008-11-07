@@ -646,6 +646,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     e = (rule_extension_t *)ap_get_module_config(r->request_config, &jk_module);
     if (e) {
         s->extension.reply_timeout = e->reply_timeout;
+        s->extension.use_server_error_pages = e->use_server_error_pages;
         if (e->activation) {
             s->extension.activation = ap_palloc(r->pool, e->activation_size * sizeof(int));
             memcpy(s->extension.activation, e->activation, e->activation_size * sizeof(int));
@@ -2249,6 +2250,15 @@ static int jk_handler(request_rec * r)
             jk_close_pool(&private_data.p);
 
             if (rc > 0) {
+                if (s.extension.use_server_error_pages &&
+                    s.http_response_status >= s.extension.use_server_error_pages) {
+                    if (JK_IS_DEBUG_LEVEL(conf->log))
+                        jk_log(conf->log, JK_LOG_DEBUG, "Forwarding status=%d"
+                               " for worker=%s",
+                               s.http_response_status, worker_name);
+                    JK_TRACE_EXIT(conf->log);
+                    return s.http_response_status;
+                }
                 /* If tomcat returned no body and the status is not OK,
                    let apache handle the error code */
                 if (!r->sent_bodyct && r->status >= HTTP_BAD_REQUEST) {
