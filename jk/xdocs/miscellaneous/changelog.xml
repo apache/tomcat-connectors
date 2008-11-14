@@ -193,7 +193,7 @@
         Build: Fix Cygwin build. (rjung)
       </fix>
       <update>
-        Documenation: Add info to docs, that variables sent via JkEnvVar
+        Documentation: Add info to docs, that variables sent via JkEnvVar
         are not listed in request.getAttributeNames(). (rjung)
       </update>
       <add>
@@ -205,7 +205,7 @@
         Change log level of some messages from error to info. (mturk)
       </update>
       <fix>
-        Documenation: Fix docs for worker attribute "secret". (rjung)
+        Documentation: Fix docs for worker attribute "secret". (rjung)
       </fix>
       <update>
         Detect correct plugin name for various web servers via additional
