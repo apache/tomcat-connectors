@@ -14,14 +14,14 @@
   limitations under the License.
 
 
-Placeholder for procrun binaries used for Tomcat 5.x
+Placeholder for procrun binaries used for Tomcat 4.x / 5.x
 
-Rename binaries to reflect default service name:
+Rename binaries to reflect default service name eg:
   prunsrv.exe -> tomcat5.exe
   prunmgr.exe -> tomcat5w.exe
 
 Documentation for the commons-daemon project, which is
 where procrun comes from, is at
-http://jakarta.apache.org/commons/daemon.  That site
-has links to the CVS repository and the source code for
+http://commons.apache.org/daemon.  That site
+has links to the SVN repository and the source code for
 the project.
