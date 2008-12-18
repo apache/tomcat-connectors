@@ -44,6 +44,11 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>46352</bug>: Fix Apache crash when using SetHandler jakarta-servlet
+        in VHost without any JkMount. Crash due to incorrect initialization
+        of mount extensions. (rjung)
+      </fix>
+      <fix>
         <bug>46169</bug>: Backport use_server_errors mount extension
         to httpd 1.3. (rjung)
       </fix>
