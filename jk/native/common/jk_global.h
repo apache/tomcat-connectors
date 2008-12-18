@@ -370,6 +370,14 @@ typedef int jk_sock_t;
 #define JK_INVALID_SOCKET  (-1)
 #endif
 
+#ifdef NETWARE
+#ifdef __NOVELL_LIBC__
+#define MAX_PATH 511
+#else
+#define MAX_PATH 255
+#endif
+#endif
+
 #ifdef AS400_UTF8
 #define strcasecmp(a,b) apr_strnatcasecmp(a,b)
 #endif

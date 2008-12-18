@@ -44,6 +44,9 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        Missing define for MAX_PATH on Netware. Patch by Guenter Knauf. (rjung)
+      </fix>
+      <fix>
         <bug>46352</bug>: Fix Apache crash when using SetHandler jakarta-servlet
         in VHost without any JkMount. Crash due to incorrect initialization
         of mount extensions. (rjung)
