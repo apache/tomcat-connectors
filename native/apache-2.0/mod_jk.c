@@ -3173,9 +3173,7 @@ static int jk_post_config(apr_pool_t * pconf,
  */
 static int jk_translate(request_rec * r)
 {
-    rule_extension_t **ext = apr_palloc(r->pool, sizeof(rule_extension_t *));
-    *ext = NULL;
-    ap_set_module_config(r->request_config, &jk_module, ext);
+    ap_set_module_config(r->request_config, &jk_module, NULL);
 
     if (!r->proxyreq) {
         jk_server_conf_t *conf =
