@@ -106,6 +106,12 @@
 
 #define JK_LOG_DEF_FILE             ("logs/mod_jk.log")
 #define JK_SHM_DEF_FILE             ("logs/jk-runtime-status")
+#define JK_ENV_REMOTE_ADDR          ("JK_REMOTE_ADDR")
+#define JK_ENV_REMOTE_HOST          ("JK_REMOTE_HOST")
+#define JK_ENV_REMOTE_USER          ("JK_REMOTE_USER")
+#define JK_ENV_AUTH_TYPE            ("JK_AUTH_TYPE")
+#define JK_ENV_SERVER_NAME          ("JK_SERVER_NAME")
+#define JK_ENV_SERVER_PORT          ("JK_SERVER_PORT")
 #define JK_ENV_HTTPS                ("HTTPS")
 #define JK_ENV_CERTS                ("SSL_CLIENT_CERT")
 #define JK_ENV_CIPHER               ("SSL_CIPHER")
@@ -187,6 +193,18 @@ typedef struct
      * Setting target worker via environment
      */
     char *worker_indicator;
+
+    /*
+     * Configurable environment variables to overwrite
+     * request information using meta data send by a
+     * proxy in front of us.
+     */
+    char *remote_addr_indicator;
+    char *remote_host_indicator;
+    char *remote_user_indicator;
+    char *auth_type_indicator;
+    char *server_name_indicator;
+    char *server_port_indicator;
 
     /*
      * SSL Support
@@ -650,6 +668,25 @@ static jk_uint64_t get_content_length(request_rec * r)
     return 0;
 }
 
+/* Retrieve string value from env var, use default if env var does not exist. */
+static const char *get_env_string(request_rec *r, const char *def,
+                                  char *env, int null_for_empty)
+{
+    char *value = (char *)apr_table_get(r->subprocess_env, env);
+    if (value)
+        return null_for_empty ? NULL_FOR_EMPTY(value) : value;
+    return null_for_empty ? NULL_FOR_EMPTY(def) : def;
+}
+
+/* Retrieve integer value from env var, use default if env var does not exist. */
+static int get_env_int(request_rec *r, int def, char *env)
+{
+    char *value = (char *)apr_table_get(r->subprocess_env, env);
+    if (value)
+        return atoi(value);
+    return def;
+}
+
 static int init_ws_service(apache_private_data_t * private_data,
                            jk_ws_service_t *s, jk_server_conf_t * conf)
 {
@@ -670,18 +707,23 @@ static int init_ws_service(apache_private_data_t * private_data,
     s->vhost_to_text = ws_vhost_to_text;
     s->vhost_to_uw_map = ws_vhost_to_uw_map;
 
-    s->auth_type = NULL_FOR_EMPTY(r->ap_auth_type);
-    s->remote_user = NULL_FOR_EMPTY(r->user);
+    s->auth_type = get_env_string(r, r->ap_auth_type,
+                                  conf->auth_type_indicator, 1);
+    s->remote_user = get_env_string(r, r->user,
+                                    conf->remote_user_indicator, 1);
 
     s->protocol = r->protocol;
     s->remote_host = (char *)ap_get_remote_host(r->connection,
                                                 r->per_dir_config,
                                                 REMOTE_HOST, NULL);
-    s->remote_host = NULL_FOR_EMPTY(s->remote_host);
+    s->remote_host = get_env_string(r, s->remote_host,
+                                    conf->remote_host_indicator, 1);
     if (conf->options & JK_OPT_FWDLOCAL)
-        s->remote_addr = NULL_FOR_EMPTY(r->connection->local_ip);
+        s->remote_addr = r->connection->local_ip;
     else
-        s->remote_addr = NULL_FOR_EMPTY(r->connection->remote_ip);
+        s->remote_addr = r->connection->remote_ip;
+    s->remote_addr = get_env_string(r, s->remote_addr,
+                                    conf->remote_addr_indicator, 1);
     if (conf->options & JK_OPT_FLUSHPACKETS)
         s->flush_packets = 1;
     if (conf->options & JK_OPT_FLUSHEADER)
@@ -712,7 +754,8 @@ static int init_ws_service(apache_private_data_t * private_data,
         s->disable_reuse = 1;
 
     /* get server name */
-    s->server_name = (char *)ap_get_server_name(r);
+    s->server_name = get_env_string(r, (char *)ap_get_server_name(r),
+                                    conf->server_name_indicator, 0);
 
     /* get the real port (otherwise redirect failed) */
     /* XXX: use apache API for getting server port
@@ -720,7 +763,8 @@ static int init_ws_service(apache_private_data_t * private_data,
      * Pre 1.2.7 versions used:
      * s->server_port = r->connection->local_addr->port;
      */
-    s->server_port  = ap_get_server_port(r);
+    s->server_port = get_env_int(r, ap_get_server_port(r),
+                                 conf->server_port_indicator);;
 
 #if (AP_MODULE_MAGIC_AT_LEAST(20051115,4)) && !defined(API_COMPATIBILITY)
     s->server_software = (char *)ap_get_server_description();
@@ -930,9 +974,10 @@ static int init_ws_service(apache_private_data_t * private_data,
      */
     if (JK_IS_DEBUG_LEVEL(conf->log)) {
         jk_log(conf->log, JK_LOG_DEBUG,
-               "Service protocol=%s method=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uri=%s",
+               "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uri=%s",
                STRNULL_FOR_NULL(s->protocol),
                STRNULL_FOR_NULL(s->method),
+               s->is_ssl ? "true" : "false",
                STRNULL_FOR_NULL(s->remote_host),
                STRNULL_FOR_NULL(s->remote_addr),
                STRNULL_FOR_NULL(s->server_name),
@@ -1738,6 +1783,76 @@ static const char *jk_set_worker_indicator(cmd_parms * cmd,
 }
 
 /*
+ * Directives Handling for setting various environment names
+ * used to overwrite the following request information:
+ * - remote_addr
+ * - remote_host
+ * - remote_user
+ * - auth_type
+ * - server_name
+ * - server_port
+ */
+static const char *jk_set_remote_addr_indicator(cmd_parms * cmd,
+                                                void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->remote_addr_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
+static const char *jk_set_remote_host_indicator(cmd_parms * cmd,
+                                                void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->remote_host_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
+static const char *jk_set_remote_user_indicator(cmd_parms * cmd,
+                                                void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->remote_user_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
+static const char *jk_set_auth_type_indicator(cmd_parms * cmd,
+                                              void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->auth_type_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
+static const char *jk_set_server_name_indicator(cmd_parms * cmd,
+                                                void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->server_name_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
+static const char *jk_set_server_port_indicator(cmd_parms * cmd,
+                                                void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->server_port_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
+/*
  * JkExtractSSL Directive Handling
  *
  * JkExtractSSL On/Off
@@ -2133,7 +2248,7 @@ static const command_rec jk_cmds[] = {
 
     /*
      * Enable worker name to be set in an environment variable.
-     * this way one can use LocationMatch together with mod_end,
+     * This way one can use LocationMatch together with mod_env,
      * mod_setenvif and mod_rewrite to set the target worker.
      * Use this in combination with SetHandler jakarta-servlet to
      * make mod_jk the handler for the request.
@@ -2141,6 +2256,29 @@ static const command_rec jk_cmds[] = {
      */
     AP_INIT_TAKE1("JkWorkerIndicator", jk_set_worker_indicator, NULL, RSRC_CONF,
                   "Name of the Apache environment that contains the worker name"),
+
+    /*
+     * Environment variables used to overwrite the following
+     * request information which gets forwarded:
+     * - remote_addr
+     * - remote_host
+     * - remote_user
+     * - auth_type
+     * - server_name
+     * - server_port
+     */
+    AP_INIT_TAKE1("JkRemoteAddrIndicator", jk_set_remote_addr_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the remote address"),
+    AP_INIT_TAKE1("JkRemoteHostIndicator", jk_set_remote_host_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the remote host name"),
+    AP_INIT_TAKE1("JkRemoteUserIndicator", jk_set_remote_user_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the remote user name"),
+    AP_INIT_TAKE1("JkAuthTypeIndicator", jk_set_auth_type_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the type of authentication"),
+    AP_INIT_TAKE1("JkServerNameIndicator", jk_set_server_name_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the server name"),
+    AP_INIT_TAKE1("JkServerPortIndicator", jk_set_server_port_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the server port"),
 
     /*
      * Apache has multiple SSL modules (for example apache_ssl, stronghold
@@ -2557,6 +2695,19 @@ static void *create_jk_config(apr_pool_t * p, server_rec * s)
         c->log_level = JK_LOG_DEF_LEVEL;
         c->options = JK_OPT_FWDURIDEFAULT;
         c->worker_indicator = JK_ENV_WORKER_NAME;
+
+        /*
+         * Configurable environment variables to overwrite
+         * request information using meta data send by a
+         * proxy in front of us.
+         */
+        c->remote_addr_indicator = JK_ENV_REMOTE_ADDR;
+        c->remote_host_indicator = JK_ENV_REMOTE_HOST;
+        c->remote_user_indicator = JK_ENV_REMOTE_USER;
+        c->auth_type_indicator = JK_ENV_AUTH_TYPE;
+        c->server_name_indicator = JK_ENV_SERVER_NAME;
+        c->server_port_indicator = JK_ENV_SERVER_PORT;
+
         /*
          * By default we will try to gather SSL info.
          * Disable this functionality through JkExtractSSL
@@ -2622,6 +2773,19 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
 
     if (!overrides->worker_indicator)
         overrides->worker_indicator = base->worker_indicator;
+
+    if (!overrides->remote_addr_indicator)
+        overrides->remote_addr_indicator = base->remote_addr_indicator;
+    if (!overrides->remote_host_indicator)
+        overrides->remote_host_indicator = base->remote_host_indicator;
+    if (!overrides->remote_user_indicator)
+        overrides->remote_user_indicator = base->remote_user_indicator;
+    if (!overrides->auth_type_indicator)
+        overrides->auth_type_indicator = base->auth_type_indicator;
+    if (!overrides->server_name_indicator)
+        overrides->server_name_indicator = base->server_name_indicator;
+    if (!overrides->server_port_indicator)
+        overrides->server_port_indicator = base->server_port_indicator;
 
     if (overrides->ssl_enable == JK_UNSET)
         overrides->ssl_enable = base->ssl_enable;

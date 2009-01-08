@@ -43,6 +43,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <add>
+        Apache: Add more environment variables to overwrite request
+        information. Useful in case a proxy is in front of Apache and sends
+        us original request information e.g. via custom headers. (rjung)
+      </add>
       <fix>
         Missing define for MAX_PATH on Netware. Patch by Guenter Knauf. (rjung)
       </fix>
