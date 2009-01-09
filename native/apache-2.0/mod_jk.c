@@ -764,7 +764,7 @@ static int init_ws_service(apache_private_data_t * private_data,
      * s->server_port = r->connection->local_addr->port;
      */
     s->server_port = get_env_int(r, ap_get_server_port(r),
-                                 conf->server_port_indicator);;
+                                 conf->server_port_indicator);
 
 #if (AP_MODULE_MAGIC_AT_LEAST(20051115,4)) && !defined(API_COMPATIBILITY)
     s->server_software = (char *)ap_get_server_description();
