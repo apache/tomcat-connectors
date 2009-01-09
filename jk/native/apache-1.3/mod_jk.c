@@ -719,7 +719,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     /* s->server_port     = htons( r->connection->local_addr.sin_port ); */
     /* XXX : a la jk2 */
     s->server_port = get_env_int(r, ap_get_server_port(r),
-                                 conf->server_port_indicator);;
+                                 conf->server_port_indicator);
 
     s->server_software = (char *)ap_get_server_version();
 
