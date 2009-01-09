@@ -298,6 +298,66 @@ Name of the Apache environment variable that contains SSL key size in use.
 <br/>
 The default value is "SSL_CIPHER_USEKEYSIZE".
 </p></attribute>
+<attribute name="JkServerNameIndicator" required="false"><p>
+Name of the Apache environment variable which can be used to overwrite
+the forwarded server name.
+Use this only if you need to adjust the data (see the
+<a href="../generic_howto/proxy.html">proxy</a> documentation).
+<br/>
+The default value is "JK_SERVER_NAME".
+<br/>
+This directive has been added in version 1.2.28 of mod_jk.
+</p></attribute>
+<attribute name="JkServerPortIndicator" required="false"><p>
+Name of the Apache environment variable which can be used to overwrite
+the forwarded server port.
+Use this only if you need to adjust the data (see the
+<a href="../generic_howto/proxy.html">proxy</a> documentation).
+<br/>
+The default value is "JK_SERVER_PORT".
+<br/>
+This directive has been added in version 1.2.28 of mod_jk.
+</p></attribute>
+<attribute name="JkRemoteHostIndicator" required="false"><p>
+Name of the Apache environment variable which can be used to overwrite
+the forwarded remote (client) host name.
+Use this only if you need to adjust the data (see the
+<a href="../generic_howto/proxy.html">proxy</a> documentation).
+<br/>
+The default value is "JK_REMOTE_HOST".
+<br/>
+This directive has been added in version 1.2.28 of mod_jk.
+</p></attribute>
+<attribute name="JkRemoteAddrIndicator" required="false"><p>
+Name of the Apache environment variable which can be used to overwrite
+the forwarded remote (client) IP address.
+Use this only if you need to adjust the data (see the
+<a href="../generic_howto/proxy.html">proxy</a> documentation).
+<br/>
+The default value is "JK_REMOTE_ADDR".
+<br/>
+This directive has been added in version 1.2.28 of mod_jk.
+</p></attribute>
+<attribute name="JkRemoteUserIndicator" required="false"><p>
+Name of the Apache environment variable which can be used to overwrite
+the forwarded user name.
+Use this only if you need to adjust the data (see the
+<a href="../generic_howto/proxy.html">proxy</a> documentation).
+<br/>
+The default value is "JK_REMOTE_USER".
+<br/>
+This directive has been added in version 1.2.28 of mod_jk.
+</p></attribute>
+<attribute name="JkAuthTypeIndicator" required="false"><p>
+Name of the Apache environment variable which can be used to overwrite
+the forwarded authentication type.
+Use this only if you need to adjust the data (see the
+<a href="../generic_howto/proxy.html">proxy</a> documentation).
+<br/>
+The default value is "JK_AUTH_TYPE".
+<br/>
+This directive has been added in version 1.2.28 of mod_jk.
+</p></attribute>
 <attribute name="JkOptions" required="false"><p>
 Set one of more options to configure the mod_jk module. See below for
 details about this directive.
