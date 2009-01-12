@@ -201,7 +201,7 @@
                                            "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">" \
                                            "<head><title>JK Status Manager</title>"
 
-#define JK_STATUS_COPYRIGHT                "Copyright &#169; 1999-2008, The Apache Software Foundation<br />" \
+#define JK_STATUS_COPYRIGHT                "Copyright &#169; 1999-2009, The Apache Software Foundation<br />" \
                                            "Licensed under the <a href=\"http://www.apache.org/licenses/LICENSE-2.0\">" \
                                            "Apache License, Version 2.0</a>."
 
