@@ -37,6 +37,9 @@ extern "C"
 struct jk_map;
 typedef struct jk_map jk_map_t;
 
+/* Local environment table */
+jk_map_t *jk_environment_map;
+
 int jk_map_alloc(jk_map_t **m);
 
 int jk_map_free(jk_map_t **m);
