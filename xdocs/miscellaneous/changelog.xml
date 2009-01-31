@@ -43,6 +43,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+      LB: If the sticky session affinity mark contains dot, treat the
+      part after the dot as domain name. This allows to have full node
+      session affinity with domain failover. (mturk)
+      </update>
       <fix>
         <bug>46579</bug>: Use local environment table instead environment
         variables for setting the JKISAPI_PATH and JKISAPI_NAME. (mturk)
