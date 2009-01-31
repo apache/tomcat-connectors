@@ -686,7 +686,7 @@ static int find_by_session(jk_ws_service_t *s,
 
 static int find_best_bydomain(jk_ws_service_t *s,
                               lb_worker_t *p,
-                              const char *domain,
+                              const char *name,
                               int *states,
                               jk_logger_t *l)
 {
@@ -697,7 +697,12 @@ static int find_best_bydomain(jk_ws_service_t *s,
     int candidate = -1;
     int activation;
     lb_sub_worker_t wr;
+    const char *domain = strchr(name, '.');
 
+    if (domain)
+        domain++;
+    else
+        domain = name;
     /* First try to see if we have available candidate */
     for (i = 0; i < p->num_of_workers; i++) {
         /* Skip all workers that are not member of domain */
@@ -723,7 +728,6 @@ static int find_best_bydomain(jk_ws_service_t *s,
             }
         }
     }
-
     return candidate;
 }
 
