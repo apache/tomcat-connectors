@@ -2313,8 +2313,9 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    // Instance Handle of the DLL
             if ((p = strrchr(fname, '\\'))) {
                 *(p++) = '\0';
                 StringCbCopy(dll_file_path, MAX_PATH, fname);
-                SetEnvironmentVariable("JKISAPI_PATH", dll_file_path);
-                SetEnvironmentVariable("JKISAPI_NAME", p);
+                jk_map_alloc(&jk_environment_map);                
+                jk_map_add(jk_environment_map, "JKISAPI_PATH", dll_file_path);
+                jk_map_add(jk_environment_map, "JKISAPI_NAME", p);
             }
             else {
                 /* Cannot obtain file name ? */

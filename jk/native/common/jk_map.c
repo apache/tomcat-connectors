@@ -80,6 +80,7 @@ struct jk_map
 static void trim_prp_comment(char *prp);
 static size_t trim(char *s);
 static int map_realloc(jk_map_t *m);
+jk_map_t *jk_environment_map = NULL;
 
 int jk_map_alloc(jk_map_t **m)
 {
@@ -710,6 +711,12 @@ char *jk_map_replace_properties(jk_map_t *m, const char *value)
             if (!env_value) {
                 env_value = getenv(env_name);
             }
+            if (!env_value && jk_environment_map) {
+                /* Search inside local environment table */
+                env_value = jk_map_get_string(jk_environment_map,
+                                              env_name, NULL);
+            }
+
 #if defined(WIN32)
             if (!env_value) {
                 /* Try the env block from calling process */
