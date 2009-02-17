@@ -343,12 +343,13 @@ int jk_resolve(const char *host, int port, struct sockaddr_in *rc,
         apr_sockaddr_t *remote_sa, *temp_sa;
         char *remote_ipaddr;
 
-        if (!(jk_apr_pool = (apr_pool_t *)pool)) {
-            if (apr_pool_create(&jk_apr_pool, NULL) != APR_SUCCESS) {
+        if (!jk_apr_pool) {
+            if (apr_pool_create(&jk_apr_pool, (apr_pool_t *)pool) != APR_SUCCESS) {
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
         }
+        apr_pool_clear(jk_apr_pool);
         if (apr_sockaddr_info_get
             (&remote_sa, host, APR_UNSPEC, (apr_port_t) port, 0, jk_apr_pool)
             != APR_SUCCESS) {
