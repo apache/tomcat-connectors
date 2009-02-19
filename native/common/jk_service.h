@@ -449,6 +449,8 @@ struct jk_endpoint
 struct jk_worker
 {
 
+    jk_worker_env_t *we;
+
     /*
      * A 'this' pointer which is used by the subclasses of this class to
      * point to data/functions which are specific to a given protocol

@@ -2167,6 +2167,18 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     jk_shm_lock();
     if (aw->sequence != aw->s->h.sequence)
         jk_ajp_pull(aw, l);
+    if (aw->addr_sequence != aw->s->addr_sequence) {
+        aw->addr_sequence = aw->s->addr_sequence;
+        aw->host = aw->s->hostname;
+        aw->port = aw->s->port;
+        if (!jk_resolve(aw->host, aw->port, &aw->worker_inet_addr,
+                        aw->worker.we->pool, l)) {
+            if (is_error)
+                *is_error = JK_HTTP_SERVER_ERROR;
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+       }
+    }
     jk_shm_unlock();
 
     aw->s->used++;
@@ -2464,24 +2476,39 @@ int ajp_validate(jk_worker_t *pThis,
         ajp_worker_t *p = pThis->worker_private;
         p->port = jk_get_worker_port(props, p->name, port);
         p->host = jk_get_worker_host(props, p->name, host);
+        if (!p->host) {
+            p->host = "undefined";
+        }
 
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
                    "worker %s contact is '%s:%d'",
                    p->name, p->host, p->port);
-
-/* XXX: Why do we only resolve, if port > 1024 ? */
+        /* Copy the contact to shm */
+        strncpy(p->s->hostname, p->host, JK_SHM_STR_SIZ);
+        p->s->port = p->port;
+        /* Resolve if port > 1024.
+         * 
+         */
         if (p->port > 1024) {
             if (jk_resolve(p->host, p->port, &p->worker_inet_addr, we->pool, l)) {
+                p->s->addr_sequence = p->addr_sequence = 1;
                 JK_TRACE_EXIT(l);
                 return JK_TRUE;
             }
             jk_log(l, JK_LOG_ERROR,
-                   "can't resolve tomcat address %s", p->host);
+                   "worker %s can't resolve tomcat address %s",
+                   p->name, p->host);
         }
-        jk_log(l, JK_LOG_ERROR,
-               "invalid host and port %s %d",
-               ((p->host == NULL) ? "NULL" : p->host), p->port);
+        else {
+            p->s->port = p->port = 0;
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
+                       "worker %s contact is disabled",
+                       p->name, p->host, p->port);
+            JK_TRACE_EXIT(l);
+            return JK_TRUE;
+        }
     }
     else {
         JK_LOG_NULL_PARAMS(l);
@@ -2548,6 +2575,7 @@ int ajp_init(jk_worker_t *pThis,
 
     if (pThis && pThis->worker_private) {
         ajp_worker_t *p = pThis->worker_private;
+        p->worker.we = we;
         p->ep_cache_sz = jk_get_worker_cache_size(props, p->name, cache);
         p->ep_mincache_sz = jk_get_worker_cache_size_min(props, p->name,
                                                          (p->ep_cache_sz+1) / 2);
