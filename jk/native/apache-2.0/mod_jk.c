@@ -3211,7 +3211,11 @@ static int jk_post_config(apr_pool_t * pconf,
     }
 
 #if JK_NEED_SET_MUTEX_PERMS
+#if (MODULE_MAGIC_NUMBER_MAJOR >= 20090208)
+    rv = ap_unixd_set_global_mutex_perms(jk_log_lock);
+#else
     rv = unixd_set_global_mutex_perms(jk_log_lock);
+#endif
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s,
                      "mod_jk: Could not set permissions on "

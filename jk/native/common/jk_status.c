@@ -116,6 +116,8 @@
 #define JK_STATUS_ARG_AJP_REC_OPTS         "varo"
 #define JK_STATUS_ARG_AJP_MAX_PK_SZ        "vamps"
 #define JK_STATUS_ARG_AJP_CPING_INT        "vacpi"
+#define JK_STATUS_ARG_AJP_HOST_STR         "vaddr"
+#define JK_STATUS_ARG_AJP_PORT_INT         "vaprt"
 
 #define JK_STATUS_ARG_AJP_TEXT_CACHE_TO    "Connection Pool Timeout"
 #define JK_STATUS_ARG_AJP_TEXT_PING_TO     "Ping Timeout"
@@ -127,6 +129,8 @@
 #define JK_STATUS_ARG_AJP_TEXT_REC_OPTS    "Recovery Options"
 #define JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ   "Max Packet Size"
 #define JK_STATUS_ARG_AJP_TEXT_CPING_INT   "Connection Ping Interval"
+#define JK_STATUS_ARG_AJP_TEXT_HOST_STR    "Hostname"
+#define JK_STATUS_ARG_AJP_TEXT_PORT_INT    "Port"
 
 #define JK_STATUS_CMD_UNKNOWN              (0)
 #define JK_STATUS_CMD_LIST                 (1)
@@ -223,7 +227,7 @@
 #define JK_STATUS_URI_MAP_TABLE_ROW2       "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n"
 #define JK_STATUS_SHOW_AJP_CONF_HEAD       "<tr>" \
                                            "<th>Type</th>" \
-                                           "<th>Host</th><th>Addr</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_TEXT_HOST_STR "</th><th>Addr</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_TEXT_CACHE_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_TEXT_CONNECT_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_TEXT_PREPOST_TO "</th>" \
@@ -316,7 +320,7 @@
                                            "</tr>\n"
 #define JK_STATUS_SHOW_MEMBER_CONF_HEAD    "<tr>" \
                                            "<th>Name</th><th>Type</th>" \
-                                           "<th>Host</th><th>Addr</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_TEXT_HOST_STR "</th><th>Addr</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_TEXT_CACHE_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_TEXT_CONNECT_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_TEXT_PREPOST_TO "</th>" \
@@ -2643,6 +2647,15 @@ static void form_member(jk_ws_service_t *s,
     }
 
     jk_puts(s, "<table>\n");
+    jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_HOST_STR,
+            ":</td><td><input name=\"",
+            JK_STATUS_ARG_AJP_HOST_STR, "\" type=\"text\" ", NULL);
+    jk_printf(s, "value=\"%s\"/></td></tr>\n", aw->s->hostname);
+    jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_PORT_INT,
+            ":</td><td><input name=\"",
+            JK_STATUS_ARG_AJP_PORT_INT, "\" type=\"text\" ", NULL);
+    jk_printf(s, "value=\"%d\"/></td></tr>\n", aw->s->port);
+
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_CACHE_TO,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_CACHE_TO, "\" type=\"text\" ", NULL);
@@ -3059,6 +3072,7 @@ static int commit_member(jk_ws_service_t *s,
     int rv;
     int i;
     int old;
+    int as = 0;
 
     JK_TRACE_ENTER(l);
     if (lb) {
@@ -3145,6 +3159,23 @@ static int commit_member(jk_ws_service_t *s,
             }
         }
     }
+    if ((rv = status_get_string(p, JK_STATUS_ARG_AJP_HOST_STR,
+                                NULL, &arg, l)) == JK_TRUE) {
+        if (strncmp(aw->s->hostname, arg, JK_SHM_STR_SIZ)) {
+            jk_log(l, JK_LOG_INFO,
+                    "Status worker '%s' setting 'host' for sub worker '%s' to '%s'",
+                    w->name, aw->name, arg);
+            strncpy(aw->s->hostname, arg, JK_SHM_STR_SIZ);
+            rc |= 4;
+            as = 1;
+        }
+    }
+    if (set_int_if_changed(p, aw->name, "port", JK_STATUS_ARG_AJP_PORT_INT,
+                           0, INT_MAX, &aw->s->port, lb_name, l)) {
+        rc |= 4;
+        as = 1;
+    }
+    aw->s->addr_sequence += as;
     if (set_int_if_changed(p, aw->name, "ping_timeout", JK_STATUS_ARG_AJP_PING_TO,
                            0, INT_MAX, &aw->ping_timeout, lb_name, l))
         rc |= 4;

@@ -1553,6 +1553,13 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                     if (!aw->secret)
                         aw->secret = secret;
                 }
+                if (p->lb_workers[i].worker->type == JK_AJP13_WORKER_TYPE ||
+                    p->lb_workers[i].worker->type == JK_AJP14_WORKER_TYPE) {
+                    ajp_worker_t *aw = (ajp_worker_t *)p->lb_workers[i].worker->worker_private;
+                    if (!aw->addr_sequence) {
+                        p->lb_workers[i].activation = JK_LB_ACTIVATION_STOPPED;
+                    }
+                }
             }
 
             if (i != num_of_workers) {
@@ -1618,6 +1625,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
     lb_worker_t *p = (lb_worker_t *)pThis->worker_private;
     JK_TRACE_ENTER(log);
 
+    p->worker.we = we;
     p->retries = jk_get_worker_retries(props, p->name,
                                        JK_RETRIES);
     p->retry_interval =
