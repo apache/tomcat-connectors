@@ -2377,6 +2377,11 @@ static DWORD WINAPI watchdog_thread(void *param)
             jk_log(logger, JK_LOG_DEBUG,
                    "Watchdog thread running");
         }
+        if (worker_mount_file[0]) {
+            jk_shm_lock();
+            uri_worker_map_update(uw_map, 0, logger);
+            jk_shm_unlock();
+        }
         wc_maintain(logger);
     }
     if (JK_IS_DEBUG_LEVEL(logger)) {
@@ -2499,10 +2504,11 @@ static int init_jk(char *serverName)
             uw_map->reject_unsafe = 1;
         else
             uw_map->reject_unsafe = 0;
-        uw_map->fname = worker_mount_file;
         uw_map->reload = worker_mount_reload;
-        if (worker_mount_file[0])
+        if (worker_mount_file[0]) {
+            uw_map->fname = worker_mount_file;
             rc = uri_worker_map_load(uw_map, logger);
+        }
     }
     if (rc) {
         rc = JK_FALSE;
