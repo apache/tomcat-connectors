@@ -44,6 +44,11 @@
   <subsection name="Native">
     <changelog>
       <update>
+      IIS: Update uriworkermap.properies file on
+      a regular interval. This requires both worker_mount_reload
+      and watchog_interval to be defined. (mturk)
+      </update>
+      <update>
       AJP: Allow changing worker address via jkstatus
       manager. The address is resolved on next request
       for that worker. (mturk)
