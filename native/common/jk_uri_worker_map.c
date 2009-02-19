@@ -1152,8 +1152,8 @@ int uri_worker_map_update(jk_uri_worker_map_t *uw_map,
     int rc = JK_TRUE;
     time_t now = time(NULL);
 
-    if ((uw_map->reload > 0 && difftime(now, uw_map->checked) > uw_map->reload) ||
-        force) {
+    if (force || (uw_map->reload > 0 && difftime(now, uw_map->checked) >
+                  uw_map->reload)) {
         struct stat statbuf;
         uw_map->checked = now;
         if ((rc = jk_stat(uw_map->fname, &statbuf)) == -1) {
