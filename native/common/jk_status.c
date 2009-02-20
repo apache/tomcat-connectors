@@ -1591,6 +1591,18 @@ static void display_maps(jk_ws_service_t *s,
     JK_TRACE_EXIT(l);
 }
 
+static const char *dump_ajp_addr(ajp_worker_t *aw, char *buf)
+{
+    if (aw->port > 0)
+        return jk_dump_hinfo(&aw->worker_inet_addr, buf);
+    else {
+        if (aw->s->addr_sequence != aw->s->addr_sequence)
+            return "unresolved";
+        else        
+            return "invalid";
+    }
+}
+
 static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                                             status_endpoint_t *p,
                                             ajp_worker_t *aw,
@@ -1606,8 +1618,8 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
         jk_printf(s, JK_STATUS_SHOW_MEMBER_CONF_ROW,
                   aw->name,
                   status_worker_type(type),
-                  aw->host, aw->port,
-                  jk_dump_hinfo(&aw->worker_inet_addr, buf),
+                  aw->s->hostname, aw->s->port,
+                  dump_ajp_addr(aw, buf),
                   aw->cache_timeout,
                   aw->connect_timeout,
                   aw->prepost_timeout,
@@ -1618,8 +1630,8 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
     else
         jk_printf(s, JK_STATUS_SHOW_AJP_CONF_ROW,
                   status_worker_type(type),
-                  aw->host, aw->port,
-                  jk_dump_hinfo(&aw->worker_inet_addr, buf),
+                  aw->s->hostname, aw->s->port,
+                  dump_ajp_addr(aw, buf),
                   aw->cache_timeout,
                   aw->connect_timeout,
                   aw->prepost_timeout,
@@ -1744,9 +1756,9 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_xml_att_string(s, off+2, "name", ajp_name);
             jk_print_xml_att_string(s, off+2, "type", status_worker_type(aw->worker.type));
         }
-        jk_print_xml_att_string(s, off+2, "host", aw->host);
-        jk_print_xml_att_int(s, off+2, "port", aw->port);
-        jk_print_xml_att_string(s, off+2, "address", jk_dump_hinfo(&aw->worker_inet_addr, buf));
+        jk_print_xml_att_string(s, off+2, "host", aw->s->hostname);
+        jk_print_xml_att_int(s, off+2, "port", aw->s->port);
+        jk_print_xml_att_string(s, off+2, "address", dump_ajp_addr(aw, buf));
         jk_print_xml_att_int(s, off+2, "connection_pool_timeout", aw->cache_timeout);
         jk_print_xml_att_int(s, off+2, "ping_timeout", aw->ping_timeout);
         jk_print_xml_att_int(s, off+2, "connect_timeout", aw->connect_timeout);
@@ -1803,9 +1815,9 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_printf(s, " name=%s", ajp_name);
             jk_printf(s, " type=%s", status_worker_type(aw->worker.type));
         }
-        jk_printf(s, " host=%s", aw->host);
-        jk_printf(s, " port=%d", aw->port);
-        jk_printf(s, " address=%s", jk_dump_hinfo(&aw->worker_inet_addr, buf));
+        jk_printf(s, " host=%s", aw->s->hostname);
+        jk_printf(s, " port=%d", aw->s->port);
+        jk_printf(s, " address=%s", dump_ajp_addr(aw, buf));
         jk_printf(s, " connection_pool_timeout=%d", aw->cache_timeout);
         jk_printf(s, " ping_timeout=%d", aw->ping_timeout);
         jk_printf(s, " connect_timeout=%d", aw->connect_timeout);
@@ -1859,9 +1871,9 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_prop_att_string(s, w, name, "list", ajp_name);
             jk_print_prop_att_string(s, w, ajp_name, "type", status_worker_type(aw->worker.type));
         }
-        jk_print_prop_att_string(s, w, ajp_name, "host", aw->host);
-        jk_print_prop_att_int(s, w, ajp_name, "port", aw->port);
-        jk_print_prop_att_string(s, w, ajp_name, "address", jk_dump_hinfo(&aw->worker_inet_addr, buf));
+        jk_print_prop_att_string(s, w, ajp_name, "host", aw->s->hostname);
+        jk_print_prop_att_int(s, w, ajp_name, "port", aw->s->port);
+        jk_print_prop_att_string(s, w, ajp_name, "address", dump_ajp_addr(aw, buf));
         jk_print_prop_att_int(s, w, ajp_name, "connection_pool_timeout", aw->cache_timeout);
         jk_print_prop_att_int(s, w, ajp_name, "ping_timeout", aw->ping_timeout);
         jk_print_prop_att_int(s, w, ajp_name, "connect_timeout", aw->connect_timeout);
@@ -3175,7 +3187,21 @@ static int commit_member(jk_ws_service_t *s,
         rc |= 4;
         as = 1;
     }
-    aw->s->addr_sequence += as;
+    if (as) {
+        aw->s->addr_sequence += as;
+        aw->host = aw->s->hostname;
+        aw->addr_sequence = aw->s->addr_sequence;
+        aw->port = aw->s->port;
+        if (!jk_resolve(aw->host, aw->port, &aw->worker_inet_addr,
+                        aw->worker.we->pool, l)) {
+            jk_log(l, JK_LOG_ERROR,
+                   "Status worker '%s' failed resolving 'address' for sub worker '%s' to '%s:%d'",
+                   w->name, aw->name, aw->host, aw->port);
+            strcpy(aw->s->hostname, "unknown");
+            aw->host = aw->s->hostname;
+            aw->port = aw->s->port = 0;
+       }
+    }
     if (set_int_if_changed(p, aw->name, "ping_timeout", JK_STATUS_ARG_AJP_PING_TO,
                            0, INT_MAX, &aw->ping_timeout, lb_name, l))
         rc |= 4;
