@@ -2175,6 +2175,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
                         aw->worker.we->pool, l)) {
             if (is_error)
                 *is_error = JK_HTTP_SERVER_ERROR;
+            jk_shm_unlock();
             JK_TRACE_EXIT(l);
             return JK_FALSE;
        }
