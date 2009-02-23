@@ -97,7 +97,7 @@ extern char *strdup(const char *str);
 
 /* Restrict the server to a subset of Windows NT 4.0 header files by default
  */
-#define _WIN32_WINNT 0x0400
+#define _WIN32_WINNT 0x0500
 #endif
 #ifndef NOUSER
 #define NOUSER
@@ -119,6 +119,11 @@ extern char *strdup(const char *str);
 #include <ws2tcpip.h>
 #include <mstcpip.h>
 #endif /* _WINDOWS_ */
+#ifdef _WINDOWS_
+#ifndef SIO_RCVALL
+#include <mstcpip.h>
+#endif
+#endif
 #include <sys/timeb.h>
 #include <process.h>
 #include <io.h>
