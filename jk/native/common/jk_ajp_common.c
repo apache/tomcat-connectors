@@ -2169,7 +2169,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
         jk_ajp_pull(aw, l);
     if (aw->addr_sequence != aw->s->addr_sequence) {
         aw->addr_sequence = aw->s->addr_sequence;
-        aw->host = aw->s->hostname;
+        aw->host = aw->s->host;
         aw->port = aw->s->port;
         if (!jk_resolve(aw->host, aw->port, &aw->worker_inet_addr,
                         aw->worker.we->pool, l)) {
@@ -2486,7 +2486,7 @@ int ajp_validate(jk_worker_t *pThis,
                    "worker %s contact is '%s:%d'",
                    p->name, p->host, p->port);
         /* Copy the contact to shm */
-        strncpy(p->s->hostname, p->host, JK_SHM_STR_SIZ);
+        strncpy(p->s->host, p->host, JK_SHM_STR_SIZ);
         p->s->port = p->port;
         /* Resolve if port > 1024.
          * 

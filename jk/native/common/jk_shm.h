@@ -78,7 +78,7 @@ typedef struct jk_shm_worker_header jk_shm_worker_header_t;
 struct jk_shm_ajp_worker
 {
     jk_shm_worker_header_t h;
-    char hostname[JK_SHM_STR_SIZ+1];
+    char host[JK_SHM_STR_SIZ+1];
     int port;
     volatile int addr_sequence;
 
