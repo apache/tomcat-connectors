@@ -128,6 +128,7 @@
 #define JK_MAGIC_TYPE       ("application/x-jakarta-servlet")
 #define NULL_FOR_EMPTY(x)   ((x && !strlen(x)) ? NULL : x)
 #define STRNULL_FOR_NULL(x) ((x) ? (x) : "(null)")
+#define JK_LOG_LOCK_KEY     ("jk_log_lock_key")
 /*
  * If you are not using SSL, comment out the following line. It will make
  * apache run faster.
@@ -3200,29 +3201,37 @@ static int jk_post_config(apr_pool_t * pconf,
     jk_server_conf_t *conf;
     server_rec *srv = s;
     const char *err_string = NULL;
+    void *data = NULL;
 
-    /* create the jk log lockfiles in the parent */
-    if ((rv = apr_global_mutex_create(&jk_log_lock, NULL,
-                                      APR_LOCK_DEFAULT,
-                                      pconf)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s,
-                     "mod_jk: could not create jk_log_lock");
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
+    apr_pool_userdata_get(&data, JK_LOG_LOCK_KEY, s->process->pool);
+    if (data == NULL) {
+        /* create the jk log lockfiles in the parent */
+        if ((rv = apr_global_mutex_create(&jk_log_lock, NULL,
+                                          APR_LOCK_DEFAULT,
+                                          s->process->pool)) != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s,
+                         "mod_jk: could not create jk_log_lock");
+            return HTTP_INTERNAL_SERVER_ERROR;
+        }
 
 #if JK_NEED_SET_MUTEX_PERMS
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20090208)
-    rv = ap_unixd_set_global_mutex_perms(jk_log_lock);
+        rv = ap_unixd_set_global_mutex_perms(jk_log_lock);
 #else
-    rv = unixd_set_global_mutex_perms(jk_log_lock);
+        rv = unixd_set_global_mutex_perms(jk_log_lock);
 #endif
-    if (rv != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s,
-                     "mod_jk: Could not set permissions on "
-                     "jk_log_lock; check User and Group directives");
-        return HTTP_INTERNAL_SERVER_ERROR;
+        if (rv != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s,
+                         "mod_jk: Could not set permissions on "
+                         "jk_log_lock; check User and Group directives");
+            return HTTP_INTERNAL_SERVER_ERROR;
+        }
+#endif
+        apr_pool_userdata_set((const void *)jk_log_lock, JK_LOG_LOCK_KEY,
+                              apr_pool_cleanup_null, s->process->pool);
+    } else {
+        jk_log_lock = (apr_global_mutex_t *)data;
     }
-#endif
 
     main_server = s;
     jk_log_fps = apr_hash_make(pconf);
