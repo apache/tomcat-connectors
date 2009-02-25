@@ -45,7 +45,7 @@
     <changelog>
       <fix>
         <bug>46763</bug>: Survive the log mutex during graceful
-        restart. Patch provide by Eiji Takahashi. (mturk)
+        restart. Patch provided by Eiji Takahashi. (mturk)
       </fix>
       <update>
       IIS: Update uriworkermap.properies file on
