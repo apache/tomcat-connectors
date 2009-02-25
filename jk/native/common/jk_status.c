@@ -3198,9 +3198,6 @@ static int commit_member(jk_ws_service_t *s,
             jk_log(l, JK_LOG_ERROR,
                    "Status worker '%s' failed resolving 'address' for sub worker '%s' to '%s:%d'",
                    w->name, aw->name, aw->host, aw->port);
-            strcpy(aw->s->hostname, "unknown");
-            aw->host = aw->s->hostname;
-            aw->port = aw->s->port = 0;
         }
         else {
             strcpy(aw->s->hostname, host);
