@@ -1598,7 +1598,7 @@ static const char *dump_ajp_addr(ajp_worker_t *aw, char *buf)
     else {
         if (aw->s->addr_sequence != aw->s->addr_sequence)
             return "unresolved";
-        else        
+        else
             return "invalid";
     }
 }
@@ -1618,7 +1618,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
         jk_printf(s, JK_STATUS_SHOW_MEMBER_CONF_ROW,
                   aw->name,
                   status_worker_type(type),
-                  aw->s->hostname, aw->s->port,
+                  aw->s->host, aw->s->port,
                   dump_ajp_addr(aw, buf),
                   aw->cache_timeout,
                   aw->connect_timeout,
@@ -1630,7 +1630,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
     else
         jk_printf(s, JK_STATUS_SHOW_AJP_CONF_ROW,
                   status_worker_type(type),
-                  aw->s->hostname, aw->s->port,
+                  aw->s->host, aw->s->port,
                   dump_ajp_addr(aw, buf),
                   aw->cache_timeout,
                   aw->connect_timeout,
@@ -1756,7 +1756,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_xml_att_string(s, off+2, "name", ajp_name);
             jk_print_xml_att_string(s, off+2, "type", status_worker_type(aw->worker.type));
         }
-        jk_print_xml_att_string(s, off+2, "host", aw->s->hostname);
+        jk_print_xml_att_string(s, off+2, "host", aw->s->host);
         jk_print_xml_att_int(s, off+2, "port", aw->s->port);
         jk_print_xml_att_string(s, off+2, "address", dump_ajp_addr(aw, buf));
         jk_print_xml_att_int(s, off+2, "connection_pool_timeout", aw->cache_timeout);
@@ -1815,7 +1815,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_printf(s, " name=%s", ajp_name);
             jk_printf(s, " type=%s", status_worker_type(aw->worker.type));
         }
-        jk_printf(s, " host=%s", aw->s->hostname);
+        jk_printf(s, " host=%s", aw->s->host);
         jk_printf(s, " port=%d", aw->s->port);
         jk_printf(s, " address=%s", dump_ajp_addr(aw, buf));
         jk_printf(s, " connection_pool_timeout=%d", aw->cache_timeout);
@@ -1871,7 +1871,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_prop_att_string(s, w, name, "list", ajp_name);
             jk_print_prop_att_string(s, w, ajp_name, "type", status_worker_type(aw->worker.type));
         }
-        jk_print_prop_att_string(s, w, ajp_name, "host", aw->s->hostname);
+        jk_print_prop_att_string(s, w, ajp_name, "host", aw->s->host);
         jk_print_prop_att_int(s, w, ajp_name, "port", aw->s->port);
         jk_print_prop_att_string(s, w, ajp_name, "address", dump_ajp_addr(aw, buf));
         jk_print_prop_att_int(s, w, ajp_name, "connection_pool_timeout", aw->cache_timeout);
@@ -2662,7 +2662,7 @@ static void form_member(jk_ws_service_t *s,
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_HOST_STR,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_HOST_STR, "\" type=\"text\" ", NULL);
-    jk_printf(s, "value=\"%s\"/></td></tr>\n", aw->s->hostname);
+    jk_printf(s, "value=\"%s\"/></td></tr>\n", aw->s->host);
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_PORT_INT,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_PORT_INT, "\" type=\"text\" ", NULL);
@@ -3175,7 +3175,7 @@ static int commit_member(jk_ws_service_t *s,
     }
     if ((rv = status_get_string(p, JK_STATUS_ARG_AJP_HOST_STR,
                                 NULL, &arg, l)) == JK_TRUE) {
-        if (strncmp(aw->s->hostname, arg, JK_SHM_STR_SIZ)) {
+        if (strncmp(aw->s->host, arg, JK_SHM_STR_SIZ)) {
             jk_log(l, JK_LOG_INFO,
                     "Status worker '%s' setting 'host' for sub worker '%s' to '%s'",
                     w->name, aw->name, arg);
@@ -3200,10 +3200,10 @@ static int commit_member(jk_ws_service_t *s,
                    w->name, aw->name, host, port);
         }
         else {
-            strcpy(aw->s->hostname, host);
-            aw->port = port;        
+            strcpy(aw->s->host, host);
+            aw->port = port;
             aw->s->addr_sequence += as;
-            aw->host = aw->s->hostname;
+            aw->host = aw->s->host;
             aw->addr_sequence = aw->s->addr_sequence;
             memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
         }
