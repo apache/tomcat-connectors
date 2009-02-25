@@ -44,8 +44,18 @@
   <subsection name="Native">
     <changelog>
       <fix>
-        <bug>46763</bug>: Survive the log mutex during graceful
+        <bug>46763</bug>: Apache 2.0: Survive the log mutex during graceful
         restart. Patch provided by Eiji Takahashi. (mturk)
+      </fix>
+      <update>
+        IIS: Remove obsolete entries from registry file. (mturk)
+      </update>
+      <fix>
+        <bug>46416</bug>: Apache 2.0 on Windows: Include mstcipip.h even if
+        the apr doesn't include it. (mturk)
+      </fix>
+      <fix>
+        <bug>46734</bug>: Documentation: Fix broken links. (markt)
       </fix>
       <update>
       IIS: Update uriworkermap.properies file on
@@ -53,17 +63,19 @@
       and watchog_interval to be defined. (mturk)
       </update>
       <update>
-      AJP: Allow changing worker address via jkstatus
-      manager. The address is resolved on next request
-      for that worker. (mturk)
+      Status: Optimize forced uriworkermap.properties reload. (mturk)
       </update>
       <update>
-      LB: If the sticky session affinity mark contains dot, treat the
-      part after the dot as domain name. This allows to have full node
+      Status: Allow changing worker address and port of AJP workers.
+      The address is resolved on next request for that worker. (mturk)
+      </update>
+      <update>
+      LB: If the sticky session affinity mark contains a dot, treat the
+      part after the dot as the domain name. This allows to have full node
       session affinity with domain failover. (mturk)
       </update>
       <fix>
-        <bug>46579</bug>: Use local environment table instead environment
+        <bug>46579</bug>: IIS: Use local environment table instead environment
         variables for setting the JKISAPI_PATH and JKISAPI_NAME. (mturk)
       </fix>
       <add>
@@ -75,13 +87,15 @@
         Missing define for MAX_PATH on Netware. Patch by Guenter Knauf. (rjung)
       </fix>
       <fix>
-        <bug>46352</bug>: Fix Apache crash when using SetHandler jakarta-servlet
+        <bug>46352</bug>: Apache: Fix crash when using SetHandler jakarta-servlet
         in VHost without any JkMount. Crash due to incorrect initialization
         of mount extensions. (rjung)
       </fix>
       <fix>
-        <bug>46169</bug>: Backport use_server_errors mount extension
-        to httpd 1.3. (rjung)
+        <bug>46169</bug>: Apache 1.3: Backport use_server_errors mount extension. (rjung)
+      </fix>
+      <fix>
+        Documentation: Add 2008 news to main page and menues. (mturk, rjung)
       </fix>
     </changelog>
   </subsection>
