@@ -191,7 +191,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                "In jk_worker_t::validate for worker %s contact is %s:%d",
                p->name, host, port);
 
-        if (port > 1024 && host) {
+        if (host) {
             if (jk_resolve(host, port, &p->worker_inet_addr, we->pool, l)) {
                 return JK_TRUE;
             }

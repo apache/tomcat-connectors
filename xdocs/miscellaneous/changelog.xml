@@ -43,6 +43,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        AJP: Allow worker ports lower or equal to 1024. (rjung)
+      </update>
       <fix>
         <bug>46763</bug>: Apache 2.0: Survive the log mutex during graceful
         restart. Patch provided by Eiji Takahashi. (mturk)
