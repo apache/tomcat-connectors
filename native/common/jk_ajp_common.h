@@ -275,7 +275,7 @@ struct ajp_worker
     unsigned connect_retry_attempts;
     const char *host;
     int port;
-    int addr_sequence;  /* Wather the address is resolved */
+    int addr_sequence;  /* Whether the address is resolved */
     int maintain_time;
     /*
      * Open connections cache...
