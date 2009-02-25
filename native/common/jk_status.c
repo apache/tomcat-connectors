@@ -3197,7 +3197,7 @@ static int commit_member(jk_ws_service_t *s,
                         aw->worker.we->pool, l)) {
             jk_log(l, JK_LOG_ERROR,
                    "Status worker '%s' failed resolving 'address' for sub worker '%s' to '%s:%d'",
-                   w->name, aw->name, aw->host, aw->port);
+                   w->name, aw->name, host, port);
         }
         else {
             strcpy(aw->s->hostname, host);
