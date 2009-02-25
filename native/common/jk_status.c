@@ -3085,6 +3085,8 @@ static int commit_member(jk_ws_service_t *s,
     int i;
     int old;
     int as = 0;
+    char host[JK_SHM_STR_SIZ+1];
+    int  port = 0;
 
     JK_TRACE_ENTER(l);
     if (lb) {
@@ -3177,22 +3179,21 @@ static int commit_member(jk_ws_service_t *s,
             jk_log(l, JK_LOG_INFO,
                     "Status worker '%s' setting 'host' for sub worker '%s' to '%s'",
                     w->name, aw->name, arg);
-            strncpy(aw->s->hostname, arg, JK_SHM_STR_SIZ);
+            strncpy(host, arg, JK_SHM_STR_SIZ);
             rc |= 4;
             as = 1;
         }
     }
+    port = aw->s->port;
     if (set_int_if_changed(p, aw->name, "port", JK_STATUS_ARG_AJP_PORT_INT,
-                           0, INT_MAX, &aw->s->port, lb_name, l)) {
+                           0, INT_MAX, &port, lb_name, l)) {
         rc |= 4;
         as = 1;
     }
     if (as) {
-        aw->s->addr_sequence += as;
-        aw->host = aw->s->hostname;
-        aw->addr_sequence = aw->s->addr_sequence;
+        struct sockaddr_in inet_addr;
         aw->port = aw->s->port;
-        if (!jk_resolve(aw->host, aw->port, &aw->worker_inet_addr,
+        if (!jk_resolve(host, port, &inet_addr,
                         aw->worker.we->pool, l)) {
             jk_log(l, JK_LOG_ERROR,
                    "Status worker '%s' failed resolving 'address' for sub worker '%s' to '%s:%d'",
@@ -3200,7 +3201,15 @@ static int commit_member(jk_ws_service_t *s,
             strcpy(aw->s->hostname, "unknown");
             aw->host = aw->s->hostname;
             aw->port = aw->s->port = 0;
-       }
+        }
+        else {
+            strcpy(aw->s->hostname, host);
+            aw->port = port;        
+            aw->s->addr_sequence += as;
+            aw->host = aw->s->hostname;
+            aw->addr_sequence = aw->s->addr_sequence;
+            memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
+        }
     }
     if (set_int_if_changed(p, aw->name, "ping_timeout", JK_STATUS_ARG_AJP_PING_TO,
                            0, INT_MAX, &aw->ping_timeout, lb_name, l))
