@@ -512,9 +512,9 @@ static void close_workers(lb_worker_t *p, int num_of_workers, jk_logger_t *l)
  * Return the number of workers not in error state.
  */
 static int recover_workers(lb_worker_t *p,
-                            jk_uint64_t curmax,
-                            time_t now,
-                            jk_logger_t *l)
+                           jk_uint64_t curmax,
+                           time_t now,
+                           jk_logger_t *l)
 {
     unsigned int i;
     int non_error = 0;
