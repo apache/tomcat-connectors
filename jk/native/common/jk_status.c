@@ -191,6 +191,10 @@
 #define JK_STATUS_MASK_GOOD_DEF            0x0000000F
 #define JK_STATUS_MASK_BAD_DEF             0x00FF1010
 
+#define JK_STATUS_NEEDS_PUSH               0x00000001
+#define JK_STATUS_NEEDS_RESET_LB_VALUES    0x00000002
+#define JK_STATUS_NEEDS_UPDATE_MULT        0x00000004
+
 #define JK_STATUS_WAIT_AFTER_UPDATE        "3"
 #define JK_STATUS_REFRESH_DEF              "10"
 #define JK_STATUS_ESC_CHARS                ("<>?\"")
@@ -3111,13 +3115,13 @@ static int commit_member(jk_ws_service_t *s,
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' setting 'activation' for sub worker '%s' of lb worker '%s' to '%s'",
                        w->name, wr->name, lb_name, jk_lb_get_activation(wr, l));
-                rc |= 1;
+                rc |= JK_STATUS_NEEDS_RESET_LB_VALUES | JK_STATUS_NEEDS_PUSH;
             }
         }
         if (set_int_if_changed(p, wr->name, "lbfactor", JK_STATUS_ARG_LBM_FACTOR,
                                1, INT_MAX, &wr->lb_factor, lb_name, l))
             /* Recalculate the load multiplicators wrt. lb_factor */
-            rc |= 2;
+            rc |= JK_STATUS_NEEDS_UPDATE_MULT | JK_STATUS_NEEDS_PUSH;
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_ROUTE,
                                     NULL, &arg, l)) == JK_TRUE) {
             if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
@@ -3125,7 +3129,7 @@ static int commit_member(jk_ws_service_t *s,
                        "Status worker '%s' setting 'route' for sub worker '%s' of lb worker '%s' to '%s'",
                        w->name, wr->name, lb_name, arg);
                 strncpy(wr->route, arg, JK_SHM_STR_SIZ);
-                rc |= 4;
+                rc |= JK_STATUS_NEEDS_PUSH;
                 if (!wr->domain[0]) {
                     char * id_domain = strchr(wr->route, '.');
                     if (id_domain) {
@@ -3143,7 +3147,7 @@ static int commit_member(jk_ws_service_t *s,
                        "Status worker '%s' setting 'redirect' for sub worker '%s' of lb worker '%s' to '%s'",
                        w->name, wr->name, lb_name, arg);
                 strncpy(wr->redirect, arg, JK_SHM_STR_SIZ);
-                rc |= 4;
+                rc |= JK_STATUS_NEEDS_PUSH;
             }
         }
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_DOMAIN,
@@ -3153,17 +3157,17 @@ static int commit_member(jk_ws_service_t *s,
                        "Status worker '%s' setting 'domain' for sub worker '%s' of lb worker '%s' to '%s'",
                        w->name, wr->name, lb_name, arg);
                 strncpy(wr->domain, arg, JK_SHM_STR_SIZ);
-                rc |= 4;
+                rc |= JK_STATUS_NEEDS_PUSH;
             }
         }
         if (set_int_if_changed(p, wr->name, "distance", JK_STATUS_ARG_LBM_DISTANCE,
                                0, INT_MAX, &wr->distance, lb_name, l))
-            rc |= 4;
+            rc |= JK_STATUS_NEEDS_PUSH;
     }
     old = aw->cache_timeout;
     if (set_int_if_changed(p, aw->name, "connection_pool_timeout", JK_STATUS_ARG_AJP_CACHE_TO,
                            0, INT_MAX, &aw->cache_timeout, lb_name, l)) {
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
         if (old == 0) {
             unsigned int i;
             for (i = 0; i < aw->ep_cache_sz; i++) {
@@ -3180,14 +3184,14 @@ static int commit_member(jk_ws_service_t *s,
                     "Status worker '%s' setting 'host' for sub worker '%s' to '%s'",
                     w->name, aw->name, arg);
             strncpy(host, arg, JK_SHM_STR_SIZ);
-            rc |= 4;
+            rc |= JK_STATUS_NEEDS_PUSH;
             as = 1;
         }
     }
     port = aw->s->port;
     if (set_int_if_changed(p, aw->name, "port", JK_STATUS_ARG_AJP_PORT_INT,
                            0, INT_MAX, &port, lb_name, l)) {
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
         as = 1;
     }
     if (as) {
@@ -3210,31 +3214,31 @@ static int commit_member(jk_ws_service_t *s,
     }
     if (set_int_if_changed(p, aw->name, "ping_timeout", JK_STATUS_ARG_AJP_PING_TO,
                            0, INT_MAX, &aw->ping_timeout, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_int_if_changed(p, aw->name, "connect_timeout", JK_STATUS_ARG_AJP_CONNECT_TO,
                            0, INT_MAX, &aw->connect_timeout, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_int_if_changed(p, aw->name, "prepost_timeout", JK_STATUS_ARG_AJP_PREPOST_TO,
                            0, INT_MAX, &aw->prepost_timeout, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_int_if_changed(p, aw->name, "reply_timeout", JK_STATUS_ARG_AJP_REPLY_TO,
                            0, INT_MAX, &aw->reply_timeout, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_int_if_changed(p, aw->name, "retries", JK_STATUS_ARG_AJP_RETRIES,
                            1, INT_MAX, &aw->retries, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_int_if_changed(p, aw->name, "retry_interval", JK_STATUS_ARG_AJP_RETRY_INT,
                            1, INT_MAX, &aw->retry_interval, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_int_if_changed(p, aw->name, "connection_ping_interval", JK_STATUS_ARG_AJP_CPING_INT,
                            1, INT_MAX, &aw->conn_ping_interval, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_uint_if_changed(p, aw->name, "recovery_options", JK_STATUS_ARG_AJP_REC_OPTS,
                            0, INT_MAX, &aw->recovery_opts, lb_name, l))
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
     if (set_uint_if_changed(p, aw->name, "max_packet_size", JK_STATUS_ARG_AJP_MAX_PK_SZ,
                            8*1024, 64*1024, &aw->max_packet_size, lb_name, l)) {
-        rc |= 4;
+        rc |= JK_STATUS_NEEDS_PUSH;
         if (aw->max_packet_size > lb->max_packet_size) {
             lb->max_packet_size = aw->max_packet_size;
         }
@@ -3955,14 +3959,14 @@ static int update_worker(jk_ws_service_t *s,
                        w->name, "updating", lb->name, wr->name);
                 aw = (ajp_worker_t *)wr->worker->worker_private;
                 rc = commit_member(s, p, lb, wr, aw, l);
-                if (rc) {
+                if (rc & JK_STATUS_NEEDS_PUSH) {
                     wr->sequence++;
                     lb->sequence++;
                     jk_lb_push(lb, l);
                 }
-                if (rc & 1)
+                if (rc & JK_STATUS_NEEDS_RESET_LB_VALUES)
                     reset_lb_values(lb, l);
-                if (rc & 2)
+                if (rc & JK_STATUS_NEEDS_UPDATE_MULT)
                     /* Recalculate the load multiplicators wrt. lb_factor */
                     update_mult(lb, l);
                 if (!wi)
@@ -3982,7 +3986,7 @@ static int update_worker(jk_ws_service_t *s,
                        w->name, "updating", aw->name);
             if (aw->sequence != aw->s->h.sequence)
                 jk_ajp_pull(aw, l);
-            if (commit_member(s, p, NULL, NULL, aw, l)) {
+            if (commit_member(s, p, NULL, NULL, aw, l) & JK_STATUS_NEEDS_PUSH) {
                 aw->sequence++;
                 jk_ajp_push(aw, l);
             }
