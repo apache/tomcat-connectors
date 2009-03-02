@@ -1218,6 +1218,22 @@ static int status_parse_uri(jk_ws_service_t *s,
     return JK_TRUE;
 }
 
+static void write_html_refresh_response(jk_ws_service_t *s,
+                                        status_endpoint_t *p,
+                                        const char *err,
+                                        jk_logger_t *l)
+{
+    if (!err) {
+        jk_puts(s, "\n<meta http-equiv=\"Refresh\" content=\""
+                JK_STATUS_WAIT_AFTER_UPDATE ";url=");
+        status_write_uri(s, p, NULL, JK_STATUS_CMD_UNKNOWN, JK_STATUS_MIME_UNKNOWN,
+                         NULL, NULL, 0, 0, NULL, l);
+        jk_puts(s, "\">");
+        jk_putv(s, "<p><b>Result: OK - You will be redirected in "
+                JK_STATUS_WAIT_AFTER_UPDATE " seconds.</b><p/>", NULL);
+    }
+}
+
 static int fetch_worker_and_sub_worker(status_endpoint_t *p,
                                        const char *operation,
                                        const char **worker,
@@ -4433,15 +4449,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
             /* unlock the shared memory */
             jk_shm_unlock();
             if (mime == JK_STATUS_MIME_HTML) {
-                jk_puts(s, "\n<meta http-equiv=\"Refresh\" content=\""
-                        JK_STATUS_WAIT_AFTER_UPDATE ";url=");
-                status_write_uri(s, p, NULL, JK_STATUS_CMD_UNKNOWN, JK_STATUS_MIME_UNKNOWN,
-                                 NULL, NULL, 0, 0, NULL, l);
-                jk_puts(s, "\">");
-                if (!err) {
-                    jk_putv(s, "<p><b>Result: OK - You will be redirected in "
-                            JK_STATUS_WAIT_AFTER_UPDATE " seconds.</b><p/>", NULL);
-                }
+                write_html_refresh_response(s, p, err, l);
             }
         }
         else if (cmd == JK_STATUS_CMD_RESET) {
@@ -4453,15 +4461,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
             /* unlock the shared memory */
             jk_shm_unlock();
             if (mime == JK_STATUS_MIME_HTML) {
-                jk_puts(s, "\n<meta http-equiv=\"Refresh\" content=\""
-                        JK_STATUS_WAIT_AFTER_UPDATE ";url=");
-                status_write_uri(s, p, NULL, JK_STATUS_CMD_UNKNOWN, JK_STATUS_MIME_UNKNOWN,
-                                 NULL, NULL, 0, 0, NULL, l);
-                jk_puts(s, "\">");
-                if (!err) {
-                    jk_putv(s, "<p><b>Result: OK - You will be redirected in "
-                            JK_STATUS_WAIT_AFTER_UPDATE " seconds.</b><p/>", NULL);
-                }
+                write_html_refresh_response(s, p, err, l);
             }
         }
         else if (cmd == JK_STATUS_CMD_RECOVER) {
@@ -4473,15 +4473,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
             /* unlock the shared memory */
             jk_shm_unlock();
             if (mime == JK_STATUS_MIME_HTML) {
-                jk_puts(s, "\n<meta http-equiv=\"Refresh\" content=\""
-                        JK_STATUS_WAIT_AFTER_UPDATE ";url=");
-                status_write_uri(s, p, NULL, JK_STATUS_CMD_UNKNOWN, JK_STATUS_MIME_UNKNOWN,
-                                 NULL, NULL, 0, 0, NULL, l);
-                jk_puts(s, "\">");
-                if (!err) {
-                    jk_putv(s, "<p><b>Result: OK - You will be redirected in "
-                            JK_STATUS_WAIT_AFTER_UPDATE " seconds.</b><p/>", NULL);
-                }
+                write_html_refresh_response(s, p, err, l);
             }
         }
         else {
