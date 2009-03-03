@@ -43,6 +43,16 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        Status: Wildcards in sub worker names were broken for update actions. (rjung)
+      </fix>
+      <update>
+        Status: Do not redirect to the show or list page, if an error occured
+        during an action. (rjung)
+      </update>
+      <update>
+        Status: Allow update actions to show error messages in the result page. (rjung)
+      </update>
       <update>
         AJP: Allow worker ports lower or equal to 1024. (rjung)
       </update>
