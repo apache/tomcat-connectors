@@ -60,6 +60,7 @@
 #define JK_STATUS_ARG_REFRESH              "re"
 #define JK_STATUS_ARG_WORKER               "w"
 #define JK_STATUS_ARG_SUB_WORKER           "sw"
+#define JK_STATUS_ARG_PREV_SUB_WORKER      "psw"
 #define JK_STATUS_ARG_ATTRIBUTE            "att"
 #define JK_STATUS_ARG_MULT_VALUE_BASE      "val"
 #define JK_STATUS_ARG_OPTIONS              "opt"
@@ -1036,6 +1037,8 @@ static void status_write_uri(jk_ws_service_t *s,
     int sz;
     int started = 0;
     int from;
+    int restore_sub_worker = JK_FALSE;
+    int save_sub_worker = JK_FALSE;
     int prev;
     unsigned int opt = 0;
     const char *arg;
@@ -1048,11 +1051,15 @@ static void status_write_uri(jk_ws_service_t *s,
     from = status_cmd_int(arg);
     status_get_string(p, JK_STATUS_ARG_CMD, NULL, &arg, l);
     prev = status_cmd_int(arg);
+    if (cmd == JK_STATUS_CMD_SHOW && prev == JK_STATUS_CMD_EDIT) {
+        restore_sub_worker = JK_TRUE;
+    }
     if (cmd == JK_STATUS_CMD_UNKNOWN) {
         if (prev == JK_STATUS_CMD_UPDATE ||
             prev == JK_STATUS_CMD_RESET ||
             prev == JK_STATUS_CMD_RECOVER) {
             cmd = from;
+            restore_sub_worker = JK_TRUE;
         }
     }
     if (cmd != JK_STATUS_CMD_UNKNOWN) {
@@ -1063,6 +1070,7 @@ static void status_write_uri(jk_ws_service_t *s,
             cmd == JK_STATUS_CMD_RECOVER) {
             jk_printf(s, "%s%s=%s", "&amp;",
                       JK_STATUS_ARG_FROM, status_cmd_text(prev));
+            save_sub_worker = JK_TRUE;
         }
         started=1;
     }
@@ -1103,7 +1111,24 @@ static void status_write_uri(jk_ws_service_t *s,
         if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
             continue;
         }
-        if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER) && (sub_worker || cmd == JK_STATUS_CMD_LIST)) {
+        if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
+            if (save_sub_worker == JK_TRUE) {
+                jk_printf(s, "%s%s=%s", started ? "&amp;" : "?",
+                          JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                started=1;
+                continue;
+            }
+            else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+                continue;
+            }
+            else if (restore_sub_worker == JK_TRUE) {
+                continue;
+            }
+        }
+        if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
+            jk_printf(s, "%s%s=%s", started ? "&amp;" : "?",
+                      JK_STATUS_ARG_SUB_WORKER, v);
+            started=1;
             continue;
         }
         if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
