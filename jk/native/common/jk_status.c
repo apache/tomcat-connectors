@@ -3587,7 +3587,7 @@ static int check_worker(jk_ws_service_t *s,
     }
 
     if (sub_worker && sub_worker[0]) {
-        if(search_sub_worker(s, p, jw, worker, &wr, sub_worker,
+        if (search_sub_worker(s, p, jw, worker, &wr, sub_worker,
                              NULL, l) == JK_FALSE) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
@@ -3794,7 +3794,7 @@ static int show_worker(jk_ws_service_t *s,
         return JK_FALSE;
     }
     if (sub_worker && sub_worker[0]) {
-        if(search_sub_worker(s, p, jw, worker, &wr, sub_worker,
+        if (search_sub_worker(s, p, jw, worker, &wr, sub_worker,
                              NULL, l) == JK_FALSE) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
@@ -3855,8 +3855,8 @@ static int edit_worker(jk_ws_service_t *s,
             JK_TRACE_EXIT(l);
             return JK_TRUE;
         }
-        else  {
-            if(search_sub_worker(s, p, jw, worker, &wr, sub_worker,
+        else {
+            if (search_sub_worker(s, p, jw, worker, &wr, sub_worker,
                                  NULL, l) == JK_FALSE) {
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
@@ -3952,7 +3952,7 @@ static int update_worker(jk_ws_service_t *s,
             JK_TRACE_EXIT(l);
             return JK_TRUE;
         }
-        else  {
+        else {
             unsigned int idx = 0;
             unsigned int *wi = NULL;
 
@@ -4083,8 +4083,8 @@ static int reset_worker(jk_ws_service_t *s,
             JK_TRACE_EXIT(l);
             return JK_TRUE;
         }
-        else  {
-            if(search_sub_worker(s, p, jw, worker, &wr, sub_worker,
+        else {
+            if (search_sub_worker(s, p, jw, worker, &wr, sub_worker,
                                  NULL, l) == JK_FALSE) {
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
@@ -4163,7 +4163,7 @@ static int recover_worker(jk_ws_service_t *s,
         return JK_FALSE;
     }
 
-    if(search_sub_worker(s, p, jw, worker, &wr, sub_worker,
+    if (search_sub_worker(s, p, jw, worker, &wr, sub_worker,
                          NULL, l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
@@ -4503,7 +4503,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 }
                 else if (cmd == JK_STATUS_CMD_SHOW) {
                     /* Step 2: Display detailed configuration */
-                    if(show_worker(s, p, l) != JK_TRUE) {
+                    if (show_worker(s, p, l) != JK_TRUE) {
                         err = "Error in showing this worker.";
                     }
                 }
@@ -4534,7 +4534,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 }
                 else if (cmd == JK_STATUS_CMD_SHOW) {
                     /* Step 2: Display detailed configuration */
-                    if(show_worker(s, p, l) != JK_TRUE) {
+                    if (show_worker(s, p, l) != JK_TRUE) {
                         err = "Error in showing this worker.";
                     }
                 }
@@ -4559,7 +4559,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 }
                 else if (cmd == JK_STATUS_CMD_SHOW) {
                     /* Step 2: Display detailed configuration */
-                    if(show_worker(s, p, l) != JK_TRUE) {
+                    if (show_worker(s, p, l) != JK_TRUE) {
                         err = "Error in showing this worker.";
                     }
                 }
@@ -4721,13 +4721,13 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 }
                 else if (cmd == JK_STATUS_CMD_SHOW) {
                     /* Step 2: Display detailed configuration */
-                    if(show_worker(s, p, l) != JK_TRUE) {
+                    if (show_worker(s, p, l) != JK_TRUE) {
                         err = "Error in showing this worker.";
                     }
                 }
                 else if (cmd == JK_STATUS_CMD_EDIT) {
                     /* Step 2: Display edit form */
-                    if(edit_worker(s, p, l) != JK_TRUE) {
+                    if (edit_worker(s, p, l) != JK_TRUE) {
                         err = "Error in generating this worker's configuration form.";
                     }
                 }
