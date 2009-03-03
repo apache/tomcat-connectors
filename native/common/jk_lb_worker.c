@@ -282,12 +282,14 @@ void reset_lb_values(lb_worker_t *p, jk_logger_t *l)
 }
 
 /* Syncing config values from shm */
-void jk_lb_pull(lb_worker_t *p, jk_logger_t *l)
+void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
 {
     unsigned int i = 0;
 
     JK_TRACE_ENTER(l);
 
+    if (locked == JK_FALSE)
+        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "syncing mem for lb '%s' from shm",
@@ -316,7 +318,7 @@ void jk_lb_pull(lb_worker_t *p, jk_logger_t *l)
                        "syncing mem for member '%s' of lb '%s' from shm",
                        w->name, p->name);
 
-            jk_ajp_pull(aw, l);
+            jk_ajp_pull(aw, JK_TRUE, l);
             strncpy(w->route, w->s->route, JK_SHM_STR_SIZ);
             strncpy(w->domain, w->s->domain, JK_SHM_STR_SIZ);
             strncpy(w->redirect, w->s->redirect, JK_SHM_STR_SIZ);
@@ -327,17 +329,21 @@ void jk_lb_pull(lb_worker_t *p, jk_logger_t *l)
             w->sequence = w->s->h.sequence;
         }
     }
+    if (locked == JK_FALSE)
+        jk_shm_unlock();
 
     JK_TRACE_EXIT(l);
 }
 
 /* Syncing config values to shm */
-void jk_lb_push(lb_worker_t *p, jk_logger_t *l)
+void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
 {
     unsigned int i = 0;
 
     JK_TRACE_ENTER(l);
 
+    if (locked == JK_FALSE)
+        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "syncing shm for lb '%s' from mem",
@@ -366,7 +372,7 @@ void jk_lb_push(lb_worker_t *p, jk_logger_t *l)
                        "syncing shm for member '%s' of lb '%s' from mem",
                        w->name, p->name);
 
-            jk_ajp_push(aw, l);
+            jk_ajp_push(aw, JK_TRUE, l);
             strncpy(w->s->route, w->route, JK_SHM_STR_SIZ);
             strncpy(w->s->domain, w->domain, JK_SHM_STR_SIZ);
             strncpy(w->s->redirect, w->redirect, JK_SHM_STR_SIZ);
@@ -377,6 +383,8 @@ void jk_lb_push(lb_worker_t *p, jk_logger_t *l)
             w->s->h.sequence = w->sequence;
         }
     }
+    if (locked == JK_FALSE)
+        jk_shm_unlock();
 
     JK_TRACE_EXIT(l);
 }
@@ -524,7 +532,7 @@ static int recover_workers(lb_worker_t *p,
     JK_TRACE_ENTER(l);
 
     if (p->sequence != p->s->h.sequence)
-        jk_lb_pull(p, l);
+        jk_lb_pull(p, JK_TRUE, l);
     for (i = 0; i < p->num_of_workers; i++) {
         w = &p->lb_workers[i];
         aw = (ajp_worker_t *)w->worker->worker_private;
@@ -1054,10 +1062,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
     /* Set returned error to OK */
     *is_error = JK_HTTP_OK;
 
-    jk_shm_lock();
     if (p->worker->sequence != p->worker->s->h.sequence)
-        jk_lb_pull(p->worker, l);
-    jk_shm_unlock();
+        jk_lb_pull(p->worker, JK_FALSE, l);
     for (i = 0; i < num_of_workers; i++) {
         /* Copy the shared state info */
         p->states[i] = p->worker->lb_workers[i].s->state;
@@ -1107,10 +1113,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                        retry, p->worker->retry_interval);
             jk_sleep(p->worker->retry_interval);
             /* Pull shared memory if something changed during sleep */
-            jk_shm_lock();
             if (p->worker->sequence != p->worker->s->h.sequence)
-                jk_lb_pull(p->worker, l);
-            jk_shm_unlock();
+                jk_lb_pull(p->worker, JK_FALSE, l);
             for (i = 0; i < num_of_workers; i++) {
                 /* Copy the shared state info */
                 p->states[i] = p->worker->lb_workers[i].s->state;
@@ -1663,10 +1667,8 @@ static int JK_METHOD init(jk_worker_t *pThis,
         return JK_FALSE;
     }
 
-    jk_shm_lock();
     p->sequence++;
-    jk_lb_push(p, log);
-    jk_shm_unlock();
+    jk_lb_push(p, JK_FALSE, log);
 
     JK_TRACE_EXIT(log);
     return JK_TRUE;

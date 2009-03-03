@@ -211,8 +211,8 @@ const char *jk_lb_get_activation_direct(int activation, jk_logger_t *l);
 const char *jk_lb_get_activation(lb_sub_worker_t *p, jk_logger_t *l);
 int jk_lb_get_activation_code(const char *v);
 void reset_lb_values(lb_worker_t *p, jk_logger_t *l);
-void jk_lb_pull(lb_worker_t * p, jk_logger_t *l);
-void jk_lb_push(lb_worker_t * p, jk_logger_t *l);
+void jk_lb_pull(lb_worker_t * p, int locked, jk_logger_t *l);
+void jk_lb_push(lb_worker_t * p, int locked, jk_logger_t *l);
 void update_mult(lb_worker_t * p, jk_logger_t *l);
 
 #ifdef __cplusplus

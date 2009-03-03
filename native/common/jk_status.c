@@ -196,6 +196,7 @@
 #define JK_STATUS_NEEDS_PUSH               0x00000001
 #define JK_STATUS_NEEDS_RESET_LB_VALUES    0x00000002
 #define JK_STATUS_NEEDS_UPDATE_MULT        0x00000004
+#define JK_STATUS_NEEDS_ADDR_PUSH          0x00000008
 
 #define JK_STATUS_WAIT_AFTER_UPDATE        "3"
 #define JK_STATUS_REFRESH_DEF              "10"
@@ -1644,7 +1645,7 @@ static const char *dump_ajp_addr(ajp_worker_t *aw, char *buf)
     if (aw->port > 0)
         return jk_dump_hinfo(&aw->worker_inet_addr, buf);
     else {
-        if (aw->s->addr_sequence != aw->s->addr_sequence)
+        if (aw->addr_sequence != aw->s->addr_sequence)
             return "unresolved";
         else
             return "invalid";
@@ -1666,7 +1667,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
         jk_printf(s, JK_STATUS_SHOW_MEMBER_CONF_ROW,
                   aw->name,
                   status_worker_type(type),
-                  aw->s->host, aw->s->port,
+                  aw->host, aw->port,
                   dump_ajp_addr(aw, buf),
                   aw->cache_timeout,
                   aw->connect_timeout,
@@ -1678,7 +1679,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
     else
         jk_printf(s, JK_STATUS_SHOW_AJP_CONF_ROW,
                   status_worker_type(type),
-                  aw->s->host, aw->s->port,
+                  aw->host, aw->port,
                   dump_ajp_addr(aw, buf),
                   aw->cache_timeout,
                   aw->connect_timeout,
@@ -1804,8 +1805,8 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_xml_att_string(s, off+2, "name", ajp_name);
             jk_print_xml_att_string(s, off+2, "type", status_worker_type(aw->worker.type));
         }
-        jk_print_xml_att_string(s, off+2, "host", aw->s->host);
-        jk_print_xml_att_int(s, off+2, "port", aw->s->port);
+        jk_print_xml_att_string(s, off+2, "host", aw->host);
+        jk_print_xml_att_int(s, off+2, "port", aw->port);
         jk_print_xml_att_string(s, off+2, "address", dump_ajp_addr(aw, buf));
         jk_print_xml_att_int(s, off+2, "connection_pool_timeout", aw->cache_timeout);
         jk_print_xml_att_int(s, off+2, "ping_timeout", aw->ping_timeout);
@@ -1863,8 +1864,8 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_printf(s, " name=%s", ajp_name);
             jk_printf(s, " type=%s", status_worker_type(aw->worker.type));
         }
-        jk_printf(s, " host=%s", aw->s->host);
-        jk_printf(s, " port=%d", aw->s->port);
+        jk_printf(s, " host=%s", aw->host);
+        jk_printf(s, " port=%d", aw->port);
         jk_printf(s, " address=%s", dump_ajp_addr(aw, buf));
         jk_printf(s, " connection_pool_timeout=%d", aw->cache_timeout);
         jk_printf(s, " ping_timeout=%d", aw->ping_timeout);
@@ -1919,8 +1920,8 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_prop_att_string(s, w, name, "list", ajp_name);
             jk_print_prop_att_string(s, w, ajp_name, "type", status_worker_type(aw->worker.type));
         }
-        jk_print_prop_att_string(s, w, ajp_name, "host", aw->s->host);
-        jk_print_prop_att_int(s, w, ajp_name, "port", aw->s->port);
+        jk_print_prop_att_string(s, w, ajp_name, "host", aw->host);
+        jk_print_prop_att_int(s, w, ajp_name, "port", aw->port);
         jk_print_prop_att_string(s, w, ajp_name, "address", dump_ajp_addr(aw, buf));
         jk_print_prop_att_int(s, w, ajp_name, "connection_pool_timeout", aw->cache_timeout);
         jk_print_prop_att_int(s, w, ajp_name, "ping_timeout", aw->ping_timeout);
@@ -2018,10 +2019,8 @@ static void display_worker_lb(jk_ws_service_t *s,
         single = 1;
     }
 
-    jk_shm_lock();
     if (lb->sequence != lb->s->h.sequence)
-        jk_lb_pull(lb, l);
-    jk_shm_unlock();
+        jk_lb_pull(lb, JK_FALSE, l);
 
     for (j = 0; j < lb->num_of_workers; j++) {
         lb_sub_worker_t *wr = &(lb->lb_workers[j]);
@@ -2413,10 +2412,8 @@ static void display_worker_ajp(jk_ws_service_t *s,
         single = 1;
     }
 
-    jk_shm_lock();
     if (aw->sequence != aw->s->h.sequence)
-        jk_ajp_pull(aw, l);
-    jk_shm_unlock();
+        jk_ajp_pull(aw, JK_FALSE, l);
 
     map_count = count_maps(s, name, l);
 
@@ -2710,11 +2707,11 @@ static void form_member(jk_ws_service_t *s,
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_HOST_STR,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_HOST_STR, "\" type=\"text\" ", NULL);
-    jk_printf(s, "value=\"%s\"/></td></tr>\n", aw->s->host);
+    jk_printf(s, "value=\"%s\"/></td></tr>\n", aw->host);
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_PORT_INT,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_PORT_INT, "\" type=\"text\" ", NULL);
-    jk_printf(s, "value=\"%d\"/></td></tr>\n", aw->s->port);
+    jk_printf(s, "value=\"%d\"/></td></tr>\n", aw->port);
 
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_CACHE_TO,
             ":</td><td><input name=\"",
@@ -3058,7 +3055,7 @@ static void commit_worker(jk_ws_service_t *s,
     }
     if (sync_needed == JK_TRUE) {
         lb->sequence++;
-        jk_lb_push(lb, l);
+        jk_lb_push(lb, JK_TRUE, l);
     }
 }
 
@@ -3133,7 +3130,7 @@ static int commit_member(jk_ws_service_t *s,
     int rv;
     int i;
     int old;
-    int as = 0;
+    int resolve = JK_FALSE;
     char host[JK_SHM_STR_SIZ+1];
     int  port = 0;
 
@@ -3222,26 +3219,24 @@ static int commit_member(jk_ws_service_t *s,
             }
         }
     }
+    port = aw->port;
+    if (set_int_if_changed(p, aw->name, "port", JK_STATUS_ARG_AJP_PORT_INT,
+                           0, INT_MAX, &port, lb_name, l)) {
+        strncpy(host, aw->host, JK_SHM_STR_SIZ);
+        resolve = JK_TRUE;
+    }
     if ((rv = status_get_string(p, JK_STATUS_ARG_AJP_HOST_STR,
                                 NULL, &arg, l)) == JK_TRUE) {
-        if (strncmp(aw->s->host, arg, JK_SHM_STR_SIZ)) {
+        if (strncmp(aw->host, arg, JK_SHM_STR_SIZ)) {
             jk_log(l, JK_LOG_INFO,
                     "Status worker '%s' setting 'host' for sub worker '%s' to '%s'",
                     w->name, aw->name, arg);
             strncpy(host, arg, JK_SHM_STR_SIZ);
-            *side_effect |= JK_STATUS_NEEDS_PUSH;
-            as = 1;
+            resolve = JK_TRUE;
         }
     }
-    port = aw->s->port;
-    if (set_int_if_changed(p, aw->name, "port", JK_STATUS_ARG_AJP_PORT_INT,
-                           0, INT_MAX, &port, lb_name, l)) {
-        *side_effect |= JK_STATUS_NEEDS_PUSH;
-        as = 1;
-    }
-    if (as) {
+    if (resolve == JK_TRUE) {
         struct sockaddr_in inet_addr;
-        aw->port = aw->s->port;
         if (!jk_resolve(host, port, &inet_addr,
                         aw->worker.we->pool, l)) {
             const char *msg = "Update failed (at least partially): could not resolve address '%s:%d' for sub worker '%s'.";
@@ -3249,17 +3244,15 @@ static int commit_member(jk_ws_service_t *s,
             p->msg = jk_pool_alloc(s->pool, size);
             snprintf(p->msg, size, msg, host, port, aw->name);
             jk_log(l, JK_LOG_ERROR,
-                   "Status worker '%s' failed resolving 'address' for sub worker '%s' to '%s:%d'.",
-                   w->name, aw->name, host, port);
+                   "Status worker '%s' failed resolving address '%s:%d' for sub worker '%s'.",
+                   w->name, host, port, aw->name);
             rc = JK_FALSE;
         }
         else {
-            strcpy(aw->s->host, host);
             aw->port = port;
-            aw->s->addr_sequence += as;
-            aw->host = aw->s->host;
-            aw->addr_sequence = aw->s->addr_sequence;
+            strncpy(aw->host, host, JK_SHM_STR_SIZ);
             memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
+            *side_effect |= JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH;
         }
     }
     if (set_int_if_changed(p, aw->name, "ping_timeout", JK_STATUS_ARG_AJP_PING_TO,
@@ -3531,7 +3524,7 @@ static void commit_all_members(jk_ws_service_t *s,
             update_mult(lb, l);
         if (rc) {
             lb->sequence++;
-            jk_lb_push(lb, l);
+            jk_lb_push(lb, JK_TRUE, l);
         }
     }
     JK_TRACE_EXIT(l);
@@ -3881,10 +3874,8 @@ static int edit_worker(jk_ws_service_t *s,
             return JK_FALSE;
         }
 
-        jk_shm_lock();
         if (lb->sequence != lb->s->h.sequence)
-            jk_lb_pull(lb, l);
-        jk_shm_unlock();
+            jk_lb_pull(lb, JK_FALSE, l);
         if (!sub_worker || !sub_worker[0]) {
             const char *arg;
             if (status_get_string(p, JK_STATUS_ARG_ATTRIBUTE,
@@ -3929,10 +3920,8 @@ static int edit_worker(jk_ws_service_t *s,
                 jk_log(l, JK_LOG_DEBUG,
                        "Status worker '%s' %s ajp worker '%s'",
                        w->name, "editing", aw->name);
-            jk_shm_lock();
             if (aw->sequence != aw->s->h.sequence)
-                jk_ajp_pull(aw, l);
-            jk_shm_unlock();
+                jk_ajp_pull(aw, JK_FALSE, l);
             form_member(s, p, NULL, aw, worker, l);
             JK_TRACE_EXIT(l);
             return JK_TRUE;
@@ -3981,7 +3970,7 @@ static int update_worker(jk_ws_service_t *s,
         }
 
         if (lb->sequence != lb->s->h.sequence)
-            jk_lb_pull(lb, l);
+            jk_lb_pull(lb, JK_TRUE, l);
         if (!sub_worker || !sub_worker[0]) {
             const char *arg;
             if (status_get_string(p, JK_STATUS_ARG_ATTRIBUTE,
@@ -4031,10 +4020,13 @@ static int update_worker(jk_ws_service_t *s,
                        w->name, "updating", lb->name, wr->name);
                 aw = (ajp_worker_t *)wr->worker->worker_private;
                 rc = commit_member(s, p, lb, wr, aw, &rv, l);
-                if (rv & JK_STATUS_NEEDS_PUSH) {
+                if (rv & JK_STATUS_NEEDS_ADDR_PUSH) {
+                    aw->addr_sequence++;
+                }
+                if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
                     wr->sequence++;
                     lb->sequence++;
-                    jk_lb_push(lb, l);
+                    jk_lb_push(lb, JK_TRUE, l);
                 }
                 if (rv & JK_STATUS_NEEDS_RESET_LB_VALUES)
                     reset_lb_values(lb, l);
@@ -4075,11 +4067,11 @@ static int update_worker(jk_ws_service_t *s,
                        "Status worker '%s' %s ajp worker '%s'",
                        w->name, "updating", aw->name);
             if (aw->sequence != aw->s->h.sequence)
-                jk_ajp_pull(aw, l);
+                jk_ajp_pull(aw, JK_TRUE, l);
             rc = commit_member(s, p, NULL, NULL, aw, &rv, l);
             if (rv & JK_STATUS_NEEDS_PUSH) {
                 aw->sequence++;
-                jk_ajp_push(aw, l);
+                jk_ajp_push(aw, JK_TRUE, l);
             }
             JK_TRACE_EXIT(l);
             return rc;
