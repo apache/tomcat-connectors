@@ -963,10 +963,16 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 }
 
 /* Syncing config values from shm */
-void jk_ajp_pull(ajp_worker_t * aw, jk_logger_t *l)
+void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
 {
+    int resolve = JK_FALSE;
+    int port = 0;
+    char host[JK_SHM_STR_SIZ+1];
+    struct sockaddr_in inet_addr;
     JK_TRACE_ENTER(l);
 
+    if (locked == JK_FALSE)
+        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "syncing mem for ajp worker '%s' from shm",
@@ -981,15 +987,39 @@ void jk_ajp_pull(ajp_worker_t * aw, jk_logger_t *l)
     aw->retry_interval = aw->s->retry_interval;
     aw->max_packet_size = aw->s->max_packet_size;
     aw->sequence = aw->s->h.sequence;
+    if (aw->addr_sequence != aw->s->addr_sequence) {
+        resolve = JK_TRUE;
+        aw->addr_sequence = aw->s->addr_sequence;
+        strncpy(host, aw->s->host, JK_SHM_STR_SIZ);
+        port = aw->s->port;
+    }
+    if (locked == JK_FALSE)
+        jk_shm_unlock();
+
+    if (resolve == JK_TRUE) {
+        if (!jk_resolve(host, port, &inet_addr,
+                        aw->worker.we->pool, l)) {
+            jk_log(l, JK_LOG_ERROR,
+                   "Failed resolving address '%s:%d' for worker '%s'.",
+                   host, port, aw->name);
+        }
+        else {
+            aw->port = port;
+            strncpy(aw->host, host, JK_SHM_STR_SIZ);
+            memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
+        }
+    }
 
     JK_TRACE_EXIT(l);
 }
 
 /* Syncing config values to shm */
-void jk_ajp_push(ajp_worker_t * aw, jk_logger_t *l)
+void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
 
+    if (locked == JK_FALSE)
+        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "syncing shm for ajp worker '%s' from mem",
@@ -1004,6 +1034,13 @@ void jk_ajp_push(ajp_worker_t * aw, jk_logger_t *l)
     aw->s->retry_interval = aw->retry_interval;
     aw->s->max_packet_size = aw->max_packet_size;
     aw->s->h.sequence = aw->sequence;
+    if (aw->s->addr_sequence != aw->addr_sequence) {
+        aw->s->addr_sequence = aw->addr_sequence;
+        strncpy(aw->s->host, aw->host, JK_SHM_STR_SIZ);
+        aw->s->port = aw->port;
+    }
+    if (locked == JK_FALSE)
+        jk_shm_unlock();
 
     JK_TRACE_EXIT(l);
 }
@@ -2164,23 +2201,8 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     p = e->endpoint_private;
     aw = p->worker;
 
-    jk_shm_lock();
     if (aw->sequence != aw->s->h.sequence)
-        jk_ajp_pull(aw, l);
-    if (aw->addr_sequence != aw->s->addr_sequence) {
-        aw->addr_sequence = aw->s->addr_sequence;
-        aw->host = aw->s->host;
-        aw->port = aw->s->port;
-        if (!jk_resolve(aw->host, aw->port, &aw->worker_inet_addr,
-                        aw->worker.we->pool, l)) {
-            if (is_error)
-                *is_error = JK_HTTP_SERVER_ERROR;
-            jk_shm_unlock();
-            JK_TRACE_EXIT(l);
-            return JK_FALSE;
-       }
-    }
-    jk_shm_unlock();
+        jk_ajp_pull(aw, JK_FALSE, l);
 
     aw->s->used++;
 
@@ -2282,10 +2304,8 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
                        i, retry_interval);
             jk_sleep(retry_interval);
             /* Pull shared memory if something changed during sleep */
-            jk_shm_lock();
             if (aw->sequence != aw->s->h.sequence)
-                jk_ajp_pull(aw, l);
-            jk_shm_unlock();
+                jk_ajp_pull(aw, JK_FALSE, l);
         }
         /*
          * We're using op->request which hold initial request
@@ -2476,10 +2496,10 @@ int ajp_validate(jk_worker_t *pThis,
     if (pThis && pThis->worker_private) {
         ajp_worker_t *p = pThis->worker_private;
         p->port = jk_get_worker_port(props, p->name, port);
-        p->host = jk_get_worker_host(props, p->name, host);
-        if (!p->host) {
-            p->host = "undefined";
+        if (!host) {
+            host = "undefined";
         }
+        strncpy(p->host, jk_get_worker_host(props, p->name, host), JK_SHM_STR_SIZ);
 
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,

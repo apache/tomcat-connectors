@@ -273,7 +273,7 @@ struct ajp_worker
 
     struct sockaddr_in worker_inet_addr;    /* Contains host and port */
     unsigned connect_retry_attempts;
-    const char *host;
+    char host[JK_SHM_STR_SIZ+1];
     int port;
     int addr_sequence;  /* Whether the address is resolved */
     int maintain_time;
@@ -422,9 +422,9 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l);
 
 void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l);
 
-void jk_ajp_pull(ajp_worker_t * aw, jk_logger_t *l);
+void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l);
 
-void jk_ajp_push(ajp_worker_t * aw, jk_logger_t *l);
+void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l);
 
 int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
                                     jk_msg_buf_t *msg, jk_logger_t *l);
