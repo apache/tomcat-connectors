@@ -3219,8 +3219,12 @@ static int commit_member(jk_ws_service_t *s,
         aw->port = aw->s->port;
         if (!jk_resolve(host, port, &inet_addr,
                         aw->worker.we->pool, l)) {
+            const char *msg = "Update failed (at least partially): could not resolve address '%s:%d' for sub worker '%s'.";
+            size_t size = strlen(msg) + strlen(host) + strlen(aw->name) + 10 + 1;
+            p->msg = jk_pool_alloc(s->pool, size);
+            snprintf(p->msg, size, msg, host, port, aw->name);
             jk_log(l, JK_LOG_ERROR,
-                   "Status worker '%s' failed resolving 'address' for sub worker '%s' to '%s:%d'",
+                   "Status worker '%s' failed resolving 'address' for sub worker '%s' to '%s:%d'.",
                    w->name, aw->name, host, port);
             rc = JK_FALSE;
         }
@@ -4012,7 +4016,25 @@ static int update_worker(jk_ws_service_t *s,
                 if (rv & JK_STATUS_NEEDS_UPDATE_MULT)
                     /* Recalculate the load multiplicators wrt. lb_factor */
                     update_mult(lb, l);
-                if (!wi || (rc == JK_FALSE))
+                if (rc == JK_FALSE) {
+                    jk_log(l, JK_LOG_ERROR,
+                           "Status worker '%s' failed updating sub worker '%s' (at least partially).%s",
+                           w->name, aw->name, (is_wildchar == JK_TRUE) ? " Aborting further wildcard updates." : "");
+                    if (!strncmp("OK", p->msg, 3)) {
+                        const char *msg = "Update failed (at least partially) for sub worker '%s'";
+                        size_t size = strlen(msg) + strlen(aw->name) + 1;
+                        p->msg = jk_pool_alloc(s->pool, size);
+                        snprintf(p->msg, size, msg, aw->name);
+                    }
+                    if (is_wildchar == JK_TRUE) {
+                        const char *msg = " Aborting further wildcard updates.";
+                        size_t size = strlen(msg) + strlen(p->msg) + 1;
+                        p->msg = jk_pool_realloc(s->pool, size, p->msg, strlen(p->msg) + 1);
+                        strcat(p->msg, msg);
+                    }
+                    break;
+                }
+                if (!wi)
                     break;
             }
             JK_TRACE_EXIT(l);
