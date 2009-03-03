@@ -165,6 +165,7 @@
 #define JK_STATUS_CMD_PROP_DUMP_LINK       0x00000100
 #define JK_STATUS_CMD_PROP_LINK_HELP       0x00000200
 #define JK_STATUS_CMD_PROP_LEGEND          0x00000400
+#define JK_STATUS_CMD_PROP_WILDCARD        0x00000800
 
 #define JK_STATUS_MIME_UNKNOWN             (0)
 #define JK_STATUS_MIME_HTML                (1)
@@ -973,6 +974,8 @@ static jk_uint32_t status_cmd_props(int cmd)
         cmd == JK_STATUS_CMD_VERSION ||
         cmd == JK_STATUS_CMD_DUMP)
         props |= JK_STATUS_CMD_PROP_BACK_LINK;
+    if (cmd == JK_STATUS_CMD_UPDATE)
+        props |= JK_STATUS_CMD_PROP_WILDCARD;
     if (cmd != JK_STATUS_CMD_EDIT &&
         cmd != JK_STATUS_CMD_UPDATE &&
         cmd != JK_STATUS_CMD_RESET &&
@@ -3572,10 +3575,12 @@ static void display_legend(jk_ws_service_t *s,
 
 static int check_worker(jk_ws_service_t *s,
                         status_endpoint_t *p,
+                        jk_uint32_t allow_wildchars,
                         jk_logger_t *l)
 {
     const char *worker;
     const char *sub_worker;
+    status_worker_t *w = p->worker;
     jk_worker_t *jw = NULL;
     lb_sub_worker_t *wr = NULL;
 
@@ -3587,8 +3592,24 @@ static int check_worker(jk_ws_service_t *s,
     }
 
     if (sub_worker && sub_worker[0]) {
+        unsigned int idx = 0;
+        unsigned int *wi = NULL;
+        if (strchr(sub_worker, '*') || strchr(sub_worker, '?')) {
+            /* We have a wildchar matching rule */
+            if (!allow_wildchars) {
+                jk_log(l, JK_LOG_ERROR,
+                       "Status worker '%s' wildcards in sub worker '%s' of worker '%s' not allowed for this command",
+                       w->name, sub_worker, worker ? worker : "(null)");
+                p->msg = "wildcard not allowed in sub worker for this command";
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
+            else {
+                wi = &idx;
+            }
+        }
         if (search_sub_worker(s, p, jw, worker, &wr, sub_worker,
-                             NULL, l) == JK_FALSE) {
+                              wi, l) == JK_FALSE) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -3955,10 +3976,12 @@ static int update_worker(jk_ws_service_t *s,
         else {
             unsigned int idx = 0;
             unsigned int *wi = NULL;
+            int is_wildchar = JK_FALSE;
 
             if (strchr(sub_worker, '*') || strchr(sub_worker, '?')) {
                 /* We have a wildchar matching rule */
                 wi = &idx;
+                is_wildchar = JK_TRUE;
             }
             for (;;) {
                 if (search_sub_worker(s, p, jw, worker, &wr, sub_worker,
@@ -3969,6 +3992,7 @@ static int update_worker(jk_ws_service_t *s,
                     }
                     else {
                         /* We have found at least one match previously */
+                        p->msg = "OK";
                         break;
                     }
                 }
@@ -4417,7 +4441,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
             err = "Invalid mime type.";
         }
         else if (cmd_props & JK_STATUS_CMD_PROP_CHECK_WORKER &&
-                 (check_worker(s, p, l) != JK_TRUE)) {
+                 (check_worker(s, p, cmd_props & JK_STATUS_CMD_PROP_WILDCARD, l) != JK_TRUE)) {
             err = p->msg;
         }
     }
@@ -4444,7 +4468,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
             /* lock shared memory */
             jk_shm_lock();
             if (update_worker(s, p, l) == JK_FALSE) {
-                err = "Update failed";
+                if (strncmp("OK", p->msg, 3))
+                    err = p->msg;
+                else
+                    err = "Update failed";
             }
             /* unlock the shared memory */
             jk_shm_unlock();
