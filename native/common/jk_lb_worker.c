@@ -1560,7 +1560,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                 if (p->lb_workers[i].worker->type == JK_AJP13_WORKER_TYPE ||
                     p->lb_workers[i].worker->type == JK_AJP14_WORKER_TYPE) {
                     ajp_worker_t *aw = (ajp_worker_t *)p->lb_workers[i].worker->worker_private;
-                    if (!aw->addr_sequence) {
+                    if (aw->port == 0) {
                         p->lb_workers[i].activation = JK_LB_ACTIVATION_STOPPED;
                     }
                 }
