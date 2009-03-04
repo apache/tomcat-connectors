@@ -167,7 +167,8 @@ We recommend using <b>socket_connect_timeout</b> because in some network
 failure situations failure detection during connection establishment
 can take several minutes due to TCP retransmits. Depending on the quality
 of your network a timeout somewhere between 1000 and 5000 milliseconds
-should be fine.
+should be fine. Note that <code>socket_timeout</code> is in seconds, and
+<code>socket_connect_timeout</code> in milliseconds.
 </p>
 </subsection>
 

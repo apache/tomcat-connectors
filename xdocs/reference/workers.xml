@@ -248,10 +248,16 @@ and retry again. If set to zero (default) JK will wait for an infinite amount of
 on all socket operations.
 </directive>
 
-<directive name="socket_connect_timeout" default="socket_timeout" required="false">
+<directive name="socket_connect_timeout" default="socket_timeout*1000" required="false">
 Socket connect timeout in milliseconds used for the communication channel between JK and remote host.
 If the remote host does not respond inside the timeout specified, JK will generate an error,
 and retry again.
+<p>
+Note that <code>socket_timeout</code> is in seconds, and
+<code>socket_connect_timeout</code> in milliseconds,
+so in absolute terms the default <code>socket_connect_timeout</code> is
+equal to <code>"socket_timeout</code>.
+</p>
 <p>
 This feature has been added in <b>jk 1.2.27</b>.
 </p>
