@@ -4019,6 +4019,7 @@ static int update_worker(jk_ws_service_t *s,
                        "Status worker '%s' %s lb worker '%s' sub worker '%s'",
                        w->name, "updating", lb->name, wr->name);
                 aw = (ajp_worker_t *)wr->worker->worker_private;
+                rv = 0;
                 rc = commit_member(s, p, lb, wr, aw, &rv, l);
                 if (rv & JK_STATUS_NEEDS_ADDR_PUSH) {
                     aw->addr_sequence++;
@@ -4068,10 +4069,25 @@ static int update_worker(jk_ws_service_t *s,
                        w->name, "updating", aw->name);
             if (aw->sequence != aw->s->h.sequence)
                 jk_ajp_pull(aw, JK_TRUE, l);
+            rv = 0;
             rc = commit_member(s, p, NULL, NULL, aw, &rv, l);
-            if (rv & JK_STATUS_NEEDS_PUSH) {
+            if (rv & JK_STATUS_NEEDS_ADDR_PUSH) {
+                aw->addr_sequence++;
+            }
+            if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
                 aw->sequence++;
                 jk_ajp_push(aw, JK_TRUE, l);
+            }
+            if (rc == JK_FALSE) {
+                jk_log(l, JK_LOG_ERROR,
+                       "Status worker '%s' failed updating worker '%s' (at least partially).",
+                       w->name, aw->name);
+                if (!strncmp("OK", p->msg, 3)) {
+                    const char *msg = "Update failed (at least partially) for worker '%s'";
+                    size_t size = strlen(msg) + strlen(aw->name) + 1;
+                    p->msg = jk_pool_alloc(s->pool, size);
+                    snprintf(p->msg, size, msg, aw->name);
+                }
             }
             JK_TRACE_EXIT(l);
             return rc;
