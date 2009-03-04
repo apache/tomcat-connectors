@@ -391,7 +391,7 @@ output in your automation scripts.
 <br/>
 <p>
 The action is determined by the parameter <b>cmd</b>. It can have the values "list", "show",
-"edit", "update", "reset", "recover", "version" and "dump". If you omit the "cmd" parameter,
+"edit", "update", "reset", "recover", "version" and "dump". If you omit the <b>cmd</b> parameter,
 the default "list" will be used.
 All actions except for "list", "refresh", "version" and "dump" need additional parameters.
 </p>
@@ -403,7 +403,7 @@ The action "dump" has been added in version 1.2.27.
 <br/>
 <p>
 The format is determined by the parameter <b>mime</b>. It can have the values "html", "xml",
-"txt" and "prop". If you omit the "mime" parameter, the default "html"
+"txt" and "prop". If you omit the <b>mime</b> parameter, the default "html"
 will be used. The action "edit" (the edit form) does only make sense for "mime=html".
 </p>
 </subsection>
@@ -412,7 +412,7 @@ will be used. The action "edit" (the edit form) does only make sense for "mime=h
 <p>
 Actions that operate on a single worker need one or two additional parameters to select
 this worker. The parameter <b>w</b> contains the name of the worker from the worker list.
-If an action operates on a member (sub worker) of a load balancer, the parameter "w"
+If an action operates on a member (sub worker) of a load balancer, the parameter <b>w</b>
 contains the name of the load balancer worker, and the additional parameter <b>sw</b> contains the
 name of the sub worker.
 </p>
@@ -514,6 +514,12 @@ And now the list of parameters you can use to change settings for load balancer 
 Finally the list of parameters you can use to change settings for ajp workers and ajp load balancer members:
 <ul>
 <li>
+<b>vahst</b>: host (string)
+</li>
+<li>
+<b>vaprt</b>: port (number)
+</li>
+<li>
 <b>vacpt</b>: connection_pool_timeout (number)
 </li>
 <li>
@@ -535,6 +541,14 @@ Finally the list of parameters you can use to change settings for ajp workers an
 <b>vamps</b>: max_packet_size (number)
 </li>
 </ul>
+Note that changing the host name or port will only take effect for new connections.
+Already established connections to the old address will still be used.
+Nevertheless this feature is interesting, because you can provision load balancer
+members with port "0", which will automatically be stopped during startup. Later
+when you know the final names and ports, you can set them and they will be
+automatically activated.
+</p>
+<p>
 The leading character "v" has been added to the parameters in version 1.2.27.
 Changing settings for ajp workers has also been introduced in version 1.2.27.
 </p>
@@ -549,10 +563,11 @@ You can use the edit action to edit all settings for a load balancer or for a
 member of a load balancer respectively on one page. If you want to edit one
 configuration aspect for all members of a load balancer simultaneously, this
 will be triggered by the parameter <b>att</b>. The value of the parameter indicates,
-which aspect you want to edit. The list is the same as in the previous section:
+which aspect you want to edit. The list is the same as in the previous section,
+except for "vahst" and "vaprt":
 "vwa", "vwf", "vwn", "vwr", "vwc", "vwd", "vacpt", "vact", "vapt", "vart", "var",
 "varo" and "vamps". But here you
-need to put the name into the parameter "att", instead of using it as a request
+need to put the name into the parameter <b>att</b>, instead of using it as a request
 parameter name.
 </p>
 <p>
