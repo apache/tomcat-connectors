@@ -43,6 +43,12 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Docs: Clarify relation between socket_timeout and socket_connect_timeout. (rjung)
+      </update>
+      <update>
+        SHM: Move locking into the data pull and push methods. (rjung)
+      </update>
       <fix>
         Status: Show - Edit - Show always ends in single lb member show,
         even when started from all members lb show.
