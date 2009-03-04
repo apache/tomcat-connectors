@@ -117,7 +117,7 @@
 #define JK_STATUS_ARG_AJP_REC_OPTS         "varo"
 #define JK_STATUS_ARG_AJP_MAX_PK_SZ        "vamps"
 #define JK_STATUS_ARG_AJP_CPING_INT        "vacpi"
-#define JK_STATUS_ARG_AJP_HOST_STR         "vaddr"
+#define JK_STATUS_ARG_AJP_HOST_STR         "vahst"
 #define JK_STATUS_ARG_AJP_PORT             "vaprt"
 
 #define JK_STATUS_ARG_AJP_TEXT_CACHE_TO    "Connection Pool Timeout"
