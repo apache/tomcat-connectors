@@ -971,12 +971,12 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
     struct sockaddr_in inet_addr;
     JK_TRACE_ENTER(l);
 
-    if (locked == JK_FALSE)
-        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "syncing mem for ajp worker '%s' from shm",
-               aw->name);
+               "syncing mem for ajp worker '%s' from shm (%u -> %u) [%u->%u]",
+               aw->name, aw->sequence, aw->s->h.sequence, aw->addr_sequence, aw->s->addr_sequence);
+    if (locked == JK_FALSE)
+        jk_shm_lock();
 
     aw->cache_timeout = aw->s->cache_timeout;
     aw->connect_timeout = aw->s->connect_timeout;
@@ -1018,12 +1018,12 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
 
-    if (locked == JK_FALSE)
-        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "syncing shm for ajp worker '%s' from mem",
-               aw->name);
+               "syncing shm for ajp worker '%s' from mem (%u -> %u) [%u->%u]",
+               aw->name, aw->s->h.sequence, aw->sequence, aw->s->addr_sequence, aw->addr_sequence);
+    if (locked == JK_FALSE)
+        jk_shm_lock();
 
     aw->s->cache_timeout = aw->cache_timeout;
     aw->s->connect_timeout = aw->connect_timeout;
