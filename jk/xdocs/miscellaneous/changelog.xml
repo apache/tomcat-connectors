@@ -44,6 +44,10 @@
   <subsection name="Native">
     <changelog>
       <update>
+        Status: Remove redundant port information form worker display.
+        Rename address column and remove its explanation from the legend. (rjung)
+      </update>
+      <update>
         Docs: Clarify relation between socket_timeout and socket_connect_timeout. (rjung)
       </update>
       <update>
