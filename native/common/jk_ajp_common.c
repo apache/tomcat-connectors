@@ -2508,11 +2508,11 @@ int ajp_validate(jk_worker_t *pThis,
         /* Copy the contact to shm */
         strncpy(p->s->host, p->host, JK_SHM_STR_SIZ);
         p->s->port = p->port;
+        p->s->addr_sequence = p->addr_sequence = 0;
         /* Resolve if port > 0.
          */
         if (p->port > 0) {
             if (jk_resolve(p->host, p->port, &p->worker_inet_addr, we->pool, l)) {
-                p->s->addr_sequence = p->addr_sequence = 1;
                 JK_TRACE_EXIT(l);
                 return JK_TRUE;
             }
