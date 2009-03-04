@@ -288,12 +288,12 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
 
     JK_TRACE_ENTER(l);
 
-    if (locked == JK_FALSE)
-        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "syncing mem for lb '%s' from shm",
-               p->name);
+               "syncing mem for lb '%s' from shm (%u->%u)",
+               p->name, p->sequence, p->s->h.sequence);
+    if (locked == JK_FALSE)
+        jk_shm_lock();
     p->sticky_session = p->s->sticky_session;
     p->sticky_session_force = p->s->sticky_session_force;
     p->recover_wait_time = p->s->recover_wait_time;
@@ -342,12 +342,12 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
 
     JK_TRACE_ENTER(l);
 
-    if (locked == JK_FALSE)
-        jk_shm_lock();
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "syncing shm for lb '%s' from mem",
-               p->name);
+               "syncing shm for lb '%s' from mem (%u->%u)",
+               p->name, p->s->h.sequence, p->sequence);
+    if (locked == JK_FALSE)
+        jk_shm_lock();
     p->s->sticky_session = p->sticky_session;
     p->s->sticky_session_force = p->sticky_session_force;
     p->s->recover_wait_time = p->recover_wait_time;
