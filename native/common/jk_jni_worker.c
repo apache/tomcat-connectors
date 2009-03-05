@@ -645,6 +645,11 @@ int JK_METHOD jni_worker_factory(jk_worker_t **w,
 
     JK_TRACE_ENTER(l);
 
+    jk_log(l, JK_LOG_WARNING,
+           "Worker '%s' is of type jni, which is deprecated "
+           "and will be removed in a future release.",
+           name ? name : "(null)");
+
     if (!name || !w) {
         JK_LOG_NULL_PARAMS(l);
         JK_TRACE_EXIT(l);
@@ -1251,6 +1256,10 @@ static void detach_from_jvm(jni_worker_t * p, jk_logger_t *l)
 int JK_METHOD jni_worker_factory(jk_worker_t **w,
                                  const char *name, jk_logger_t *l)
 {
+    jk_log(l, JK_LOG_WARNING,
+           "Worker '%s' is of type jni, which is deprecated "
+           "and will be removed in a future release.",
+           name ? name : "(null)");
     if (w)
         *w = NULL;
     return 0;
