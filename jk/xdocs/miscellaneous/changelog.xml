@@ -44,6 +44,9 @@
   <subsection name="Native">
     <changelog>
       <update>
+        Docs: Add a new HowTo page about reverse proxies. (rjung)
+      </update>
+      <update>
         Docs: Clarify IIS URL rewrite feature. (rjung)
       </update>
       <update>
