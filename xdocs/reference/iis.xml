@@ -284,10 +284,8 @@ dynamically added to the environment that can be used inside
     </ul>    
 </p>
 <p><source>
-
 # Use the logs in the installation path of ISAPI Redirector
 log_file=$(ISAPI_PATH)\$(ISAPI_NAME).log
-
 </source></p>
 </section>
 
@@ -297,22 +295,24 @@ The ISAPI redirector with version 1.2.16 can do a simple URL rewriting. Although
 as powerful as Apache Httpd's mod_rewrite, it allows a simple exchange of request URIs
 </p>
 <p>
-The rule is in the form rewritten=real-url.
+The rule is in the form original-url-prefix=forward-url-prefix. For example:
 </p>
-<p>
-The rules must be simple strings. For example:
-</p>
-<p>
 <source>
-# Simple rewrite rules
-
+# Simple rewrite rules, making /jsp-examples
+# and /servlets-examples available under shorter URLs
 /jsp/=/jsp-examples/
 /servlets/=/servlets-examples/
-
 </source>
-</p>
 <p>
-Note that the uriworkermap or mount point must point to that new rule.
+You can also use regular expressions, if you prefix the rule with a tilde <code>~</code>:
+</p>
+<source>
+# Complex rewrite rule, adding "-examples"
+# to the first path component of all requests
+~/([^/]*)=/$1-examples
+</source>
+<p>
+Note that uriworkermap.properties must use the URLs before rewriting.
 </p>
 </section>
 
