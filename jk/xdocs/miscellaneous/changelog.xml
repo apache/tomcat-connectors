@@ -50,7 +50,7 @@
         Docs: Clarify IIS URL rewrite feature. (rjung)
       </update>
       <update>
-        Status: Remove redundant port information form worker display.
+        Status: Remove redundant port information from worker display.
         Rename address column and remove its explanation from the legend. (rjung)
       </update>
       <update>
