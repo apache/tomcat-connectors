@@ -298,23 +298,23 @@ Name of the Apache environment variable that contains SSL key size in use.
 <br/>
 The default value is "SSL_CIPHER_USEKEYSIZE".
 </p></attribute>
-<attribute name="JkServerNameIndicator" required="false"><p>
+<attribute name="JkLocalNameIndicator" required="false"><p>
 Name of the Apache environment variable which can be used to overwrite
-the forwarded server name.
+the forwarded local name.
 Use this only if you need to adjust the data (see the
 <a href="../generic_howto/proxy.html">proxy</a> documentation).
 <br/>
-The default value is "JK_SERVER_NAME".
+The default value is "JK_LOCAL_NAME".
 <br/>
 This directive has been added in version 1.2.28 of mod_jk.
 </p></attribute>
-<attribute name="JkServerPortIndicator" required="false"><p>
+<attribute name="JkLocalPortIndicator" required="false"><p>
 Name of the Apache environment variable which can be used to overwrite
-the forwarded server port.
+the forwarded local port.
 Use this only if you need to adjust the data (see the
 <a href="../generic_howto/proxy.html">proxy</a> documentation).
 <br/>
-The default value is "JK_SERVER_PORT".
+The default value is "JK_LOCAL_PORT".
 <br/>
 This directive has been added in version 1.2.28 of mod_jk.
 </p></attribute>

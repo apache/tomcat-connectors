@@ -68,8 +68,8 @@
 #define JK_ENV_REMOTE_HOST          ("JK_REMOTE_HOST")
 #define JK_ENV_REMOTE_USER          ("JK_REMOTE_USER")
 #define JK_ENV_AUTH_TYPE            ("JK_AUTH_TYPE")
-#define JK_ENV_SERVER_NAME          ("JK_SERVER_NAME")
-#define JK_ENV_SERVER_PORT          ("JK_SERVER_PORT")
+#define JK_ENV_LOCAL_NAME           ("JK_LOCAL_NAME")
+#define JK_ENV_LOCAL_PORT           ("JK_LOCAL_PORT")
 #define JK_ENV_HTTPS                ("HTTPS")
 #define JK_ENV_CERTS                ("SSL_CLIENT_CERT")
 #define JK_ENV_CIPHER               ("SSL_CIPHER")
@@ -174,8 +174,8 @@ typedef struct
     char *remote_host_indicator;
     char *remote_user_indicator;
     char *auth_type_indicator;
-    char *server_name_indicator;
-    char *server_port_indicator;
+    char *local_name_indicator;
+    char *local_port_indicator;
 
     /*
      * SSL Support
@@ -713,13 +713,13 @@ static int init_ws_service(apache_private_data_t * private_data,
     /* s->server_name  = (char *)(r->hostname ? r->hostname : r->server->server_hostname); */
     /* XXX : a la jk2 */
     s->server_name = get_env_string(r, (char *)ap_get_server_name(r),
-                                    conf->server_name_indicator, 0);
+                                    conf->local_name_indicator, 0);
 
     /* get the real port (otherwise redirect failed) */
     /* s->server_port     = htons( r->connection->local_addr.sin_port ); */
     /* XXX : a la jk2 */
     s->server_port = get_env_int(r, ap_get_server_port(r),
-                                 conf->server_port_indicator);
+                                 conf->local_port_indicator);
 
     s->server_software = (char *)ap_get_server_version();
 
@@ -1747,23 +1747,23 @@ static const char *jk_set_auth_type_indicator(cmd_parms * cmd,
     return NULL;
 }
 
-static const char *jk_set_server_name_indicator(cmd_parms * cmd,
-                                                void *dummy, char *indicator)
+static const char *jk_set_local_name_indicator(cmd_parms * cmd,
+                                               void *dummy, char *indicator)
 {
     server_rec *s = cmd->server;
     jk_server_conf_t *conf =
         (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
-    conf->server_name_indicator = ap_pstrdup(cmd->pool, indicator);
+    conf->local_name_indicator = ap_pstrdup(cmd->pool, indicator);
     return NULL;
 }
 
-static const char *jk_set_server_port_indicator(cmd_parms * cmd,
-                                                void *dummy, char *indicator)
+static const char *jk_set_local_port_indicator(cmd_parms * cmd,
+                                               void *dummy, char *indicator)
 {
     server_rec *s = cmd->server;
     jk_server_conf_t *conf =
         (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
-    conf->server_port_indicator = ap_pstrdup(cmd->pool, indicator);
+    conf->local_port_indicator = ap_pstrdup(cmd->pool, indicator);
     return NULL;
 }
 
@@ -2161,10 +2161,10 @@ static const command_rec jk_cmds[] = {
      "Name of the Apache environment that contains the remote user name"},
     {"JkAuthTypeIndicator", jk_set_auth_type_indicator, NULL, RSRC_CONF, TAKE1,
      "Name of the Apache environment that contains the type of authentication"},
-    {"JkServerNameIndicator", jk_set_server_name_indicator, NULL, RSRC_CONF, TAKE1,
-     "Name of the Apache environment that contains the server name"},
-    {"JkServerPortIndicator", jk_set_server_port_indicator, NULL, RSRC_CONF, TAKE1,
-     "Name of the Apache environment that contains the server port"},
+    {"JkLocalNameIndicator", jk_set_local_name_indicator, NULL, RSRC_CONF, TAKE1,
+     "Name of the Apache environment that contains the local name"},
+    {"JkLocalPortIndicator", jk_set_local_port_indicator, NULL, RSRC_CONF, TAKE1,
+     "Name of the Apache environment that contains the local port"},
 
     /*
      * Apache has multiple SSL modules (for example apache_ssl, stronghold
@@ -2480,8 +2480,8 @@ static void *create_jk_config(ap_pool * p, server_rec * s)
         c->remote_host_indicator = JK_ENV_REMOTE_HOST;
         c->remote_user_indicator = JK_ENV_REMOTE_USER;
         c->auth_type_indicator = JK_ENV_AUTH_TYPE;
-        c->server_name_indicator = JK_ENV_SERVER_NAME;
-        c->server_port_indicator = JK_ENV_SERVER_PORT;
+        c->local_name_indicator = JK_ENV_LOCAL_NAME;
+        c->local_port_indicator = JK_ENV_LOCAL_PORT;
 
         /*
          * By default we will try to gather SSL info.
@@ -2554,10 +2554,10 @@ static void *merge_jk_config(ap_pool * p, void *basev, void *overridesv)
         overrides->remote_user_indicator = base->remote_user_indicator;
     if (!overrides->auth_type_indicator)
         overrides->auth_type_indicator = base->auth_type_indicator;
-    if (!overrides->server_name_indicator)
-        overrides->server_name_indicator = base->server_name_indicator;
-    if (!overrides->server_port_indicator)
-        overrides->server_port_indicator = base->server_port_indicator;
+    if (!overrides->local_name_indicator)
+        overrides->local_name_indicator = base->local_name_indicator;
+    if (!overrides->local_port_indicator)
+        overrides->local_port_indicator = base->local_port_indicator;
 
     if (overrides->ssl_enable == JK_UNSET)
         overrides->ssl_enable = base->ssl_enable;
