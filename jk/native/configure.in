@@ -421,11 +421,12 @@ AC_ARG_ENABLE(netscape,
 dnl Check for enable-jni
 JK_JNI_WORKER=""
 AC_ARG_ENABLE(jni,
-[AS_HELP_STRING([--enable-jni],[Build jni_connect.so and enable jni_worker])],
+[AS_HELP_STRING([--enable-jni],[DEPRECATED: Build jni_connect.so and enable jni_worker])],
 [
     AC_MSG_RESULT(jni enable (need JDK))
     CFLAGS="${CFLAGS} -DHAVE_JNI"
     JK_JNI_WORKER="\${JK}jk_jni_worker\${OEXT}"
+    WARN_JNI=1
 ])dnl
 AC_SUBST(JK_JNI_WORKER)
 
@@ -567,7 +568,7 @@ JAVA_HOME=""
 JAVA_PLATFORM="1"
 
 AC_ARG_WITH(java-home,
-[AS_HELP_STRING([--with-java-home=DIR],[Where is your JDK root directory])],
+[AS_HELP_STRING([--with-java-home=DIR],[DEPRECATED: Where is your JDK root directory])],
 [
 
     # This stuff works if the command line parameter --with-java-home was
@@ -670,7 +671,7 @@ else
 
     AC_ARG_WITH(java-platform,
     [AS_HELP_STRING([--with-java-platform=VAL],
-    [Force the Java platform
+    [DEPRECATED: Force the Java platform
      (value is 1 for 1.1.x or 2 for 1.2.x or greater)])],
     [
         dnl This requires a bit of tweaking to be handled properly, but
@@ -692,7 +693,7 @@ fi
 dnl guess OS = OS_TYPE for jni_md.h
 OS=""
 AC_ARG_WITH(os-type,
-[AS_HELP_STRING([--with-os-type=SUBDIR],[Where is your JDK os-type subdirectory])],
+[AS_HELP_STRING([--with-os-type=SUBDIR],[DEPRECATED: Where is your JDK os-type subdirectory])],
 [
     OS=${withval}
 
@@ -763,7 +764,23 @@ AC_OUTPUT([
     jni/Makefile
 ])
 
+if ${TEST} -n "${WARN_JNI}" ; then
+    AC_MSG_WARN([===========================================])
+    AC_MSG_WARN([You have used one of the following options:])
+    AC_MSG_WARN([    --enable-jni])
+    AC_MSG_WARN([    --with-java-home])
+    AC_MSG_WARN([    --with-java-platform])
+    AC_MSG_WARN([    --with-os-type])
+    AC_MSG_WARN([These options are only necessary if])
+    AC_MSG_WARN([you want to use a worker of type jni.])
+    AC_MSG_WARN([These workers have been deprecated.])
+    AC_MSG_WARN([They do not work and will be removed from])
+    AC_MSG_WARN([a future release])
+    AC_MSG_WARN([===========================================])
+fi
+
 if ${TEST} -n "${WARN_CC}" ; then
+    AC_MSG_WARN([===========================================])
     AC_MSG_WARN([Using CC from environment:])
     AC_MSG_WARN([    CC="$CC"])
     AC_MSG_WARN([instead of CC from apxs:])
@@ -773,4 +790,5 @@ if ${TEST} -n "${WARN_CC}" ; then
     AC_MSG_WARN([    "libtool: compile: specify a tag with `--tag'"])
     AC_MSG_WARN([try running configure without setting CC,])
     AC_MSG_WARN([or at least CC should start with "$APXSCC"])
+    AC_MSG_WARN([===========================================])
 fi
