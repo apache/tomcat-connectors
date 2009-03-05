@@ -32,11 +32,11 @@
 <p>The Apache module mod_jk and its ISAPI and NSAPI variants connect
 a web server to a backend (typically Tomcat) using the AJP protocol.
 The web server receives an HTTP(S) request and the module forwards
-the request to the back end. This situation is usually called a gateway
+the request to the backend. This function is usually called a gateway
 or a proxy, in the context of HTTP it is called a reverse proxy.
 </p>
 </section>
-<section name="Typical problems">
+<section name="Typical Problems">
 <br/>
 <p>A reverse proxy is not totally transparent to the application on
 the backend. For instance the host name and port the original client
@@ -50,26 +50,26 @@ client will usually not be able to use these URLs.
 <p>Another example is the client IP address, which for the web server is the
 source IP of the incoming connection, whereas for the backend the
 connection always comes from the web server. This can be a problem, when
-th client IP is checked by the backend application e.g. for security reasons.
+the client IP is used by the backend application e.g. for security reasons.
 </p>
 </section>
-<section name="AJP as a solution">
+<section name="AJP as a Solution">
 <br/>
 <p>Most of these problems are automatically handled by the AJP protocol
 and the AJP connectors of the backend. The AJP protocol transports
 this communication metadata and the backend connector presents this
-metadata whenever the appliaction asks for it using Servlet API methods.
+metadata whenever the application asks for it using Servlet API methods.
 </p>
 <p>The following list contains the communication metadata handled by AJP
 and the HttpServletRequest API calls which can be used to retrieve them:
 <ul>
 <li>local name: <code>getLocalName()</code> and <code>getLocalAddr</code>.
 This is also equal to getServerName(), unless a <code>Host</code> header
-is contained in the request. in this case server name is taken from that header.
+is contained in the request. In this case the server name is taken from that header.
 </li>
 <li>local port: <code>getLocalPort()</code>
 This is also equal to getServerPort(), unless a <code>Host</code> header
-is contained in the request. in this case server port is taken from that header
+is contained in the request. In this case the server port is taken from that header
 if it contains an explicit port, or is equal to the default port of the scheme used.
 </li>
 <li>client address: <code>getRemoteAddr()</code>
@@ -103,7 +103,7 @@ This is for Tomcat, it has not yet been standardized.
 </ul>
 </p>
 </section>
-<section name="Fine tuning">
+<section name="Fine Tuning">
 <br/>
 <p>In some situations this is not enough though. Assume there is another
 less clever reverse proxy in front of your web server, for instance an
@@ -114,18 +114,18 @@ know about that. All it can see is requests coming from the accelerator using
 plain HTTP.
 </p>
 <p>Another example would be a simple reverse proxy in front of your web server,
-so that the client IP address your web server detects is always the IP address
+so that the client IP address that your web server sees is always the IP address
 of this reverse proxy, and not of the original client. Often such reverse proxies
 generate an additional HTTP header, like <code>X-Forwareded-for</code> which
 contains the original client IP address (or a list of IP addresses, if there are
 more cascading reverse proxies in front). It would be nice, if we could use the
-content of such a header as the client IP adrress to pass to the backend.
+content of such a header as the client IP address to pass to the backend.
 </p>
 <p>So we might need to manipulate some of the data that AJP sends to the backend.
 When using mod_jk inside Apache httpd you can use several httpd environment
-variables to let mod_jk know, which data it should forward. These environment
-be set by the httpd directives SetEnv or SetEnvIf, but also in very flexible
-was using mod_rewrite (since httpd 2.x it can not only test against environment
+variables to let mod_jk know, which data it should forward. These environment variables
+can be set by the httpd directives SetEnv or SetEnvIf, but also in very flexible
+way using mod_rewrite (since httpd 2.x it can not only test against environment
 variables, but also set them).
 </p>
 <p>The following list contains all environment variables mod_jk checks, before
@@ -135,7 +135,7 @@ sending data to the backend:
 </li>
 <li>JK_LOCAL_PORT: the local port
 </li>
-<li>JK_REMOTE_HOST: the client host XXX ??
+<li>JK_REMOTE_HOST: the client host
 </li>
 <li>JK_REMOTE_ADDR: the client address
 </li>
@@ -165,21 +165,21 @@ using these variables.
 <p>Some of these variables might also be used by other web server modules. All
 variables whose name does not begin with "JK" are set directly by Apache httpd.
 If you want to change the data, but do not want to negatively influence the behaviour
-of other modules, you can change the names of all variables mod_jk uses. For the
-details see the <a href="../reference/apache.html">Apache reference</a> page.
+of other modules, you can change the names of all variables mod_jk uses to private ones.
+For the details see the <a href="../reference/apache.html">Apache reference</a> page.
 </p>
 <p>All variables, that are not SSL-related have only been introduced in version 1.2.27.
 </p>
 </section>
-<section name="URL handling">
+<section name="URL Handling">
 <br/>
-<subsection name="URL rewriting">
+<subsection name="URL Rewriting">
 <p>Sometimes one want to change path components of the URLs under which an application
 is available. Especially if a web application is deployed as some context, say <code>/myapp</code>,
 marketing prefers short URLs, so want the application to be directly available under
 <code>http://www.mycompany.com/</code>. Although you can deploy the application as the so-called
 ROOT context, which will be directly available at "/", admins often prefer not to use
-the ROT context, e.g. because only one application can be the root context (per host).
+the ROOT context, e.g. because only one application can be the root context (per host).
 </p>
 <p>The procedure to change the URLs in the reverse proxy is tedious, because often
 an application produces self-referencing URLs, which then include the path components,
@@ -214,7 +214,7 @@ RewriteRule ^/(.*) http://www.mycompany.com/myapp/$1 [PT]
 to rewrite any HTTP redirects your application might return. Such redirects typically contain
 the path components you want to hide, because by the HTTP standard, redirects always need to include
 the full URL, and your application is not aware of the fact, that your clients talk to it via
-some shortened URL. An HTTP redirect is done with a special header named <code>Location</code>.
+some shortened URL. An HTTP redirect is done with a special response header named <code>Location</code>.
 We rewrite the Location headers of our responses:
 </p>
 <source>
@@ -225,7 +225,7 @@ Header edit Location ^([^/]*//[^/]*)?/(.*)$ $1/myapp/$2
 <p>3. Use <code>mod_headers</code> again, to rewrite the pathes contained in any cookies,
 your application might set. Such cookie pathes again might contain
 the path components you want to hide.
-A cookie is set with the HTTP header named <code>Set-Cookie</code>.
+A cookie is set with the HTTP response header named <code>Set-Cookie</code>.
 We rewrite the Set-Cookie headers of our responses:
 </p>
 <source>
@@ -247,7 +247,7 @@ of doing the first step with a builtin feature. You define a mapping file for si
 changes like this:
 </p>
 <source>
-# Add a context prefix ...
+# Add a context prefix to all requests ...
 /=/myapp/
 # ... or change some prefix ...
 /oldapp/=/myapp/
@@ -263,10 +263,10 @@ tilde sign '<code>~</code>', indicates, that you are using a regular expression:
 # Use a regular expression rewrite
 ~/oldapps([0-9]*)/=/newapps$1/
 </source>
-<p>There is no support for Steps 2 (rewriting redirect responses) or 3. (rewriting cokie paths).
+<p>There is no support for Steps 2 (rewriting redirect responses) or 3 (rewriting cookie paths).
 </p>
 </subsection>
-<subsection name="URL encoding">
+<subsection name="URL Encoding">
 <p>Some type of problem is triggered by the use of encoded URLs
 (see <a href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoding</a>).
 For the same location there exist
@@ -280,16 +280,17 @@ Finally there is no more way to put the resulting URL in an encoding, which is "
 the one which was used for the original URL.
 </p>
 <p>
-For historical reasons, there have been several alternatives, how mod_jk and the ISAPI 
+For historical reasons, there have been several alternatives, how mod_jk and the ISAPI
 plugin encoded the resulting URL before sending it to the backend. They could be chosen via
 <code>JkOptions</code> (Apache httpd) or <code>uri_select</code> (ISAPI). All of those historical
 encodings are not recommended, because they have either negative functionality implications or
 pose a security risk. The default encoding since version 1.2.24 is <code>ForwardURIProxy</code>
-(Apache httpd) or <code>proxy</code> (ISAPI) and it is strongly recommended to keep the default.
+(Apache httpd) or <code>proxy</code> (ISAPI) and it is strongly recommended to keep the default
+and remove all old explicit settings.
 </p>
 </subsection>
 </section>
-<section name="request attributes">
+<section name="Request Attributes">
 <br/>
 <p>
 You can also add more attributes to any request you are forwarding when using Apache httpd.
