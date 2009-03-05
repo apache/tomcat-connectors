@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="20090301.html">
+
+  &project;
+
+  <properties>
+    <author email="dev.AT.tomcat.DOT.apache.DOT.org">Apache Tomcat Connectors Project</author>
+    <title>2009 News and Status</title>
+  </properties>
+
+<body>
+
+<section name="2009 News &amp; Status">
+<br />
+<subsection name="XX March - JK-1.2.28 released">
+<a name="200903XX.1"></a>
+<br />
+<p>The Apache Tomcat team is proud to announce the immediate availability
+of Tomcat Connectors 1.2.28. This is a stable release concentrating mainly on
+some bug fixes.
+</p><p>
+ Please see the <a href="../miscellaneous/changelog.html">ChangeLog</a> for a full list of changes.
+</p>
+<p>If you find any bugs while using this release, please fill in the
+<a href="https://issues.apache.org/bugzilla/enter_bug.cgi?product=Tomcat%20Connectors">Bugzilla</a>
+Bug Report.
+</p>
+<p>
+The most important new features in this version are:
+</p>
+<h3>Dynamic Address and Port Change Using the Status Worker</h3>
+<p>
+The status worker now allows you to change the address and the port
+of an AJP13 worker on the fly. You can e.g. provision dummy workers with a port
+equal to "0", which will be automatically put into stopped mode during startup.
+Later, when you want to actually use thse workers, you set their address and
+port to the final values.
+</p>
+<p>
+Note that already existing connections will go on using the old
+address and port. This will be improved in future versions.
+</p>
+<h3>Improved Proxy Flexibility</h3>
+<p>
+You can now overwrite more request metadata before the request gets send to the backend.
+This is helpful in case there are other reverse proxies in front of your web server.
+A new <a href="../generic_howto/proxy.html">documentation page</a> explains this in detail.
+</p>
+<h3>Improved IIS support</h3>
+<p>
+IIS support has been improved especially when using mutltiple application pools.
+Furthermore you can now configure the ISAPI plugin to update the uriworkermap.properies
+file on a regular interval using the watchdog thread.
+</p>
+</subsection>
+</section>
+</body>
+</document>
