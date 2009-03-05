@@ -46,7 +46,6 @@ When the application on the backend returns content including
 self-referencing URLs using its own backend address and port, the
 client will usually not be able to use these URLs.
 </p>
-<br/>
 <p>Another example is the client IP address, which for the web server is the
 source IP of the incoming connection, whereas for the backend the
 connection always comes from the web server. This can be a problem, when
@@ -64,11 +63,11 @@ metadata whenever the application asks for it using Servlet API methods.
 and the HttpServletRequest API calls which can be used to retrieve them:
 <ul>
 <li>local name: <code>getLocalName()</code> and <code>getLocalAddr</code>.
-This is also equal to getServerName(), unless a <code>Host</code> header
+This is also equal to <code>getServerName()</code>, unless a <code>Host</code> header
 is contained in the request. In this case the server name is taken from that header.
 </li>
 <li>local port: <code>getLocalPort()</code>
-This is also equal to getServerPort(), unless a <code>Host</code> header
+This is also equal to <code>getServerPort()</code>, unless a <code>Host</code> header
 is contained in the request. In this case the server port is taken from that header
 if it contains an explicit port, or is equal to the default port of the scheme used.
 </li>
