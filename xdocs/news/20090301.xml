@@ -65,11 +65,16 @@ You can now overwrite more request metadata before the request gets send to the 
 This is helpful in case there are other reverse proxies in front of your web server.
 A new <a href="../generic_howto/proxy.html">documentation page</a> explains this in detail.
 </p>
-<h3>Improved IIS support</h3>
+<h3>Improved IIS Support</h3>
 <p>
 IIS support has been improved especially when using mutltiple application pools.
 Furthermore you can now configure the ISAPI plugin to update the uriworkermap.properies
 file on a regular interval using the watchdog thread.
+</p>
+<h3>JNI Worker Deprecation</h3>
+<p>
+Workers of type jni are broken since a long time. Since there is no more
+use for them, they have been deprecated now, and will be removed in a future release.
 </p>
 </subsection>
 </section>

@@ -263,6 +263,7 @@ all features of mod_jk, but you get them automatically with every Apache 2.2.
 </subsection>
 
 <subsection name="JNI doesn't work with Apache 1.3">
+<warn>JNI workers have been deprecated. They will likely not work. Do not use them.</warn>
 <p>
 JNI support requires a multi-threaded environment which is not the general case for Apache 1.3. 
 You should verify if Apache 1.3 has been build with thread support and if not you could add the 
@@ -281,6 +282,7 @@ to Apache 2.x to support JNI.
 </subsection>
 
 <subsection name="JNI report that JVM couldn't be started under Linux">
+<warn>JNI workers have been deprecated. They will likely not work. Do not use them.</warn>
 <p>
 Under Linux, you should set some environment variables BEFORE launching your Apache server :
 </p>

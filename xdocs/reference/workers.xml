@@ -218,6 +218,7 @@ between web server and Tomcat. This type of worker uses sockets as communication
 channel. For detailed description of the AJP13 protocol stack browse to
 <a href="../ajp/ajpv13a.html">AJPv13 protocol specification</a>
 </p>
+<warn>JNI workers have been deprecated. They will likely not work. Do not use them.</warn>
 </directive>
 </directives>
 </subsection>

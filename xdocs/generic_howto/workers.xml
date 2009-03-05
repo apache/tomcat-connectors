@@ -103,7 +103,7 @@ Currently the following worker types that exists are (JK 1.2.5):
   <tr><th>Type</th><th>Description</th></tr>
   <tr><td>ajp12</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajpv12 protocol.</td></tr>
   <tr><td>ajp13</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajpv13 protocol.</td></tr>
-  <tr><td>jni</td><td>This worker knows how to forward requests to in-process Tomcat workers using JNI.</td></tr>
+  <tr><td>jni</td><td>DEPRECATED: This worker knows how to forward requests to in-process Tomcat workers using JNI.</td></tr>
   <tr><td>lb</td><td>This is a load-balancing worker; it knows how to provide round-robin based sticky load balancing with a certain level of fault-tolerance.</td></tr>
   <tr><td>status</td><td>This is a status worker for managing load balancers.</td></tr>
 </table>
@@ -123,8 +123,6 @@ in the table (a worker name may only contain any space the characters [a-zA-Z0-9
   worker.local.type=ajp12
   # Defines a worker named "remote" that uses the ajpv13 protocol to forward requests to a Tomcat process.
   worker.remote.type=ajp13
-  # Defines a worker named "fast" that uses JNI to forward requests to a Tomcat process.
-  worker.fast.type=jni
   # Defines a worker named "loadbalancer" that loadbalances several Tomcat processes transparently.
   worker.loadbalancer.type=lb
 </source>
@@ -308,19 +306,17 @@ web servers use the:</p>
 <p>
 You can define "macros" in the property files. 
 These macros let you define properties and later on use them while 
-constructing other properties and it's very useful when you want to
-change your Java Home, Tomcat Home or OS path separator
+constructing other properties.
 </p>
 
 <source>
-  # property example, don't hardcode path separator
-  ps=\
-  workers.tomcat_home=d:\tomcat
-  workers.java_home=d:\sdk\jdk1.2.2
-  # Using macros we'll have : worker.inprocess.class_path=d:\tomcat\classes
-  worker.inprocess.class_path=$(workers.tomcat_home)$(ps)classes
-  # Using macros we'll have : worker.inprocess.class_path=d:\sdk\jdk1.2.2\lib\tools.jar
-  worker.inprocess.class_path=$(workers.java_home)$(ps)lib$(ps)tools.jar
+  # property example, like a network base address
+  mynet=194.226.31
+  # Using the above macro to simplify the address definitions
+  # for a farm of workers.
+  worker.node1.host=$(mynet).11
+  worker.node2.host=$(mynet).12
+  worker.node3.host=$(mynet).13
 </source>
 
 </subsection>
