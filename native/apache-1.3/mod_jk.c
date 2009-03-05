@@ -661,9 +661,9 @@ static int init_ws_service(apache_private_data_t * private_data,
     s->vhost_to_text = ws_vhost_to_text;
     s->vhost_to_uw_map = ws_vhost_to_uw_map;
 
-    s->auth_type = get_env_string(r, r->connection->ap_auth_type
+    s->auth_type = get_env_string(r, r->connection->ap_auth_type,
                                   conf->auth_type_indicator, 1);
-    s->remote_user = get_env_string(r, r->connection->user
+    s->remote_user = get_env_string(r, r->connection->user,
                                     conf->remote_user_indicator, 1);
 
     s->protocol = r->protocol;
