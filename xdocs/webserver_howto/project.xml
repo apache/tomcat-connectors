@@ -67,6 +67,7 @@
     </menu>
 
     <menu name="News">
+        <item name="2009"                       href="../news/20090301.html"/>
         <item name="2008"                       href="../news/20081001.html"/>
         <item name="2007"                       href="../news/20070301.html"/>
         <item name="2006"                       href="../news/20060101.html"/>
