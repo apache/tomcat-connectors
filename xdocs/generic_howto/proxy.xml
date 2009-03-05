@@ -170,6 +170,26 @@ For the details see the <a href="../reference/apache.html">Apache reference</a> 
 <p>All variables, that are not SSL-related have only been introduced in version 1.2.27.
 </p>
 </section>
+<section name="Tomcat AJP Connector Settings">
+<br/>
+<p>As an alternative to using the environment variables described in the previous section
+(which do only exist when using Apache httpd), you can also configure Tomcat to overwrite
+some of the communications data forwarded by mod_jk. The AJP connector in Tomcat's <code>server.xml</code>
+allows to set the <a href="http://tomcat.apache.org/tomcat-6.0-doc/config/ajp.html#Attributes">following properties</a>:
+<ul>
+<li>proxyName: server name as returned by <code>getServerName()</code>
+</li>
+<li>proxyPort: server port as returned by <code>getServerPort()</code>
+</li>
+<li>scheme: protocol scheme as returned by <code>getScheme()</code>
+</li>
+<li>secure: set to "true", if you wish <code>isSecure()</code> to return "true".
+</li>
+</ul>
+Remember: in general you don't need to set those. AJP handles all cases automatically,
+where the web server running mod_jk knows the right data.
+</p>
+</section>
 <section name="URL Handling">
 <br/>
 <subsection name="URL Rewriting">
