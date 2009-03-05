@@ -91,9 +91,9 @@
         <bug>46734</bug>: Documentation: Fix broken links. (markt)
       </fix>
       <update>
-      IIS: Update uriworkermap.properies file on
+      IIS: Update uriworkermap.properties file on
       a regular interval. This requires both worker_mount_reload
-      and watchog_interval to be defined. (mturk)
+      and watchdog_interval to be defined. (mturk)
       </update>
       <update>
       Status: Optimize forced uriworkermap.properties reload. (mturk)
