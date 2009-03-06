@@ -43,6 +43,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        LB: Set global worker state to error when we reach max_reply_timeouts,
+        or fail_on_status triggered hard error. (rjung)
+      </fix>
       <update>
         JNI: Deprecate JNI workers. (rjung)
       </update>
