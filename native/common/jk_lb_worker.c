@@ -1295,12 +1295,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      * Failing over to another node could help.
                      */
                     rec->s->errors++;
-                    if (rec->s->busy) {
-                        rec->s->state = JK_LB_STATE_OK;
-                    }
-                    else {
-                        rec->s->state = JK_LB_STATE_ERROR;
-                    }
+                    rec->s->state = JK_LB_STATE_ERROR;
                     p->states[rec->i] = JK_LB_STATE_ERROR;
                     rec->s->error_time = time(NULL);
                     rc = JK_FALSE;
@@ -1312,12 +1307,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                          * Take this node out of service.
                          */
                         rec->s->errors++;
-                        if (rec->s->busy) {
-                            rec->s->state = JK_LB_STATE_OK;
-                        }
-                        else {
-                            rec->s->state = JK_LB_STATE_ERROR;
-                        }
+                        rec->s->state = JK_LB_STATE_ERROR;
                         p->states[rec->i] = JK_LB_STATE_ERROR;
                         rec->s->error_time = time(NULL);
                     }
