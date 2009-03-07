@@ -1177,7 +1177,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
             JK_TRACE_EXIT(l);
-            return JK_FALSE;
+            return JK_AJP_PROTOCOL_ERROR;
         }
     }
     else if (ae->proto == AJP14_PROTO) {
@@ -1199,7 +1199,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
             JK_TRACE_EXIT(l);
-            return JK_FALSE;
+            return JK_AJP_PROTOCOL_ERROR;
         }
     }
 
@@ -1216,7 +1216,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         jk_shutdown_socket(ae->sd, l);
         ae->sd = JK_INVALID_SOCKET;
         JK_TRACE_EXIT(l);
-        return JK_FALSE;
+        return JK_AJP_PROTOCOL_ERROR;
     }
 
     msg->len = msglen;
@@ -1245,16 +1245,17 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         }
         ae->sd = JK_INVALID_SOCKET;
         JK_TRACE_EXIT(l);
-        return JK_FALSE;
+        /* Altough connection, this is effectively protocol error.
+         * We got the AJP header packet, but not the packet payload
+         */
+        return JK_AJP_PROTOCOL_ERROR;
     }
     ae->endpoint.rd += (jk_uint64_t)rc;
 
-    if (ae->proto == AJP13_PROTO) {
-        if (JK_IS_DEBUG_LEVEL(l))
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        if (ae->proto == AJP13_PROTO)
             jk_dump_buff(l, JK_LOG_DEBUG, "received from ajp13", msg);
-    }
-    else if (ae->proto == AJP14_PROTO) {
-        if (JK_IS_DEBUG_LEVEL(l))
+        else if (ae->proto == AJP14_PROTO)
             jk_dump_buff(l, JK_LOG_DEBUG, "received from ajp14", msg);
     }
     JK_TRACE_EXIT(l);
@@ -1952,7 +1953,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
             }
         }
 
-        if (ajp_connection_tcp_get_message(p, op->reply, l) != JK_TRUE) {
+        if ((rc = ajp_connection_tcp_get_message(p, op->reply, l)) != JK_TRUE) {
             if (headeratclient == JK_FALSE) {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) Tomcat is down or refused connection. "
@@ -2005,12 +2006,8 @@ static int ajp_get_reply(jk_endpoint_t *e,
 
             }
 
-            /*
-             * we want to display the webservers error page, therefore
-             * we return JK_FALSE
-             */
             JK_TRACE_EXIT(l);
-            return JK_FALSE;
+            return rc;
         }
 
         rc = ajp_process_callback(op->reply, op->post, p, s, l);
@@ -2167,9 +2164,10 @@ static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_logg
  * JK_STATUS_FATAL_ERROR JK_HTTP_SERVER_BUSY JK_FALSE         ajp_get_reply() returns JK_STATUS_FATAL_ERROR
  *           Only if !op->recoverable
  * JK_REPLY_TIMEOUT  JK_HTTP_GATEWAY_TIME_OUT JK_TRUE         ajp_get_reply() returns JK_REPLY_TIMEOUT
- * ??? JK_FATAL_ERROR    JK_HTTP_GATEWAY_TIME_OUT JK_FALSE        ajp_get_reply() returns something else
+ * JK_AJP_PROTOCOL_ERROR  JK_HTTP_GATEWAY_TIME_OUT JK_TRUE    ajp_get_reply() returns JK_AJP_PROTOCOL_ERROR
+ * ??? JK_FATAL_ERROR    JK_HTTP_GATEWAY_TIME_OUT JK_FALSE    ajp_get_reply() returns something else
  *           Only if !op->recoverable
- * ??? JK_FALSE          JK_HTTP_SERVER_BUSY    JK_TRUE           ajp_get_reply() returns JK_FALSE
+ * ??? JK_FALSE          JK_HTTP_SERVER_BUSY    JK_TRUE        ajp_get_reply() returns JK_FALSE
  *           Only if op->recoverable and no more ajp13/ajp14 direct retries
  * JK_TRUE           JK_HTTP_OK             ?                 OK
  */
@@ -2402,6 +2400,11 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
             else if (err == JK_STATUS_ERROR || err == JK_STATUS_FATAL_ERROR) {
                 *is_error = JK_HTTP_SERVER_BUSY;
                 msg = "because of response status";
+                rc = err;
+            }
+            else if (err == JK_AJP_PROTOCOL_ERROR) {
+                *is_error = JK_HTTP_BAD_GATEWAY;
+                msg = "because of protocol error";
                 rc = err;
             }
             /* This should only be the cases err == JK_FALSE */

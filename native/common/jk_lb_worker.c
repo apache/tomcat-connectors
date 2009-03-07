@@ -1288,6 +1288,17 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     rec->s->error_time = 0;
                     rc = JK_FALSE;
                 }
+                else if (service_stat == JK_AJP_PROTOCOL_ERROR) {
+                    /*
+                     * We've received the bad AJP message from the backend.
+                     * Don't mark the node as bad.
+                     * Failing over to another node could help.
+                     */
+                    rec->s->state  = JK_LB_STATE_OK;
+                    p->states[rec->i] = JK_LB_STATE_ERROR;
+                    rec->s->error_time = 0;
+                    rc = JK_FALSE;
+                }
                 else if (service_stat == JK_STATUS_FATAL_ERROR) {
                     /*
                      * Status code configured as service is down.
