@@ -98,6 +98,8 @@ struct jk_shm_ajp_worker
     volatile int busy;
     /* Maximum number of busy channels */
     volatile int max_busy;
+    /* Number of currently channels in error state */
+    volatile int in_error;
     volatile time_t error_time;
     /* Number of bytes read from remote */
     volatile jk_uint64_t readed;
