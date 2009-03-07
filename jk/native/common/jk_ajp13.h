@@ -47,6 +47,7 @@ extern "C"
 #define JK_STATUS_ERROR             (-8)
 #define JK_STATUS_FATAL_ERROR       (-9)
 #define JK_REPLY_TIMEOUT            (-10)
+#define JK_AJP_PROTOCOL_ERROR       (-11)
 
 #define AJP13_MAX_SEND_BODY_SZ      (DEF_BUFFER_SZ - 6)
 #define AJP13_DEF_TIMEOUT           (0) /* Idle timout for pooled connections */
