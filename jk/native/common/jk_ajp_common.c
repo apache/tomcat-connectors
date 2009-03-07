@@ -1111,8 +1111,10 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
  * @param ae       endpoint
  * @param msg      message to send
  * @param l        logger
- * @return         JK_FALSE: failure
- *                 JK_TRUE: success
+ * @return         JK_TRUE: success
+ *                 JK_FALSE: could not read the AJP packet header
+ *                 JK_AJP_PROTOCOL_ERROR: failure after reading
+ *                 the AJP packet header
  * @remark         Always closes socket in case of
  *                 a socket error
  * @remark         Cares about ae->last_errno
@@ -1245,8 +1247,8 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         }
         ae->sd = JK_INVALID_SOCKET;
         JK_TRACE_EXIT(l);
-        /* Altough connection, this is effectively protocol error.
-         * We got the AJP header packet, but not the packet payload
+        /* Although we have a connection, this is effectively a protocol error.
+         * We received the AJP header packet, but not the packet payload
          */
         return JK_AJP_PROTOCOL_ERROR;
     }
@@ -1880,7 +1882,9 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
  * return value           op->recoverable    reason
  * JK_REPLY_TIMEOUT       ?recovery_options  Reply timeout while waiting for response packet
  * JK_FALSE               ?recovery_options  Error during ajp_connection_tcp_get_message()
- *           Communication error or wrong packet content while reading from backend.
+ *           Could not read the AJP packet header
+ * JK_AJP_PROTOCOL_ERROR: ?recovery_options  Error during ajp_connection_tcp_get_message()
+ *           Failure after reading the AJP packet header
  * JK_STATUS_ERROR        mostly JK_TRUE     ajp_process_callback() returns JK_STATUS_ERROR
  *           Recoverable, if callback didn't return with a JK_HAS_RESPONSE before.
  *           JK_HAS_RESPONSE: parts of the post buffer are consumed.
@@ -2162,17 +2166,17 @@ static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_logg
  *           Only if op->recoverable and no more ajp13/ajp14 direct retries
  * JK_STATUS_ERROR   JK_HTTP_SERVER_BUSY   JK_FALSE           ajp_get_reply() returns JK_STATUS_ERROR
  *           Only if !op->recoverable
- * JK_STATUS_FATAL_ERROR JK_HTTP_SERVER_BUSY JK_TRUE          ajp_get_reply() returns JK_STATUS_ERROR
+ * JK_STATUS_FATAL_ERROR JK_HTTP_SERVER_BUSY  JK_TRUE         ajp_get_reply() returns JK_STATUS_ERROR
  *           Only if op->recoverable and no more ajp13/ajp14 direct retries
- * JK_STATUS_FATAL_ERROR JK_HTTP_SERVER_BUSY JK_FALSE         ajp_get_reply() returns JK_STATUS_FATAL_ERROR
+ * JK_STATUS_FATAL_ERROR JK_HTTP_SERVER_BUSY  JK_FALSE        ajp_get_reply() returns JK_STATUS_FATAL_ERROR
  *           Only if !op->recoverable
  * JK_REPLY_TIMEOUT  JK_HTTP_GATEWAY_TIME_OUT JK_TRUE         ajp_get_reply() returns JK_REPLY_TIMEOUT
- * JK_AJP_PROTOCOL_ERROR  JK_HTTP_GATEWAY_TIME_OUT JK_TRUE    ajp_get_reply() returns JK_AJP_PROTOCOL_ERROR
+ * JK_AJP_PROTOCOL_ERROR JK_HTTP_GATEWAY_TIME_OUT ?           ajp_get_reply() returns JK_AJP_PROTOCOL_ERROR
  * ??? JK_FATAL_ERROR    JK_HTTP_GATEWAY_TIME_OUT JK_FALSE    ajp_get_reply() returns something else
  *           Only if !op->recoverable
- * ??? JK_FALSE          JK_HTTP_SERVER_BUSY    JK_TRUE        ajp_get_reply() returns JK_FALSE
+ * ??? JK_FALSE      JK_HTTP_SERVER_BUSY   JK_TRUE            ajp_get_reply() returns JK_FALSE
  *           Only if op->recoverable and no more ajp13/ajp14 direct retries
- * JK_TRUE           JK_HTTP_OK             ?                 OK
+ * JK_TRUE           JK_HTTP_OK            ?                  OK
  */
 static int JK_METHOD ajp_service(jk_endpoint_t *e,
                                  jk_ws_service_t *s,
