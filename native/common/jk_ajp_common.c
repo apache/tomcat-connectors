@@ -2124,8 +2124,6 @@ static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_logg
     aw->s->transferred += e->wr;
     if (aw->s->busy)
         aw->s->busy--;
-    if (aw->s->in_error)
-        aw->s->in_error--;
     if (rc == JK_TRUE) {
         aw->s->state = JK_AJP_STATE_OK;
     }
@@ -2136,7 +2134,6 @@ static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_logg
     else {
         aw->s->state = JK_AJP_STATE_ERROR;
         aw->s->errors++;
-        aw->s->in_error++;
         aw->s->error_time = time(NULL);
     }
 }

@@ -1340,7 +1340,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      * Time for fault tolerance (if possible)...
                      */
                     rec->s->errors++;
-                    if (rec->s->busy && (rec->s->busy / 2) > rec->in_errors) {
+                    if (rec->s->busy) {
                         rec->s->state = JK_LB_STATE_OK;
                     }
                     else {
