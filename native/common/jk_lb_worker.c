@@ -558,6 +558,14 @@ static int recover_workers(lb_worker_t *p,
                 non_error++;
             }
         }
+        else if (w->s->error_time > 0 &&
+                 (int)difftime(now, w->s->error_time) >= p->error_escalation_time) {
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
+                       "worker %s escalating local error to global error",
+                       w->name);
+            w->s->state = JK_LB_STATE_ERROR;
+        }
         else {
             non_error++;
             if (w->s->state == JK_LB_STATE_OK &&
@@ -1346,6 +1354,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     if (rec->s->busy == 0 ||
                         (rec->s->error_time > 0 &&
                          (int)difftime(now, rec->s->error_time) >= p->worker->error_escalation_time)) {
+                        if (JK_IS_DEBUG_LEVEL(l))
+                            jk_log(l, JK_LOG_DEBUG,
+                                   "worker %s escalating local error to global error",
+                                   rec->name);
                         rec->s->state = JK_LB_STATE_ERROR;
                     }
                     p->states[rec->i] = JK_LB_STATE_ERROR;
