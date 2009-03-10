@@ -1544,9 +1544,9 @@ static void display_map(jk_ws_service_t *s,
             jk_printf(s, " source=\"%s\"", uri_worker_map_get_source(uwr, l));
             jk_printf(s, " reply_timeout=\"%d\"", uwr->extensions.reply_timeout);
             jk_printf(s, " fail_on_status=\"%s\"", uwr->extensions.fail_on_status_str ? uwr->extensions.fail_on_status_str : "");
-            jk_printf(s, " active=\"%s\"", uwr->extensions.active);
-            jk_printf(s, " disabled=\"%s\"", uwr->extensions.disabled);
-            jk_printf(s, " stopped=\"%s\"", uwr->extensions.stopped);
+            jk_printf(s, " active=\"%s\"", uwr->extensions.active ? uwr->extensions.active : "-");
+            jk_printf(s, " disabled=\"%s\"", uwr->extensions.disabled ? uwr->extensions.disabled : "-");
+            jk_printf(s, " stopped=\"%s\"", uwr->extensions.stopped ? uwr->extensions.stopped : "-");
             jk_puts(s, "\n");
         }
         else if (mime == JK_STATUS_MIME_PROP) {
