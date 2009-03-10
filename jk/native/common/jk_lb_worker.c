@@ -580,6 +580,7 @@ static int recover_workers(lb_worker_t *p,
 }
 
 static int force_recovery(lb_worker_t *p,
+                          int *states,
                           jk_logger_t *l)
 {
     unsigned int i;
@@ -598,6 +599,8 @@ static int force_recovery(lb_worker_t *p,
             aw = (ajp_worker_t *)w->worker->worker_private;
             aw->s->reply_timeouts = 0;
             w->s->state = JK_LB_STATE_FORCE;
+            if (states != NULL)
+                states[i] = JK_LB_STATE_FORCE;
             forced++;
         }
     }
@@ -669,7 +672,7 @@ static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, jk_logger_t *l
                        JK_LB_DECAY_MULT * delta / lb->maintain_time);
             curmax = decay_load(lb, JK_LB_DECAY_MULT * delta / lb->maintain_time, l);
             if (!recover_workers(lb, curmax, now, l)) {
-                force_recovery(lb, l);
+                force_recovery(lb, NULL, l);
             }
         }
 
@@ -1418,7 +1421,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                  * If it still fails, Tomcat is still disconnected.
                  */
                 jk_shm_lock();
-                nf = force_recovery(p->worker, l);
+                nf = force_recovery(p->worker, p->states, l);
                 jk_shm_unlock();
                 was_forced = 1;
                 if (nf) {

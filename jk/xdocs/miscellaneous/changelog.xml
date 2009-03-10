@@ -43,6 +43,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        LB: make forced recovery work with local error states. (rjung)
+      </fix>
       <update>
         Status: Include error time in display. (rjung)
       </update>
