@@ -85,7 +85,7 @@
       </update>
       <fix>
         Status: Show - Edit - Show always ends in single lb member show,
-        even when started from all members lb show.
+        even when started from all members lb show. (rjung)
       </fix>
       <fix>
         Status: Wildcards in sub worker names were broken for update actions. (rjung)
