@@ -87,6 +87,7 @@
 #define IS_WORKER_STOPPED_DEPRECATED  ("stopped")
 #define ACTIVATION_OF_WORKER        ("activation")
 #define WORKER_RECOVER_TIME         ("recover_time")
+#define WORKER_ERROR_ESCALATION_TIME ("error_escalation_time")
 #define MAX_REPLY_TIMEOUTS_OF_WORKER ("max_reply_timeouts")
 #define RETRY_INTERVAL_OF_WORKER    ("retry_interval")
 #define WORKER_MAX_PACKET_SIZE      ("max_packet_size")
@@ -984,6 +985,19 @@ int jk_get_worker_recover_timeout(jk_map_t *m, const char *wname, int def)
     }
 
     MAKE_WORKER_PARAM(WORKER_RECOVER_TIME);
+
+    return jk_map_get_int(m, buf, def);
+}
+
+int jk_get_worker_error_escalation_time(jk_map_t *m, const char *wname, int def)
+{
+    char buf[1024];
+
+    if (!m || !wname) {
+        return -1;
+    }
+
+    MAKE_WORKER_PARAM(WORKER_ERROR_ESCALATION_TIME);
 
     return jk_map_get_int(m, buf, def);
 }
