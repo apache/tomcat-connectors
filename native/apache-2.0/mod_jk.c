@@ -3003,7 +3003,7 @@ static void * APR_THREAD_FUNC jk_watchdog_func(apr_thread_t *thd, void *data)
                "Watchdog thread initialized with %d second interval",
                jk_watchdog_interval);
     for (;;) {
-        for (i = 0; i < jk_watchdog_interval; i++) {
+        for (i = 0; i < (jk_watchdog_interval * 10); i++) {
             /* apr_sleep() uses microseconds */
             apr_sleep((apr_time_t)(100000));
             if (!jk_watchdog_interval)
