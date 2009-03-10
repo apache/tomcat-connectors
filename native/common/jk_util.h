@@ -100,6 +100,8 @@ int jk_get_worker_recycle_timeout(jk_map_t *m, const char *wname, int def);
 
 int jk_get_worker_recover_timeout(jk_map_t *m, const char *wname, int def);
 
+int jk_get_worker_error_escalation_time(jk_map_t *m, const char *wname, int def);
+
 int jk_get_worker_max_reply_timeouts(jk_map_t *m, const char *wname, int def);
 
 int jk_get_worker_retry_interval(jk_map_t *m, const char *wname, int def);
