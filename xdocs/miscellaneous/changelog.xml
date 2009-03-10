@@ -43,6 +43,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        Status: Fix crash in text display of status worker. (rjung)
+      </fix>
       <update>
         LB: Add new property error_escalation_time to fine tune
         escalation of local errors to global errors. (rjung)
