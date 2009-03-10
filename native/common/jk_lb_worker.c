@@ -1240,10 +1240,12 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     }
                 }
 
-                /* When returning the endpoint mark the worker as not busy.
-                 * We have at least one endpoint free
+                /* When have an endpoint and we ran a request, assume
+                 * we are OK, unless we last were in error.
+                 * We will below explicitely set OK or ERROR according
+                 * to the returned service_stat.
                  */
-                if (rec->s->state == JK_LB_STATE_BUSY) {
+                if (rec->s->state != JK_LB_STATE_ERROR) {
                     rec->s->state  = JK_LB_STATE_OK;
                     p->states[rec->i] = JK_LB_STATE_OK;
                 }
@@ -1279,29 +1281,28 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 else if (service_stat == JK_SERVER_ERROR) {
                     /*
                      * Internal JK server error.
-                     * Don't mark the node as bad.
+                     * Keep previous global state.
+                     * Do not try to reuse the same node for the same request.
                      * Failing over to another node could help.
                      */
-                    rec->s->state  = JK_LB_STATE_OK;
                     p->states[rec->i] = JK_LB_STATE_ERROR;
-                    rec->s->error_time = 0;
                     rc = JK_FALSE;
                 }
                 else if (service_stat == JK_AJP_PROTOCOL_ERROR) {
                     /*
-                     * We've received the bad AJP message from the backend.
-                     * Don't mark the node as bad.
+                     * We've received a bad AJP message from the backend.
+                     * Keep previous global state.
+                     * Do not try to reuse the same node for the same request.
                      * Failing over to another node could help.
                      */
-                    rec->s->state  = JK_LB_STATE_OK;
                     p->states[rec->i] = JK_LB_STATE_ERROR;
-                    rec->s->error_time = 0;
                     rc = JK_FALSE;
                 }
                 else if (service_stat == JK_STATUS_ERROR) {
                     /*
                      * Status code configured as service is down.
-                     * Don't mark the node as bad.
+                     * The node is fine.
+                     * Do not try to reuse the same node for the same request.
                      * Failing over to another node could help.
                      */
                     rec->s->state  = JK_LB_STATE_OK;
@@ -1313,6 +1314,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     /*
                      * Status code configured as service is down.
                      * Mark the node as bad.
+                     * Do not try to reuse the same node for the same request.
                      * Failing over to another node could help.
                      */
                     rec->s->errors++;
@@ -1325,7 +1327,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     if (aw->s->reply_timeouts > (unsigned)p->worker->max_reply_timeouts) {
                         /*
                          * Service failed - to many reply timeouts
-                         * Take this node out of service.
+                         * Mark the node as bad.
+                         * Do not try to reuse the same node for the same request.
+                         * Failing over to another node could help.
                          */
                         rec->s->errors++;
                         rec->s->state = JK_LB_STATE_ERROR;
@@ -1334,20 +1338,21 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     }
                     else {
                         /*
-                         * Put lb member into local error,
-                         * so that we will not use it during
-                         * fail over attempts.
+                         * Reply timeout, bot not yet too many of them.
+                         * Keep previous global state.
+                         * Do not try to reuse the same node for the same request.
+                         * Failing over to another node could help.
                          */
-                        rec->s->state  = JK_LB_STATE_OK;
                         p->states[rec->i] = JK_LB_STATE_ERROR;
-                        rec->s->error_time = 0;
                     }
                     rc = JK_FALSE;
                 }
                 else {
                     /*
-                     * Service failed !!!
-                     * Time for fault tolerance (if possible)...
+                     * Various unspecific error cases.
+                     * Keep previous global state, if we are not in local error since to long.
+                     * Do not try to reuse the same node for the same request.
+                     * Failing over to another node could help.
                      */
                     time_t now = time(NULL);
                     rec->s->errors++;
