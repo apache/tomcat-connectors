@@ -43,6 +43,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        LB: Add new property error_escalation_time to fine tune
+        escalation of local errors to global errors. (rjung)
+      </update>
       <fix>
         LB: Set global worker state to error when we reach max_reply_timeouts,
         or fail_on_status triggered hard error. (rjung)
