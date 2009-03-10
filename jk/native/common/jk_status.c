@@ -263,7 +263,7 @@
                                            "<th>State</th>" \
                                            "<th>Acc</th>" \
                                            "<th>Err</th><th>CE</th><th>RE</th>" \
-                                           "<th>Wr</th><th>Rd</th><th>Busy</th><th>Max</th><th>LR</th>" \
+                                           "<th>Wr</th><th>Rd</th><th>Busy</th><th>Max</th><th>LR</th><th>LE</th>" \
                                            "</tr>\n"
 #define JK_STATUS_SHOW_AJP_ROW             "<tr>" \
                                            "<td>%s</td>" \
@@ -276,6 +276,7 @@
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
+                                           "<td>%s</td>" \
                                            "</tr>\n"
 #define JK_STATUS_SHOW_LB_HEAD             "<tr>" \
                                            "<th>Type</th>" \
@@ -308,7 +309,7 @@
                                            "<th>Err</th><th>CE</th><th>RE</th>" \
                                            "<th>Wr</th><th>Rd</th><th>Busy</th><th>Max</th>" \
                                            "<th>" JK_STATUS_ARG_LBM_TEXT_ROUTE "</th>" \
-                                           "<th>RR</th><th>Cd</th><th>Rs</th><th>LR</th>" \
+                                           "<th>RR</th><th>Cd</th><th>Rs</th><th>LR</th><th>LE</th>" \
                                            "</tr>\n"
 #define JK_STATUS_SHOW_MEMBER_ROW          "<td>%s</td>" \
                                            "<td>%s</td>" \
@@ -330,6 +331,7 @@
                                            "<td>%s</td>" \
                                            "<td>%d/%d</td>" \
                                            "<td>%d</td>" \
+                                           "<td>%s</td>" \
                                            "</tr>\n"
 #define JK_STATUS_SHOW_MEMBER_CONF_HEAD    "<tr>" \
                                            "<th>Name</th><th>Type</th>" \
@@ -707,6 +709,31 @@ static char *status_strfsize(jk_uint64_t size, char *buf)
             return strcpy(buf, "****");
         return buf;
     } while (1);
+}
+
+static int status_strftime(time_t clock, int mime, char *buf_time, char *buf_tz,
+                           jk_logger_t *l)
+{
+    int rc_time;
+#ifdef _MT_CODE_PTHREAD
+    struct tm res;
+    struct tm *tms = localtime_r(&clock, &res);
+#else
+    struct tm *tms = localtime(&clock);
+#endif
+
+    JK_TRACE_ENTER(l);
+
+    if (mime == JK_STATUS_MIME_HTML)
+        rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_HTML, tms);
+    else {
+        rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_TEXT, tms);
+    }
+    strftime(buf_tz, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_TZ, tms);
+
+    JK_TRACE_EXIT(l);
+    return rc_time;
+
 }
 
 static int status_rate(lb_sub_worker_t *wr, status_worker_t *w,
@@ -1723,6 +1750,12 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
     status_worker_t *w = p->worker;
     int rs_min = 0;
     int rs_max = 0;
+    int delta_reset = (int)difftime(now, aw->s->last_reset);
+    int delta_error = -1;
+    char buf_time[JK_STATUS_TIME_BUF_SZ];
+    char buf_tz[JK_STATUS_TIME_BUF_SZ];
+    time_t error_time = 0;
+    int rc_time = -1;
 
     JK_TRACE_ENTER(l);
 
@@ -1733,6 +1766,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         name = lb->name;
         sub_name = wr->name;
         ajp_name = wr->name;
+        error_time = wr->s->error_time;
         if (wr->s->state == JK_LB_STATE_ERROR) {
             rs_min = lb->recover_wait_time - (int)difftime(now, wr->s->error_time);
             if (rs_min < 0) {
@@ -1748,11 +1782,16 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         name = aw->name;
         sub_name = NULL;
         ajp_name = aw->name;
+        error_time = aw->s->error_time;
+    }
+
+    if (error_time > 0) {
+        delta_error = (int)difftime(now, error_time);
+        rc_time = status_strftime(error_time, mime, buf_time, buf_tz, l);
     }
 
     if (mime == JK_STATUS_MIME_HTML) {
 
-        int delta = (int)difftime(now, aw->s->last_reset);
         if (lb)
             jk_printf(s, JK_STATUS_SHOW_MEMBER_ROW,
                       sub_name,
@@ -1763,14 +1802,14 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                       wr->lb_mult,
                       wr->s->lb_value,
                       aw->s->used,
-                      delta > 0 ? (int)(aw->s->used / delta) : -1,
+                      delta_reset > 0 ? (int)(aw->s->used / delta_reset) : -1,
                       wr->s->errors,
                       aw->s->client_errors,
                       aw->s->reply_timeouts,
                       status_strfsize(aw->s->transferred, buf_wr),
-                      delta > 0 ? status_strfsize(aw->s->transferred / delta, buf_wr_sec) : "-",
+                      delta_reset > 0 ? status_strfsize(aw->s->transferred / delta_reset, buf_wr_sec) : "-",
                       status_strfsize(aw->s->readed, buf_rd),
-                      delta > 0 ? status_strfsize(aw->s->readed / delta , buf_rd_sec) : "-",
+                      delta_reset > 0 ? status_strfsize(aw->s->readed / delta_reset , buf_rd_sec) : "-",
                       aw->s->busy,
                       aw->s->max_busy,
                       wr->route,
@@ -1778,22 +1817,24 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                       wr->domain ? (*wr->domain ? wr->domain : "&nbsp;") : "&nbsp",
                       rs_min,
                       rs_max,
-                      delta);
+                      delta_reset,
+                      rc_time > 0 ? buf_time : "-");
         else {
             jk_printf(s, JK_STATUS_SHOW_AJP_ROW,
                       jk_ajp_get_state(aw, l),
                       aw->s->used,
-                      delta > 0 ? (int)(aw->s->used / delta) : -1,
+                      delta_reset > 0 ? (int)(aw->s->used / delta_reset) : -1,
                       aw->s->errors,
                       aw->s->client_errors,
                       aw->s->reply_timeouts,
                       status_strfsize(aw->s->transferred, buf_wr),
-                      delta > 0 ? status_strfsize(aw->s->transferred / delta, buf_wr_sec) : "-",
+                      delta_reset > 0 ? status_strfsize(aw->s->transferred / delta_reset, buf_wr_sec) : "-",
                       status_strfsize(aw->s->readed, buf_rd),
-                      delta > 0 ? status_strfsize(aw->s->readed / delta , buf_rd_sec) : "-",
+                      delta_reset > 0 ? status_strfsize(aw->s->readed / delta_reset , buf_rd_sec) : "-",
                       aw->s->busy,
                       aw->s->max_busy,
-                      delta);
+                      delta_reset,
+                      rc_time > 0 ? buf_time : "-");
         }
 
     }
@@ -1854,7 +1895,13 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         else
             jk_print_xml_att_int(s, off+2, "map_count", map_count);
         jk_print_xml_att_long(s, off+2, "last_reset_at", (long)aw->s->last_reset);
-        jk_print_xml_att_int(s, off+2, "last_reset_ago", (int)difftime(now, aw->s->last_reset));
+        jk_print_xml_att_int(s, off+2, "last_reset_ago", delta_reset);
+        if (rc_time > 0 ) {
+            jk_print_xml_att_string(s, off+2, "error_time_datetime", buf_time);
+            jk_print_xml_att_string(s, off+2, "error_time_tz", buf_tz);
+            jk_print_xml_att_int(s, off+2, "error_time_unix_seconds", error_time);
+            jk_print_xml_att_int(s, off+2, "error_time_ago", delta_error);
+        }
         /* Terminate the tag */
         jk_print_xml_stop_elt(s, off, 1);
 
@@ -1913,7 +1960,13 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         else
             jk_printf(s, " map_count=%d", map_count);
         jk_printf(s, " last_reset_at=%ld", (long)aw->s->last_reset);
-        jk_printf(s, " last_reset_ago=%d", (int)difftime(now, aw->s->last_reset));
+        jk_printf(s, " last_reset_ago=%d", delta_reset);
+        if (rc_time > 0) {
+            jk_printf(s, " error_time_datetime=%s", buf_time);
+            jk_printf(s, " error_time_tz=%s", buf_tz);
+            jk_printf(s, " error_time_unix_seconds=%d", error_time);
+            jk_printf(s, " error_time_ago=%d", delta_error);
+        }
         jk_puts(s, "\n");
 
     }
@@ -1968,7 +2021,13 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         else
             jk_print_prop_att_int(s, w, name, "map_count", map_count);
         jk_print_prop_att_long(s, w, name, "last_reset_at", (long)aw->s->last_reset);
-        jk_print_prop_att_int(s, w, name, "last_reset_ago", (int)difftime(now, aw->s->last_reset));
+        jk_print_prop_att_int(s, w, name, "last_reset_ago", delta_reset);
+        if (rc_time > 0) {
+            jk_print_prop_att_string(s, w, name, "error_time_datetime", buf_time);
+            jk_print_prop_att_string(s, w, name, "error_time_tz", buf_tz);
+            jk_print_prop_att_int(s, w, name, "error_time_unix seconds", error_time);
+            jk_print_prop_att_int(s, w, name, "error_time_ago seconds", delta_error);
+        }
 
     }
     JK_TRACE_EXIT(l);
@@ -3611,6 +3670,7 @@ static void display_legend(jk_ws_service_t *s,
             "<tr><th>Cd</th><td>Cluster domain</td></tr>\n"
             "<tr><th>Rs</th><td>Recovery scheduled in app. min/max seconds</td></tr>\n"
             "<tr><th>LR</th><td>Seconds since last reset of statistics counters</td></tr>\n"
+            "<tr><th>LE</th><td>Timestamp of the last error</td></tr>\n"
             "</tbody>\n"
             "</table>\n");
     }
@@ -4527,21 +4587,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
     if (!err) {
         char buf_time[JK_STATUS_TIME_BUF_SZ];
         char buf_tz[JK_STATUS_TIME_BUF_SZ];
-        int rc_time;
         time_t clock = time(NULL);
         long unix_seconds = (long)clock;
-#ifdef _MT_CODE_PTHREAD
-        struct tm res;
-        struct tm *tms = localtime_r(&clock, &res);
-#else
-        struct tm *tms = localtime(&clock);
-#endif
-        if (mime == JK_STATUS_MIME_HTML)
-            rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_HTML, tms);
-        else {
-            rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_TEXT, tms);
-        }
-        strftime(buf_tz, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_TZ, tms);
+        int rc_time = status_strftime(clock, mime, buf_time, buf_tz, l);
         if (cmd == JK_STATUS_CMD_UPDATE) {
             /* lock shared memory */
             jk_shm_lock();

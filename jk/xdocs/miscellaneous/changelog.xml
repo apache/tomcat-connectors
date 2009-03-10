@@ -43,8 +43,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Status: Include error time in display. (rjung)
+      </update>
       <fix>
-        Status: Fix crash in text display of status worker. (rjung)
+        Status: Fix crash in text display. (rjung)
       </fix>
       <update>
         LB: Add new property error_escalation_time to fine tune
