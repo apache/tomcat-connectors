@@ -183,6 +183,7 @@ struct lb_worker
     int          sticky_session;
     int          sticky_session_force;
     int          recover_wait_time;
+    int          error_escalation_time;
     int          max_reply_timeouts;
     int          retries;
     int          retry_interval;

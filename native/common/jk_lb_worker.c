@@ -297,6 +297,7 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
     p->sticky_session = p->s->sticky_session;
     p->sticky_session_force = p->s->sticky_session_force;
     p->recover_wait_time = p->s->recover_wait_time;
+    p->error_escalation_time = p->s->error_escalation_time;
     p->max_reply_timeouts = p->s->max_reply_timeouts;
     p->retries = p->s->retries;
     p->retry_interval = p->s->retry_interval;
@@ -351,6 +352,7 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
     p->s->sticky_session = p->sticky_session;
     p->s->sticky_session_force = p->sticky_session_force;
     p->s->recover_wait_time = p->recover_wait_time;
+    p->s->error_escalation_time = p->error_escalation_time;
     p->s->max_reply_timeouts = p->max_reply_timeouts;
     p->s->retries = p->retries;
     p->s->retry_interval = p->retry_interval;
@@ -1640,6 +1642,8 @@ static int JK_METHOD init(jk_worker_t *pThis,
                                                          WAIT_BEFORE_RECOVER);
     if (p->recover_wait_time < 1)
         p->recover_wait_time = 1;
+    p->error_escalation_time = jk_get_worker_error_escalation_time(props, p->name,
+                                                                   p->recover_wait_time / 2);
     p->max_reply_timeouts = jk_get_worker_max_reply_timeouts(props, p->name,
                                                              0);
     p->maintain_time = jk_get_worker_maintain_time(props);
@@ -1759,6 +1763,7 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
         private_data->worker.destroy = destroy;
         private_data->worker.maintain = maintain_workers;
         private_data->recover_wait_time = WAIT_BEFORE_RECOVER;
+        private_data->error_escalation_time = private_data->recover_wait_time / 2;
         private_data->max_reply_timeouts = 0;
         private_data->sequence = 0;
         private_data->s->h.sequence = 0;
