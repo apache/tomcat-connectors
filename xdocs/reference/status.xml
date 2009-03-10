@@ -475,6 +475,9 @@ contain the configuration information, you want to change. First the list for lo
 <b>vlt</b>: recover_time (seconds)
 </li>
 <li>
+<b>vlee</b>: error_escalation_time (seconds)
+</li>
+<li>
 <b>vlx</b>: max_reply_timeouts (number)
 </li>
 <li>

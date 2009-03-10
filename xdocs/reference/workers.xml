@@ -920,6 +920,27 @@ Every recovery attempt for a worker in error is done by a real request!
 </p>
 </directive>
 
+<directive name="error_escalation_time" workers="LB" default="recover_time / 2" required="false">
+Setting a member of a load balancer into an error state is quite serious. E.g.
+it means that if you need stickyness, all access to the sessions of the
+respective node is blocked.
+<p>
+Some types of error detection do not provide a precise information, whether
+a node is completely broken or not. In those cases an LB will not immediately
+put the node into the error state. Only when there have been no successful
+responses for <b>error_escalation_time</b> seconds after such an error,
+will the node be put into error state.
+</p>
+<p>
+Do not set <b>error_escalation_time</b> to a very short time unless you understand
+the implications. Use <b>socket_connect_timeout</b> and activate CPing/CPong
+with <b>ping_mode</b> and <b>ping_timeout</b> if you want fast error detection.
+</p>
+<p>
+This features has been added in <b>jk 1.2.28</b>.
+</p>
+</directive>
+
 <directive name="activation" workers="SUB" default="Active" required="false">
 Using this directive, a balanced worker of a load balancer
 can be configured as disabled or stopped. A disabled worker only gets
