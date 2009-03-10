@@ -44,6 +44,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        Apache: JkWatchogInterval had wrong interval calculation
+        causing a 10 times higher watchdog interval then configured. (mturk)
+      </fix>
+      <fix>
         LB: make forced recovery work with local error states. (rjung)
       </fix>
       <update>
