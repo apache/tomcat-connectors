@@ -78,6 +78,7 @@
 #define JK_STATUS_ARG_LB_RETRIES           ("vlr")
 #define JK_STATUS_ARG_LB_RETRY_INT         ("vlri")
 #define JK_STATUS_ARG_LB_RECOVER_TIME      ("vlt")
+#define JK_STATUS_ARG_LB_ERROR_ESCALATION_TIME ("vlee")
 #define JK_STATUS_ARG_LB_MAX_REPLY_TIMEOUTS ("vlx")
 #define JK_STATUS_ARG_LB_STICKY            ("vls")
 #define JK_STATUS_ARG_LB_STICKY_FORCE      ("vlf")
@@ -87,6 +88,7 @@
 #define JK_STATUS_ARG_LB_TEXT_RETRIES      "Retries"
 #define JK_STATUS_ARG_LB_TEXT_RETRY_INT    "Retry Interval"
 #define JK_STATUS_ARG_LB_TEXT_RECOVER_TIME "Recover Wait Time"
+#define JK_STATUS_ARG_LB_TEXT_ERROR_ESCALATION_TIME "Error Escalation Time"
 #define JK_STATUS_ARG_LB_TEXT_MAX_REPLY_TIMEOUTS "Max Reply Timeouts"
 #define JK_STATUS_ARG_LB_TEXT_STICKY       "Sticky Sessions"
 #define JK_STATUS_ARG_LB_TEXT_STICKY_FORCE "Force Sticky Sessions"
@@ -283,6 +285,7 @@
                                            "<th>" JK_STATUS_ARG_LB_TEXT_METHOD "</th>" \
                                            "<th>" JK_STATUS_ARG_LB_TEXT_LOCK "</th>" \
                                            "<th>" JK_STATUS_ARG_LB_TEXT_RECOVER_TIME "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_TEXT_ERROR_ESCALATION_TIME "</th>" \
                                            "<th>" JK_STATUS_ARG_LB_TEXT_MAX_REPLY_TIMEOUTS "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_LB_ROW              "<tr>" \
@@ -292,6 +295,7 @@
                                            "<td>%d</td>" \
                                            "<td>%s</td>" \
                                            "<td>%s</td>" \
+                                           "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td></td>" \
@@ -2142,6 +2146,7 @@ static void display_worker_lb(jk_ws_service_t *s,
                       jk_lb_get_method(lb, l),
                       jk_lb_get_lock(lb, l),
                       lb->recover_wait_time,
+                      lb->error_escalation_time,
                       lb->max_reply_timeouts);
             jk_puts(s, "</table>\n<br/>\n");
         }
@@ -2171,6 +2176,7 @@ static void display_worker_lb(jk_ws_service_t *s,
         jk_print_xml_att_string(s, 4, "sticky_session_force", jk_get_bool(lb->sticky_session_force));
         jk_print_xml_att_int(s, 4, "retries", lb->retries);
         jk_print_xml_att_int(s, 4, "recover_time", lb->recover_wait_time);
+        jk_print_xml_att_int(s, 4, "error_escalation_time", lb->error_escalation_time);
         jk_print_xml_att_int(s, 4, "max_reply_timeouts", lb->max_reply_timeouts);
         jk_print_xml_att_string(s, 4, "method", jk_lb_get_method(lb, l));
         jk_print_xml_att_string(s, 4, "lock", jk_lb_get_lock(lb, l));
@@ -2197,6 +2203,7 @@ static void display_worker_lb(jk_ws_service_t *s,
         jk_printf(s, " sticky_session_force=%s", jk_get_bool(lb->sticky_session_force));
         jk_printf(s, " retries=%d", lb->retries);
         jk_printf(s, " recover_time=%d", lb->recover_wait_time);
+        jk_printf(s, " error_escalation_time=%d", lb->error_escalation_time);
         jk_printf(s, " max_reply_timeouts=%d", lb->max_reply_timeouts);
         jk_printf(s, " method=%s", jk_lb_get_method(lb, l));
         jk_printf(s, " lock=%s", jk_lb_get_lock(lb, l));
@@ -2222,6 +2229,7 @@ static void display_worker_lb(jk_ws_service_t *s,
         jk_print_prop_att_string(s, w, name, "sticky_session_force", jk_get_bool(lb->sticky_session_force));
         jk_print_prop_att_int(s, w, name, "retries", lb->retries);
         jk_print_prop_att_int(s, w, name, "recover_time", lb->recover_wait_time);
+        jk_print_prop_att_int(s, w, name, "error_escalation_time", lb->error_escalation_time);
         jk_print_prop_att_int(s, w, name, "max_reply_timeouts", lb->max_reply_timeouts);
         jk_print_prop_att_string(s, w, name, "method", jk_lb_get_method(lb, l));
         jk_print_prop_att_string(s, w, name, "lock", jk_lb_get_lock(lb, l));
@@ -2573,6 +2581,10 @@ static void form_worker(jk_ws_service_t *s,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_LB_RECOVER_TIME, "\" type=\"text\" ", NULL);
     jk_printf(s, "value=\"%d\"/></td></tr>\n", lb->recover_wait_time);
+    jk_putv(s, "<tr><td>", JK_STATUS_ARG_LB_TEXT_ERROR_ESCALATION_TIME,
+            ":</td><td><input name=\"",
+            JK_STATUS_ARG_LB_ERROR_ESCALATION_TIME, "\" type=\"text\" ", NULL);
+    jk_printf(s, "value=\"%d\"/></td></tr>\n", lb->error_escalation_time);
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_LB_TEXT_MAX_REPLY_TIMEOUTS,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_LB_MAX_REPLY_TIMEOUTS, "\" type=\"text\" ", NULL);
@@ -3009,6 +3021,15 @@ static void commit_worker(jk_ws_service_t *s,
                "Status worker '%s' setting 'recover_time' for lb worker '%s' to '%i'",
                w->name, name, i);
         lb->recover_wait_time = i;
+        sync_needed = JK_TRUE;
+    }
+    i = status_get_int(p, JK_STATUS_ARG_LB_ERROR_ESCALATION_TIME,
+                       lb->error_escalation_time, l);
+    if (i != lb->error_escalation_time && i > 0) {
+        jk_log(l, JK_LOG_INFO,
+               "Status worker '%s' setting 'error_escalation_time' for lb worker '%s' to '%i'",
+               w->name, name, i);
+        lb->error_escalation_time = i;
         sync_needed = JK_TRUE;
     }
     i = status_get_int(p, JK_STATUS_ARG_LB_MAX_REPLY_TIMEOUTS,
