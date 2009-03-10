@@ -1341,15 +1341,17 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      * Service failed !!!
                      * Time for fault tolerance (if possible)...
                      */
+                    time_t now = time(NULL);
                     rec->s->errors++;
-                    if (rec->s->busy) {
-                        rec->s->state = JK_LB_STATE_OK;
-                    }
-                    else {
+                    if (rec->s->busy == 0 ||
+                        (rec->s->error_time > 0 &&
+                         (int)difftime(now, rec->s->error_time) >= p->worker->error_escalation_time)) {
                         rec->s->state = JK_LB_STATE_ERROR;
                     }
                     p->states[rec->i] = JK_LB_STATE_ERROR;
-                    rec->s->error_time = time(NULL);
+                    if (rec->s->error_time == 0) {
+                        rec->s->error_time = now;
+                    }
                     rc = JK_FALSE;
                 }
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
