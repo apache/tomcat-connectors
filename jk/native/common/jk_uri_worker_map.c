@@ -165,7 +165,7 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
 {
     JK_TRACE_ENTER(l);
     if (uw_map) {
-        int i, j, off, k;
+        int i, off, k;
         uri_worker_record_t *uwr = NULL;
         char buf[32];
         jk_log(l, JK_LOG_DEBUG, "uri map dump %s: index=%d file='%s' reject_unsafe=%d "
@@ -179,6 +179,7 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
 
         off = uw_map->index;
         for(i=0;i<=1;i++) {
+            unsigned int j;
             k = (i + off) % 2;
             for (j = 0; j < uw_map->size[k]; j++) {
                 uwr = uw_map->maps[k][j];
