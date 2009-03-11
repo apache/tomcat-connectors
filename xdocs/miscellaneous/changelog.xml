@@ -44,6 +44,9 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>46834</bug>: Docs: Fix a couple of missing or broken links. (rjung)
+      </fix>
+      <fix>
         Apache: JkWatchogInterval had wrong interval calculation
         causing a 10 times higher watchdog interval then configured. (mturk)
       </fix>

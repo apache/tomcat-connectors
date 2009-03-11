@@ -108,6 +108,13 @@ The so-called <b>uriworkermap</b> file is a mechanism of defining those rules.
 </p>
 </li>
 
+<li><a href="reference/status.html"><b>Status Worker</b></a>
+<p>
+The status worker is a builtin management worker. It displays state information
+and can also be used to dynamically reconfigure JK.
+</p>
+</li>
+
 <li><a href="reference/apache.html"><b>Apache</b></a>
 <p>This page contains detailed description of all directives related to
 Apache web server. 
@@ -142,6 +149,11 @@ and using workers.
 </li>
 <li><a href="generic_howto/loadbalancers.html"><b>Load Balancing</b></a>
 <p>This page contains an introduction on load balancing with JK.
+</p>
+</li>
+<li><a href="generic_howto/proxy.html"><b>Reverse Proxy</b></a>
+<p>This page contains an introduction to reverse proxies, how JK
+handles this situation and how you can influence the JK proxying behaviour.
 </p>
 </li>
 
@@ -190,12 +202,12 @@ install JK for the various web servers.
 </li>
 <li><a href="miscellaneous/changelog.html"><b>Changelog</b></a>
 <p>
-The FAQ detail the changes made in each version of JK.
+This page contains the detailed list of all changes made in each version of JK.
 </p>
 </li>
-<li><a href="http://issues.apache.org/bugzilla/buglist.cgi?query_format=advanced&amp;short_desc_type=allwordssubstr&amp;short_desc=&amp;product=Tomcat+5&amp;component=Native%3AJK&amp;long_desc_type=substring&amp;long_desc=&amp;bug_file_loc_type=allwordssubstr&amp;bug_file_loc=&amp;keywords_type=allwords&amp;keywords=&amp;bug_status=NEW&amp;bug_status=ASSIGNED&amp;bug_status=REOPENED&amp;emailassigned_to1=1&amp;emailtype1=substring&amp;email1=&amp;emailassigned_to2=1&amp;emailreporter2=1&amp;emailcc2=1&amp;emailtype2=substring&amp;email2=&amp;bugidtype=include&amp;bug_id=&amp;votes=&amp;chfieldfrom=&amp;chfieldto=Now&amp;chfieldvalue=&amp;cmdtype=doit&amp;order=Reuse+same+sort+as+last+time&amp;field0-0-0=noop&amp;type0-0-0=noop&amp;value0-0-0=">
-<b>Current Native:JK bugs</b></a>
-<p>This is the Bugzilla Bug List related to Native:JK.
+<li><a href="http://issues.apache.org/bugzilla/buglist.cgi?query_format=advanced&amp;short_desc_type=allwordssubstr&amp;short_desc=&amp;product=Tomcat+Connectors&amp;long_desc_type=substring&amp;long_desc=&amp;bug_file_loc_type=allwordssubstr&amp;bug_file_loc=&amp;keywords_type=allwords&amp;keywords=&amp;bug_status=NEW&amp;bug_status=ASSIGNED&amp;bug_status=REOPENED&amp;emailassigned_to1=1&amp;emailtype1=substring&amp;email1=&amp;emailassigned_to2=1&amp;emailreporter2=1&amp;emailcc2=1&amp;emailtype2=substring&amp;email2=&amp;bugidtype=include&amp;bug_id=&amp;votes=&amp;chfieldfrom=&amp;chfieldto=Now&amp;chfieldvalue=&amp;cmdtype=doit&amp;order=Reuse+same+sort+as+last+time&amp;field0-0-0=noop&amp;type0-0-0=noop&amp;value0-0-0=">
+<b>Current Tomcat Connectors bugs</b></a>
+<p>This is the Bugzilla Bug List related to Tomcat Connectors.
 </p>
 </li>
 <li><a href="miscellaneous/doccontrib.html"><b>Contribute documentation</b></a>
@@ -203,9 +215,14 @@ The FAQ detail the changes made in each version of JK.
 This page describes, how to contribute to the JK documentation.
 </p>
 </li>
-<li><a href="miscellaneous/tools.html"><b>Tools</b></a>
+<li><a href="miscellaneous/jkstatustasks.html"><b>JK Status Ant Tasks</b></a>
 <p>
-This page contains information, on some tool scripts contained in the Jk distribution.
+This page describes ant tasks to automate JK management via the status worker.
+</p>
+</li>
+<li><a href="miscellaneous/reporttools.html"><b>Reporting Tools</b></a>
+<p>
+This page contains information, on some report analysis scripts contained in the JK distribution.
 </p>
 </li>
 <li><a href="http://tomcat.apache.org/connectors-doc-archive/jk2/index.html">

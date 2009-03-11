@@ -69,7 +69,7 @@
 <section name="Minimum Apache web server configuration">
 <p>
    Here is a minimum information about Apache configuration, a 
-   complete documentation is available in <a href="apache.html">Apache HowTo</a>.
+   more complete <a href="../webserver_howto/apache.html">separate HowTo for Apache</a> is available.
 </p>
 <p>
 	You should first have <b>mod_jk.so</b> (unix) or <b>mod_jk.dll</b> (Windows) installed
@@ -143,16 +143,16 @@
 
 <section name="Minimum IIS web server configuration">
 <p>
-	A complete documentation is available in <a href="iis.html">IIS HowTo</a>.
+	A separate <a href="../webserver_howto/iis.html">HowTo for the IIS web server</a> is available.
 </p>
 <todo>
 More information to be added!
 </todo>
 </section>
 
-<section name="Minimum NES/iPlanet web server configuration">
+<section name="Minimum NES/iPlanet/Sun web server configuration">
 <p>
-	A complete documentation is available in <a href="nes.html">Netscape/iPlanet HowTo</a>.
+	A separate <a href="../webserver_howto/nes.html">HowTo for the Netscape/iPlanet/Sun web server</a> is available.
 <todo>
 More information to be added?
 </todo>
