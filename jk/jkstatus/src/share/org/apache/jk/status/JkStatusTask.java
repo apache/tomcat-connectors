@@ -440,7 +440,6 @@ public class JkStatusTask extends BaseRedirectorHelperTask {
     /**
      * @param balancer
      * @param balancerIndex
-     * @return
      */
     private void setPropertyBalancer(JkBalancer balancer,String balancerIndex) {
      	if(balancer.id >= 0) {
