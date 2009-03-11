@@ -129,6 +129,7 @@
 #define NULL_FOR_EMPTY(x)   ((x && !strlen(x)) ? NULL : x)
 #define STRNULL_FOR_NULL(x) ((x) ? (x) : "(null)")
 #define JK_LOG_LOCK_KEY     ("jk_log_lock_key")
+#define INITIAL_LOG_FORMAT_ARRAY_SZ (15)
 /*
  * If you are not using SSL, comment out the following line. It will make
  * apache run faster.
@@ -1713,7 +1714,7 @@ static apr_array_header_t *parse_request_log_string(apr_pool_t * p,
                                                     const char **err)
 {
     apr_array_header_t *a =
-        apr_array_make(p, 15, sizeof(request_log_format_item));
+        apr_array_make(p, INITIAL_LOG_FORMAT_ARRAY_SZ, sizeof(request_log_format_item));
     char *res;
 
     while (*s) {

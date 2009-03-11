@@ -86,6 +86,7 @@
 #define JK_MAGIC_TYPE       ("application/x-jakarta-servlet")
 #define NULL_FOR_EMPTY(x)   ((x && !strlen(x)) ? NULL : x)
 #define STRNULL_FOR_NULL(x) ((x) ? (x) : "(null)")
+#define INITIAL_LOG_FORMAT_ARRAY_SZ (15)
 
 /*
  * If you are not using SSL, comment out the following line. It will make
@@ -1628,7 +1629,7 @@ static char *parse_request_log_item(pool * p,
 static array_header *parse_request_log_string(pool * p, const char *s,
                                               const char **err)
 {
-    array_header *a = ap_make_array(p, 15, sizeof(request_log_format_item));
+    array_header *a = ap_make_array(p, INITIAL_LOG_FORMAT_ARRAY_SZ, sizeof(request_log_format_item));
     char *res;
 
     while (*s) {
