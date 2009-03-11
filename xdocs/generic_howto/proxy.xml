@@ -92,9 +92,13 @@ if <code>tomcatAuthentication="false"</code>
 </li>
 <li>SSL cipher: <code>getAttribute(javax.servlet.request.cipher_suite)</code>
 </li>
-<li>SSL key size: <code>getAttribute(javax.servlet.request.key_size)</code>
+<li>SSL key size: <code>getAttribute(javax.servlet.request.key_size)</code>.
+Can be disabled using <code>JkOptions -ForwardKeySize</code>.
 </li>
-<li>SSL client certificate: <code>getAttribute(javax.servlet.request.X509Certificate)</code>
+<li>SSL client certificate: <code>getAttribute(javax.servlet.request.X509Certificate)</code>.
+If you want the whole certificate chain, then you need to also set <code>JkOptions ForwardSSLCertChain</code>.
+It is likely, that in this case you also need to adjust the maximal AJP packet size
+using the worker attribute <a href="../reference/workers.html">max_packet_size</a>.
 </li>
 <li>SSL session ID: <code>getAttribute(javax.servlet.request.ssl_session)</code>.
 This is for Tomcat, it has not yet been standardized.
@@ -168,6 +172,11 @@ of other modules, you can change the names of all variables mod_jk uses to priva
 For the details see the <a href="../reference/apache.html">Apache reference</a> page.
 </p>
 <p>All variables, that are not SSL-related have only been introduced in version 1.2.27.
+</p>
+<p>Finally there is a shortcut to forward the local IP of the web server as the remote IP.
+This can be useful, e.g. when using the Tomcat remote address valve for allowing connections
+only from registered Apache web servers. This feature is activated by setting
+<code>JkOptions ForwardLocalAddress</code>.
 </p>
 </section>
 <section name="Tomcat AJP Connector Settings">
