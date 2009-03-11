@@ -263,6 +263,8 @@ extern "C"
 #define JK_OPT_FWDKEYSIZE           0x0200
 #define JK_OPT_REJECTUNSAFE         0x0400
 
+#define JK_OPT_DEFAULT              (JK_OPT_FWDURIDEFAULT | JK_OPT_FWDKEYSIZE)
+
 /* Check for EBCDIC systems */
 
 /* Check for Apache 2.0 running on an EBCDIC system */

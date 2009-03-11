@@ -2468,7 +2468,7 @@ static void *create_jk_config(ap_pool * p, server_rec * s)
         c->mountcopy = JK_FALSE;
         c->mount_file_reload = JK_URIMAP_DEF_RELOAD;
         c->log_level = JK_LOG_DEF_LEVEL;
-        c->options = JK_OPT_FWDURIDEFAULT;
+        c->options = JK_OPT_DEFAULT;
         c->worker_indicator = JK_ENV_WORKER_NAME;
 
         /*
