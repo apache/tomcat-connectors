@@ -45,7 +45,7 @@ It is recommended that you also read the
 <a href="../generic_howto/workers.html">Workers HowTo</a> document
 to learn how to setup the working entities between your web server and Tomcat Engines.
 For more detailed configuration information consult the Reference Guide for
-<a href="../reference/worker.html">workers.properties</a>,
+<a href="../reference/workers.html">workers.properties</a>,
 <a href="../reference/uriworkermap.html">uriworkermap</a>
 and <a href="../reference/iis.html">IIS</a>.
 </p>
