@@ -689,7 +689,7 @@ static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, jk_logger_t *l
 
 static int find_by_session(jk_ws_service_t *s,
                            lb_worker_t *p,
-                           char *sessionid,
+                           const char *session_route,
                            jk_logger_t *l)
 {
 
@@ -697,7 +697,7 @@ static int find_by_session(jk_ws_service_t *s,
     unsigned int i;
 
     for (i = 0; i < p->num_of_workers; i++) {
-        if (strcmp(p->lb_workers[i].route, sessionid) == 0) {
+        if (strcmp(p->lb_workers[i].route, session_route) == 0) {
             rc = i;
             break;
         }
@@ -707,7 +707,7 @@ static int find_by_session(jk_ws_service_t *s,
 
 static int find_best_bydomain(jk_ws_service_t *s,
                               lb_worker_t *p,
-                              char *sessionid,
+                              const char *route_or_domain,
                               int *states,
                               jk_logger_t *l)
 {
@@ -717,14 +717,14 @@ static int find_best_bydomain(jk_ws_service_t *s,
     int candidate = -1;
     int activation;
     lb_sub_worker_t wr;
-    char *idpart = strchr(sessionid, '.');
+    char *idpart = strchr(route_or_domain, '.');
     size_t domain_len = 0;
 
     if (idpart) {
-        domain_len = idpart - sessionid;
+        domain_len = idpart - route_or_domain;
     }
     else {
-        domain_len = strlen(sessionid);
+        domain_len = strlen(route_or_domain);
     }
     /* First try to see if we have available candidate */
     for (i = 0; i < p->num_of_workers; i++) {
@@ -732,7 +732,7 @@ static int find_best_bydomain(jk_ws_service_t *s,
         wr = p->lb_workers[i];
         if (strlen(wr.domain) == 0 ||
             strlen(wr.domain) != domain_len ||
-            strncmp(wr.domain, sessionid, domain_len))
+            strncmp(wr.domain, route_or_domain, domain_len))
             continue;
         /* Take into calculation only the workers that are
          * not in error state, stopped, disabled or busy.
@@ -803,17 +803,17 @@ static int find_best_byvalue(jk_ws_service_t *s,
 
 static int find_bysession_route(jk_ws_service_t *s,
                                 lb_worker_t *p,
-                                char *sessionid,
+                                const char *session_route,
                                 int *states,
                                 jk_logger_t *l)
 {
     int uses_domain  = 0;
     int candidate = -1;
 
-    candidate = find_by_session(s, p, sessionid, l);
+    candidate = find_by_session(s, p, session_route, l);
     if (candidate < 0) {
         uses_domain = 1;
-        candidate = find_best_bydomain(s, p, sessionid, states, l);
+        candidate = find_best_bydomain(s, p, session_route, states, l);
     }
     if (candidate >= 0) {
         lb_sub_worker_t wr = p->lb_workers[candidate];
