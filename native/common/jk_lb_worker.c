@@ -689,7 +689,7 @@ static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, jk_logger_t *l
 
 static int find_by_session(jk_ws_service_t *s,
                            lb_worker_t *p,
-                           const char *name,
+                           char *sessionid,
                            jk_logger_t *l)
 {
 
@@ -697,7 +697,7 @@ static int find_by_session(jk_ws_service_t *s,
     unsigned int i;
 
     for (i = 0; i < p->num_of_workers; i++) {
-        if (strcmp(p->lb_workers[i].route, name) == 0) {
+        if (strcmp(p->lb_workers[i].route, sessionid) == 0) {
             rc = i;
             break;
         }
@@ -707,33 +707,22 @@ static int find_by_session(jk_ws_service_t *s,
 
 static int find_best_bydomain(jk_ws_service_t *s,
                               lb_worker_t *p,
-                              const char *name,
+                              char *sessionid,
                               int *states,
                               jk_logger_t *l)
 {
     unsigned int i;
     int d = 0;
     jk_uint64_t curmin = 0;
-    char rdomain[JK_SHM_STR_SIZ+1];
     int candidate = -1;
     int activation;
     lb_sub_worker_t wr;
-    const char *domain = strchr(name, '.');
+    char *idpart = strchr(sessionid, '.');
+    char *domain = sessionid;
 
-    if (domain) {
-        size_t dl = (size_t)(domain - name);
-        if (dl >= JK_SHM_STR_SIZ) {
-            /* Overflow */
-            return -1;
-        }
-        else {
-            strncpy(rdomain, name, dl);
-            rdomain[dl] = '\0';
-            domain = rdomain;
-        }
+    if (idpart) {
+        *idpart = '\0';
     }
-    else
-        domain = name;
     /* First try to see if we have available candidate */
     for (i = 0; i < p->num_of_workers; i++) {
         /* Skip all workers that are not member of domain */
@@ -758,6 +747,10 @@ static int find_best_bydomain(jk_ws_service_t *s,
                 d = wr.distance;
             }
         }
+    }
+    if (idpart) {
+        /* Restore original char */
+        *idpart = '.';
     }
     return candidate;
 }
@@ -810,17 +803,17 @@ static int find_best_byvalue(jk_ws_service_t *s,
 
 static int find_bysession_route(jk_ws_service_t *s,
                                 lb_worker_t *p,
-                                const char *name,
+                                char *sessionid,
                                 int *states,
                                 jk_logger_t *l)
 {
     int uses_domain  = 0;
     int candidate = -1;
 
-    candidate = find_by_session(s, p, name, l);
+    candidate = find_by_session(s, p, sessionid, l);
     if (candidate < 0) {
         uses_domain = 1;
-        candidate = find_best_bydomain(s, p, name, states, l);
+        candidate = find_best_bydomain(s, p, sessionid, states, l);
     }
     if (candidate >= 0) {
         lb_sub_worker_t wr = p->lb_workers[candidate];
@@ -871,7 +864,7 @@ static int find_failover_worker(jk_ws_service_t *s,
 {
     int rc = -1;
     unsigned int i;
-    const char *redirect = NULL;
+    char *redirect = NULL;
 
     for (i = 0; i < p->num_of_workers; i++) {
         if (strlen(p->lb_workers[i].redirect)) {
