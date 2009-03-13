@@ -718,17 +718,21 @@ static int find_best_bydomain(jk_ws_service_t *s,
     int activation;
     lb_sub_worker_t wr;
     char *idpart = strchr(sessionid, '.');
-    char *domain = sessionid;
+    size_t domain_len = 0;
 
     if (idpart) {
-        *idpart = '\0';
+        domain_len = idpart - sessionid;
+    }
+    else {
+        domain_len = strlen(sessionid);
     }
     /* First try to see if we have available candidate */
     for (i = 0; i < p->num_of_workers; i++) {
         /* Skip all workers that are not member of domain */
         wr = p->lb_workers[i];
         if (strlen(wr.domain) == 0 ||
-            strcmp(wr.domain, domain))
+            strlen(wr.domain) != domain_len ||
+            strncmp(wr.domain, sessionid, domain_len))
             continue;
         /* Take into calculation only the workers that are
          * not in error state, stopped, disabled or busy.
@@ -747,10 +751,6 @@ static int find_best_bydomain(jk_ws_service_t *s,
                 d = wr.distance;
             }
         }
-    }
-    if (idpart) {
-        /* Restore original char */
-        *idpart = '.';
     }
     return candidate;
 }
