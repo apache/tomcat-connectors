@@ -158,7 +158,7 @@ public class JkStatusParser {
     /**
      * The <code>Digester</code> instance used to parse registry descriptors.
      */
-    public static Digester digester = createDigester();
+    public static final Digester digester = createDigester();
 
     public static Digester getDigester() {
         return digester;
