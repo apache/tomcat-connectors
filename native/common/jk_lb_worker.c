@@ -727,7 +727,7 @@ static int find_best_bydomain(jk_ws_service_t *s,
             return -1;
         }
         else {
-            strncpy(rdomain, domain, dl);
+            strncpy(rdomain, name, dl);
             rdomain[dl] = '\0';
             domain = rdomain;
         }
