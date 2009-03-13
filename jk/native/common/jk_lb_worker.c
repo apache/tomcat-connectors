@@ -714,14 +714,24 @@ static int find_best_bydomain(jk_ws_service_t *s,
     unsigned int i;
     int d = 0;
     jk_uint64_t curmin = 0;
-
+    char rdomain[JK_SHM_STR_SIZ+1];
     int candidate = -1;
     int activation;
     lb_sub_worker_t wr;
     const char *domain = strchr(name, '.');
 
-    if (domain)
-        domain++;
+    if (domain) {
+        size_t dl = (size_t)(domain - name);
+        if (dl >= JK_SHM_STR_SIZ) {
+            /* Overflow */
+            return -1;
+        }
+        else {
+            strncpy(rdomain, domain, dl);
+            rdomain[dl] = '\0';
+            domain = rdomain;
+        }
+    }
     else
         domain = name;
     /* First try to see if we have available candidate */
