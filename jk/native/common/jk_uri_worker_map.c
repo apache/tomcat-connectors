@@ -1095,7 +1095,7 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
     jk_map_t *map;
 
     jk_map_alloc(&map);
-    if (jk_map_read_properties(map, uw_map->fname, &uw_map->modified,
+    if (jk_map_read_properties(map, NULL, uw_map->fname, &uw_map->modified,
                                JK_MAP_HANDLE_NORMAL, l)) {
         int i;
         if (JK_IS_DEBUG_LEVEL(l))

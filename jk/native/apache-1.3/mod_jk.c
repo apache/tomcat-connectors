@@ -2042,7 +2042,7 @@ static const char *jk_set_worker_property(cmd_parms * cmd,
 
     if (!jk_worker_properties)
         jk_map_alloc(&jk_worker_properties);
-    if (jk_map_read_property(jk_worker_properties, line,
+    if (jk_map_read_property(jk_worker_properties, NULL, line,
                              JK_MAP_HANDLE_DUPLICATES, conf->log) == JK_FALSE)
         return ap_pstrcat(cmd->temp_pool, "Invalid JkWorkerProperty ", line, NULL);
 
@@ -2844,7 +2844,7 @@ static void jk_init(server_rec * s, ap_pool * p)
     }
 
     if ((jk_worker_file != NULL) &&
-        !jk_map_read_properties(jk_worker_properties, jk_worker_file, NULL,
+        !jk_map_read_properties(jk_worker_properties, NULL, jk_worker_file, NULL,
                                 JK_MAP_HANDLE_DUPLICATES, conf->log)) {
         jk_error_exit(APLOG_MARK, APLOG_EMERG | APLOG_NOERRNO, s, p,
                       "Error in reading worker properties from '%s'",

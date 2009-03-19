@@ -957,7 +957,7 @@ static int exec_cmd(const char *name, HANDLE *hTomcat, char *cmdLine)
             jk_map_t *init_map;
             
             if(jk_map_alloc(&init_map)) {
-                if(jk_map_read_properties(init_map, prp_file, NULL,
+                if(jk_map_read_properties(init_map, NULL, prp_file, NULL,
                                           JK_MAP_HANDLE_DUPLICATES, NULL)) {
                     jk_tomcat_startup_data_t data;
                     jk_pool_t p;

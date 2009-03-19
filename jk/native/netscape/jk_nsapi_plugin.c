@@ -274,7 +274,7 @@ NSAPI_PUBLIC int jk_init(pblock * pb, Session * sn, Request * rq)
     }
     
     if (jk_map_alloc(&init_map)) {
-        if (jk_map_read_properties(init_map, worker_prp_file, NULL,
+        if (jk_map_read_properties(init_map, NULL, worker_prp_file, NULL,
                                    JK_MAP_HANDLE_DUPLICATES, logger)) {
             int rv;
             int sleep_cnt;

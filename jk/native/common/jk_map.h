@@ -37,9 +37,6 @@ extern "C"
 struct jk_map;
 typedef struct jk_map jk_map_t;
 
-/* Local environment table */
-jk_map_t *jk_environment_map;
-
 int jk_map_alloc(jk_map_t **m);
 
 int jk_map_free(jk_map_t **m);
@@ -73,9 +70,9 @@ int jk_map_add(jk_map_t *m, const char *name, const void *value);
 
 int jk_map_put(jk_map_t *m, const char *name, const void *value, void **old);
 
-int jk_map_read_property(jk_map_t *m, const char *str, int treatment, jk_logger_t *l);
+int jk_map_read_property(jk_map_t *m, jk_map_t *env, const char *str, int treatment, jk_logger_t *l);
 
-int jk_map_read_properties(jk_map_t *m, const char *f, time_t *modified, int treatment, jk_logger_t *l);
+int jk_map_read_properties(jk_map_t *m, jk_map_t *env, const char *f, time_t *modified, int treatment, jk_logger_t *l);
 
 int jk_map_size(jk_map_t *m);
 
@@ -86,12 +83,6 @@ void *jk_map_value_at(jk_map_t *m, int idex);
 void jk_map_dump(jk_map_t *m, jk_logger_t *l);
 
 int jk_map_copy(jk_map_t *src, jk_map_t *dst);
-
-/**
- *  Replace $(property) in value.
- *
- */
-char *jk_map_replace_properties(jk_map_t *m, const char *value);
 
 int jk_map_resolve_references(jk_map_t *m, const char *prefix, int wildcard, int depth, jk_logger_t *l);
 

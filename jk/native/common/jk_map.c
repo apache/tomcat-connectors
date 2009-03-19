@@ -80,7 +80,7 @@ struct jk_map
 static void trim_prp_comment(char *prp);
 static size_t trim(char *s);
 static int map_realloc(jk_map_t *m);
-jk_map_t *jk_environment_map = NULL;
+static char *jk_map_replace_properties(jk_map_t *m, jk_map_t *env, char *value);
 
 int jk_map_alloc(jk_map_t **m)
 {
@@ -455,7 +455,7 @@ static int jk_map_handle_duplicates(jk_map_t *m, const char *prp, char **v,
     }
 }
 
-int jk_map_read_property(jk_map_t *m, const char *str,
+int jk_map_read_property(jk_map_t *m, jk_map_t *env, const char *str,
                          int treatment, jk_logger_t *l)
 {
     int rc = JK_TRUE;
@@ -482,7 +482,7 @@ int jk_map_read_property(jk_map_t *m, const char *str,
                 else {
                     if (jk_map_validate_property(prp, l) == JK_FALSE)
                         return JK_FALSE;
-                    v = jk_map_replace_properties(m, v);
+                    v = jk_map_replace_properties(m, env, v);
                     if (jk_map_handle_duplicates(m, prp, &v, treatment, l) == JK_TRUE)
                         v = jk_pool_strdup(&m->p, v);
                 }
@@ -504,7 +504,7 @@ int jk_map_read_property(jk_map_t *m, const char *str,
 }
 
 
-int jk_map_read_properties(jk_map_t *m, const char *f, time_t *modified,
+int jk_map_read_properties(jk_map_t *m, jk_map_t *env, const char *f, time_t *modified,
                            int treatment, jk_logger_t *l)
 {
     int rc = JK_FALSE;
@@ -529,7 +529,7 @@ int jk_map_read_properties(jk_map_t *m, const char *f, time_t *modified,
             while (NULL != (prp = fgets(buf, LENGTH_OF_LINE, fp))) {
                 trim_prp_comment(prp);
                 if (*prp) {
-                    if ((rc = jk_map_read_property(m, prp, treatment, l)) == JK_FALSE)
+                    if ((rc = jk_map_read_property(m, env, prp, treatment, l)) == JK_FALSE)
                         break;
                 }
             }
@@ -687,9 +687,9 @@ static int map_realloc(jk_map_t *m)
  *  Replace $(property) in value.
  *
  */
-char *jk_map_replace_properties(jk_map_t *m, const char *value)
+static char *jk_map_replace_properties(jk_map_t *m, jk_map_t *env, char *value)
 {
-    char *rc = (char *)value;
+    char *rc = value;
     char *env_start = rc;
     int rec = 0;
 
@@ -711,10 +711,9 @@ char *jk_map_replace_properties(jk_map_t *m, const char *value)
             if (!env_value) {
                 env_value = getenv(env_name);
             }
-            if (!env_value && jk_environment_map) {
+            if (!env_value && env) {
                 /* Search inside local environment table */
-                env_value = jk_map_get_string(jk_environment_map,
-                                              env_name, NULL);
+                env_value = jk_map_get_string(env, env_name, NULL);
             }
 
 #if defined(WIN32)

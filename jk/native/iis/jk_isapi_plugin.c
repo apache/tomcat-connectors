@@ -482,6 +482,7 @@ static jk_uri_worker_map_t *uw_map = NULL;
 static jk_map_t *workers_map = NULL;
 static jk_map_t *rewrite_map = NULL;
 static jk_map_t *rregexp_map = NULL;
+static jk_map_t *jk_environment_map = NULL;
 
 static jk_logger_t *logger = NULL;
 static char *SERVER_NAME = "SERVER_NAME";
@@ -2458,7 +2459,7 @@ static int init_jk(char *serverName)
     }
 
     if (rewrite_rule_file[0] && jk_map_alloc(&rewrite_map)) {
-        if (jk_map_read_properties(rewrite_map, rewrite_rule_file,
+        if (jk_map_read_properties(rewrite_map, NULL, rewrite_rule_file,
                                    NULL, JK_MAP_HANDLE_RAW, logger)) {
             int i;
             if (JK_IS_DEBUG_LEVEL(logger)) {
@@ -2513,7 +2514,7 @@ static int init_jk(char *serverName)
     if (rc) {
         rc = JK_FALSE;
         if (jk_map_alloc(&workers_map)) {
-            if (jk_map_read_properties(workers_map, worker_file, NULL,
+            if (jk_map_read_properties(workers_map, NULL, worker_file, NULL,
                                        JK_MAP_HANDLE_DUPLICATES, logger)) {
                 int rv;
 
@@ -2615,7 +2616,7 @@ static int read_registry_init_data(void)
     jk_map_t *map = NULL;
 
     if (jk_map_alloc(&map)) {
-        if (jk_map_read_properties(map, ini_file_name, NULL,
+        if (jk_map_read_properties(map, jk_environment_map, ini_file_name, NULL,
                                    JK_MAP_HANDLE_DUPLICATES, logger)) {
             using_ini_file = JK_TRUE;
             src = map;
