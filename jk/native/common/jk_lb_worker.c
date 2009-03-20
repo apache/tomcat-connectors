@@ -1363,6 +1363,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     time_t now = time(NULL);
                     rec->s->errors++;
                     if (rec->s->busy == 0 ||
+                        p->worker->error_escalation_time == 0 ||
                         (rec->s->error_time > 0 &&
                          (int)difftime(now, rec->s->error_time) >= p->worker->error_escalation_time)) {
                         if (JK_IS_DEBUG_LEVEL(l))
