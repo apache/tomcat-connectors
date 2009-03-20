@@ -932,11 +932,6 @@ responses for <b>error_escalation_time</b> seconds after such an error,
 will the node be put into error state.
 </p>
 <p>
-Do not set <b>error_escalation_time</b> to a very short time unless you understand
-the implications. Use <b>socket_connect_timeout</b> and activate CPing/CPong
-with <b>ping_mode</b> and <b>ping_timeout</b> if you want fast error detection.
-</p>
-<p>
 This features has been added in <b>jk 1.2.28</b>.
 </p>
 </directive>

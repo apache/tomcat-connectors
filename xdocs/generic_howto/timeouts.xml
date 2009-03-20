@@ -334,7 +334,72 @@ worker. Only if those requests happen to often, the worker gets disabled by the
 load balancer.
 </p>
 </subsection>
+</section>
 
+<section name="Load Balancer Error Detection">
+<subsection name="Local and Global Error States">
+<p>
+A load balancer worker does not only have the ability to balance load.
+It also handles stickyness and failover of requests in case of errors.
+When a load balancer detects an error on one of its members, it needs to
+decide, whether the error is serious, or only a temporary error or maybe
+only related to the actual request that was processed. Temporary errors
+are called local errors, serious errors will be called global errors.
+</p>
+<p>
+If the load balancer decides that a backend should be put into the global error
+state, then the web server will not send any more requests there. If no session
+replication is used, this means that all user sessions located on the respective
+backend are no longer available. The users will be send to another backend
+and will have to login again. So the global error state is not transparent to the
+users. The application is still available, but users might loose some work.
+</p>
+<p>
+In some cases the decision between local error and global error is easy.
+For instance if there is an error sending back the response to the client (browser),
+then it is very unlikely that the backend is broken.
+So this situation is a typical example of a local error.
+</p>
+<p>
+Some situations are harder to decide though. If the load balancer can't establish
+a new connection to a backend, it could be because of a temporary overload situation
+(so no more free threads in the backend), or because the backend isn't alive any more.
+Depending on the details, the right state could either be local error or global error.
+</p>
+</subsection>
+<subsection name="Error Escalation Time">
+<p>
+Until version 1.2.26 most errors were interpreted as global errors.
+Starting with version 1.2.27 many errors which were previously interpreted as global
+were switched to being local whenever the backend is still busy. Busy means, that
+other concurrent requests are send to the same backend (successful or not).
+</p>
+<p>
+In many cases there is no perfect way of making the decision
+between local and global error. The load balancer simply doesn't have enough information.
+In version 1.2.28 you can now tune, how fast the load balancer switches from local error to
+global error. If a member of a load balancer stays in local error state for too long,
+the load balancer will escalate it into global error state.
+</p>
+<p>
+The time tolerated in local error state is controlled by the load balancer attribute
+<b>error_escalation_time</b> (in seconds). The default value is half of <b>recover_time</b>,
+so unless you changed <b>recover_time</b> the default is 30 seconds.
+</p>
+<p>
+Using a smaller value for <b>error_escalation_time</b> will make the load balancer react
+faster to serious errors, but also carries the risk of more often loosing sessions
+in not so serious situations. You can lower <b>error_escalation_time</b> down to 0 seconds,
+which means all local errors which are potentially serious are escalated to global errors
+immediately.
+</p>
+<p>
+Note that without good basic error detection the whole escalation procedure is useless.
+So you should definitely use <b>socket_connect_timeout</b> and activate CPing/CPong
+with <b>ping_mode</b> and <b>ping_timeout</b> before thinking about also tuning
+<b>error_escalation_time</b>.
+</p>
+</subsection>
 </section>
 
 </body>
