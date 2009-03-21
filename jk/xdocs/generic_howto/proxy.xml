@@ -106,14 +106,17 @@ This is for Tomcat, it has not yet been standardized.
 </ul>
 </p>
 <warn>
-The remote port number has been forgotten in the AJP13 protocol. So <code>getRemotePort()</code>
+The remote port number has been forgotten in the AJP13 protocol.
+</warn>
+<p>
+So <code>getRemotePort()</code>
 will incorrectly return 0 or -1. As a workaround you can forward the remote port by setting
 <code>JkEnvVar REMOTE_PORT</code> and then either using
 <code>request.getAttribute("REMOTE_PORT")</code> instead of <code>getRemotePort()</code>
 or wrapping the request in a filter and overriding <code>getRemotePort()</code> with
 <code>request.getAttribute("REMOTE_PORT")</code>. Recent versions of Tomcat might
 automatically respect the forwarded attribute <code>REMOTE_PORT</code>.
-</warn>
+</p>
 </section>
 <section name="Fine Tuning">
 <br/>
