@@ -333,3 +333,21 @@ What about the other ifdef'd features?
 
 23) Remove JNI worker
 =====================
+
+24) Watchdog reload of uriworkermap.properties
+==============================================
+
+Questions about uriworkermap.properties watchdog reload (r745898):
+- shm lock needed?
+- Apache port (need to iterate over vhosts)
+
+25) Watchdog backend probing
+============================
+
+Configurable probe URL to test backend, e.g. to decide about
+recovery instead of using random real requests.
+
+26) Commandline shm
+===================
+
+Commandline tool to read data from shm file.
