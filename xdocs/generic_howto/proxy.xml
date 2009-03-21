@@ -60,7 +60,7 @@ this communication metadata and the backend connector presents this
 metadata whenever the application asks for it using Servlet API methods.
 </p>
 <p>The following list contains the communication metadata handled by AJP
-and the HttpServletRequest API calls which can be used to retrieve them:
+and the ServletRequest/HttpServletRequest API calls which can be used to retrieve them:
 <ul>
 <li>local name: <code>getLocalName()</code> and <code>getLocalAddr</code>.
 This is also equal to <code>getServerName()</code>, unless a <code>Host</code> header
@@ -105,6 +105,15 @@ This is for Tomcat, it has not yet been standardized.
 </li>
 </ul>
 </p>
+<warn>
+The remote port number has been forgotten in the AJP13 protocol. So <code>getRemotePort()</code>
+will incorrectly return 0 or -1. As a workaround you can forward the remote port by setting
+<code>JkEnvVar REMOTE_PORT</code> and then either using
+<code>request.getAttribute("REMOTE_PORT")</code> instead of <code>getRemotePort()</code>
+or wrapping the request in a filter and overriding <code>getRemotePort()</code> with
+<code>request.getAttribute("REMOTE_PORT")</code>. Recent versions of Tomcat might
+automatically respect the forwarded attribute <code>REMOTE_PORT</code>.
+</warn>
 </section>
 <section name="Fine Tuning">
 <br/>
