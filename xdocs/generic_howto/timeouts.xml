@@ -52,7 +52,7 @@ fit with some timeouts. Try to optimise your Java memory and GC settings.
 </warn>
 </section>
 
-<section name="JK timeout attributes">
+<section name="JK Timeout Attributes">
 <br/>
 <subsection name="CPing/CPong">
 <p>
@@ -337,6 +337,7 @@ load balancer.
 </section>
 
 <section name="Load Balancer Error Detection">
+<br/>
 <subsection name="Local and Global Error States">
 <p>
 A load balancer worker does not only have the ability to balance load.
