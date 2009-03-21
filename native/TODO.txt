@@ -351,3 +351,21 @@ recovery instead of using random real requests.
 ===================
 
 Commandline tool to read data from shm file.
+
+27) Status worker property format
+=================================
+
+Check whether we return list properties as one line
+(because Java doesn't allow the same property key multiple
+times).
+
+Applies possibly to:
+
+"list",
+BALANCE_WORKERS,
+MOUNT_OF_WORKER,
+USER_OF_WORKER,
+GOOD_RATING_OF_WORKER,
+BAD_RATING_OF_WORKER,
+STATUS_FAIL_OF_WORKER,
+
