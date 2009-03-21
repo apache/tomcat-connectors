@@ -1574,9 +1574,9 @@ static void display_map(jk_ws_service_t *s,
             jk_printf(s, " source=\"%s\"", uri_worker_map_get_source(uwr, l));
             jk_printf(s, " reply_timeout=\"%d\"", uwr->extensions.reply_timeout);
             jk_printf(s, " fail_on_status=\"%s\"", uwr->extensions.fail_on_status_str ? uwr->extensions.fail_on_status_str : "");
-            jk_printf(s, " active=\"%s\"", uwr->extensions.active ? uwr->extensions.active : "-");
-            jk_printf(s, " disabled=\"%s\"", uwr->extensions.disabled ? uwr->extensions.disabled : "-");
-            jk_printf(s, " stopped=\"%s\"", uwr->extensions.stopped ? uwr->extensions.stopped : "-");
+            jk_printf(s, " active=\"%s\"", uwr->extensions.active ? uwr->extensions.active : "");
+            jk_printf(s, " disabled=\"%s\"", uwr->extensions.disabled ? uwr->extensions.disabled : "");
+            jk_printf(s, " stopped=\"%s\"", uwr->extensions.stopped ? uwr->extensions.stopped : "");
             jk_printf(s, " use_server_errors=\"%d\"", uwr->extensions.use_server_error_pages);
             jk_puts(s, "\n");
         }
@@ -1823,7 +1823,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                       rs_min,
                       rs_max,
                       delta_reset,
-                      rc_time > 0 ? buf_time : "-");
+                      rc_time > 0 ? buf_time : "&nbsp;");
         else {
             jk_printf(s, JK_STATUS_SHOW_AJP_ROW,
                       jk_ajp_get_state(aw, l),
@@ -1839,7 +1839,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                       aw->s->busy,
                       aw->s->max_busy,
                       delta_reset,
-                      rc_time > 0 ? buf_time : "-");
+                      rc_time > 0 ? buf_time : "&nbsp;");
         }
 
     }
