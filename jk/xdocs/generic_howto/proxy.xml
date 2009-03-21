@@ -43,7 +43,7 @@ the backend. For instance the host name and port the original client
 (e.g. browser) needs to talk to belong to the web server and not to the
 backend, so the reverse proxy talks to a different host name and port.
 When the application on the backend returns content including
-self-referencing URLs using its own backend address and port, the
+self-referential URLs using its own backend address and port, the
 client will usually not be able to use these URLs.
 </p>
 <p>Another example is the client IP address, which for the web server is the
@@ -112,7 +112,7 @@ This is for Tomcat, it has not yet been standardized.
 less clever reverse proxy in front of your web server, for instance an
 HTTP load balancer or similar device which also serves as an SSL accelerator.
 </p>
-<p>Then you are sure, all your clients use HTTPS, but your web server doesn't
+<p>Then you are sure that all your clients use HTTPS, but your web server doesn't
 know about that. All it can see is requests coming from the accelerator using
 plain HTTP.
 </p>
@@ -127,7 +127,7 @@ content of such a header as the client IP address to pass to the backend.
 <p>So we might need to manipulate some of the data that AJP sends to the backend.
 When using mod_jk inside Apache httpd you can use several httpd environment
 variables to let mod_jk know, which data it should forward. These environment variables
-can be set by the httpd directives SetEnv or SetEnvIf, but also in very flexible
+can be set by the httpd directives SetEnv or SetEnvIf, but also in a very flexible
 way using mod_rewrite (since httpd 2.x it can not only test against environment
 variables, but also set them).
 </p>
@@ -195,7 +195,7 @@ allows to set the <a href="http://tomcat.apache.org/tomcat-6.0-doc/config/ajp.ht
 <li>secure: set to "true", if you wish <code>isSecure()</code> to return "true".
 </li>
 </ul>
-Remember: in general you don't need to set those. AJP handles all cases automatically,
+Remember: in general you don't need to set those. AJP automatically handles all cases
 where the web server running mod_jk knows the right data.
 </p>
 </section>
@@ -210,8 +210,8 @@ ROOT context, which will be directly available at "/", admins often prefer not t
 the ROOT context, e.g. because only one application can be the root context (per host).
 </p>
 <p>The procedure to change the URLs in the reverse proxy is tedious, because often
-an application produces self-referencing URLs, which then include the path components,
-that you tried to hide to the outside world. Nevertheless, if you absolutely need to do it,
+an application produces self-referential URLs, which then include the path components
+which you tried to hide to the outside world. Nevertheless, if you absolutely need to do it,
 here are the steps.
 </p>
 <p>Case A: You need to make the application available at a simple URL, but it is OK, if
@@ -250,8 +250,8 @@ We rewrite the Location headers of our responses:
 # but insert our webapp name before the rest of the URL
 Header edit Location ^([^/]*//[^/]*)?/(.*)$ $1/myapp/$2 
 </source>
-<p>3. Use <code>mod_headers</code> again, to rewrite the pathes contained in any cookies,
-your application might set. Such cookie pathes again might contain
+<p>3. Use <code>mod_headers</code> again, to rewrite the paths contained in any cookies,
+your application might set. Such cookie paths again might contain
 the path components you want to hide.
 A cookie is set with the HTTP response header named <code>Set-Cookie</code>.
 We rewrite the Set-Cookie headers of our responses:
@@ -295,7 +295,7 @@ tilde sign '<code>~</code>', indicates, that you are using a regular expression:
 </p>
 </subsection>
 <subsection name="URL Encoding">
-<p>Some type of problem is triggered by the use of encoded URLs
+<p>Some types of problems are triggered by the use of encoded URLs
 (see <a href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoding</a>).
 For the same location there exist
 a lot of different URLs which are equivalent. The reverse proxy needs to inspect the URL in order
@@ -310,8 +310,8 @@ the one which was used for the original URL.
 <p>
 For historical reasons, there have been several alternatives, how mod_jk and the ISAPI
 plugin encoded the resulting URL before sending it to the backend. They could be chosen via
-<code>JkOptions</code> (Apache httpd) or <code>uri_select</code> (ISAPI). All of those historical
-encodings are not recommended, because they have either negative functionality implications or
+<code>JkOptions</code> (Apache httpd) or <code>uri_select</code> (ISAPI). None of those historical
+encodings are recommended, because they have either negative functionality implications or
 pose a security risk. The default encoding since version 1.2.24 is <code>ForwardURIProxy</code>
 (Apache httpd) or <code>proxy</code> (ISAPI) and it is strongly recommended to keep the default
 and remove all old explicit settings.
