@@ -148,6 +148,9 @@
       <fix>
         Status: Wildcards in sub worker names were broken for update actions. (rjung)
       </fix>
+      <fix>
+        Status: Add use_server_errors to map display. (rjung)
+      </fix>
       <update>
         SHM: Move locking into the data pull and push methods. (rjung)
       </update>
