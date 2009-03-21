@@ -31,8 +31,8 @@
 
 <section name="2009 News &amp; Status">
 <br />
-<subsection name="XX March - JK-1.2.28 released">
-<a name="200903XX.1"></a>
+<subsection name="22 March - JK-1.2.28 released">
+<a name="20090322.1"></a>
 <br />
 <p>The Apache Tomcat team is proud to announce the immediate availability
 of Tomcat Connectors 1.2.28. This is a stable release concentrating mainly on
@@ -47,6 +47,12 @@ Bug Report.
 <p>
 The most important new features in this version are:
 </p>
+<h3>Better Error Detection for Load Balancer Workers</h3>
+<p>
+Local and global error states have been improved. You can fine tune the
+behaviour with the new "error_escalation_time" attribute
+(see the <a href="../generic_howto/timeouts.html">timeouts documentation</a>).
+</p>
 <h3>Dynamic Address and Port Change Using the Status Worker</h3>
 <p>
 The status worker now allows you to change the address and the port
@@ -58,6 +64,11 @@ port to the final values.
 <p>
 Note that already existing connections will go on using the old
 address and port. This will be improved in future versions.
+</p>
+<h3>New Data in Status Worker Display</h3>
+<p>
+The status worker display now also contains the timestamp of the last
+worker errors.
 </p>
 <h3>Improved Proxy Flexibility</h3>
 <p>
