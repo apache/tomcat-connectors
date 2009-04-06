@@ -731,7 +731,21 @@ public class AjpAprProcessor implements ActionHook {
                 String n = tmpMB.toString();
                 requestHeaderMessage.getBytes(tmpMB);
                 String v = tmpMB.toString();
-                request.setAttribute(n, v);
+                /*
+                 * AJP13 misses to forward the remotePort.
+                 * Allow the AJP connector to add this info via
+                 * a private request attribute.
+                 * We will accept the forwarded data as the remote port,
+                 * and remove it from the public list of request attributes.
+                 */
+                if(n.equals(Constants.SC_A_REQ_REMOTE_PORT)) {
+                    try {
+                        request.setRemotePort(Integer.parseInt(v));
+                    } catch (NumberFormatException nfe) {
+                    }
+                } else {
+                    request.setAttribute(n, v);
+                }
                 break;
 
             case Constants.SC_A_CONTEXT :
