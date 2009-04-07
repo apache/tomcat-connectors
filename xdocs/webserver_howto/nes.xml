@@ -257,7 +257,7 @@ Restart Web Server (stop and start the server)
 That's all, now you should start tomcat and ask for http://server:port/servlets-examples/
 </p>
 <warn>
-The file <b>obj.conf</b> seems to be sensible to leading white space in lines, especially in
+The file <b>obj.conf</b> seems to be sensitive to leading white space in lines, especially in
 the <b>Object</b> element. Make sure you have no leading white space (no indentation)
 on any line of this file.
 </warn>
