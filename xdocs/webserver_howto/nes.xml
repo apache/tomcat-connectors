@@ -225,8 +225,8 @@ Edit your server <b>obj.conf</b> and add the following lines:
   Create a new configuration object by adding the following lines to the end of the obj.conf file
   
   &lt;Object name="jknsapi"&gt;
-    ObjectType fn=force-type type=text/plain
-    Service fn="jk_service" method="*" worker="worker1"
+  ObjectType fn=force-type type=text/plain
+  Service fn="jk_service" method="*" worker="worker1"
   &lt;/Object&gt;
 </source>
 
@@ -256,6 +256,11 @@ Restart Web Server (stop and start the server)
 <p>
 That's all, now you should start tomcat and ask for http://server:port/servlets-examples/
 </p>
+<warn>
+The file <b>obj.conf</b> seems to be sensible to leading white space in lines, especially in
+the <b>Object</b> element. Make sure you have no leading white space (no indentation)
+on any line of this file.
+</warn>
 
 <subsection name="Adding additional Contexts">
 <p>
@@ -342,7 +347,7 @@ you will need to specify the exact URL-Path pattern(s) that you want Tomcat to h
 </p>
 
 <p>
-This requires a change to NemaTrans portion of <b>obj.conf</b>. 
+This requires a change to NameTrans portion of <b>obj.conf</b>. 
 </p>
 
 <source>
@@ -413,10 +418,10 @@ For example, if we want to submit the <b>/examples</b> context to the worker nam
 
 <source>
   &lt;Object name="jknsapi"&gt;
-    ObjectType fn=force-type type=text/plain
-    Service fn="jk_service" worker="worker1" path="/examples/*"
-    Service fn="jk_service" worker="worker2" path="/webpages/*"
-    Service fn="jk_service" worker="worker1"
+  ObjectType fn=force-type type=text/plain
+  Service fn="jk_service" worker="worker1" path="/examples/*"
+  Service fn="jk_service" worker="worker2" path="/webpages/*"
+  Service fn="jk_service" worker="worker1"
   &lt;/Object&gt;
 </source>
 
