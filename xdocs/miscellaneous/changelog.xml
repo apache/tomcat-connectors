@@ -246,7 +246,9 @@
         connection timeout but higher operational timeouts. (mturk)
       </add>
       <fix>
-        AJP13: Always send initial POST packet even if the client
+        AJP13: 
+        [<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2008-5519"><b>CVE-2008-5519</b></a>]
+        Always send initial POST packet even if the client
         disconnected after sending request but before providing
         POST data. In that case or in case the client broke the
         connection in a middle of read send an zero size packet
@@ -806,6 +808,9 @@
   <subsection name="Native">
     <changelog>
       <update>
+      [<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-0450"><b>CVE-2007-0450</b></a>]
+      and
+      [<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-1860"><b>CVE-2007-1860</b></a>]:
       Change the default value of JkOptions to ForwardURICompatUnparsed.
       The old default value was ForwardURICompat.
       This should make URL interpretation between Apache httpd and
@@ -936,8 +941,8 @@
   <subsection name="Native">
     <changelog>
       <fix>
-        <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-0774"><b>CVE-2007-0774</b></a>
-        : A denial of service and critical remote code execution vulnerability.
+        [<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-0774"><b>CVE-2007-0774</b></a>]:
+        A denial of service and critical remote code execution vulnerability.
         Caused by buffer overflow in map_uri_to_worker() when URL were longer that 4095 bytes.
         Reported by ZDI (www.zerodayintiative.com).
         Please note this issue only affected versions 1.2.19 and 1.2.20 of the
@@ -1511,7 +1516,9 @@
       snprintf functions. (mturk)
       </fix>
       <fix>
-      <bug>38859</bug>: Protect mod_jk against buggy or malicious
+      <bug>38859</bug>:
+      [<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-7197"><b>CVE-2006-7197</b></a>]
+      Protect mod_jk against buggy or malicious
       AJP servers in the backend. Patch provided by Ruediger Pluem. (mturk)
       </fix>
       <fix>
