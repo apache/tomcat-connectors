@@ -43,6 +43,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Build: Force copy of automake files. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>

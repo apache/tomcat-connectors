@@ -28,7 +28,7 @@ aclocal
 echo "autoheader"
 autoheader
 echo "automake -a --foreign --copy"
-automake -a --foreign --copy
+automake -a --foreign --copy --force-missing
 echo "autoconf"
 autoconf
 
