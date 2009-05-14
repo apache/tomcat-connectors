@@ -44,6 +44,9 @@
   <subsection name="Native">
     <changelog>
       <update>
+        Docs: Update information about tools needed to create a release. (rjung)
+      </update>
+      <update>
         Build: Force copy of automake files. (rjung)
       </update>
     </changelog>

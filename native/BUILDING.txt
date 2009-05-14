@@ -30,7 +30,10 @@
  
   It is possible to use autoconf for configuration and installation.
   To create tomcat-connectors's autoconf script, you will need libtool
-  1.5.2 or higher, and autoconf 2.59 or newer.
+  1.5.2, automake 1.10 and autoconf 2.59 or newer. The use of more recent
+  versions is encouraged, e.g. for reliable detection of the features of
+  recent version of operating systems.
+
   Those tools will not be required if you are just
   using a package downloaded from apache.org, they are only required for
   developers.
