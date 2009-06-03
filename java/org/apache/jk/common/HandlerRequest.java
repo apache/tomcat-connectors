@@ -265,8 +265,16 @@ public class HandlerRequest extends JkHandler
                                  ((Request)ep.getRequest()).unparsedURI());
                 }
             } catch( Exception ex ) {
+                /* If we are here it is because we have a bad header or something like that */
                 log.error( "Error decoding request ", ex );
                 msg.dump( "Incomming message");
+                Response res=ep.getRequest().getResponse();
+                if ( res==null ) {
+                    res=new Response();
+                    ep.getRequest().setResponse(res);
+                }
+                res.setMessage("Bad Request");
+                res.setStatus(400);
                 return ERROR;
             }
 
