@@ -209,7 +209,9 @@ different worker targets.
 
 <section name="Rule extensions">
 <br/>
-
+<p>
+Rule extensions were added in version 1.2.27 and are not available in earlier versions.
+</p>
 <subsection name="Syntax">
 <br/>
 <p>
