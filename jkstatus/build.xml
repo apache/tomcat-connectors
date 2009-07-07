@@ -95,8 +95,8 @@
     <javac srcdir="${basedir}/src/share" destdir="${jk.build}/classes"
            debug="${compile.debug}" deprecation="${compile.deprecation}"
            optimize="${compile.optimize}"
-           excludes="**/.svn/**"  	   
-    	>
+           excludes="**/.svn/**"
+           encoding="ISO-8859-1">
         <classpath refid="jtc.classpath" />
     </javac>
     <copy file="${basedir}/src/share/org/apache/jk/status/LocalStrings.properties"
