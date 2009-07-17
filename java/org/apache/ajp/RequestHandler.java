@@ -351,21 +351,33 @@ public class RequestHandler extends AjpHandler
                 break;
 		
 	    case SC_A_SSL_CERT     :
-		isSSL = true;
+                isSSL = true;
                 // Transform the string into certificate.
                 String certString = msg.getString();
                 byte[] certData = certString.getBytes();
                 ByteArrayInputStream bais = new ByteArrayInputStream(certData);
  
-                // Fill the first element.
+                // Fill all elements.
                 X509Certificate jsseCerts[] = null;
                 try {
                     CertificateFactory cf =
                         CertificateFactory.getInstance("X.509");
-                    X509Certificate cert = (X509Certificate)
-                        cf.generateCertificate(bais);
-                    jsseCerts =  new X509Certificate[1];
-                    jsseCerts[0] = cert;
+                    int i = 0;
+                    while (bais.available() > 0) {
+                        X509Certificate cert = (X509Certificate)
+                            cf.generateCertificate(bais);
+                        if (jsseCerts == null) {
+                            jsseCerts = new X509Certificate[1];
+                        } else {
+                            X509Certificate tmpJsseCerts[] =
+                                new X509Certificate[jsseCerts.length + 1];
+                            System.arraycopy(jsseCerts, 0,
+                                             tmpJsseCerts, 0,
+                                             jsseCerts.length);
+                            jsseCerts = tmpJsseCerts;
+                        }
+                        jsseCerts[i++] = cert;
+                    }
                 } catch(java.security.cert.CertificateException e) {
                     log("Certificate convertion failed" + e );
                 }
