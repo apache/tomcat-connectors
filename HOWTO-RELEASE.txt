@@ -175,6 +175,7 @@ releases can be downloaded from multiple sites.  Please wait
 24 hours before sending out the announcement so that the mirrors
 get a chance to get the new release distributions.
 
-Send an email announcement to users@tomcat.apache.org,
-dev@tomcat.apache.org, and announce@apache.org.
+Send an email announcement to announce@tomcat.apache.org,
+users@tomcat.apache.org, dev@tomcat.apache.org and
+announce@apache.org.
 
