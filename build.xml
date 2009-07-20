@@ -444,7 +444,7 @@
                  version="true"
                  windowtitle="Jk Connector Documentation"
                  doctitle="Jk Connector"
-                 bottom="Copyright &#169; 2001-2009 Apache Software Foundation.  All Rights Reserved."
+                 bottom="Copyright &amp;#169; 2001-2009 Apache Software Foundation.  All Rights Reserved."
 	/>
     </target>
 
