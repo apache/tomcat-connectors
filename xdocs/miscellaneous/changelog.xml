@@ -43,6 +43,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        Status: Remove duplicate "errors" line in property view of
+        AJP13 workers that are part of a load balancer. (rjung)
+      </fix>
       <update>
         Docs: Update information about tools needed to create a release. (rjung)
       </update>

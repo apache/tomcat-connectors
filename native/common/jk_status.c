@@ -2010,9 +2010,10 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_prop_att_uint64(s, w, ajp_name, "elected", aw->s->used);
             jk_print_prop_att_uint32(s, w, ajp_name, "errors", wr->s->errors);
         }
-        else
+        else {
             jk_print_prop_att_uint64(s, w, ajp_name, "used", aw->s->used);
             jk_print_prop_att_uint32(s, w, ajp_name, "errors", aw->s->errors);
+        }
         jk_print_prop_att_uint32(s, w, ajp_name, "client_errors", aw->s->client_errors);
         jk_print_prop_att_uint32(s, w, ajp_name, "reply_timeouts", aw->s->reply_timeouts);
         jk_print_prop_att_uint64(s, w, ajp_name, "transferred", aw->s->transferred);
