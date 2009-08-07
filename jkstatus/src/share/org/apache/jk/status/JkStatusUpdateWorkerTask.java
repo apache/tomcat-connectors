@@ -28,7 +28,7 @@ import org.apache.tools.ant.BuildException;
  * 
  * 
  * @author Peter Rossbach
- * @version $Revision:$
+ * @version $Revision$
  * @since mod_jk 1.2.20
  */
 public class JkStatusUpdateWorkerTask extends AbstractJkStatusTask {

@@ -36,7 +36,7 @@ import org.apache.tools.ant.Project;
  * Ant task that implements mod_jk 1.2.20 result message string
  * 
  * @author Peter Rossbach
- * @version $Revision:$
+ * @version $Revision$
  * @since mod_jk 1.2.20
  */
 public abstract class AbstractJkStatusTask extends AbstractCatalinaTask {
