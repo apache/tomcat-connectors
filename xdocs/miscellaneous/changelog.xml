@@ -43,6 +43,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+        <bug>47628</bug>: IIS: Fix deadlock when restarting the Application Pool
+        caused by not releasing the critical section lock.
+        Patch provided by Bret Prucha. (mturk)
+      </fix>
       <fix>
         Status: Remove duplicate "errors" line in property view of
         AJP13 workers that are part of a load balancer. (rjung)

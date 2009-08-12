@@ -563,7 +563,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
 static int init_jk(char *serverName);
 
-static int initialize_extension(void);
+static BOOL initialize_extension(void);
 
 static int read_registry_init_data(void);
 
@@ -2089,6 +2089,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
 BOOL WINAPI GetExtensionVersion(HSE_VERSION_INFO * pVer)
 {
     int rc;
+    BOOL rv = TRUE;
 
     pVer->dwExtensionVersion = MAKELONG(HSE_VERSION_MINOR, HSE_VERSION_MAJOR);
 
@@ -2097,11 +2098,11 @@ BOOL WINAPI GetExtensionVersion(HSE_VERSION_INFO * pVer)
 
     JK_ENTER_CS(&(init_cs), rc);
     if (!is_inited) {
-        return initialize_extension();
+        rv = initialize_extension();
     }
     JK_LEAVE_CS(&(init_cs), rc);
 
-    return TRUE;
+    return rv;
 }
 
 DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
@@ -2574,7 +2575,7 @@ static int init_jk(char *serverName)
     return rc;
 }
 
-static int initialize_extension(void)
+static BOOL initialize_extension(void)
 {
 
     if (read_registry_init_data()) {
