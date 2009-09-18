@@ -320,7 +320,8 @@ static const char *supported_properties[] = {
     RETRIES_OF_WORKER,
     STATUS_FAIL_OF_WORKER,
     LIST_PROPERTY_NAME,
-    MAINTAIN_PROPERTY_NAME
+    MAINTAIN_PROPERTY_NAME,
+    NULL
 };
 
 static const char *jk_level_verbs[] = {

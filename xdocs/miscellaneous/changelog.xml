@@ -43,6 +43,12 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>47867</bug>: IIS: crash during startup, when compiled with VS2008
+        and workers.properties contains unsupported properties.
+        Patch provided by Indrek Juhani (rjung)
+      </fix>
+      <fix>
         <bug>47628</bug>: IIS: Fix deadlock when restarting the Application Pool
         caused by not releasing the critical section lock.
         Patch provided by Bret Prucha. (mturk)
