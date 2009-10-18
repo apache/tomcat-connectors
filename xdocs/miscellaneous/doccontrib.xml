@@ -73,7 +73,7 @@ line.
 <p>
     Ant is used to build the documentation, among other things, and it must be 
 able to see a file called <b>build.xml</b>.  This file is located in the 
-<b>SVN_HOME\tomcat\connectors\trunk\jk\xdocs</b> directory.  In the 
+<b>SVN_HOME\tomcat\jk\trunk\xdocs</b> directory.  In the 
 <b>build.xml</b> file there is a target named <b>all</b> that will be used to build 
 the docs.
 </p>
@@ -81,7 +81,7 @@ the docs.
 <subsection name="STEP 2.  Get the sources">
 <p>
     Get the sources for
-<a href="http://svn.apache.org/repos/asf/tomcat/connectors/trunk/">tomcat-connectors</a>
+<a href="http://svn.apache.org/repos/asf/tomcat/jk/trunk/">tomcat-connectors</a>
 from the subversion repository.  If you'll 
 be editing from a windows platform you will need a windows subversion client.  There 
 are several available.  I like <a href="http://tortoisesvn.tigris.org/">turtoiseSVN</a>.  
@@ -98,7 +98,7 @@ your <b>SVN_HOME</b>.  Mine is located in C:\build.
 You should only need to do this once.
 <screen>
 <read> </read>
-<read>C:\build\>svn checkout http://svn.apache.org/repos/asf/tomcat/connectors/trunk/
+<read>C:\build\>svn checkout http://svn.apache.org/repos/asf/tomcat/jk/trunk/
 tomcat-connectors</read>
 <read> </read>
 </screen>
@@ -301,7 +301,7 @@ you are creating new files for submission.
     <li>Connect to people.apache.org.</li>
     <li>umask 002</li>
     <li>Copy the changed files to /www/tomcat.apache.org/connectors-doc/.</li>
-    <li>or use ant from a checkout tomcat/connectors/trunk/jk/xdocs repository:<br />
+    <li>or use ant from a checkout tomcat/jk/trunk/xdocs repository:<br />
         ant -Dbuild.dir=/www/tomcat.apache.org -Ddist.name=connectors-doc 
     </li>
     <li>The changes need around 4 hours to be synced to tomcat.apache.org.</li>
@@ -331,7 +331,7 @@ Writing Guide</a>
 <a href="http://subversion.tigris.org/">Subversion Home</a>
 </li>
 <li>
-<a href="http://svn.apache.org/repos/asf/tomcat/connectors/trunk/jk/xdocs/">JK Docs repository</a>
+<a href="http://svn.apache.org/repos/asf/tomcat/jk/trunk/xdocs/">JK Docs repository</a>
 </li>
 </ul>
 </section>

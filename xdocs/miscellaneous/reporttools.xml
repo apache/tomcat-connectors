@@ -30,7 +30,7 @@
 <section name="Reporting Tools">
 <p>
 The mod_jk source distribution contains two perl scripts in the
-jk/tools/reports directory which can be used to analyze the mod_jk
+tools/reports directory which can be used to analyze the mod_jk
 logs, save statistical data, and generate report graphs.
 </p>
 
