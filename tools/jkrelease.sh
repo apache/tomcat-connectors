@@ -27,7 +27,7 @@
 # And any one of: w3m, elinks, links (links2)
 
 SVNROOT="http://svn.apache.org/repos/asf"
-SVNPROJ="tomcat/connectors"
+SVNPROJ="tomcat/jk"
 JK_CVST="tomcat-connectors"
 
 JK_OWNER="root"
