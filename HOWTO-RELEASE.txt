@@ -19,10 +19,11 @@ Check out a clean copy of tomcat/connectors from subversion to
 make sure you don't have any lingering configure or build files.
 This will make sure that the source distribution created is clean.
 
-We assume, that you check out to a directory tomcat-connectors.
+We assume, that you checked out http://svn.apache.org/repos/asf/tomcat/jk/trunk
+to a directory named mod_jk. All further path names will be relative to this
+directory.
 
-If you haven't already, add your public PGP key to
-tomcat-connectors/KEYS.
+If you haven't already, add your public PGP key to KEYS.
 
 Update version numbers as needed
 --------------------------------
@@ -35,7 +36,7 @@ xdocs/index.xml
 xdocs/news/<THISYEAR0101>.xml
 native/STATUS.txt
 
-Update the JK_VERISRELEASE define in jk/native/common/jk_version.h, here is
+Update the JK_VERISRELEASE define in native/common/jk_version.h, here is
 a svn diff that shows what I changed:
 
 Index: native/common/jk_version.h
@@ -61,43 +62,43 @@ Use the pattern below for branching and tagging the tomcat-connectors directory.
 TAG=JK_{MAJOR_REVISION}_{MINOR_REVISION}_{RELEASE}
 
 svn copy \
-   https://svn.apache.org/repos/asf/tomcat/connectors/trunk/ \
-   https://svn.apache.org/repos/asf/tomcat/connectors/tags/jk1.2.x/TAG/
+   https://svn.apache.org/repos/asf/tomcat/jk/trunk/ \
+   https://svn.apache.org/repos/asf/tomcat/jk/tags/jk1.2.x/TAG/
 
-Here is an example for mod_jk 1.2.16
+Here is an example for mod_jk 1.2.29
 
 svn copy \
-   https://svn.apache.org/repos/asf/tomcat/connectors/trunk/ \
-   https://svn.apache.org/repos/asf/tomcat/connectors/tags/jk1.2.x/JK_1_2_16/
+   https://svn.apache.org/repos/asf/tomcat/jk/trunk/ \
+   https://svn.apache.org/repos/asf/tomcat/jk/tags/jk1.2.x/JK_1.2.29/
 
 Build the mod_jk 1.2 documentation
 ----------------------------------
 
-cd tomcat-connectors/jk/xdocs
+cd xdocs
 ant
 
 
-Check the documentation carefully (produced in tomcat-connectors/jk/build/docs)
+Check the documentation carefully (produced in build/docs)
 and copy it to people.apache.org:/x1/www/tomcat.apache.org/connectors-doc
 
 Create the new source distribution
 ----------------------------------
 
-A tool named jkrelease.sh in tomcat-connectors/jk/tools creates
+A tool named jkrelease.sh in the directory tools creates
 a release tarball and a zip including signature files.
 
 Upload source distribution and documentation to www.apache.org
 -------------------------------------------------------------------
 First update the KEYS on the server if you have added a new pgp key.
 
-scp tomcat-connectors/KEYS to the
+scp KEYS to the
 /www/www.apache.org/dist/tomcat/tomcat-connectors
 directory on the www.apache.org server.
 
-scp tomcat-connectors-jk-1.2.16-src.tar.gz* to 
-/www/www.apache.org/dist/tomcat/tomcat-connectors/jk/source
-scp tomcat-connectors-jk-1.2.16-src.zip* to   
-/www/www.apache.org/dist/tomcat/tomcat-connectors/jk/source
+scp tomcat-connectors-1.2.29-src.tar.gz* to 
+/www/www.apache.org/dist/tomcat/tomcat-connectors/source
+scp tomcat-connectors-1.2.29-src.zip* to   
+/www/www.apache.org/dist/tomcat/tomcat-connectors/source
 
 ssh to www.apache.org and cd to the
 /www/www.apache.org/dist/tomcat/tomcat-connectors/jk directory.
@@ -105,15 +106,15 @@ ssh to www.apache.org and cd to the
 Remove the symlinks for current and replace them with a soft link
 to the new source distribution files.
 
-ln -s source/tomcat-connectors-jk-1.2.16-src.tar.gz tomcat-connectors-jk-src-current.tar.gz
-ln -s source/tomcat-connectors-jk-1.2.16-src.tar.gz.asc tomcat-connectors-jk-src-current.tar.gz.asc
-ln -s source/tomcat-connectors-jk-1.2.16-src.tar.zip tomcat-connectors-jk-src-current.zip
-ln -s source/tomcat-connectors-jk-1.2.16-src.zip.asc tomcat-connectors-jk-src-current.zip.asc
+ln -s source/tomcat-connectors-1.2.29-src.tar.gz tomcat-connectors-src-current.tar.gz
+ln -s source/tomcat-connectors-1.2.29-src.tar.gz.asc tomcat-connectors-src-current.tar.gz.asc
+ln -s source/tomcat-connectors-1.2.29-src.tar.zip tomcat-connectors-src-current.zip
+ln -s source/tomcat-connectors-1.2.29-src.zip.asc tomcat-connectors-src-current.zip.asc
 
 Make sure the group write bit is set on all files and directories
 in the jk directory.
 
-chmod -R g+w /www/www.apache.org/dist/tomcat/tomcat-connectors/jk/
+chmod -R g+w /www/www.apache.org/dist/tomcat/tomcat-connectors/
 
 Build binaries and upload distributions to www.apache.org
 --------------------------------------------------------------
@@ -122,7 +123,7 @@ Build mod_jk for a specific web server and OS.  Package it as appropriate for
 the OS and sign the archive using PGP. Please include the ASF License, the
 generated docs, and the tools.  Please name the distribuiton as follows:
 
-tomcat-connectors-jk-{version}-{os-version-cpu}-{web server-version}.(tar.gz|zip)
+tomcat-connectors-{version}-{os-version-cpu}-{web server-version}.(tar.gz|zip)
 
 scp the binary distribution and pgp signature file to the appropriate binaries/{os} directory.
 
@@ -164,7 +165,7 @@ Commit it after checking carefully the changes.
 
 Connect to people.apache.org and update the tomcat.apache.org site image,
 the site tomcat.apache.org should reflect the change after a while.
-cd /x2/www/tomcat.apache.org/site/downloads
+cd /x1/www/tomcat.apache.org/site/downloads
 svn update downloads_tomcat-connectors.html
 
 Announcements
