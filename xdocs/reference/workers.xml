@@ -387,11 +387,11 @@ This feature has been added in <b>jk 1.2.16</b>.
 </directive>
 
 <directive name="connection_pool_timeout" default="0" required="false">
-Cache timeout property should be used with <b>connection_pool_size</b> to specify how many seconds JK should keep
+Cache timeout property should be used with <b>connection_pool_minsize</b> to specify how many seconds JK should keep
 an inactive socket in cache before closing it. This property should be used to reduce the number of threads
 on the Tomcat web server. The default value zero disables the closing (infinite timeout).
 <p>
-Each child could open an ajp13 connection if it have to forward a request to Tomcat, creating
+Each child could open an ajp13 connection if it has to forward a request to Tomcat, creating
 a new ajp13 thread on Tomcat side.
 </p>
 <p>
@@ -399,6 +399,11 @@ The problem is that after an ajp13 connection is created, the child won't drop i
 until killed. And since the webserver will keep its childs/threads running
 to handle high-load, even it the child/thread handle only static contents, you could
 finish having many unused ajp13 threads on the Tomcat side.
+</p>
+<p>
+You should keep this time interval in sync with the <b>connectionTimeout</b> attribute
+of your AJP connector in Tomcat's server.xml. Note however, that the value
+for mod_jk is given in seconds, the one in server.xml has to use milliseconds.
 </p>
 </directive>
 
