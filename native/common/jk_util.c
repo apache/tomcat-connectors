@@ -2125,13 +2125,16 @@ jk_uint32_t jk_gettid()
     pthread_getunique_np(&(u.tid), &tid);
     return ((jk_uint32_t)(tid.intId.lo & 0xFFFFFFFF));
 #else
-    switch(sizeof(pthread_t)) {
-    case sizeof(jk_uint32_t):
-        return *(jk_uint32_t *)&u.tid;
-    case sizeof(jk_uint64_t):
-        return (*(jk_uint64_t *)&u.tid) & 0xFFFFFFFF;
-    default:
-        return 0;
+    switch (sizeof(pthread_t)) {
+        case sizeof(jk_uint32_t):
+            return ((jk_uint32_t)u.tid >> 2);
+        break;
+        case sizeof(jk_uint64_t):
+            return (jk_uint32_t)((((jk_uint64_t)u.tid) >> 3) & 0xFFFFFFFF);
+        break;
+        default:
+            return 0;
+        break;
     }
 #endif /* AS400 */
 }
