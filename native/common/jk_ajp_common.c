@@ -828,6 +828,7 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
  */
 static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t *l)
 {
+    int i;
     int cmd;
     jk_msg_buf_t *msg;
 
@@ -858,38 +859,65 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
         return JK_FALSE;
     }
 
-    /* wait for Pong reply for timeout milliseconds
-     */
-    if (jk_is_input_event(ae->sd, timeout, l) == JK_FALSE) {
-        ae->last_errno = errno;
-        jk_log(l, JK_LOG_INFO, "timeout in reply cpong");
-        /* We can't trust this connection any more. */
-        jk_shutdown_socket(ae->sd, l);
-        ae->sd = JK_INVALID_SOCKET;
-        JK_TRACE_EXIT(l);
-        return JK_FALSE;
-    }
+    for (i = 0; i < 2; i++) {
+        /* wait for Pong reply for timeout milliseconds
+         */
+        if (jk_is_input_event(ae->sd, timeout, l) == JK_FALSE) {
+            ae->last_errno = errno;
+            jk_log(l, JK_LOG_INFO, "timeout in reply cpong");
+            /* We can't trust this connection any more. */
+            jk_shutdown_socket(ae->sd, l);
+            ae->sd = JK_INVALID_SOCKET;
+            ae->last_op = JK_AJP13_END_RESPONSE;
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
 
-    /* Read and check for Pong reply
-     */
-    if (ajp_connection_tcp_get_message(ae, msg, l) != JK_TRUE) {
-        jk_log(l, JK_LOG_INFO,
-               "awaited reply cpong, not received");
-        JK_TRACE_EXIT(l);
-        return JK_FALSE;
-    }
+        /* Read and check for Pong reply
+         */
+        if (ajp_connection_tcp_get_message(ae, msg, l) != JK_TRUE) {
+            jk_log(l, JK_LOG_INFO,
+                   "awaited reply cpong, not received");
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
 
-    if ((cmd = jk_b_get_byte(msg)) != AJP13_CPONG_REPLY) {
-        jk_log(l, JK_LOG_WARNING,
-               "awaited reply cpong, received %d instead",
-               cmd);
-        /* We can't trust this connection any more. */
-        jk_shutdown_socket(ae->sd, l);
-        ae->sd = JK_INVALID_SOCKET;
-        JK_TRACE_EXIT(l);
-        return JK_FALSE;
-    }
+        if ((cmd = jk_b_get_byte(msg)) != AJP13_CPONG_REPLY) {
+            /* If the respose was not CPONG it means that
+             * the previous response was not consumed by the
+             * client but the AJP messages was already in
+             * the network buffer.
+             * silently drop this single extra packet instead
+             * recycling the connection
+             */
+            if (i || ae->last_op == JK_AJP13_END_RESPONSE ||
+                     cmd < JK_AJP13_SEND_BODY_CHUNK ||
+                     cmd > AJP13_CPONG_REPLY) {
+                jk_log(l, JK_LOG_WARNING,
+                       "awaited reply cpong, received %d instead. "
+                       "Closing connection",
+                       cmd);
+                /* We can't trust this connection any more. */
+                jk_shutdown_socket(ae->sd, l);
+                ae->sd = JK_INVALID_SOCKET;
+                ae->last_op = JK_AJP13_END_RESPONSE;
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
+            else {
+                jk_log(l, JK_LOG_INFO,
+                       "awaited reply cpong, received %d instead. "
+                       "Retrying next packet",
+                       cmd);
 
+            }
+        }
+        else {
+            ae->last_op = AJP13_CPONG_REPLY;
+            /* We have received Pong reply */
+            break;
+        }
+    }
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
@@ -948,6 +976,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
             /* Close the socket if unable to logon */
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
+            ae->last_op = JK_AJP13_END_RESPONSE;
         }
     }
     /* XXX: Should we send a cping also after logon to validate the connection? */
@@ -1083,6 +1112,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
         /* because we might have send already parts of the request. */
         jk_shutdown_socket(ae->sd, l);
         ae->sd = JK_INVALID_SOCKET;
+        ae->last_op = JK_AJP13_END_RESPONSE;
         JK_TRACE_EXIT(l);
         return JK_FATAL_ERROR;
     }
@@ -1102,6 +1132,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
            "sendfull for socket %d returned %d (errno=%d)",
            ae->sd, rc, ae->last_errno);
     ae->sd = JK_INVALID_SOCKET;
+    ae->last_op = JK_AJP13_END_RESPONSE;
 
     JK_TRACE_EXIT(l);
     return JK_FALSE;
@@ -1154,6 +1185,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                    ae->last_errno);
         }
         ae->sd = JK_INVALID_SOCKET;
+        ae->last_op = JK_AJP13_END_RESPONSE;
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -1178,6 +1210,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             /* We can't trust this connection any more. */
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
+            ae->last_op = JK_AJP13_END_RESPONSE;
             JK_TRACE_EXIT(l);
             return JK_AJP_PROTOCOL_ERROR;
         }
@@ -1200,6 +1233,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             /* We can't trust this connection any more. */
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
+            ae->last_op = JK_AJP13_END_RESPONSE;
             JK_TRACE_EXIT(l);
             return JK_AJP_PROTOCOL_ERROR;
         }
@@ -1217,6 +1251,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         /* We can't trust this connection any more. */
         jk_shutdown_socket(ae->sd, l);
         ae->sd = JK_INVALID_SOCKET;
+        ae->last_op = JK_AJP13_END_RESPONSE;
         JK_TRACE_EXIT(l);
         return JK_AJP_PROTOCOL_ERROR;
     }
@@ -1246,6 +1281,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                    ae->last_errno);
         }
         ae->sd = JK_INVALID_SOCKET;
+        ae->last_op = JK_AJP13_END_RESPONSE;
         JK_TRACE_EXIT(l);
         /* Although we have a connection, this is effectively a protocol error.
          * We received the AJP header packet, but not the packet payload
@@ -1408,7 +1444,8 @@ static int ajp_send_request(jk_endpoint_t *e,
 
     /* Check if the previous request really ended
      */
-    if (ae->last_op != JK_AJP13_END_RESPONSE) {
+    if (ae->last_op != JK_AJP13_END_RESPONSE &&
+        ae->last_op != AJP13_CPONG_REPLY) {
         jk_log(l, JK_LOG_INFO,
                 "(%s) did not receive END_RESPONSE, "
                 "closing socket %d",
@@ -1429,6 +1466,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                    "socket %d is not connected any more (errno=%d)",
                    ae->worker->name, ae->sd, ae->last_errno);
             ae->sd = JK_INVALID_SOCKET;
+            ae->last_op = JK_AJP13_END_RESPONSE;
             err = JK_TRUE;
             err_conn++;
         }
