@@ -632,7 +632,7 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
         char *w;
         char *param;
 #ifdef _MT_CODE_PTHREAD
-        char *lasts;
+        char *lasts = NULL;
 #endif
 
         w = jk_pool_strdup(p, worker);
