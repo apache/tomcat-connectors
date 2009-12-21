@@ -44,6 +44,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>48305</bug>: Status: Do not show secret property when
+        doing dump. (mturk)
+      </fix>
+      <fix>
         <bug>47224</bug>: Status: When address gets changed invalidate
         all opened sockets in the endpoint cache. This will cause new
         backend connections to get opened using new address. (mturk)

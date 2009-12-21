@@ -4403,7 +4403,13 @@ static int dump_config(jk_ws_service_t *s,
         for (i=0;i<l;i++) {
             const char *name = jk_map_name_at(init_data, i);
             if (name) {
-                const char *value = jk_map_value_at(init_data, i);
+                const char *value;
+                size_t nl = strlen(name);
+                if (nl > sizeof(".secret") &&
+                    strcmp(name + nl - 7, ".secret") == 0) {
+                    continue;
+                }
+                value = jk_map_value_at(init_data, i);
                 if (!value)
                     value = "(null)";
                 if (mime == JK_STATUS_MIME_HTML ||
