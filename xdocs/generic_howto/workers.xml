@@ -423,12 +423,12 @@ An lb worker that load balance the ajp12 and ajp13 workers
   worker.list=worker1, worker2, worker3
   # Set properties for worker1 (ajp12)
   worker.worker1.type=ajp12
-  worker.worker1.host=locahost
+  worker.worker1.host=localhost
   worker.worker1.port=8007
   worker.worker1.lbfactor=1
   # Set properties for worker2 (ajp13)
   worker.worker2.type=ajp13
-  worker.worker2.host=locahost
+  worker.worker2.host=localhost
   worker.worker2.port=8009
   worker.worker2.lbfactor=1
   worker.worker2.connection_pool_timeout=600

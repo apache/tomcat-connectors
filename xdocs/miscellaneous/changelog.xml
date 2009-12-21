@@ -44,6 +44,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>47983</bug>: Docs: Fix typo in example config
+        which breaks startup. (rjung)
+      </fix>
+      <fix>
         <bug>45610</bug>: Status: Don't accept requests with
         empty value for sub worker parameter. (rjung)
       </fix>
