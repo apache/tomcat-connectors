@@ -427,6 +427,7 @@ jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
     jk_sock_t sd;
     int set = 1;
     int ret = 0;
+    int flags = 0;
 #ifdef SO_LINGER
     struct linger li;
 #endif
@@ -434,7 +435,10 @@ jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
     JK_TRACE_ENTER(l);
 
     errno = 0;
-    sd = socket(AF_INET, SOCK_STREAM, 0);
+#if defined(SOCK_CLOEXEC) && defined(USE_SOCK_CLOEXEC)
+    flags |= SOCK_CLOEXEC;
+#endif
+    sd = socket(AF_INET, SOCK_STREAM | flags, 0);
     if (!IS_VALID_SOCKET(sd)) {
         JK_GET_SOCKET_ERRNO();
         jk_log(l, JK_LOG_ERROR,
@@ -442,6 +446,26 @@ jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
         JK_TRACE_EXIT(l);
         return JK_INVALID_SOCKET;
     }
+#if defined(FD_CLOEXEC) && !defined(USE_SOCK_CLOEXEC)
+    if ((flags = fcntl(sd, F_GETFD)) == -1) {
+        JK_GET_SOCKET_ERRNO();
+        jk_log(l, JK_LOG_ERROR,
+               "fcntl() failed (errno=%d)", errno);
+        jk_close_socket(sd, l);
+        JK_TRACE_EXIT(l);
+        return JK_INVALID_SOCKET;
+    }
+    flags |= FD_CLOEXEC;
+    if (fcntl(sd, F_SETFD, flags) == -1) {
+        JK_GET_SOCKET_ERRNO();
+        jk_log(l, JK_LOG_ERROR,
+               "fcntl() failed (errno=%d)", errno);
+        jk_close_socket(sd, l);
+        JK_TRACE_EXIT(l);
+        return JK_INVALID_SOCKET;
+    }
+#endif
+
     /* Disable Nagle algorithm */
     if (setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (SET_TYPE)&set,
                    sizeof(set))) {

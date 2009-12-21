@@ -319,6 +319,35 @@ dnl check for SO_RCVTIMEO and SO_SNDTIMEO
 JK_CHECK_SETSOCKOPT(SO_RCVTIMEO)
 JK_CHECK_SETSOCKOPT(SO_SNDTIMEO)
 
+AC_DEFUN([JK_CHECK_SOCKOPT], [
+AC_MSG_CHECKING(whether to use $1 with socket())
+AC_TRY_RUN([
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+
+int main(void)
+{
+    int s;
+
+#ifndef $1
+    exit(3);
+#else
+    if ((s = socket(AF_INET, SOCK_STREAM | $1, 0)) == -1)
+        exit(2);
+
+    exit(0);
+#endif
+}
+]
+, [ AC_MSG_RESULT([yes]) AC_DEFINE(USE_$1, 1, [Define to use $1 with socket()]) ]
+, [ AC_MSG_RESULT([no]) ]
+)
+])dnl
+
+dnl check for SOCK_CLOEXEC
+JK_CHECK_SOCKOPT(SOCK_CLOEXEC)
+
 dnl check for poll.h header
 AC_CHECK_HEADERS(poll.h)
 dnl check for poll function
