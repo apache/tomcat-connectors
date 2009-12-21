@@ -1525,7 +1525,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
-
+	        memset(p->lb_workers, 0, num_of_workers * sizeof(lb_sub_worker_t));
             for (i = 0; i < num_of_workers; i++) {
                 p->lb_workers[i].s = jk_shm_alloc_lb_sub_worker(&p->p);
                 if (p->lb_workers[i].s == NULL) {
