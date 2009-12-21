@@ -319,6 +319,11 @@ dnl check for SO_RCVTIMEO and SO_SNDTIMEO
 JK_CHECK_SETSOCKOPT(SO_RCVTIMEO)
 JK_CHECK_SETSOCKOPT(SO_SNDTIMEO)
 
+dnl check for poll.h header
+AC_CHECK_HEADERS(poll.h)
+dnl check for poll function
+AC_CHECK_FUNC(poll, AC_DEFINE(HAVE_POLL,1,[Have poll()]))
+
 dnl Apache-2.0 needs the os subdirectory to include os.h
 dnl this include is copy from os/config.m4
 sinclude(../support/os_apache.m4)

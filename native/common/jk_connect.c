@@ -42,6 +42,10 @@ static apr_pool_t *jk_apr_pool = NULL;
 /* FIONREAD on Solaris et al. */
 #include <sys/filio.h>
 #endif
+#ifdef HAVE_POLL_H
+/* Use poll instead select */
+#include <poll.h>
+#endif
 
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
 #define JK_IS_SOCKET_ERROR(x) ((x) == SOCKET_ERROR)
@@ -864,6 +868,51 @@ char *jk_dump_hinfo(struct sockaddr_in *saddr, char *buf)
  *                to allow for iterative waiting
  * @remark        Cares about errno
  */
+#ifdef HAVE_POLL
+int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
+{
+    struct pollfd fds;
+    int rc;
+    int save_errno;
+
+    JK_TRACE_ENTER(l);
+
+    errno = 0;
+    fds.fd = sd;
+    fds.events = POLLIN;
+
+    do {
+        rc = poll(&fds, 1, timeout);
+    } while (rc < 0 && errno == EINTR);
+
+    if (rc == 0) {
+        /* Timeout. Set the errno to timeout */
+        errno = ETIMEDOUT;
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+    else if (rc < 0) {
+        save_errno = errno;
+        jk_log(l, JK_LOG_WARNING,
+               "error during poll on socket sd = %d (errno=%d)", sd, errno);
+        errno = save_errno;
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+    if ((fds.revents & (POLLERR | POLLHUP))) {
+        save_errno = fds.revents & (POLLERR | POLLHUP);
+        jk_log(l, JK_LOG_WARNING,
+               "error event during poll on socket sd = %d (event=%d)",
+               sd, save_errno);
+        errno = save_errno;
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;        
+    }
+    errno = 0;
+    JK_TRACE_EXIT(l);
+    return JK_TRUE;
+}
+#else
 int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
 {
     fd_set rset;
@@ -905,6 +954,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
+#endif
 
 /** Test if a socket is still connected
  * @param sd   socket to use
@@ -914,6 +964,46 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
  * @remark     Always closes socket in case of error
  * @remark     Cares about errno
  */
+#ifdef HAVE_POLL
+int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
+{
+    struct pollfd fds;
+    int rc;
+
+    JK_TRACE_ENTER(l);
+
+    errno = 0;
+    fds.fd = sd;
+    fds.events = POLLIN;
+
+    do {
+        rc = poll(&fds, 1, 0);
+    } while (rc < 0 && errno == EINTR);
+
+    errno = 0;
+    if (rc == 0) {
+        /* If we get a timeout, then we are still connected */
+        JK_TRACE_EXIT(l);
+        return JK_TRUE;
+    }
+    else if (rc == 1 && fds.revents == POLLIN) {
+        char buf;
+        do {
+            rc = (int)recvfrom(sd, &buf, 1, MSG_PEEK, NULL, NULL);
+        } while (rc < 0 && errno == EINTR);
+        if (rc == 1) {
+            /* There is at least one byte to read. */
+            JK_TRACE_EXIT(l);
+            return JK_TRUE;
+        }
+    }
+    jk_shutdown_socket(sd, l);
+
+    JK_TRACE_EXIT(l);
+    return JK_FALSE;
+}
+
+#else
 int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
 {
     fd_set fd;
@@ -970,3 +1060,5 @@ int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
     JK_TRACE_EXIT(l);
     return JK_FALSE;
 }
+#endif
+

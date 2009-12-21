@@ -44,6 +44,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>48410</bug>: Use poll instead select so we can work with more.
+        then 1024 sockets. (mturk)
+      </fix>
+      <fix>
         <bug>47867</bug>: IIS: crash during startup, when compiled with VS2008
         and workers.properties contains unsupported properties.
         Patch provided by Indrek Juhani (rjung)
