@@ -98,7 +98,7 @@ LINK32_OBJS= \
 
 "$(OUTDIR)\isapi_redirect.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
+  $(LINK32_FLAGS) $(LINK32_OBJS) commode.obj
 <<
 	IF EXIST $(OUTDIR)\isapi_redirect.manifest \
 		mt -nologo -manifest $(OUTDIR)\isapi_redirect.manifest -outputresource:$(OUTDIR)\isapi_redirect.dll;2
