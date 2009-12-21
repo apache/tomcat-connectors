@@ -1266,7 +1266,7 @@ static int status_parse_uri(jk_ws_service_t *s,
         if (value) {
             *value = '\0';
             value++;
-    /* XXX Depending on the params values, we might need to trim and decode */
+            /* XXX Depending on the params values, we might need to trim and decode */
             if (strlen(key)) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
@@ -1313,6 +1313,22 @@ static int fetch_worker_and_sub_worker(status_endpoint_t *p,
                "Status worker '%s' %s worker '%s' sub worker '%s'",
                w->name, operation,
                *worker ? *worker : "(null)", *sub_worker ? *sub_worker : "(null)");
+    if (!*worker || !(*worker)[0]) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' NULL or EMPTY worker param",
+               w->name);
+        p->msg = "NULL or EMPTY worker param";
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+    if (*sub_worker && !(*sub_worker)[0]) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' EMPTY sub worker param",
+               w->name);
+        p->msg = "EMPTY sub worker param";
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
@@ -3696,8 +3712,8 @@ static int check_worker(jk_ws_service_t *s,
     lb_sub_worker_t *wr = NULL;
 
     JK_TRACE_ENTER(l);
-    fetch_worker_and_sub_worker(p, "checking", &worker, &sub_worker, l);
-    if (search_worker(s, p, &jw, worker, l) == JK_FALSE) {
+    if (fetch_worker_and_sub_worker(p, "checking", &worker, &sub_worker, l) == JK_FALSE ||
+        search_worker(s, p, &jw, worker, l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -3920,8 +3936,8 @@ static int show_worker(jk_ws_service_t *s,
     lb_sub_worker_t *wr = NULL;
 
     JK_TRACE_ENTER(l);
-    fetch_worker_and_sub_worker(p, "showing", &worker, &sub_worker, l);
-    if (search_worker(s, p, &jw, worker, l) == JK_FALSE) {
+    if (fetch_worker_and_sub_worker(p, "showing", &worker, &sub_worker, l) == JK_FALSE ||
+        search_worker(s, p, &jw, worker, l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -3951,8 +3967,8 @@ static int edit_worker(jk_ws_service_t *s,
     ajp_worker_t *aw = NULL;
 
     JK_TRACE_ENTER(l);
-    fetch_worker_and_sub_worker(p, "editing", &worker, &sub_worker, l);
-    if (search_worker(s, p, &jw, worker, l) == JK_FALSE) {
+    if (fetch_worker_and_sub_worker(p, "editing", &worker, &sub_worker, l) == JK_FALSE ||
+        search_worker(s, p, &jw, worker, l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -4046,8 +4062,8 @@ static int update_worker(jk_ws_service_t *s,
     int rv;
 
     JK_TRACE_ENTER(l);
-    fetch_worker_and_sub_worker(p, "updating", &worker, &sub_worker, l);
-    if (search_worker(s, p, &jw, worker, l) == JK_FALSE) {
+    if (fetch_worker_and_sub_worker(p, "updating", &worker, &sub_worker, l) == JK_FALSE ||
+        search_worker(s, p, &jw, worker, l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -4212,8 +4228,8 @@ static int reset_worker(jk_ws_service_t *s,
     time_t now = 0;
 
     JK_TRACE_ENTER(l);
-    fetch_worker_and_sub_worker(p, "resetting", &worker, &sub_worker, l);
-    if (search_worker(s, p, &jw, worker, l) == JK_FALSE) {
+    if (fetch_worker_and_sub_worker(p, "resetting", &worker, &sub_worker, l) == JK_FALSE ||
+        search_worker(s, p, &jw, worker, l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -4325,8 +4341,8 @@ static int recover_worker(jk_ws_service_t *s,
     status_worker_t *w = p->worker;
 
     JK_TRACE_ENTER(l);
-    fetch_worker_and_sub_worker(p, "recovering", &worker, &sub_worker, l);
-    if (search_worker(s, p, &jw, worker, l) == JK_FALSE) {
+    if (fetch_worker_and_sub_worker(p, "recovering", &worker, &sub_worker, l) == JK_FALSE ||
+        search_worker(s, p, &jw, worker, l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
