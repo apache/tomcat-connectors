@@ -2732,7 +2732,7 @@ static void *create_jk_config(apr_pool_t * p, server_rec * s)
     c->envvars_has_own = JK_FALSE;
 
     c->s = s;
-    apr_pool_cleanup_register(p, s, jk_apr_pool_cleanup, jk_apr_pool_cleanup);
+    apr_pool_cleanup_register(p, s, jk_apr_pool_cleanup, apr_pool_cleanup_null);
     return c;
 }
 
@@ -2985,7 +2985,9 @@ static int open_jklog(server_rec * s, apr_pool_t * p)
             /* hgomez@20070425 */
             /* Shouldn't we clean both conf->log and main_log ?                   */
             /* Also should we pass pointer (ie: main_log) or handle (*main_log) ? */
-            apr_pool_cleanup_register(p, &main_log, jklog_cleanup, jklog_cleanup);
+            apr_pool_cleanup_register(p, &main_log,
+                                      jklog_cleanup,
+                                      apr_pool_cleanup_null);
         }
 
         return 0;
@@ -3061,7 +3063,7 @@ static void jk_child_init(apr_pool_t * pconf, server_rec * s)
 
     if ((rc = jk_shm_attach(jk_shm_file, jk_shm_size, conf->log)) == 0) {
         apr_pool_cleanup_register(pconf, conf->log, jk_cleanup_shmem,
-                                  jk_cleanup_shmem);
+                                  apr_pool_cleanup_null);
     }
     else
         jk_log(conf->log, JK_LOG_ERROR, "Attaching shm:%s errno=%d",
@@ -3162,8 +3164,9 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
                "You can remove the JkShmSize directive if you want to use the optimal size.");
     }
     if ((rc = jk_shm_open(jk_shm_file, jk_shm_size, conf->log)) == 0) {
-        apr_pool_cleanup_register(pconf, conf->log, jk_cleanup_shmem,
-                                  jk_cleanup_shmem);
+        apr_pool_cleanup_register(pconf, conf->log,
+                                  jk_cleanup_shmem,
+                                  apr_pool_cleanup_null);
     }
     else
         jk_log(conf->log, JK_LOG_ERROR,
