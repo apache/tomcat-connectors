@@ -2575,6 +2575,13 @@ int ajp_validate(jk_worker_t *pThis,
             jk_log(l, JK_LOG_ERROR,
                    "worker %s can't resolve tomcat address %s",
                    p->name, p->host);
+            p->s->port = p->port = 0;
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
+                       "worker %s contact is disabled",
+                       p->name);
+            JK_TRACE_EXIT(l);
+            return JK_TRUE;
         }
         else {
             p->s->port = p->port = 0;
