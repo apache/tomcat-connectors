@@ -44,6 +44,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>46893</bug>: Httpd: Log warning only if JkShmSize was actually
+        set in the configuration. (mturk)
+      </fix>
+      <fix>
         <bug>48410</bug>: Use poll instead select so we can work with more.
         then 1024 sockets. (mturk)
       </fix>

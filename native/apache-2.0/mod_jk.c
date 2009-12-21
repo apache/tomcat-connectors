@@ -253,6 +253,7 @@ static jk_worker_env_t worker_env;
 static apr_global_mutex_t *jk_log_lock = NULL;
 static char *jk_shm_file = NULL;
 static size_t jk_shm_size = 0;
+static int jk_shm_size_set = 0;
 static volatile int jk_watchdog_interval = 0;
 static volatile int jk_watchdog_running  = 0;
 
@@ -1315,6 +1316,8 @@ static const char *jk_set_shm_size(cmd_parms * cmd,
     else
         sz = JK_SHM_ALIGN(sz);
     jk_shm_size = (size_t)sz;
+    if (jk_shm_size)
+        jk_shm_size_set = 1;
     return NULL;
 }
 
@@ -3152,7 +3155,7 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
 #endif
     if (jk_shm_size == 0)
         jk_shm_size = jk_shm_calculate_size(jk_worker_properties, conf->log);
-    else {
+    else if (jk_shm_size_set) {
         jk_log(conf->log, JK_LOG_WARNING,
                "The optimal shared memory size can now be determined automatically.");
         jk_log(conf->log, JK_LOG_WARNING,
