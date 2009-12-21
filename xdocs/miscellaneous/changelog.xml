@@ -44,6 +44,11 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>47224</bug>: Status: When address gets changed invalidate
+        all opened sockets in the endpoint cache. This will cause new
+        backend connections to get opened using new address. (mturk)
+      </fix>
+      <fix>
         <bug>47222</bug>: Status: Add ping_timeout to the shared memory
         and allow dynamic configuration. (mturk)
       </fix>

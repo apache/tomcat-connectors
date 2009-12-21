@@ -1066,9 +1066,18 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
     aw->s->max_packet_size = aw->max_packet_size;
     aw->s->h.sequence = aw->sequence;
     if (aw->s->addr_sequence != aw->addr_sequence) {
+        unsigned int i;
         aw->s->addr_sequence = aw->addr_sequence;
         strncpy(aw->s->host, aw->host, JK_SHM_STR_SIZ);
         aw->s->port = aw->port;
+        for (i = 0; i < aw->ep_cache_sz; i++) {
+            /* Close all connections in the cache */
+            if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                int sd = aw->ep_cache[i]->sd;
+                aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                jk_shutdown_socket(sd, l);
+            }
+        }
     }
     if (locked == JK_FALSE)
         jk_shm_unlock();
