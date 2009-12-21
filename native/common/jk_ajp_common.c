@@ -1009,6 +1009,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
 
     aw->cache_timeout = aw->s->cache_timeout;
     aw->connect_timeout = aw->s->connect_timeout;
+    aw->ping_timeout = aw->s->ping_timeout;
     aw->reply_timeout = aw->s->reply_timeout;
     aw->prepost_timeout = aw->s->prepost_timeout;
     aw->recovery_opts = aw->s->recovery_opts;
@@ -1056,6 +1057,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
 
     aw->s->cache_timeout = aw->cache_timeout;
     aw->s->connect_timeout = aw->connect_timeout;
+    aw->s->ping_timeout = aw->ping_timeout;
     aw->s->reply_timeout = aw->reply_timeout;
     aw->s->prepost_timeout = aw->prepost_timeout;
     aw->s->recovery_opts = aw->recovery_opts;

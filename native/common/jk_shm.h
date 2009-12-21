@@ -85,6 +85,7 @@ struct jk_shm_ajp_worker
     /* Configuration data mirrored from ajp_worker */
     int cache_timeout;
     int connect_timeout;
+    int ping_timeout;
     int reply_timeout;
     int prepost_timeout;
     unsigned int recovery_opts;
