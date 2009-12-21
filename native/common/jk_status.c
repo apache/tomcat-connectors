@@ -3106,7 +3106,7 @@ static void commit_worker(jk_ws_service_t *s,
         lb->max_reply_timeouts = i;
         sync_needed = JK_TRUE;
     }
-    i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY, 0, l);
+    i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY, lb->sticky_session, l);
     if (i != lb->sticky_session) {
         jk_log(l, JK_LOG_INFO,
                "Status worker '%s' setting 'sticky_session' for lb worker '%s' to '%i'",
@@ -3114,7 +3114,7 @@ static void commit_worker(jk_ws_service_t *s,
         lb->sticky_session = i;
         sync_needed = JK_TRUE;
     }
-    i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY_FORCE, 0, l);
+    i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY_FORCE, lb->sticky_session_force, l);
     if (i != lb->sticky_session_force) {
         jk_log(l, JK_LOG_INFO,
                "Status worker '%s' setting 'sticky_session_force' for lb worker '%s' to '%i'",

@@ -44,6 +44,11 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>45610</bug>: Status: Fix erroneous unsetting of
+        sticky_session and sticky_session_force when updating other
+        load balancer attributes via the status worker. (rjung)
+      </fix>
+      <fix>
         <bug>48276</bug>: When worker contact cannot be resolved mark the
         worker as disabled instead failing to start the server. (mturk)
       </fix>
