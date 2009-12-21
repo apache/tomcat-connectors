@@ -980,7 +980,6 @@ int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
         rc = poll(&fds, 1, 0);
     } while (rc < 0 && errno == EINTR);
 
-    errno = 0;
     if (rc == 0) {
         /* If we get a timeout, then we are still connected */
         JK_TRACE_EXIT(l);
