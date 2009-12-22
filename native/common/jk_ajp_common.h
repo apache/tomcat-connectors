@@ -375,6 +375,7 @@ struct ajp_endpoint
     int last_errno;
     /* Last operation performed via this endpoint */
     int last_op;
+    int addr_sequence;  /* Whether the address is resolved */
 };
 
 /*
@@ -440,3 +441,4 @@ int jk_ajp_get_cping_mode(const char *m, int def);
 }
 #endif                          /* __cplusplus */
 #endif                          /* JK_AJP_COMMON_H */
+

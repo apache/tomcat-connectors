@@ -1075,6 +1075,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
             if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
                 int sd = aw->ep_cache[i]->sd;
                 aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                aw->ep_cache[i]->addr_sequence = aw->addr_sequence;                
                 jk_shutdown_socket(sd, l);
             }
         }
@@ -2638,6 +2639,7 @@ static int ajp_create_endpoint_cache(ajp_worker_t *p, int proto, jk_logger_t *l)
         p->ep_cache[i]->endpoint.service = ajp_service;
         p->ep_cache[i]->endpoint.done    = ajp_done;
         p->ep_cache[i]->last_op = JK_AJP13_END_RESPONSE;
+        p->ep_cache[i]->addr_sequence = 0;
     }
 
     JK_TRACE_EXIT(l);
@@ -2942,6 +2944,10 @@ int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l)
         /* set last_access only if needed */
         if (w->cache_timeout > 0)
             p->last_access = time(NULL);
+        if (w->s->addr_sequence != p->addr_sequence) {
+            p->reuse = JK_FALSE;
+            p->addr_sequence = w->s->addr_sequence;
+        }
         ajp_reset_endpoint(p, l);
         *e = NULL;
         JK_ENTER_CS(&w->cs, rc);
@@ -3202,3 +3208,4 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
     JK_TRACE_EXIT(l);
     return JK_FALSE;
 }
+
