@@ -3033,8 +3033,18 @@ int ajp_get_endpoint(jk_worker_t *pThis,
                     if (aw->ep_cache[slot] &&
                         IS_VALID_SOCKET(aw->ep_cache[slot]->sd)) {
                         ae = aw->ep_cache[slot];
-                        aw->ep_cache[slot] = NULL;
-                        break;
+                        if (ae->reuse) {
+                            aw->ep_cache[slot] = NULL;
+                            break;
+                        }
+                        else {
+                            /* XXX: We shouldn't have non reusable
+                             * opened socket in the cache
+                             */
+                            ajp_reset_endpoint(aw->ep_cache[slot], l);
+                            jk_log(l, JK_LOG_WARNING,
+                                   "closing non reusable pool slot=%d", slot);
+                        }
                     }
                 }
                 if (!ae) {
