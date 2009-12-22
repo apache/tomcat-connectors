@@ -1513,8 +1513,10 @@ static int ajp_send_request(jk_endpoint_t *e,
             /* If this worked, we can break out of the loop
              * and proceed with the request.
              */
-            if (rc == JK_TRUE)
+            if (rc == JK_TRUE) {
+                ae->last_op = JK_AJP13_FORWARD_REQUEST;
                 break;
+            }
             /* Error during sending the request.
              */
             err_send++;
@@ -1594,6 +1596,7 @@ static int ajp_send_request(jk_endpoint_t *e,
             JK_TRACE_EXIT(l);
             return JK_FATAL_ERROR;
         }
+        ae->last_op = JK_AJP13_FORWARD_REQUEST;
     }
     else if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
@@ -1751,6 +1754,18 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
 
     JK_TRACE_ENTER(l);
 
+    if (ae->last_op == JK_AJP13_FORWARD_REQUEST &&
+        code != JK_AJP13_SEND_HEADERS) {
+        /* We have just send a request but received something
+         * that is not response.
+         */
+         if (JK_IS_DEBUG_LEVEL(l)) {
+             jk_log(l, JK_LOG_DEBUG,
+                    "Expecting AJP13_SEND HEADERS, received (%d)", code);
+         }
+         JK_TRACE_EXIT(l);
+         return JK_AJP13_ERROR;
+    }
     switch (code) {
     case JK_AJP13_SEND_HEADERS:
         {
@@ -1760,6 +1775,10 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 /* Do not send anything to the client.
                  * Backend already send us the headers.
                  */
+                 if (JK_IS_DEBUG_LEVEL(l)) {
+                     jk_log(l, JK_LOG_DEBUG,
+                            "Already received AJP13_SEND HEADERS");
+                }
                 JK_TRACE_EXIT(l);
                 return JK_AJP13_ERROR;
             }
