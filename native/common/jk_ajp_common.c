@@ -747,6 +747,7 @@ static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         jk_shutdown_socket(ae->sd, l);
         ae->sd = JK_INVALID_SOCKET;
         ae->last_op = JK_AJP13_END_RESPONSE;
+        ae->worker->s->connected--;
     }
     jk_reset_pool(&(ae->pool));
     JK_TRACE_EXIT(l);
@@ -953,7 +954,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-
+    ae->worker->s->connected++;
     ae->last_errno = 0;
     if (JK_IS_DEBUG_LEVEL(l)) {
         jk_log(l, JK_LOG_DEBUG,
@@ -977,6 +978,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
             ae->last_op = JK_AJP13_END_RESPONSE;
+            ae->worker->s->connected--;
         }
     }
     /* XXX: Should we send a cping also after logon to validate the connection? */
@@ -1125,6 +1127,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
         jk_shutdown_socket(ae->sd, l);
         ae->sd = JK_INVALID_SOCKET;
         ae->last_op = JK_AJP13_END_RESPONSE;
+        ae->worker->s->connected--;
         JK_TRACE_EXIT(l);
         return JK_FATAL_ERROR;
     }
@@ -1145,7 +1148,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
            ae->sd, rc, ae->last_errno);
     ae->sd = JK_INVALID_SOCKET;
     ae->last_op = JK_AJP13_END_RESPONSE;
-
+    ae->worker->s->connected--;
     JK_TRACE_EXIT(l);
     return JK_FALSE;
 }
@@ -1198,6 +1201,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         }
         ae->sd = JK_INVALID_SOCKET;
         ae->last_op = JK_AJP13_END_RESPONSE;
+        ae->worker->s->connected--;
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -1223,6 +1227,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
             ae->last_op = JK_AJP13_END_RESPONSE;
+            ae->worker->s->connected--;
             JK_TRACE_EXIT(l);
             return JK_AJP_PROTOCOL_ERROR;
         }
@@ -1246,6 +1251,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_shutdown_socket(ae->sd, l);
             ae->sd = JK_INVALID_SOCKET;
             ae->last_op = JK_AJP13_END_RESPONSE;
+            ae->worker->s->connected--;
             JK_TRACE_EXIT(l);
             return JK_AJP_PROTOCOL_ERROR;
         }
@@ -1264,6 +1270,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         jk_shutdown_socket(ae->sd, l);
         ae->sd = JK_INVALID_SOCKET;
         ae->last_op = JK_AJP13_END_RESPONSE;
+        ae->worker->s->connected--;
         JK_TRACE_EXIT(l);
         return JK_AJP_PROTOCOL_ERROR;
     }
@@ -1294,6 +1301,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         }
         ae->sd = JK_INVALID_SOCKET;
         ae->last_op = JK_AJP13_END_RESPONSE;
+        ae->worker->s->connected--;
         JK_TRACE_EXIT(l);
         /* Although we have a connection, this is effectively a protocol error.
          * We received the AJP header packet, but not the packet payload
@@ -1465,6 +1473,7 @@ static int ajp_send_request(jk_endpoint_t *e,
         jk_shutdown_socket(ae->sd, l);
         ae->sd = JK_INVALID_SOCKET;
         ae->last_op = JK_AJP13_END_RESPONSE;
+        ae->worker->s->connected--;
     }
     /*
      * First try to check open connections...
@@ -1479,6 +1488,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                    ae->worker->name, ae->sd, ae->last_errno);
             ae->sd = JK_INVALID_SOCKET;
             ae->last_op = JK_AJP13_END_RESPONSE;
+            ae->worker->s->connected--;
             err = JK_TRUE;
             err_conn++;
         }
@@ -1999,6 +2009,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
                 /* We can't trust this connection any more. */
                 jk_shutdown_socket(p->sd, l);
                 p->sd = JK_INVALID_SOCKET;
+                p->worker->s->connected--;
                 if (headeratclient == JK_FALSE) {
                     if (p->worker->recovery_opts & RECOVER_ABORT_IF_TCGETREQUEST)
                         op->recoverable = JK_FALSE;
