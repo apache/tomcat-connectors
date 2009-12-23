@@ -759,8 +759,9 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 
     rc = jk_close_socket(sd, l);
     if (JK_IS_DEBUG_LEVEL(l))
-        jk_log(l, JK_LOG_DEBUG, "Shutdown socket %d and read %d lingering bytes",
-               sd, rd);
+        jk_log(l, JK_LOG_DEBUG,
+               "Shutdown socket %d and read %d lingering bytes in %d sec.",
+               sd, rd, (int)difftime(time(NULL), start));
     errno = save_errno;
     JK_TRACE_EXIT(l);
     return rc;
