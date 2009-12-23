@@ -658,10 +658,12 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
     rc = closesocket(sd) ? -1 : 0;
 #else
-    rc = close(sd);
+    do {
+        rc = close(sd);
+    } while (JK_IS_SOCKET_ERROR(rc) && (errno == EINTR || errno == EAGAIN));
 #endif
-    errno = save_errno;
     JK_TRACE_EXIT(l);
+    errno = save_errno;
     return rc;
 }
 
