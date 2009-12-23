@@ -850,9 +850,9 @@ int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t 
         } while (JK_IS_SOCKET_ERROR(rd) && errno == EINTR);
 
         if (JK_IS_SOCKET_ERROR(rd)) {
+            rd = (errno > 0) ? -errno : errno;
             jk_shutdown_socket(sd, l);
             JK_TRACE_EXIT(l);
-            rd = (errno > 0) ? -errno : errno;
             return (rd == 0) ? JK_SOCKET_EOF : rd;
         }
         else if (rd == 0) {
@@ -906,6 +906,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     errno = 0;
     fds.fd = sd;
     fds.events = POLLIN;
+    fds.revents = 0;
 
     do {
         rc = poll(&fds, 1, timeout);
@@ -919,17 +920,21 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     }
     else if (rc < 0) {
         save_errno = errno;
-        jk_log(l, JK_LOG_WARNING,
-               "error during poll on socket sd = %d (errno=%d)", sd, errno);
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "error during poll on socket sd = %d (errno=%d)", sd, errno);
+        }
         errno = save_errno;
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     if ((fds.revents & (POLLERR | POLLHUP))) {
         save_errno = fds.revents & (POLLERR | POLLHUP);
-        jk_log(l, JK_LOG_WARNING,
-               "error event during poll on socket sd = %d (event=%d)",
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "error event during poll on socket sd = %d (event=%d)",
                sd, save_errno);
+        }
         errno = save_errno;
         JK_TRACE_EXIT(l);
         return JK_FALSE;        
@@ -970,8 +975,11 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     }
     else if (rc < 0) {
         save_errno = errno;
-        jk_log(l, JK_LOG_WARNING,
-               "error during select on socket sd = %d (errno=%d)", sd, errno);
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "error during select on socket sd = %d (errno=%d)",
+                   sd, errno);
+        }
         errno = save_errno;
         JK_TRACE_EXIT(l);
         return JK_FALSE;
