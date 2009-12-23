@@ -761,7 +761,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
                     rp += rc;
             } while (JK_IS_SOCKET_ERROR(rc) && (errno == EINTR || errno == EAGAIN));
 
-            if (rc <= 0)
+            if (rc < 0)
                 break;
         }
         else
