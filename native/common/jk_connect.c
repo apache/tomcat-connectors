@@ -671,7 +671,6 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
 #define MAX_SECS_TO_LINGER 30
 #endif
 #define SECONDS_TO_LINGER  2
-
 #ifndef SHUT_WR
 #ifdef SD_SEND
 #define SHUT_WR SD_SEND
@@ -696,6 +695,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     int rd = 0;
     int rp = 0;
     int save_errno;
+    int timeout = SECONDS_TO_LINGER * 1000;
     struct timeval tv;
     time_t start = time(NULL);
 
@@ -739,12 +739,12 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
          * close the connection.
          */
         FD_SET(sd, &rs);
-        tv.tv_sec  = SECONDS_TO_LINGER;
-        tv.tv_usec = 0;
+        tv.tv_sec  = timeout / 1000;
+        tv.tv_usec = (timeout % 1000) * 1000;
 #endif
         rp = 0;
 #ifdef HAVE_POLL
-        if (poll(&fds, 1, SECONDS_TO_LINGER * 1000) > 0)
+        if (poll(&fds, 1, timeout) > 0)
 #else
         if (select((int)sd + 1, &rs, NULL, NULL, &tv) > 0)
 #endif
@@ -768,6 +768,13 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
             break;
         rd += rp;
         if (rp < sizeof(dummy)) {
+            if (timeout > SECONDS_TO_LINGER) {
+                /* Try once again with 1000 times smaller timeout
+                 * In our case 2 msec.
+                 */
+                timeout = SECONDS_TO_LINGER;
+                continue;
+            }
             /* We have readed less then size of buffer
              * It's a good chance there will be no more data
              * to read.
@@ -787,6 +794,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
             shutdown(sd, SHUT_RD);
             break;
         }
+        timeout = SECONDS_TO_LINGER * 1000;
     } while (difftime(time(NULL), start) < MAX_SECS_TO_LINGER);
 
     rc = jk_close_socket(sd, l);
