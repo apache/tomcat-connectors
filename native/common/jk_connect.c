@@ -694,8 +694,8 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     char dummy[512];
     int rc = 0;
     int rd = 0;
+    int rp = 0;
     int save_errno;
-    fd_set rs;
     struct timeval tv;
     time_t start = time(NULL);
 
@@ -722,10 +722,16 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
         return rc;
     }
 
-    /* Set up to wait for readable data on socket... */
-    FD_ZERO(&rs);
-
     do {
+#ifdef HAVE_POLL
+        struct pollfd fds;
+
+        fds.fd = sd;
+        fds.events = POLLIN;
+#else
+        fd_set rs;
+
+        FD_ZERO(&rs);
         /* Read all data from the peer until we reach "end-of-file"
          * (FIN from peer) or we've exceeded our overall timeout. If the
          * backend does not send us bytes within 2 seconds
@@ -735,8 +741,14 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
         FD_SET(sd, &rs);
         tv.tv_sec  = SECONDS_TO_LINGER;
         tv.tv_usec = 0;
-
-        if (select((int)sd + 1, &rs, NULL, NULL, &tv) > 0) {
+#endif
+        rp = 0;
+#ifdef HAVE_POLL
+        if (poll(&fds, 1, SECONDS_TO_LINGER * 1000) > 0)
+#else
+        if (select((int)sd + 1, &rs, NULL, NULL, &tv) > 0)
+#endif
+        {
             do {
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
                 rc = recv(sd, &dummy[0], sizeof(dummy), 0);
@@ -746,7 +758,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
                 rc = read(sd, &dummy[0], sizeof(dummy));
 #endif
                 if (rc > 0)
-                    rd += rc;
+                    rp += rc;
             } while (JK_IS_SOCKET_ERROR(rc) && (errno == EINTR || errno == EAGAIN));
 
             if (rc <= 0)
@@ -754,7 +766,27 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
         }
         else
             break;
-
+        rd += rp;
+        if (rp < sizeof(dummy)) {
+            /* We have readed less then size of buffer
+             * It's a good chance there will be no more data
+             * to read.
+             */
+            if ((rc = sononblock(sd))) {
+                rc = jk_close_socket(sd, l);
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
+                           "error setting  socket %d to nonblocking", sd);
+                errno = save_errno;
+                JK_TRACE_EXIT(l);
+                return rc;
+            }
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
+                       "shutting down the read side of socket %d", sd);
+            shutdown(sd, SHUT_RD);
+            break;
+        }
     } while (difftime(time(NULL), start) < MAX_SECS_TO_LINGER);
 
     rc = jk_close_socket(sd, l);
