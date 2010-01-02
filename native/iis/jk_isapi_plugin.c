@@ -209,7 +209,7 @@ char HTML_ERROR_TAIL[] =        "<P>\n<BR/>&nbsp;<BR/>&nbsp;<BR/>&nbsp;<BR/>&nbs
                                 "<BR/>&nbsp;\n"
                                 "<HR/>\n"
                                 "<P id=\"footer\">\n"
-                                "Copyright &copy; 1999-2009 Apache Software Foundation<BR/>\n"
+                                "Copyright &copy; 1999-2010 Apache Software Foundation<BR/>\n"
                                 "All Rights Reserved\n"
                                 "</P>\n</BODY>\n</HTML>\n";
 
