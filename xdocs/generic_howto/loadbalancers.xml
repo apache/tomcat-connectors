@@ -36,8 +36,8 @@ See workers <b>type</b> directive. For a complete reference of all load balancer
 items, please consult the worker <a href="../reference/workers.html">reference</a>.
 The comprehensive status management features of the load balancer together with the status worker,
 makes its use an interesting option, even if only combined with a single "real" worker.
-<warn>The workers that are member of load balancer do not need to appear in the
-<b>worker.list</b> directive.</warn>
+<warn>As long as the "real" workers should only be used via the load balancer worker,
+there is no need to also put them into the <b>worker.list</b> property.</warn>
 </p>
 
 <subsection name="lb Worker properties">
