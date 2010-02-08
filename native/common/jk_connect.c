@@ -671,11 +671,20 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
 #define MAX_SECS_TO_LINGER 30
 #endif
 #define SECONDS_TO_LINGER  2
+
 #ifndef SHUT_WR
 #ifdef SD_SEND
 #define SHUT_WR SD_SEND
 #else
 #define SHUT_WR 0x01
+#endif
+#endif
+
+#ifndef SHUT_RD
+#ifdef SD_RECEIVE
+#define SHUT_RD SD_RECEIVE
+#else
+#define SHUT_RD 0x00
 #endif
 #endif
 
