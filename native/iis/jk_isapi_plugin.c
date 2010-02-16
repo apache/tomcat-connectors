@@ -2393,6 +2393,9 @@ static int init_jk(char *serverName)
     int rc = JK_FALSE;
 
     if (!jk_open_file_logger(&logger, log_file, log_level)) {
+        /* TODO: Use System logging to notify the user that
+         *       we cannot open the configured log file.
+         */
         logger = NULL;
     }
     StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME);
@@ -2529,11 +2532,14 @@ static int init_jk(char *serverName)
                     jk_log(logger, JK_LOG_WARNING,
                            "You can remove the shm_size attribute if you want to use the optimal size.");
                 }
-                if ((rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0)
+                if ((rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0) {
+                    /* TODO: Do not try to open the worker if we cannot creat
+                     *       the shared memory segment.
+                     */
                     jk_log(logger, JK_LOG_ERROR,
                            "Initializing shm:%s errno=%d. Load balancing workers will not function properly.",
                            jk_shm_name(), rv);
-
+                }
                 worker_env.uri_to_worker = uw_map;
                 worker_env.server_name = serverName;
                 worker_env.pool = NULL;
