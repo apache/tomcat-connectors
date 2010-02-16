@@ -51,13 +51,7 @@
 
 #include <strsafe.h>
 
-#ifdef ISAPI_ALLOW_CHUNKING
-#define HAS_CHUNKING "-CHUNKING"
-#else
-#define HAS_CHUNKING ""
-#endif
-
-#define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION HAS_CHUNKING
+#define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION
 #define SHM_DEF_NAME   "JKISAPISHMEM"
 #define DEFAULT_WORKER_NAME ("ajp13")
 
@@ -2663,9 +2657,7 @@ static int read_registry_init_data(void)
     watchdog_interval = get_config_int(src, WATCHDOG_INTERVAL_TAG, 0);
     if (watchdog_interval < 0)
         watchdog_interval = 0;
-#ifdef ISAPI_ALLOW_CHUNKING
     chunked_encoding_enabled = get_config_bool(src, ENABLE_CHUNKED_ENCODING_TAG, JK_FALSE);
-#endif
     if (get_config_parameter(src, ERROR_PAGE_TAG, error_page_buf, sizeof(error_page_buf))) {
         error_page = error_page_buf;
     }
