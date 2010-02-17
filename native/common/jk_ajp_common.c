@@ -1765,13 +1765,13 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
     JK_TRACE_ENTER(l);
 
     if (ae->last_op == JK_AJP13_FORWARD_REQUEST &&
-        code != JK_AJP13_SEND_HEADERS) {
+        code == JK_AJP13_SEND_BODY_CHUNK) {
         /* We have just send a request but received something
-         * that is not response.
+         * that probably originates from buffered response.
          */
          if (JK_IS_DEBUG_LEVEL(l)) {
              jk_log(l, JK_LOG_DEBUG,
-                    "Expecting AJP13_SEND HEADERS, received (%d)", code);
+                    "Unexpected AJP13_SEND_BODY_CHUNK");
          }
          JK_TRACE_EXIT(l);
          return JK_AJP13_ERROR;
