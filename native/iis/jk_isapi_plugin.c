@@ -2180,7 +2180,7 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                         }
                         else {
                             rc = HSE_STATUS_SUCCESS;
-                            lpEcb->dwHttpStatusCode = HTTP_STATUS_OK;
+                            lpEcb->dwHttpStatusCode = s.http_response_status;
                             if (JK_IS_DEBUG_LEVEL(logger))
                                 jk_log(logger, JK_LOG_DEBUG,
                                        "service() returned OK");

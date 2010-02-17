@@ -86,6 +86,9 @@
         then 1024 sockets. (mturk)
       </fix>
       <fix>
+        <bug>48223</bug>: IIS: Propagate correct backend error code to IIS. (rjung)
+      </fix>
+      <fix>
         <bug>47867</bug>: IIS: crash during startup, when compiled with VS2008
         and workers.properties contains unsupported properties.
         Patch provided by Indrek Juhani (rjung)
