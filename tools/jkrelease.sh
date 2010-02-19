@@ -292,8 +292,27 @@ tar cfz ${JK_DIST}.tar.gz --owner="${JK_OWNER}" --group="${JK_GROUP}" ${JK_DIST}
 perl ${JK_DIST}/tools/lineends.pl --cr ${JK_DIST}
 zip -9 -r ${JK_DIST}.zip ${JK_DIST}
 
+# Try to locate a MD5 binary
+md5_bin="`which md5sum 2>/dev/null || type md5sum 2>&1`"
+if [ -x "$md5_bin" ]; then
+    MD5SUM="$md5_bin --binary "
+else
+    MD5SUM="echo 00000000000000000000000000000000 "
+fi
+# Try to locate a SHA1 binary
+sha1_bin="`which sha1sum 2>/dev/null || type sha1sum 2>&1`"
+if [ -x "$sha1_bin" ]; then
+    SHA1SUM="$sha1_bin --binary "
+else
+    SHA1SUM="echo 0000000000000000000000000000000000000000 "
+fi
 # Create detached signature and verify it
 archive=${JK_DIST}.tar.gz
 sign_and_verify $archive
+$MD5SUM $archive > $archive.md5 
+$SHA1SUM $archive > $archive.sha1 
 archive=${JK_DIST}.zip
 sign_and_verify $archive
+$MD5SUM $archive > $archive.md5 
+$SHA1SUM $archive > $archive.sha1 
+
