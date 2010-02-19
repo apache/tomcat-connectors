@@ -67,7 +67,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "$(SUNONE_HOME)\include" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JK_NSAPI" /D "NSAPI_EXPORTS" /D "XP_WIN32" /D "MCC_HTTPD" /D "SPAPI20" /Fo"$(INTDIR)\\" /Fd"Release/nsapi_redirect_src" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "$(SUNONE_HOME)\include" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JK_NSAPI" /D "NSAPI_EXPORTS" /D "XP_WIN32" /D "MCC_HTTPD" /D "SPAPI20" /Fo"$(INTDIR)\\" /Fd"$(OUTDIR)\nsapi_redirect_src" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -136,15 +136,8 @@ LINK32_OBJS= \
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
-
-
-!IF "$(NO_EXTERNAL_DEPS)" != "1"
-!IF EXISTS("nsapi.dep")
-!INCLUDE "nsapi.dep"
-!ELSE 
-!MESSAGE Warning: cannot find "nsapi.dep"
-!ENDIF 
-!ENDIF 
+	IF EXIST $(OUTDIR)\nsapi_redirect.manifest \
+		mt -nologo -manifest $(OUTDIR)\nsapi_redirect.manifest -outputresource:$(OUTDIR)\nsapi_redirect.dll;2
 
 
 !IF "$(CFG)" == "nsapi - Win32 Release"
