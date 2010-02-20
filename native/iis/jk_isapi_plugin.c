@@ -2309,7 +2309,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    // Instance Handle of the DLL
             if ((p = strrchr(fname, '\\'))) {
                 *(p++) = '\0';
                 StringCbCopy(dll_file_path, MAX_PATH, fname);
-                jk_map_alloc(&jk_environment_map);                
+                jk_map_alloc(&jk_environment_map);
                 jk_map_add(jk_environment_map, "JKISAPI_PATH", dll_file_path);
                 jk_map_add(jk_environment_map, "JKISAPI_NAME", p);
             }
@@ -2767,8 +2767,9 @@ static int init_ws_service(isapi_private_data_t * private_data,
     char *huge_buf = NULL;   /* should be enough for all */
     int worker_index = -1;
     rule_extension_t *e;
-
+    char  temp_buf[64];
     DWORD huge_buf_sz;
+    BOOL  unknown_content_length = FALSE;
 
     JK_TRACE_ENTER(logger);
 
@@ -2818,8 +2819,31 @@ static int init_ws_service(isapi_private_data_t * private_data,
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT_SECURE", s->is_ssl, 0);
 
     s->method = private_data->lpEcb->lpszMethod;
-    s->content_length = (jk_uint64_t)private_data->lpEcb->cbTotalBytes;
-
+    /* Check for Transfer Encoding */
+    if (get_server_value(private_data->lpEcb,
+                         "HTTP_TRANSFER_ENCODING",
+                         temp_buf,
+                         (DWORD)sizeof(temp_buf))) {
+        if (strcasecmp(temp_buf, TRANSFER_ENCODING_CHUNKED_VALUE) == 0)
+            s->is_chunked = JK_TRUE;
+        else {
+            /* XXX: What to do with non chunked T-E ?
+             */
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG, "Unsupported Transfer-Encoding: %s",
+                       temp_buf);
+        }
+    }
+    if (private_data->lpEcb->cbTotalBytes == 0xFFFFFFFF) {
+        /* We have size larger then 4Gb or Transfer-Encoding: chunked
+         * ReadClient should be called until no more data is returned
+         */
+        unknown_content_length = TRUE;
+    }
+    else {
+        /* Use the IIS provided content length */
+        s->content_length = (jk_uint64_t)private_data->lpEcb->cbTotalBytes;
+    }
     e = get_uri_to_worker_ext(uw_map, worker_index);
     if (e) {
         if (JK_IS_DEBUG_LEVEL(logger))
@@ -2942,7 +2966,13 @@ static int init_ws_service(isapi_private_data_t * private_data,
         if (cnt) {
             char *headers_buf = huge_buf;
             unsigned int i;
-            BOOL need_content_length_header = (s->content_length == 0);
+            BOOL need_content_length_header = FALSE;
+
+            if (s->content_length == 0 && unknown_content_length == FALSE) {
+                /* Add content-length=0 only if really zero
+                 */
+                need_content_length_header = TRUE;
+            }
 
             cnt -= 2;           /* For our two special headers:
                                  * HTTP_TOMCATURI_XXXXXXXX
@@ -2967,28 +2997,41 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 tmp += HTTP_HEADER_PREFIX_LEN;
 #endif
 
-                if (!strnicmp(tmp, URI_HEADER_NAME, strlen(URI_HEADER_NAME))
+                if (!strnicmp(tmp, URI_HEADER_NAME, sizeof(URI_HEADER_NAME) - 1)
                     || !strnicmp(tmp, WORKER_HEADER_NAME,
-                                 strlen(WORKER_HEADER_NAME))) {
+                                 sizeof(WORKER_HEADER_NAME) - 1)) {
                     /* Skip redirector headers */
                     real_header = JK_FALSE;
                 }
                 else if (!strnicmp(tmp, QUERY_HEADER_NAME,
-                                   strlen(QUERY_HEADER_NAME))) {
+                                   sizeof(QUERY_HEADER_NAME) - 1)) {
                     /* HTTP_TOMCATQUERY_XXXXXXXX was supplied,
                      * remove it from the count and skip
                      */
                     cnt--;
                     real_header = JK_FALSE;
                 }
-                else if (need_content_length_header &&
-                         !strnicmp(tmp, CONTENT_LENGTH,
-                                   strlen(CONTENT_LENGTH))) {
-                    need_content_length_header = FALSE;
-                    s->headers_names[i] = tmp;
+                else if (!strnicmp(tmp, CONTENT_LENGTH,
+                                   sizeof(CONTENT_LENGTH) - 1)) {
+                    if (need_content_length_header) {
+                        need_content_length_header = FALSE;
+                        if (unknown_content_length || s->is_chunked) {
+                            if (JK_IS_DEBUG_LEVEL(logger)) {
+                                jk_log(logger, JK_LOG_DEBUG,
+                                       "Header %s is %s", tmp,
+                                       s->is_chunked ? "chunked" : "unknown");
+                            }
+                        }
+                        else {
+                            /* If the content-length is unknown
+                             * or larger then 4Gb do not send it.
+                             */
+                            s->headers_names[i] = tmp;
+                        }
+                    }
                 }
                 else if (!strnicmp(tmp, TOMCAT_TRANSLATE_HEADER_NAME,
-                                   strlen(TOMCAT_TRANSLATE_HEADER_NAME))) {
+                                   sizeof(TOMCAT_TRANSLATE_HEADER_NAME) - 1)) {
                     s->headers_names[i] = TRANSLATE_HEADER_NAME_LC;
                 }
                 else {
@@ -3060,7 +3103,8 @@ static int init_ws_service(isapi_private_data_t * private_data,
      */
     if (JK_IS_DEBUG_LEVEL(logger)) {
         jk_log(logger, JK_LOG_DEBUG,
-               "Service protocol=%s method=%s host=%s addr=%s name=%s port=%d auth=%s user=%s uri=%s",
+               "Service protocol=%s method=%s host=%s addr=%s name=%s port=%d "
+               "auth=%s user=%s uri=%s",
                STRNULL_FOR_NULL(s->protocol),
                STRNULL_FOR_NULL(s->method),
                STRNULL_FOR_NULL(s->remote_host),
@@ -3070,6 +3114,14 @@ static int init_ws_service(isapi_private_data_t * private_data,
                STRNULL_FOR_NULL(s->auth_type),
                STRNULL_FOR_NULL(s->remote_user),
                STRNULL_FOR_NULL(s->req_uri));
+        jk_log(logger, JK_LOG_DEBUG,
+               "Service request headers=%d attributes=%d "
+               "chunked=%d content-length=%" JK_UINT64_T_FMT " available=%u",
+               s->num_headers,
+               s->num_attributes,
+               s->is_chunked,
+               s->content_length,
+               private_data->lpEcb->cbTotalBytes);
     }
 
     JK_TRACE_EXIT(logger);
