@@ -542,9 +542,17 @@ static int JK_METHOD log_to_file(jk_logger_t *l, int level, int used, char *what
         if (p->logfile) {
             what[used++] = '\n';
             what[used] = '\0';
+#if defined(WIN32) && defined(_MSC_VER)
+            LockFile((HANDLE)_get_osfhandle(_fileno(p->logfile)),
+                     0, 0, 1, 0);
+#endif
             fputs(what, p->logfile);
             /* [V] Flush the dam' thing! */
             fflush(p->logfile);
+#if defined(WIN32) && defined(_MSC_VER)
+            UnlockFile((HANDLE)_get_osfhandle(_fileno(p->logfile)),
+                       0, 0, 1, 0);
+#endif
         }
         return JK_TRUE;
     }
@@ -627,6 +635,8 @@ int jk_attach_file_logger(jk_logger_t **l, int fd, int level)
             rc->logger_private = p;
 #if defined(AS400) && !defined(AS400_UTF8)
             p->logfile = fdopen(fd, "a+, o_ccsid=0");
+#elif defined(WIN32) && defined(_MSC_VER)
+            p->logfile = fdopen(fd, "a+c");
 #else
             p->logfile = fdopen(fd, "a+");
 #endif
