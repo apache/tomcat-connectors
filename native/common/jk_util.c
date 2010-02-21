@@ -542,16 +542,20 @@ static int JK_METHOD log_to_file(jk_logger_t *l, int level, int used, char *what
         if (p->logfile) {
             what[used++] = '\n';
             what[used] = '\0';
+#if defined(JK_LOG_LOCKING)
 #if defined(WIN32) && defined(_MSC_VER)
             LockFile((HANDLE)_get_osfhandle(_fileno(p->logfile)),
                      0, 0, 1, 0);
 #endif
+#endif
             fputs(what, p->logfile);
             /* [V] Flush the dam' thing! */
             fflush(p->logfile);
+#if defined(JK_LOG_LOCKING)
 #if defined(WIN32) && defined(_MSC_VER)
             UnlockFile((HANDLE)_get_osfhandle(_fileno(p->logfile)),
                        0, 0, 1, 0);
+#endif
 #endif
         }
         return JK_TRUE;
