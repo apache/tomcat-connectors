@@ -592,6 +592,8 @@ int jk_open_file_logger(jk_logger_t **l, const char *file, int level)
             rc->logger_private = p;
 #if defined(AS400) && !defined(AS400_UTF8)
             p->logfile = fopen(file, "a+, o_ccsid=0");
+#elif defined(WIN32) && defined(_MSC_VER)
+            p->logfile = fopen(file, "a+c");
 #else
             p->logfile = fopen(file, "a+");
 #endif
