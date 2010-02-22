@@ -1708,7 +1708,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                             ae->worker->name);
                 op->recoverable = JK_FALSE;
                 /* Send an empty POST message since per AJP protocol
-                 * spec whenever we have content lenght the message
+                 * spec whenever we have content length the message
                  * packet must be followed with initial POST packet.
                  * Size zero will be handled as error in container.
                  */
