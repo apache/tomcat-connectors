@@ -3043,8 +3043,8 @@ int ajp_get_endpoint(jk_worker_t *pThis,
                 for (slot = 0; slot < aw->ep_cache_sz; slot++) {
                     if (aw->ep_cache[slot] &&
                         IS_VALID_SOCKET(aw->ep_cache[slot]->sd)) {
-                        ae = aw->ep_cache[slot];
                         if (ae->reuse) {
+                            ae = aw->ep_cache[slot];
                             aw->ep_cache[slot] = NULL;
                             break;
                         }
