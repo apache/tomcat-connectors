@@ -1764,18 +1764,6 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
 
     JK_TRACE_ENTER(l);
 
-    if (ae->last_op == JK_AJP13_FORWARD_REQUEST &&
-        code == JK_AJP13_SEND_BODY_CHUNK) {
-        /* We have just send a request but received something
-         * that probably originates from buffered response.
-         */
-        if (JK_IS_DEBUG_LEVEL(l)) {
-            jk_log(l, JK_LOG_DEBUG,
-                   "Unexpected AJP13_SEND_BODY_CHUNK");
-        }
-        JK_TRACE_EXIT(l);
-        return JK_AJP13_ERROR;
-    }
     switch (code) {
     case JK_AJP13_SEND_HEADERS:
         {
@@ -1830,6 +1818,17 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
         return JK_AJP13_SEND_HEADERS;
 
     case JK_AJP13_SEND_BODY_CHUNK:
+        if (ae->last_op == JK_AJP13_FORWARD_REQUEST) {
+            /* We have just send a request but received something
+             * that probably originates from buffered response.
+             */
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                jk_log(l, JK_LOG_DEBUG,
+                       "Unexpected AJP13_SEND_BODY_CHUNK");
+            }
+            JK_TRACE_EXIT(l);
+            return JK_AJP13_ERROR;
+        }
         if (!r->response_blocked) {
             unsigned int len = (unsigned int)jk_b_get_int(msg);
             /*
