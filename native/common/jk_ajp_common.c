@@ -732,9 +732,23 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
 }
 
 /*
+ * Abort endpoint use
+ */
+static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_logger_t *l)
+{
+    JK_TRACE_ENTER(l);
+    if (shutdown == JK_TRUE && IS_VALID_SOCKET(ae->sd)) {
+        jk_shutdown_socket(ae->sd, l);
+    }
+    ae->worker->s->connected--;
+    ae->sd = JK_INVALID_SOCKET;
+    ae->last_op = JK_AJP13_END_RESPONSE;
+    JK_TRACE_EXIT(l);
+}
+
+/*
  * Reset the endpoint (clean buf and close socket)
  */
-
 static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
@@ -743,11 +757,8 @@ static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         jk_log(l, JK_LOG_DEBUG,
         "(%s) resetting endpoint with sd = %u %s",
          ae->worker->name, ae->sd, ae->reuse? "" : "(socket shutdown)");
-    if (IS_VALID_SOCKET(ae->sd) && !ae->reuse) {
-        jk_shutdown_socket(ae->sd, l);
-        ae->sd = JK_INVALID_SOCKET;
-        ae->last_op = JK_AJP13_END_RESPONSE;
-        ae->worker->s->connected--;
+    if (!ae->reuse) {
+        ajp_abort_endpoint(ae, JK_TRUE, l);
     }
     jk_reset_pool(&(ae->pool));
     JK_TRACE_EXIT(l);
@@ -760,14 +771,11 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
 
-    if (IS_VALID_SOCKET(ae->sd)) {
-        if (JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG,
-                   "closing endpoint with sd = %u%s",
-                   ae->sd, ae->reuse ? "" : " (socket shutdown)");
-        jk_shutdown_socket(ae->sd, l);
-        ae->sd = JK_INVALID_SOCKET;
-    }
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG,
+               "closing endpoint with sd = %u%s",
+               ae->sd, ae->reuse ? "" : " (socket shutdown)");
+    ajp_abort_endpoint(ae, JK_TRUE, l);
     jk_close_pool(&(ae->pool));
     free(ae);
     JK_TRACE_EXIT(l);
@@ -867,9 +875,7 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
             ae->last_errno = errno;
             jk_log(l, JK_LOG_INFO, "timeout in reply cpong");
             /* We can't trust this connection any more. */
-            jk_shutdown_socket(ae->sd, l);
-            ae->sd = JK_INVALID_SOCKET;
-            ae->last_op = JK_AJP13_END_RESPONSE;
+            ajp_abort_endpoint(ae, JK_TRUE, l);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -899,9 +905,7 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
                        "Closing connection",
                        cmd);
                 /* We can't trust this connection any more. */
-                jk_shutdown_socket(ae->sd, l);
-                ae->sd = JK_INVALID_SOCKET;
-                ae->last_op = JK_AJP13_END_RESPONSE;
+                ajp_abort_endpoint(ae, JK_TRUE, l);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -975,10 +979,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
                    "(%s) ajp14 worker logon to the backend server failed",
                    ae->worker->name);
             /* Close the socket if unable to logon */
-            jk_shutdown_socket(ae->sd, l);
-            ae->sd = JK_INVALID_SOCKET;
-            ae->last_op = JK_AJP13_END_RESPONSE;
-            ae->worker->s->connected--;
+            ajp_abort_endpoint(ae, JK_TRUE, l);
         }
     }
     /* XXX: Should we send a cping also after logon to validate the connection? */
@@ -1124,10 +1125,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
         /* We've got a protocol error. */
         /* We can't trust this connection any more, */
         /* because we might have send already parts of the request. */
-        jk_shutdown_socket(ae->sd, l);
-        ae->sd = JK_INVALID_SOCKET;
-        ae->last_op = JK_AJP13_END_RESPONSE;
-        ae->worker->s->connected--;
+        ajp_abort_endpoint(ae, JK_TRUE, l);
         JK_TRACE_EXIT(l);
         return JK_FATAL_ERROR;
     }
@@ -1146,9 +1144,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
     jk_log(l, JK_LOG_INFO,
            "sendfull for socket %d returned %d (errno=%d)",
            ae->sd, rc, ae->last_errno);
-    ae->sd = JK_INVALID_SOCKET;
-    ae->last_op = JK_AJP13_END_RESPONSE;
-    ae->worker->s->connected--;
+    ajp_abort_endpoint(ae, JK_FALSE, l);
     JK_TRACE_EXIT(l);
     return JK_FALSE;
 }
@@ -1199,9 +1195,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                    ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
                    ae->last_errno);
         }
-        ae->sd = JK_INVALID_SOCKET;
-        ae->last_op = JK_AJP13_END_RESPONSE;
-        ae->worker->s->connected--;
+        ajp_abort_endpoint(ae, JK_FALSE, l);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -1224,10 +1218,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             }
             /* We've got a protocol error. */
             /* We can't trust this connection any more. */
-            jk_shutdown_socket(ae->sd, l);
-            ae->sd = JK_INVALID_SOCKET;
-            ae->last_op = JK_AJP13_END_RESPONSE;
-            ae->worker->s->connected--;
+            ajp_abort_endpoint(ae, JK_TRUE, l);
             JK_TRACE_EXIT(l);
             return JK_AJP_PROTOCOL_ERROR;
         }
@@ -1248,10 +1239,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             }
             /* We've got a protocol error. */
             /* We can't trust this connection any more. */
-            jk_shutdown_socket(ae->sd, l);
-            ae->sd = JK_INVALID_SOCKET;
-            ae->last_op = JK_AJP13_END_RESPONSE;
-            ae->worker->s->connected--;
+            ajp_abort_endpoint(ae, JK_TRUE, l);
             JK_TRACE_EXIT(l);
             return JK_AJP_PROTOCOL_ERROR;
         }
@@ -1267,10 +1255,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
         /* We've got a protocol error. */
         /* We can't trust this connection any more. */
-        jk_shutdown_socket(ae->sd, l);
-        ae->sd = JK_INVALID_SOCKET;
-        ae->last_op = JK_AJP13_END_RESPONSE;
-        ae->worker->s->connected--;
+        ajp_abort_endpoint(ae, JK_TRUE, l);
         JK_TRACE_EXIT(l);
         return JK_AJP_PROTOCOL_ERROR;
     }
@@ -1299,9 +1284,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                    ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
                    ae->last_errno);
         }
-        ae->sd = JK_INVALID_SOCKET;
-        ae->last_op = JK_AJP13_END_RESPONSE;
-        ae->worker->s->connected--;
+        ajp_abort_endpoint(ae, JK_FALSE, l);
         JK_TRACE_EXIT(l);
         /* Although we have a connection, this is effectively a protocol error.
          * We received the AJP header packet, but not the packet payload
@@ -1470,10 +1453,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                 "(%s) did not receive END_RESPONSE, "
                 "closing socket %d",
                 ae->worker->name, ae->sd);
-        jk_shutdown_socket(ae->sd, l);
-        ae->sd = JK_INVALID_SOCKET;
-        ae->last_op = JK_AJP13_END_RESPONSE;
-        ae->worker->s->connected--;
+        ajp_abort_endpoint(ae, JK_TRUE, l);
     }
     /*
      * First try to check open connections...
@@ -1486,9 +1466,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                    "(%s) failed sending request, "
                    "socket %d is not connected any more (errno=%d)",
                    ae->worker->name, ae->sd, ae->last_errno);
-            ae->sd = JK_INVALID_SOCKET;
-            ae->last_op = JK_AJP13_END_RESPONSE;
-            ae->worker->s->connected--;
+            ajp_abort_endpoint(ae, JK_FALSE, l);
             err = JK_TRUE;
             err_conn++;
         }
@@ -2006,9 +1984,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
                        "Tomcat is down, stopped or network problems (errno=%d)",
                        p->worker->name, p->last_errno);
                 /* We can't trust this connection any more. */
-                jk_shutdown_socket(p->sd, l);
-                p->sd = JK_INVALID_SOCKET;
-                p->worker->s->connected--;
+                ajp_abort_endpoint(p, JK_TRUE, l);
                 if (headeratclient == JK_FALSE) {
                     if (p->worker->recovery_opts & RECOVER_ABORT_IF_TCGETREQUEST)
                         op->recoverable = JK_FALSE;
