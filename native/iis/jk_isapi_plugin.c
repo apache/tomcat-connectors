@@ -2533,7 +2533,7 @@ static int init_jk(char *serverName)
                            "You can remove the shm_size attribute if you want to use the optimal size.");
                 }
                 if ((rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0) {
-                    /* TODO: Do not try to open the worker if we cannot creat
+                    /* TODO: Do not try to open the worker if we cannot create
                      *       the shared memory segment.
                      */
                     jk_log(logger, JK_LOG_ERROR,
