@@ -1077,7 +1077,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
             if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
                 int sd = aw->ep_cache[i]->sd;
                 aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
-                aw->ep_cache[i]->addr_sequence = aw->addr_sequence;                
+                aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
                 jk_shutdown_socket(sd, l);
             }
         }
@@ -1727,7 +1727,7 @@ static int ajp_send_request(jk_endpoint_t *e,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "(%s) sending %d bytes of request body",
-                        ae->worker->name, len);                
+                        ae->worker->name, len);
 
             s->content_read = (jk_uint64_t)len;
             rc = ajp_connection_tcp_send_message(ae, op->post, l);
@@ -1769,12 +1769,12 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
         /* We have just send a request but received something
          * that probably originates from buffered response.
          */
-         if (JK_IS_DEBUG_LEVEL(l)) {
-             jk_log(l, JK_LOG_DEBUG,
-                    "Unexpected AJP13_SEND_BODY_CHUNK");
-         }
-         JK_TRACE_EXIT(l);
-         return JK_AJP13_ERROR;
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "Unexpected AJP13_SEND_BODY_CHUNK");
+        }
+        JK_TRACE_EXIT(l);
+        return JK_AJP13_ERROR;
     }
     switch (code) {
     case JK_AJP13_SEND_HEADERS:
@@ -1785,9 +1785,9 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 /* Do not send anything to the client.
                  * Backend already send us the headers.
                  */
-                 if (JK_IS_DEBUG_LEVEL(l)) {
-                     jk_log(l, JK_LOG_DEBUG,
-                            "Already received AJP13_SEND HEADERS");
+                if (JK_IS_DEBUG_LEVEL(l)) {
+                    jk_log(l, JK_LOG_DEBUG,
+                           "Already received AJP13_SEND HEADERS");
                 }
                 JK_TRACE_EXIT(l);
                 return JK_AJP13_ERROR;
@@ -3248,4 +3248,3 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
     JK_TRACE_EXIT(l);
     return JK_FALSE;
 }
-
