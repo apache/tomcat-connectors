@@ -27,7 +27,7 @@
 #define JK_VERMAJOR     1
 #define JK_VERMINOR     2
 #define JK_VERFIX       30
-#define JK_VERSTRING    "1.2.10"
+#define JK_VERSTRING    "1.2.30"
 
 /* set JK_VERISRELEASE to 1 when release (do not forget to commit!) */
 #define JK_VERISRELEASE 0
