@@ -775,7 +775,10 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         jk_log(l, JK_LOG_DEBUG,
                "closing endpoint with sd = %u%s",
                ae->sd, ae->reuse ? "" : " (socket shutdown)");
-    ajp_abort_endpoint(ae, JK_TRUE, l);
+    if (IS_VALID_SOCKET(ae->sd)) {
+        jk_shutdown_socket(ae->sd, l);
+    }
+    ae->sd = JK_INVALID_SOCKET;
     jk_close_pool(&(ae->pool));
     free(ae);
     JK_TRACE_EXIT(l);
