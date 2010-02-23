@@ -726,7 +726,7 @@ int jk_log(jk_logger_t *l,
             /* Performance is no issue, because with production log levels */
             /* we only call it often, if we have a lot of errors */
             rc = snprintf(buf + used, usable_size - used,
-                          "[%" JK_PID_T_FMT ":%" JK_UINT32_T_FMT "] ", getpid(), jk_gettid());
+                          "[%" JK_PID_T_FMT ":%" JK_PTHREAD_T_FMT "] ", getpid(), jk_gettid());
             used += rc;
             if (rc < 0 ) {
                 return 0;
@@ -2125,7 +2125,7 @@ int jk_wildchar_match(const char *str, const char *exp, int icase)
 }
 
 #ifdef _MT_CODE_PTHREAD
-jk_uint32_t jk_gettid()
+jk_pthread_t jk_gettid()
 {
     union {
         pthread_t tid;
@@ -2141,17 +2141,7 @@ jk_uint32_t jk_gettid()
     pthread_getunique_np(&(u.tid), &tid);
     return ((jk_uint32_t)(tid.intId.lo & 0xFFFFFFFF));
 #else
-    switch (sizeof(pthread_t)) {
-        case sizeof(jk_uint32_t):
-            return ((jk_uint32_t)u.tid >> 2);
-            break;
-        case sizeof(jk_uint64_t):
-            return (jk_uint32_t)((((jk_uint64_t)u.tid) >> 3) & 0xFFFFFFFF);
-            break;
-        default:
-            return 0;
-            break;
-    }
+    return ((jk_pthread_t)u.tid);
 #endif /* AS400 */
 }
 #endif

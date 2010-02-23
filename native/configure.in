@@ -247,6 +247,24 @@ else
     pid_t_fmt='#error Can not determine the proper size for pid_t'
 fi
 
+JK_CHECK_SIZEOF_EXTENDED([#include <pthread.h>], pthread_t, 8)
+
+if test "$ac_cv_sizeof_pthread_t" = "$ac_cv_sizeof_short"; then
+    pthread_t_fmt='#define JK_PTHREAD_T_FMT "hu"'
+    pthread_t_value="short"
+elif test "$ac_cv_sizeof_pthread_t" = "$ac_cv_sizeof_int"; then
+    pthread_t_fmt='#define JK_PTHREAD_T_FMT "u"'
+    pthread_t_value="int"
+elif test "$ac_cv_sizeof_pthread_t" = "$ac_cv_sizeof_long"; then
+    pthread_t_fmt='#define JK_PTHREAD_T_FMT "lu"'
+    pthread_t_value="long"
+elif test "$ac_cv_sizeof_pthread_t" = "$ac_cv_sizeof_long_long"; then
+    pthread_t_fmt='#define JK_PTHREAD_T_FMT "llu"'
+    pthread_t_value="long long"
+else
+    pthread_t_fmt='#error Can not determine the proper size for pthread_t'
+fi
+
 # Basically, we have tried to figure out the correct format strings
 # for pid_t which varies between platforms, but we don't always get
 # it right.  If you find that we don't get it right for your platform,
@@ -268,6 +286,8 @@ AC_SUBST(int64_t_fmt)
 AC_SUBST(uint64_t_fmt) 
 AC_SUBST(uint64_t_hex_fmt) 
 AC_SUBST(pid_t_fmt) 
+AC_SUBST(pthread_t_fmt) 
+AC_SUBST(pthread_t_value) 
 
 dnl check for snprintf and vsnprintf.
 AC_CHECK_FUNC(snprintf, AC_DEFINE(HAVE_SNPRINTF,1,[Have snprintf()]))

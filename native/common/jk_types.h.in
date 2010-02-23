@@ -56,6 +56,12 @@ typedef unsigned @int64_value@ jk_uint64_t;
 /* And JK_PID_T_FMT */
 @pid_t_fmt@
 
+/* jk_pthread_t defines a eight byte word */
+typedef unsigned @pthread_t_value@ jk_pthread_t;
+
+/* And JK_PTHREAD_T_FMT */
+@pthread_t_fmt@
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

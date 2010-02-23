@@ -108,6 +108,9 @@
 /* The size of pid_t */
 #define SIZEOF_PID_T 4
 
+/* The size of pthread_t */
+#define SIZEOF_PTHREAD_T 4
+
 /* The size of `short', as computed by sizeof. */
 #define SIZEOF_SHORT 2
 
