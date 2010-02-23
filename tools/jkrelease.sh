@@ -29,7 +29,6 @@
 SVNROOT="http://svn.apache.org/repos/asf"
 SVNPROJ="tomcat/jk"
 JK_CVST="tomcat-connectors"
-
 JK_OWNER="root"
 JK_GROUP="bin"
 
@@ -75,7 +74,7 @@ do
     case $c in
     t)         tag=$OPTARG;;
     r)         revision=$OPTARG;;
-    p)         SIGN_OPTS="--passphrase $OPTARG";;
+    p)         SIGN_OPTS="--passphrase=$OPTARG";;
     b)         branch=$OPTARG
                conflict=$(($conflict+1));;
     T)         trunk=trunk
@@ -289,7 +288,7 @@ zip -9 -r ${JK_DIST}.zip ${JK_DIST}
 
 # Create detached signature and verify it
 archive=${JK_DIST}.tar.gz
-${JK_DIST}/tools/signfile.sh $SIGN_OPTS $archive
+. ${JK_DIST}/signfile.sh ${SIGN_OPTS} $archive
 archive=${JK_DIST}.zip
-${JK_DIST}/tools/signfile.sh $SIGN_OPTS $archive
+. ${JK_DIST}/signfile.sh ${SIGN_OPTS} $archive
 
