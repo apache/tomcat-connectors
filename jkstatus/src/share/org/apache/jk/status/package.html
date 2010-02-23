@@ -1,0 +1,224 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<body>
+
+<p>This package contains a set of <code>Task</code> implementations for
+<em>Ant (version 1.6.x or later)</em> that can be used to interact with the
+Apaache mod_jk status page to show, update, disable and stop mod_jk worker.
+For more information, see
+<a href="http://tomcat.apache.org/connectors-doc/index.html"><strong>JK Documenation</strong></a>.</p>
+
+<p>The attributes of each task element correspond
+exactly to the request parameters that are included with an HTTP request
+sent directly to jk status page.  They are summarized as follows:
+</p>
+
+<b>General parameter</b><br/>
+<table>
+  <tr>
+    <th align="center" width="15%">Attribute</th>
+    <th align="center" width="85%">Description</th>
+  </tr>
+  <tr>
+    <td align="center">url</td>
+    <td>
+      The URL of the jk status page you will use to
+      perform the requested operations.  If not specified, defaults to
+      <code>http://localhost:80/jkstatus</code> (which corresponds
+      to a standard installation of Apache mod_jk).
+    </td>
+  </tr>
+  <tr>
+    <td align="center">username</td>
+    <td>
+      The username of a mod_jk status user that has been configured with the
+      <code>Allow user</code> Apache Location constraint. This attribute is optional.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">password</td>
+    <td>
+      The password of a mod_jk status user that has been configured with the
+      <code>Allow user</code> Apache Location constraint. This attribute is optional.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">resultProperty</td>
+    <td>
+    	  Bind all show results with this prefix property name. This attribute is optional.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">echo</td>
+    <td>
+    	  show result at ant console. (default false)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">errorProperty</td>
+    <td>
+    	  set this property, as a failure detected. This attribute is optional.
+    </td>
+  </tr>
+</table>
+
+<b>Command show parameter</b><br/>
+<table>
+  <tr>
+    <th align="center" width="15%">Attribute</th>
+    <th align="center" width="85%">Description</th>
+  </tr>
+  <tr>
+    <td align="center">worker</td>
+    <td>
+      only bind properties from this balancer tcp worker (node)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">loadbalancer</td>
+    <td>
+      only bind properties from this loadbalancer worker
+    </td>
+  </tr>
+</table>
+
+<b>Command reset parameter</b><br/>
+<table>
+  <tr>
+    <th align="center" width="15%">Attribute</th>
+    <th align="center" width="85%">Description</th>
+  </tr>
+  <tr>
+    <td align="center">workerLb</td>
+    <td>
+      name of loadbalancer worker.
+    </td>
+  </tr>
+</table>
+
+<b>Command update loadbalancer parameter</b><br/>
+<table>
+  <tr>
+    <th align="center" width="15%">Attribute</th>
+    <th align="center" width="85%">Description</th>
+  </tr>
+  <tr>
+    <td align="center">workerType=loadbalancer</td>
+    <td>
+      type of update
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerLb</td>
+    <td>
+      name of loadbalancer worker.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">lbForceSession</td>
+    <td>
+      Force Sticky Session. (true/false)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">lbStickySession</td>
+    <td>
+      Sticky Session. (true/false)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">lbRetries</td>
+    <td>
+      loadbalancer retries after worker connection failure (int)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">lbRecovertime</td>
+    <td>
+      Recover timeout after a worker set to "error" state (int sec's)
+    </td>
+  </tr>
+</table>
+
+<b>Command update worker parameter</b><br/>
+<table>
+  <tr>
+    <th align="center" width="15%">Attribute</th>
+    <th align="center" width="85%">Description</th>
+  </tr>
+  <tr>
+    <td align="center">workerType=worker</td>
+    <td>
+      type of update
+    </td>
+  </tr>
+  <tr>
+    <td align="center">worker</td>
+    <td>
+      name of tcp worker.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerActivation (>=1.2.19</td>
+    <td>
+      set worker activation  (1 Active, 2 Disabled, 3 Stopped)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerDisabled (< 1.2.19)</td>
+    <td>
+      set disable state. (true/false)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerStoppend (< 1.2.19)</td>
+    <td>
+      set stopped state. (true/false)      
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerJvmRoute</td>
+    <td>
+      set jvm route
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerLaodFactor</td>
+    <td>
+      set load factor (int)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerDistance</td>
+    <td>
+      set worker distance (int)
+    </td>
+  <tr>
+    <td align="center">workerRedirect</td>
+    <td>
+      other worker name to redirect after failure
+    </td>
+  </tr>
+  <tr>
+    <td align="center">workerClusterDomain</td>
+    <td>
+      cluster domain name, group of worker at a repliation cluster.
+    </td>
+  </tr>
+</table>
+
+</body>
