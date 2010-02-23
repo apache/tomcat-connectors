@@ -3015,6 +3015,9 @@ static int init_ws_service(isapi_private_data_t * private_data,
                                    sizeof(CONTENT_LENGTH) - 1)) {
                     if (need_content_length_header) {
                         need_content_length_header = FALSE;
+                        /* If the content-length is unknown
+                         * or larger then 4Gb do not send it.
+                         */
                         if (unknown_content_length || s->is_chunked) {
                             if (JK_IS_DEBUG_LEVEL(logger)) {
                                 jk_log(logger, JK_LOG_DEBUG,
@@ -3023,9 +3026,6 @@ static int init_ws_service(isapi_private_data_t * private_data,
                             }
                         }
                         else {
-                            /* If the content-length is unknown
-                             * or larger then 4Gb do not send it.
-                             */
                             s->headers_names[i] = tmp;
                         }
                     }
@@ -3116,10 +3116,10 @@ static int init_ws_service(isapi_private_data_t * private_data,
                STRNULL_FOR_NULL(s->req_uri));
         jk_log(logger, JK_LOG_DEBUG,
                "Service request headers=%d attributes=%d "
-               "chunked=%d content-length=%" JK_UINT64_T_FMT " available=%u",
+               "chunked=%s content-length=%" JK_UINT64_T_FMT " available=%u",
                s->num_headers,
                s->num_attributes,
-               s->is_chunked,
+               (s->is_chunked == JK_TRUE) ? "yes" : "no",
                s->content_length,
                private_data->lpEcb->cbTotalBytes);
     }
