@@ -144,6 +144,9 @@
         JK_LOG_LOCKING. (mturk)
       </update>
       <update>
+        Configuration: Update example configuration. (rjung)
+      </update>
+      <update>
         Docs: Update information about tools needed to create a release. (rjung)
       </update>
       <fix>
