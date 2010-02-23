@@ -38,6 +38,7 @@ COPY_JK="BUILD.txt native jkstatus support tools xdocs"
 COPY_NATIVE="LICENSE NOTICE"
 COPY_BUILD="docs"
 COPY_CONF="httpd-jk.conf uriworkermap.properties workers.properties workers.properties.minimal"
+SIGN_OPTS=""
 
 #################### NO CHANGE BELOW THIS LINE ##############
 
@@ -50,6 +51,7 @@ usage() {
     echo "        -b: package from branch BRANCH"
     echo "        -T: package from trunk"
     echo "        -d: package from local directory"
+    echo "        -p: GNU PG passphrrase used for signing"
 }
 
 copy_files() {
@@ -65,22 +67,15 @@ copy_files() {
     done
 }
 
-sign_and_verify() {
-    item=$1
-    echo "Signing $item..."
-    gpg -ba $item
-    echo "Verifying signature for $item..."
-    gpg --verify $item.asc
-}
-
 #################### MAIN ##############
 
 conflict=0
-while getopts :t:r:b:d:T c
+while getopts :t:r:b:d:p:T c
 do
     case $c in
     t)         tag=$OPTARG;;
     r)         revision=$OPTARG;;
+    p)         SIGN_OPTS="--passphrase $OPTARG";;
     b)         branch=$OPTARG
                conflict=$(($conflict+1));;
     T)         trunk=trunk
@@ -292,27 +287,9 @@ tar cfz ${JK_DIST}.tar.gz --owner="${JK_OWNER}" --group="${JK_GROUP}" ${JK_DIST}
 perl ${JK_DIST}/tools/lineends.pl --cr ${JK_DIST}
 zip -9 -r ${JK_DIST}.zip ${JK_DIST}
 
-# Try to locate a MD5 binary
-md5_bin="`which md5sum 2>/dev/null || type md5sum 2>&1`"
-if [ -x "$md5_bin" ]; then
-    MD5SUM="$md5_bin --binary "
-else
-    MD5SUM="echo 00000000000000000000000000000000 "
-fi
-# Try to locate a SHA1 binary
-sha1_bin="`which sha1sum 2>/dev/null || type sha1sum 2>&1`"
-if [ -x "$sha1_bin" ]; then
-    SHA1SUM="$sha1_bin --binary "
-else
-    SHA1SUM="echo 0000000000000000000000000000000000000000 "
-fi
 # Create detached signature and verify it
 archive=${JK_DIST}.tar.gz
-sign_and_verify $archive
-$MD5SUM $archive > $archive.md5 
-$SHA1SUM $archive > $archive.sha1 
+${JK_DIST}/tools/signfile.sh $SIGN_OPTS $archive
 archive=${JK_DIST}.zip
-sign_and_verify $archive
-$MD5SUM $archive > $archive.md5 
-$SHA1SUM $archive > $archive.sha1 
+${JK_DIST}/tools/signfile.sh $SIGN_OPTS $archive
 
