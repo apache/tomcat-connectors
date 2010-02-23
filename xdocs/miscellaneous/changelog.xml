@@ -43,47 +43,23 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Apache: Improve compatibility with Apache 2.3. (rjung)
+      </update>
       <fix>
-        <bug>47983</bug>: Docs: Fix typo in example config
-        which breaks startup. (rjung)
+        <bug>46632</bug>: Apache: Do not register child cleanup for
+        our pools. (mturk)
       </fix>
       <fix>
-        <bug>45610</bug>: Status: Don't accept requests with
-        empty value for sub worker parameter. (rjung)
-      </fix>
-      <fix>
-        <bug>45610</bug>: Status: Fix erroneous unsetting of
-        sticky_session and sticky_session_force when updating other
-        load balancer attributes via the status worker. (rjung)
-      </fix>
-      <fix>
-        <bug>48276</bug>: When worker contact cannot be resolved mark the
-        worker as disabled instead failing to start the server. (mturk)
-      </fix>
-      <fix>
-        <bug>48305</bug>: Status: Do not show secret property when
-        doing dump. (mturk)
-      </fix>
-      <fix>
-        <bug>47224</bug>: Status: When address gets changed invalidate
-        all opened sockets in the endpoint cache. This will cause new
-        backend connections to get opened using new address. (mturk)
-      </fix>
-      <fix>
-        <bug>47222</bug>: Status: Add ping_timeout to the shared memory
-        and allow dynamic configuration. (mturk)
-      </fix>
-      <fix>
-        <bug>46632</bug>: Httpd: Do not register child cleanup with
-        none of our pools. (mturk)
-      </fix>
-      <fix>
-        <bug>46893</bug>: Httpd: Log warning only if JkShmSize was actually
+        <bug>46893</bug>: Apache: Log warning only if JkShmSize was actually
         set in the configuration. (mturk)
       </fix>
+      <update>
+        IIS: Include optional chunking support. Off by default. (mturk)
+      </update>
       <fix>
-        <bug>48410</bug>: Use poll instead select so we can work with more.
-        then 1024 sockets. (mturk)
+        <bug>48763</bug>: IIS: Do not send Content-Length when using chunked encoding
+        or length larger 4GB. (mturk)
       </fix>
       <fix>
         <bug>48223</bug>: IIS: Propagate correct backend error code to IIS. (rjung)
@@ -99,14 +75,84 @@
         Patch provided by Bret Prucha. (mturk)
       </fix>
       <fix>
+        IIS/NSAPI: Correct log file flushing after each line. (mturk)
+      </fix>
+      <add>
+        NSAPI: Add Microsoft Visual C++ Makefile. (mturk)
+      </add>
+      <update>
+        AJP: Improve socket shutdown handling. (mturk)
+      </update>
+      <update>
+        AJP: Ensure we never reuse a non reusable socket. (mturk)
+      </update>
+      <update>
+        AJP: Tolerate a single excess packet when waiting for cpong. (mturk)
+      </update>
+      <update>
+        AJP: Check protocol correctness more strictly. (mturk)
+      </update>
+      <update>
+        <bug>48410</bug>: AJP: Use poll instead select so we can work with more
+        then 1024 sockets. (mturk)
+      </update>
+      <fix>
+        <bug>46503</bug>: AJP/Status: Garbage data in worker domain and route. (mturk)
+      </fix>
+      <fix>
+        <bug>48276</bug>: AJP: When worker contact cannot be resolved mark the
+        worker as disabled instead failing to start the server. (mturk)
+      </fix>
+      <fix>
+        <bug>48169</bug>: AJP: Improve CGI interoperability by closing all
+        sockets during EXEC. (mturk)
+      </fix>
+      <add>
+        Status: Add number of open backend connections to status worker. (mturk)
+      </add>
+      <update>
+        <bug>47224</bug>: Status: When address gets changed invalidate
+        all opened sockets in the endpoint cache. This will cause new
+        backend connections to get opened using new address. (mturk)
+      </update>
+      <fix>
+        <bug>48305</bug>: Status: Do not show "secret" property when
+        doing dump. (mturk)
+      </fix>
+      <fix>
+        <bug>45610</bug>: Status: Don't accept requests with
+        empty value for sub worker parameter. (rjung)
+      </fix>
+      <fix>
+        <bug>45610</bug>: Status: Fix erroneous unsetting of
+        sticky_session and sticky_session_force when updating other
+        load balancer attributes via the status worker. (rjung)
+      </fix>
+      <fix>
+        <bug>47222</bug>: Status: Add ping_timeout to the shared memory
+        and allow dynamic configuration. (mturk)
+      </fix>
+      <fix>
         Status: Remove duplicate "errors" line in property view of
         AJP13 workers that are part of a load balancer. (rjung)
       </fix>
       <update>
-        Docs: Update information about tools needed to create a release. (rjung)
+        Logging: Add optional log file locking for Windows when defining
+        JK_LOG_LOCKING. (mturk)
       </update>
       <update>
+        Docs: Update information about tools needed to create a release. (rjung)
+      </update>
+      <fix>
+        <bug>47983</bug>: Docs: Fix typo in example config
+        which breaks startup. (rjung)
+      </fix>
+      <update>
         Build: Force copy of automake files. (rjung)
+      </update>
+      <update>
+        Build: Tomcat code repository structure cleanup reflected in documentation
+        and build script. (rjung, mturk)
       </update>
     </changelog>
   </subsection>
