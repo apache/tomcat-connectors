@@ -109,7 +109,7 @@
       </fix>
       <add>
         Status: Add number of open backend connections to status worker.
-        This festure is experimental, the displayed values might not be
+        This feature is experimental, the displayed value might not be
         accurate. (mturk)
       </add>
       <update>
