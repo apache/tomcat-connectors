@@ -997,7 +997,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 /* Syncing config values from shm */
 void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
 {
-    int resolve = JK_FALSE;
+    int address_change = JK_FALSE;
     int port = 0;
     char host[JK_SHM_STR_SIZ+1];
     struct sockaddr_in inet_addr;
@@ -1021,7 +1021,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
     aw->max_packet_size = aw->s->max_packet_size;
     aw->sequence = aw->s->h.sequence;
     if (aw->addr_sequence != aw->s->addr_sequence) {
-        resolve = JK_TRUE;
+        address_change = JK_TRUE;
         aw->addr_sequence = aw->s->addr_sequence;
         strncpy(host, aw->s->host, JK_SHM_STR_SIZ);
         port = aw->s->port;
@@ -1029,7 +1029,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
     if (locked == JK_FALSE)
         jk_shm_unlock();
 
-    if (resolve == JK_TRUE) {
+    if (address_change == JK_TRUE) {
         if (!jk_resolve(host, port, &inet_addr,
                         aw->worker.we->pool, l)) {
             jk_log(l, JK_LOG_ERROR,
@@ -1037,9 +1037,30 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
                    host, port, aw->name);
         }
         else {
+            int rc;
+            JK_ENTER_CS(&aw->cs, rc);
+            if (rc) {
+                unsigned int i;
+                for (i = 0; i < aw->ep_cache_sz; i++) {
+                    /* Close all connections in the cache */
+                    if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                        int sd = aw->ep_cache[i]->sd;
+                        aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                        aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
+                        jk_shutdown_socket(sd, l);
+                        aw->s->connected--;
+                    }
+                }
+            }
             aw->port = port;
             strncpy(aw->host, host, JK_SHM_STR_SIZ);
             memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
+            if (rc) {
+                JK_LEAVE_CS(&aw->cs, rc);
+            } else {
+                jk_log(l, JK_LOG_ERROR,
+                       "locking thread (errno=%d)", errno);
+            }
         }
     }
 
@@ -1049,6 +1070,8 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
 /* Syncing config values to shm */
 void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
 {
+    int address_change = JK_FALSE;
+
     JK_TRACE_ENTER(l);
 
     if (JK_IS_DEBUG_LEVEL(l))
@@ -1069,23 +1092,35 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
     aw->s->max_packet_size = aw->max_packet_size;
     aw->s->h.sequence = aw->sequence;
     if (aw->s->addr_sequence != aw->addr_sequence) {
-        unsigned int i;
-        aw->s->addr_sequence = aw->addr_sequence;
+        address_change = JK_TRUE;
         strncpy(aw->s->host, aw->host, JK_SHM_STR_SIZ);
         aw->s->port = aw->port;
-        for (i = 0; i < aw->ep_cache_sz; i++) {
-            /* Close all connections in the cache */
-            if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                int sd = aw->ep_cache[i]->sd;
-                aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
-                aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
-                jk_shutdown_socket(sd, l);
-            }
-        }
+        aw->s->addr_sequence = aw->addr_sequence;
     }
     if (locked == JK_FALSE)
         jk_shm_unlock();
 
+    if (address_change == JK_TRUE) {
+        int rc;
+        JK_ENTER_CS(&aw->cs, rc);
+        if (rc) {
+            unsigned int i;
+            for (i = 0; i < aw->ep_cache_sz; i++) {
+                /* Close all connections in the cache */
+                if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                    int sd = aw->ep_cache[i]->sd;
+                    aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                    aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
+                    jk_shutdown_socket(sd, l);
+                    aw->s->connected--;
+                }
+            }
+            JK_LEAVE_CS(&aw->cs, rc);
+        } else {
+            jk_log(l, JK_LOG_ERROR,
+                   "locking thread (errno=%d)", errno);
+        }
+    }
     JK_TRACE_EXIT(l);
 }
 
