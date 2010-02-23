@@ -705,7 +705,9 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     int rp = 0;
     int save_errno;
     int timeout = SECONDS_TO_LINGER * 1000;
+#ifndef HAVE_POLL
     struct timeval tv;
+#endif
     time_t start = time(NULL);
 
     JK_TRACE_ENTER(l);
@@ -784,7 +786,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
                 timeout = SECONDS_TO_LINGER;
                 continue;
             }
-            /* We have readed less then size of buffer
+            /* We have read less then size of buffer
              * It's a good chance there will be no more data
              * to read.
              */
@@ -792,7 +794,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
                 rc = jk_close_socket(sd, l);
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                           "error setting  socket %d to nonblocking", sd);
+                           "error setting socket %d to nonblocking", sd);
                 errno = save_errno;
                 JK_TRACE_EXIT(l);
                 return rc;
