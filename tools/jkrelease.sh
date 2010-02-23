@@ -31,6 +31,7 @@ SVNPROJ="tomcat/jk"
 JK_CVST="tomcat-connectors"
 JK_OWNER="root"
 JK_GROUP="bin"
+JK_TOOLS="`pwd`"
 
 COPY_TOP="KEYS"
 COPY_JK="BUILD.txt native jkstatus support tools xdocs"
@@ -288,7 +289,7 @@ zip -9 -r ${JK_DIST}.zip ${JK_DIST}
 
 # Create detached signature and verify it
 archive=${JK_DIST}.tar.gz
-. ${JK_DIST}/signfile.sh ${SIGN_OPTS} $archive
+. ${JK_TOOLS}/signfile.sh ${SIGN_OPTS} $archive
 archive=${JK_DIST}.zip
-. ${JK_DIST}/signfile.sh ${SIGN_OPTS} $archive
+. ${JK_TOOLS}/signfile.sh ${SIGN_OPTS} $archive
 

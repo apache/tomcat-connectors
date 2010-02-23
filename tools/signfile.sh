@@ -52,7 +52,7 @@ fi
 
 for o
 do
-    echo gpg $gpgopts $o
+    echo "Signing $o"
     gpg $gpgopts $o
     $MD5SUM $o > $o.md5 
     $SHA1SUM $o > $o.sha1
