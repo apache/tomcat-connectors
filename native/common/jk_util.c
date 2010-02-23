@@ -2144,13 +2144,13 @@ jk_uint32_t jk_gettid()
     switch (sizeof(pthread_t)) {
         case sizeof(jk_uint32_t):
             return ((jk_uint32_t)u.tid >> 2);
-        break;
+            break;
         case sizeof(jk_uint64_t):
             return (jk_uint32_t)((((jk_uint64_t)u.tid) >> 3) & 0xFFFFFFFF);
-        break;
+            break;
         default:
             return 0;
-        break;
+            break;
     }
 #endif /* AS400 */
 }
