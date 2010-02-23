@@ -37,7 +37,7 @@ COPY_TOP="KEYS"
 COPY_JK="BUILD.txt native jkstatus support tools xdocs"
 COPY_NATIVE="LICENSE NOTICE"
 COPY_BUILD="docs"
-COPY_CONF="uriworkermap.properties workers.properties workers.properties.minimal"
+COPY_CONF="httpd-jk.conf uriworkermap.properties workers.properties workers.properties.minimal"
 
 #################### NO CHANGE BELOW THIS LINE ##############
 
