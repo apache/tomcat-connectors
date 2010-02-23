@@ -136,6 +136,9 @@
         Status: Remove duplicate "errors" line in property view of
         AJP13 workers that are part of a load balancer. (rjung)
       </fix>
+      <fix>
+        LB: Fix route logging. (rjung)
+      </fix>
       <update>
         Logging: Add optional log file locking for Windows when defining
         JK_LOG_LOCKING. (mturk)

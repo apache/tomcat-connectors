@@ -840,7 +840,11 @@ static int find_bysession_route(jk_ws_service_t *s,
             }
             else if (*wr.domain && !uses_domain) {
                 candidate = find_best_bydomain(s, p, wr.domain, states, l);
-                s->route = wr.domain;
+                if (candidate >= 0) {
+                    s->route = wr.domain;
+                } else {
+                    s->route = NULL;
+                }
             }
             if (candidate >= 0) {
                 wr = p->lb_workers[candidate];
