@@ -108,7 +108,9 @@
         sockets during EXEC. (mturk)
       </fix>
       <add>
-        Status: Add number of open backend connections to status worker. (mturk)
+        Status: Add number of open backend connections to status worker.
+        This festure is experimental, the displayed values might not be
+        accurate. (mturk)
       </add>
       <update>
         <bug>47224</bug>: Status: When address gets changed invalidate
