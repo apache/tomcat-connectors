@@ -20,22 +20,20 @@
 
   <!-- ===================== Initialize Property Values =================== -->
 
-  <property file="../../../build/build.properties" />
-  <property file="../../../build/build.properties.default" />
+  <property file="build.properties" />
+  <property file="build.properties.default" />
 
   <!-- Build Defaults -->
-  <property name="jtc.home"  location="../.."/>
-  <property name="catalina.build" location="../../../build/build"/>
-  <property name="jk.build"  value="${jtc.home}/jk/jkstatus/build"/>
-  <property name="jk.dist"   value="${jtc.home}/jk/jkstatus/dist"/>
+  <property name="jk.build"  value="build"/>
+  <property name="jk.dist"   value="dist"/>
 
     <!-- Construct Catalina classpath -->
   <path id="jtc.classpath">
     <pathelement location="${catalina.build}/server/lib/catalina.jar"/>
     <pathelement location="${catalina.build}/server/lib/catalina-ant.jar"/>
     <pathelement location="${catalina.build}/server/lib/tomcat-util.jar"/>
-    <pathelement location="${commons-modeler.jar}"/>
-    <pathelement location="${commons-logging.jar}"/>
+    <pathelement location="${catalina.build}/server/lib/${commons-modeler.jar}"/>
+    <pathelement location="${catalina.build}/bin/${commons-logging.jar}"/>
     <pathelement location="${jmx.jar}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
       <pathelement location="${catalina.build}/common/lib/servlet-api.jar"/>
