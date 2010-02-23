@@ -160,8 +160,7 @@ then
 else
     JK_VER=$tag
     JK_TAG=`echo $tag | sed -e 's#^#JK_#' -e 's#\.#_#g'`
-    JK_BRANCH=`echo $tag | sed -e 's#^#jk#' -e 's#\.[0-9][0-9]*$##' -e 's#$#.x#'`
-    JK_SVN_URL="${SVNROOT}/${SVNPROJ}/tags/${JK_BRANCH}/${JK_TAG}"
+    JK_SVN_URL="${SVNROOT}/${SVNPROJ}/tags/${JK_TAG}"
     JK_SUFFIX=''
     JK_DIST=${JK_CVST}-${JK_VER}-src
 fi
