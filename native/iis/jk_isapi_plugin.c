@@ -2974,9 +2974,10 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 need_content_length_header = TRUE;
             }
 
-            cnt -= 2;           /* For our two special headers:
+            cnt -= 3;           /* For our three special headers:
                                  * HTTP_TOMCATURI_XXXXXXXX
                                  * HTTP_TOMCATWORKER_XXXXXXXX
+                                 * HTTP_TOMCATWORKERIDX_XXXXXXXX
                                  */
             /* allocate an extra header slot in case we need to add a content-length header */
             s->headers_names =
@@ -2997,14 +2998,14 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 tmp += HTTP_HEADER_PREFIX_LEN;
 #endif
 
-                if (!strnicmp(tmp, URI_HEADER_NAME, sizeof(URI_HEADER_NAME) - 1)
-                    || !strnicmp(tmp, WORKER_HEADER_NAME,
-                                 sizeof(WORKER_HEADER_NAME) - 1)) {
+                if (!strnicmp(tmp, URI_HEADER_NAME, strlen(URI_HEADER_NAME))
+                    || !strnicmp(tmp, WORKER_HEADER_NAME, strlen(WORKER_HEADER_NAME))
+                    || !strnicmp(tmp, WORKER_HEADER_INDEX, strlen(WORKER_HEADER_INDEX))) {
                     /* Skip redirector headers */
                     real_header = JK_FALSE;
                 }
                 else if (!strnicmp(tmp, QUERY_HEADER_NAME,
-                                   sizeof(QUERY_HEADER_NAME) - 1)) {
+                                   strlen(QUERY_HEADER_NAME))) {
                     /* HTTP_TOMCATQUERY_XXXXXXXX was supplied,
                      * remove it from the count and skip
                      */
@@ -3021,17 +3022,17 @@ static int init_ws_service(isapi_private_data_t * private_data,
                         if (unknown_content_length || s->is_chunked) {
                             if (JK_IS_DEBUG_LEVEL(logger)) {
                                 jk_log(logger, JK_LOG_DEBUG,
-                                       "Header %s is %s", tmp,
+                                       "Header Content-Length is %s",
                                        s->is_chunked ? "chunked" : "unknown");
                             }
-                        }
-                        else {
-                            s->headers_names[i] = tmp;
+                            real_header = JK_FALSE;
                         }
                     }
+                    if (real_header)
+                        s->headers_names[i] = tmp;
                 }
                 else if (!strnicmp(tmp, TOMCAT_TRANSLATE_HEADER_NAME,
-                                   sizeof(TOMCAT_TRANSLATE_HEADER_NAME) - 1)) {
+                                   strlen(TOMCAT_TRANSLATE_HEADER_NAME))) {
                     s->headers_names[i] = TRANSLATE_HEADER_NAME_LC;
                 }
                 else {
@@ -3040,11 +3041,13 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
                 while (':' != *tmp && *tmp) {
 #ifndef USE_RAW_HEADERS
-                    if ('_' == *tmp) {
-                        *tmp = '-';
-                    }
-                    else {
-                        *tmp = JK_TOLOWER(*tmp);
+                    if (real_header) {
+                        if ('_' == *tmp) {
+                            *tmp = '-';
+                        }
+                        else {
+                            *tmp = JK_TOLOWER(*tmp);
+                        }
                     }
 #endif
                     tmp++;
@@ -3061,7 +3064,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                     s->headers_values[i] = tmp;
                 }
 
-                while (*tmp != '\n' && *tmp != '\r') {
+                while (*tmp && *tmp != '\n' && *tmp != '\r') {
                     tmp++;
                 }
                 *tmp = '\0';

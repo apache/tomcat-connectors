@@ -39,6 +39,16 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.29 and 1.2.30">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        <bug>48826</bug>: IIS: Fix core on POST. (mturk)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
 <section name="Changes between 1.2.28 and 1.2.29">
   <br />
   <subsection name="Native">
