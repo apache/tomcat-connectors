@@ -31,12 +31,20 @@
 
 <section name="2010 News &amp; Status">
 <br />
-<subsection name="27 February - JK-1.2.29 withdrawn">
-<a name="20100227.1"></a>
+<subsection name="26 February - JK-1.2.29 released">
+<a name="20100226.1"></a>
 <br />
-<p>Version JK-1.2.29 has been withdrawn because of regression inside IIS redirector
-which can cause IIS to crash.
+<p>The Apache Tomcat team is proud to announce the immediate availability
+of Tomcat Connectors 1.2.29. This is a stable release concentrating mainly on
+some bug fixes.
+</p><p>
+ Please see the <a href="../miscellaneous/changelog.html">ChangeLog</a> for a full list of changes.
 </p>
+<p>If you find any bugs while using this release, please fill in the
+<a href="https://issues.apache.org/bugzilla/enter_bug.cgi?product=Tomcat%20Connectors">Bugzilla</a>
+Bug Report.
+</p>
+
 </subsection>
 </section>
 </body>
