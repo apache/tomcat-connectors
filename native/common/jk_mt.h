@@ -73,7 +73,7 @@ typedef pthread_mutex_t JK_CRIT_SEC;
 
 #if defined(AS400) || defined(NETWARE)
 #define jk_pthread_t   jk_uint32_t
-#endif /* AS400 */
+#endif /* AS400 || NETWARE */
 jk_pthread_t jk_gettid(void);
 #endif /* WIN32 */
 
