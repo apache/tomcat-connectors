@@ -71,7 +71,7 @@ typedef pthread_mutex_t JK_CRIT_SEC;
 #define JK_LEAVE_CS(x, rc)\
             if(pthread_mutex_unlock(x))     rc = JK_FALSE; else rc = JK_TRUE
 
-#ifdef AS400
+#if defined(AS400) || defined(NETWARE)
 #define jk_pthread_t   jk_uint32_t
 #endif /* AS400 */
 jk_pthread_t jk_gettid(void);
