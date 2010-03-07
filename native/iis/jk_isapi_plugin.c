@@ -75,7 +75,7 @@
 #define WORKER_HEADER_NAME_BASE           ("TOMCATWORKER")
 #define WORKER_HEADER_INDEX_BASE          ("TOMCATWORKERIDX")
 #define TOMCAT_TRANSLATE_HEADER_NAME_BASE ("TOMCATTRANSLATE")
-#ifdef USE_RAW_HEADERS
+#ifndef USE_CGI_HEADERS
 #define CONTENT_LENGTH                    ("CONTENT-LENGTH:")
 #else
 #define CONTENT_LENGTH                    ("CONTENT_LENGTH:")
@@ -83,7 +83,7 @@
 
 /* The HTTP_ form of the header for use in ExtensionProc */
 #define HTTP_HEADER_PREFIX       "HTTP_"
-#ifndef USE_RAW_HEADERS
+#ifdef USE_CGI_HEADERS
 #define HTTP_HEADER_PREFIX_LEN   5
 #endif
 
@@ -436,7 +436,7 @@ static struct error_reasons {
 
 
 #define STRNULL_FOR_NULL(x) ((x) ? (x) : "(null)")
-#ifndef USE_RAW_HEADERS
+#ifdef USE_CGI_HEADERS
 #define JK_TOLOWER(x)   ((char)tolower((BYTE)(x)))
 #endif
 
@@ -3127,7 +3127,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
     huge_buf_sz = MAX_PACKET_SIZE;
     if (get_server_value(private_data->lpEcb,
-#ifdef USE_RAW_HEADERS
+#ifndef USE_CGI_HEADERS
                          "ALL_RAW", huge_buf, huge_buf_sz)) {
 #else
                          "ALL_HTTP", huge_buf, huge_buf_sz)) {
@@ -3171,7 +3171,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
             for (i = 0, tmp = headers_buf; *tmp && i < cnt;) {
                 int real_header = JK_TRUE;
 
-#ifndef USE_RAW_HEADERS
+#ifdef USE_CGI_HEADERS
                 /* Skip the HTTP_ prefix to the beginning of the header name */
                 tmp += HTTP_HEADER_PREFIX_LEN;
 #endif
@@ -3218,7 +3218,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 }
 
                 while (':' != *tmp && *tmp) {
-#ifndef USE_RAW_HEADERS
+#ifdef USE_CGI_HEADERS
                     if (real_header) {
                         if ('_' == *tmp) {
                             *tmp = '-';
