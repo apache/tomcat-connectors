@@ -128,6 +128,9 @@ static char HTTP_WORKER_HEADER_INDEX[MAX_PATH];
 #define ENABLE_CHUNKED_ENCODING_TAG ("enable_chunked_encoding")
 #define ERROR_PAGE_TAG              ("error_page")
 
+#define LOG_ROTATION_TIME_TAG       ("log_rotationtime")
+#define LOG_FILESIZE_TAG            ("log_filesize")
+
 /* HTTP standard headers */
 #define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE     ("Transfer-Encoding: chunked")
 #define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE_LEN (26)
@@ -479,6 +482,7 @@ static jk_map_t *rregexp_map = NULL;
 static jk_map_t *jk_environment_map = NULL;
 
 static jk_logger_t *logger = NULL;
+static JK_CRIT_SEC log_cs;
 static char *SERVER_NAME = "SERVER_NAME";
 static char *SERVER_SOFTWARE = "SERVER_SOFTWARE";
 static char *INSTANCE_ID = "INSTANCE_ID";
@@ -487,7 +491,12 @@ static char *CONTENT_TYPE = "Content-Type:text/html\r\n\r\n";
 static char extension_uri[INTERNET_MAX_URL_LENGTH] =
     "/jakarta/isapi_redirect.dll";
 static char log_file[MAX_PATH * 2];
+static char log_file_effective[MAX_PATH * 2];
 static int  log_level = JK_LOG_DEF_LEVEL;
+static long log_rotationtime = 0;
+static time_t log_next_rotate_time = 0;
+static ULONGLONG log_filesize = 0;
+
 static char worker_file[MAX_PATH * 2];
 static char worker_mount_file[MAX_PATH * 2] = {0};
 static int  worker_mount_reload = JK_URIMAP_DEF_RELOAD;
@@ -556,6 +565,10 @@ static int init_ws_service(isapi_private_data_t * private_data,
                            jk_ws_service_t *s, char **worker_name);
 
 static int init_jk(char *serverName);
+
+
+static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
+                                    int used, char *what);
 
 static BOOL initialize_extension(void);
 
@@ -2273,9 +2286,11 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
         }
         wc_close(logger);
         jk_shm_close();
+        JK_ENTER_CS(&(log_cs), rc);
         if (logger) {
             jk_close_file_logger(&logger);
         }
+        JK_LEAVE_CS(&(log_cs), rc);
     }
     JK_LEAVE_CS(&(init_cs), rc);
 
@@ -2335,6 +2350,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    // Instance Handle of the DLL
         StringCbPrintf(HTTP_WORKER_HEADER_INDEX, MAX_PATH, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
 
         JK_INIT_CS(&init_cs, rc);
+        JK_INIT_CS(&log_cs, rc);
 
     break;
     case DLL_PROCESS_DETACH:
@@ -2344,6 +2360,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    // Instance Handle of the DLL
         __except(1) {
         }
         JK_DELETE_CS(&init_cs, rc);
+        JK_DELETE_CS(&log_cs, rc);
         break;
 
     default:
@@ -2387,17 +2404,147 @@ static DWORD WINAPI watchdog_thread(void *param)
     return 0;
 }
 
+/*
+ * Reinitializes the logger, formatting the log file name if rotation is enabled,
+ * and calculating the next rotation time if applicable.
+ */
+static int init_logger(int rotate, jk_logger_t **l)
+{
+    int rc = JK_TRUE;
+    int log_open = rotate;  /* log is assumed open if a rotate is requested */
+    char *log_file_name;
+    char log_file_name_buf[MAX_PATH*2];
+
+    /* If log rotation is enabled, format the log filename */
+    if ((log_rotationtime > 0) || (log_filesize > 0)) {
+        time_t t;
+        t = time(NULL);
+
+        if (log_rotationtime > 0) {
+            /* Align time to rotationtime intervals */
+            t = (t / log_rotationtime) * log_rotationtime;
+
+            /* Calculate rotate time */
+            log_next_rotate_time = t + log_rotationtime;
+        }
+
+        log_file_name = log_file_name_buf;
+        if (strchr(log_file, '%')) {
+            struct tm *tm_now;
+
+            /* If there are %s in the log file name, treat it as a sprintf format */
+            tm_now = localtime(&t);
+            strftime(log_file_name, sizeof(log_file_name_buf), log_file, tm_now);
+        } else {
+            /* Otherwise append the number of seconds to the base name */        
+            sprintf_s(log_file_name, sizeof(log_file_name_buf), "%s.%d", log_file, (long)t);
+        }
+    } else {
+        log_file_name = log_file;
+    }
+
+    /* Close the current log file if required, and the effective log file name has changed */
+    if (log_open && strncmp(log_file_name, log_file_effective, strlen(log_file_name)) != 0) {
+        FILE* lf = ((jk_file_logger_t* )logger->logger_private)->logfile;
+        fprintf_s(lf, "Log rotated to %s\r\n", log_file_name);
+        fflush(lf);
+
+        rc = jk_close_file_logger(&logger);
+        log_open = JK_FALSE;
+    }
+
+    if (!log_open) {
+        if (jk_open_file_logger(&logger, log_file_name, log_level)) {
+            logger->log = iis_log_to_file;
+
+            /* Remember the current log file name for the next potential rotate */
+            strcpy_s(log_file_effective, sizeof(log_file_effective), log_file_name);
+            rc = JK_TRUE;
+        } else {
+            logger = NULL;
+            rc = JK_FALSE;
+        }
+    }
+
+    /* Update logger being used for this log call so it occurs on new file */
+    (*l) = logger;
+    return rc;
+}
+
+/*
+ * Checks whether the log needs to be rotated. Must be called while holding the log lock.
+ * The behaviour here is based on the Apache rotatelogs program.
+ * http://httpd.apache.org/docs/2.0/programs/rotatelogs.html
+ */
+static int JK_METHOD rotate_log_file(jk_logger_t **l)
+{
+    int rc = JK_TRUE;
+    int rotate = JK_FALSE;
+
+    if (log_rotationtime > 0) {
+        time_t t = time(NULL);
+        
+        if (t >= log_next_rotate_time) {
+            rotate = JK_TRUE;
+        }
+    } else if (log_filesize > 0) {
+        LARGE_INTEGER filesize;
+        HANDLE h = (HANDLE)_get_osfhandle(fileno(((jk_file_logger_t *)(*l)->logger_private)->logfile));
+        GetFileSizeEx(h, &filesize);
+
+        if ((ULONGLONG)filesize.QuadPart >= log_filesize) {
+            rotate = JK_TRUE;
+        }
+    }
+    if (rotate) {
+        rc = init_logger(JK_TRUE, l);
+    }
+    return rc;
+}
+
+/*
+ * Log messages to the log file, rotating the log when required.
+ */
+static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
+                                    int used, char *what)
+{
+    int rc = JK_FALSE;
+
+    if (l &&
+        (l->level <= level || level == JK_LOG_REQUEST_LEVEL) &&
+        l->logger_private && what && used > 0) {
+        jk_file_logger_t *p = l->logger_private;
+        rc = JK_TRUE;
+
+        if (p->logfile) {
+            what[used++] = '\r';
+            what[used++] = '\n';
+            what[used] = '\0';
+    
+            /* Perform logging within critical section to protect rotation */
+            JK_ENTER_CS(&(log_cs), rc);
+            if (rc && rotate_log_file(&l)) {
+                /* The rotation process will reallocate the jk_logger_t structure, so refetch */ 
+                FILE *rotated = ((jk_file_logger_t *)l->logger_private)->logfile;
+                fputs(what, rotated);
+                fflush(rotated);
+                JK_LEAVE_CS(&(log_cs), rc);
+            }
+        }
+    }
+    return rc;
+}
+
 static int init_jk(char *serverName)
 {
     char shm_name[MAX_PATH];
     int rc = JK_FALSE;
+    
+    init_logger(JK_FALSE, &logger);
+    /* TODO: Use System logging to notify the user that
+     *       we cannot open the configured log file.
+     */
 
-    if (!jk_open_file_logger(&logger, log_file, log_level)) {
-        /* TODO: Use System logging to notify the user that
-         *       we cannot open the configured log file.
-         */
-        logger = NULL;
-    }
     StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME);
 
     jk_log(logger, JK_LOG_INFO, "Starting %s", (VERSION_STRING));
@@ -2428,6 +2575,9 @@ static int init_jk(char *serverName)
 
         jk_log(logger, JK_LOG_DEBUG, "Using log file %s.", log_file);
         jk_log(logger, JK_LOG_DEBUG, "Using log level %d.", log_level);
+        jk_log(logger, JK_LOG_DEBUG, "Using log rotation time %d seconds.", log_rotationtime);
+        jk_log(logger, JK_LOG_DEBUG, "Using log file size %d bytes.", log_filesize);
+
         jk_log(logger, JK_LOG_DEBUG, "Using extension uri %s.", extension_uri);
         jk_log(logger, JK_LOG_DEBUG, "Using worker file %s.", worker_file);
         jk_log(logger, JK_LOG_DEBUG, "Using worker mount file %s.",
@@ -2454,6 +2604,12 @@ static int init_jk(char *serverName)
         jk_log(logger, JK_LOG_DEBUG, "Using translate header %s.", TOMCAT_TRANSLATE_HEADER_NAME);
         jk_log(logger, JK_LOG_DEBUG, "Using a default of %d connections per pool.",
                                      DEFAULT_WORKER_THREADS);
+    }
+
+    if ((log_rotationtime > 0) && (log_filesize > 0)) {
+        jk_log(logger, JK_LOG_WARNING, 
+            "%s is defined in configuration, but will be ignored because %s is set. ",
+            LOG_FILESIZE_TAG, LOG_ROTATION_TIME_TAG);
     }
 
     if (rewrite_rule_file[0] && jk_map_alloc(&rewrite_map)) {
@@ -2640,6 +2796,28 @@ static int read_registry_init_data(void)
     if (get_config_parameter(src, JK_LOG_LEVEL_TAG, tmpbuf, sizeof(tmpbuf))) {
         log_level = jk_parse_log_level(tmpbuf);
     }
+    if (get_config_parameter(src, LOG_ROTATION_TIME_TAG, tmpbuf, sizeof(tmpbuf))) {
+        log_rotationtime = atol(tmpbuf);
+        if (log_rotationtime < 0) {
+            log_rotationtime = 0;
+        }
+    }
+    if (get_config_parameter(src, LOG_FILESIZE_TAG, tmpbuf, sizeof(tmpbuf))) {
+        size_t tl = strlen(tmpbuf);
+        if (tl > 0) {
+            /* rotatelogs has an 'M' suffix on filesize, which we optionally support for consistency */
+            if (tmpbuf[tl - 1] == 'M') {
+                tmpbuf[tl - 1] = '\0';
+            }
+            log_filesize = atol(tmpbuf);
+            if (log_filesize < 0) {
+                log_filesize = 0;
+            }
+            /* Convert to MB as per Apache rotatelogs */
+            log_filesize *= (1000 * 1000);
+        }
+    }
+
     ok = ok && get_config_parameter(src, EXTENSION_URI_TAG, extension_uri, sizeof(extension_uri));
     ok = ok && get_config_parameter(src, JK_WORKER_FILE_TAG, worker_file, sizeof(worker_file));
     ok = ok && get_config_parameter(src, JK_MOUNT_FILE_TAG, worker_mount_file, sizeof(worker_mount_file));

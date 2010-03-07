@@ -75,10 +75,23 @@ A string value pointing to the ISAPI extension <b>/jakarta/isapi_redirect.dll</b
 <attribute name="log_file" required="false"><p>
 A value pointing to location where log file will be created.
 (for example <b>c:\tomcat\logs\isapi.log</b>)
+<br/>If one of the log rotation settings (<b>log_rotationtime</b> or <b>log_filesize</b>) are specified then the actual log file name is based on this setting.
+If the log file name includes any '%' characters, then it is treated as a format string for <code>strftime(3)</code>, 
+e.g. <b>c:\tomcat\logs\isapi-%Y-%m-%d-%H_%M_%S.log</b>. Otherwise, the suffix <em>.nnnnnnnnnn</em> is automatically added and is the time in seconds.
+A full list of format string substitutions can be found in the <a href="http://httpd.apache.org/docs/2.0/programs/rotatelogs.html">Apache rotatelogs documentation</a>
 </p></attribute>
 <attribute name="log_level" required="false"><p>
 A string value for log level 
 (can be debug, info, warn, error or trace).
+</p></attribute>
+<attribute name="log_rotationtime" required="false"><p>
+The time between log file rotations in seconds.
+Setting this to 0 (the default) disables log rotation based on time. 
+</p></attribute>
+<attribute name="log_filesize" required="false"><p>
+The maximum log file size in megabytes, after which the log file will be rotated. Setting this to 0 (the default) disables log rotation based on file size.
+<br>The value can have an optional <b>M</b> suffix, i.e. both <b>5</b> and <b>5M</b> will rotate the log file when it grows to 5MB.
+<br>If <b>log_rotationtime</b> is specified, then this setting is ignored.  
 </p></attribute>
 <attribute name="worker_file" required="true"><p>
 A string value which is the full path to workers.properties file
@@ -287,6 +300,58 @@ dynamically added to the environment that can be used inside
 # Use the logs in the installation path of ISAPI Redirector
 log_file=$(ISAPI_PATH)\$(ISAPI_NAME).log
 </source></p>
+</section>
+
+<section name="Log file rotation">
+<p>
+The ISAPI redirector with version 1.2.31 can perform log rotation, with configuration and behaviour similar to the 
+<a href="http://httpd.apache.org/docs/2.0/programs/rotatelogs.html">rotatelogs</a> program provided with Apache HTTP Server.
+</p>
+<p>
+To configure log rotation, configure a <b>log_file</b>, and one of the <b>log_rotationtime</b> or <b>log_filesize</b> options.
+If both are specified, the <b>log_rotationtime</b> will take precedence, and <b>log_filesize</b> will be ignored. 
+<br/>For example, to configure daily rotation of the log file:
+</p>
+<source>
+# Configuration file for the Jakarta ISAPI Redirector
+...
+
+# Full path to the log file for the ISAPI Redirector
+log_file=c:\tomcat\logs\isapi_redirect.%Y-%m-%d.log
+
+# Log level (debug, info, warn, error or trace)
+log_level=info
+
+# Rotate the log file every day
+log_rotationtime=86400
+
+...
+</source>
+<p>
+Or to configure rotation of the log file when it reaches 5MB in size:
+</p>
+<source>
+# Configuration file for the Jakarta ISAPI Redirector
+...
+
+# Full path to the log file for the ISAPI Redirector
+log_file=c:\tomcat\logs\isapi_redirect.%Y-%m-%d-%H.log
+
+# Log level (debug, info, warn, error or trace)
+log_level=info
+
+# Rotate the log file at 5 MB
+log_filesize=5M
+
+...
+</source>
+<p>
+The log will be rotated whenever the configured limit is reached, but only if the log file name would change. If you configure
+ a log file name with <code>strftime(3)</code> format codes in it, then ensure it specifies the same granularity
+ as the rotation time configured, e.g. <b>%Y-%m-%d</b> if rotating daily (<b>log_rotationtime=86400</b>).
+<br/>See the <a href="http://httpd.apache.org/docs/2.0/programs/rotatelogs.html">rotatelogs</a> documentation for more examples.
+</p>
+
 </section>
 
 <section name="Using a simple rewrite rules">
