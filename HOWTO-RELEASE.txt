@@ -137,6 +137,7 @@ native/configure.in: Update variable VERSION.
 native/common/jk_version.h: Update variables JK_VERMAJOR, JK_VERMINOR, JK_VERFIX,
                             JK_VERSTRING, and JK_VERISRELEASE.
 native/common/portable.h.sample: Update VERSION define.
+native/apache-2.0/mod_jk.rc: Update JK_VERSION_STR, FILEVERSION, and PRODUCTVERSION
 native/iis/isapi_redirect.rc: Update JK_VERSION_STR, FILEVERSION, and PRODUCTVERSION
 native/iis/installer/isapi-redirector-win32-msi.ism: Update ProductVersion.
 xdocs/miscellaneous/changelog.xml: Start a new section for the new version.
