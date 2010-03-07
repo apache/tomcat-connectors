@@ -86,7 +86,7 @@ So shouldn't there also be
 
 a) Allow logging of request url or uuid in jk log to ease matching with access log.
 
-b) Implement log rotation for IIS.
+b) Implement log rotation for IIS. (done in 1.2.31)
 
 c) Allow adding of log notes for IIS like we do with Apache.
 
