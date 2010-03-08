@@ -2458,7 +2458,7 @@ static int init_logger(int rotate, jk_logger_t **l)
             logger->log = iis_log_to_file;
 
             /* Remember the current log file name for the next potential rotate */
-            strcpy_s(log_file_effective, sizeof(log_file_effective), log_file_name);
+            StringCbCopy(log_file_effective, sizeof(log_file_effective), log_file_name);
             rc = JK_TRUE;
         } else {
             logger = NULL;
