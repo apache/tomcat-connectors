@@ -2437,7 +2437,7 @@ static int init_logger(int rotate, jk_logger_t **l)
             strftime(log_file_name, sizeof(log_file_name_buf), log_file, tm_now);
         } else {
             /* Otherwise append the number of seconds to the base name */        
-            sprintf_s(log_file_name, sizeof(log_file_name_buf), "%s.%d", log_file, (long)t);
+            StringCbPrintf(log_file_name, sizeof(log_file_name_buf), "%s.%d", log_file, (long)t);
         }
     } else {
         log_file_name = log_file;
@@ -2445,10 +2445,7 @@ static int init_logger(int rotate, jk_logger_t **l)
 
     /* Close the current log file if required, and the effective log file name has changed */
     if (log_open && strncmp(log_file_name, log_file_effective, strlen(log_file_name)) != 0) {
-        FILE* lf = ((jk_file_logger_t* )logger->logger_private)->logfile;
-        fprintf_s(lf, "Log rotated to %s\r\n", log_file_name);
-        fflush(lf);
-
+        jk_log(logger, JK_LOG_INFO, "Log rotated to %s", log_file_name);
         rc = jk_close_file_logger(&logger);
         log_open = JK_FALSE;
     }
