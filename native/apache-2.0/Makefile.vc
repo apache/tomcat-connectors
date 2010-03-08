@@ -94,6 +94,9 @@ LINK32_OBJS= \
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
+	@IF EXIST $(OUTDIR)\mod_jk.manifest \
+		mt -nologo -manifest $(OUTDIR)\mod_jk.manifest -outputresource:$(OUTDIR)\mod_jk.so;2
+
 
 CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /I "$(APACHE2_HOME)\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c 
 
