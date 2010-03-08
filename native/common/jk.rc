@@ -37,7 +37,7 @@
                     "specific language governing permissions and " \
                     "limitations under the License."
 
-#define JK_DLL_BASENAME BASENAME "-" JK_VERSTRING
+#define JK_DLL_BASENAME JK_STRINGIFY(BASENAME) "-" JK_VERSTRING
 
 
 1 VERSIONINFO
