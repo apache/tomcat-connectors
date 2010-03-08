@@ -26,7 +26,7 @@ ALL : "$(OUTDIR)\mod_jk.so"
 
 
 CLEAN :
-	-@erase "$(INTDIR)\mod_jk.res"
+	-@erase "$(INTDIR)\jk.res"
 	-@erase "$(INTDIR)\jk_ajp12_worker.obj"
 	-@erase "$(INTDIR)\jk_ajp13.obj"
 	-@erase "$(INTDIR)\jk_ajp13_worker.obj"
