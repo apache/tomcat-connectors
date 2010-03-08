@@ -135,7 +135,7 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d BASENAME="mod_jk" /d "
 
 SOURCE=..\common\jk.rc
 
-"$(INTDIR)\k.res" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\jk.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 
