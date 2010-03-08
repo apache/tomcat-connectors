@@ -716,7 +716,7 @@ static char *status_strfsize(jk_uint64_t size, char *buf)
 static int status_strftime(time_t clock, int mime, char *buf_time, char *buf_tz,
                            jk_logger_t *l)
 {
-    int rc_time;
+    size_t rc_time;
 #ifdef _MT_CODE_PTHREAD
     struct tm res;
     struct tm *tms = localtime_r(&clock, &res);
@@ -734,7 +734,7 @@ static int status_strftime(time_t clock, int mime, char *buf_time, char *buf_tz,
     strftime(buf_tz, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_TZ, tms);
 
     JK_TRACE_EXIT(l);
-    return rc_time;
+    return (int)rc_time;
 
 }
 
@@ -1925,7 +1925,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         if (rc_time > 0 ) {
             jk_print_xml_att_string(s, off+2, "error_time_datetime", buf_time);
             jk_print_xml_att_string(s, off+2, "error_time_tz", buf_tz);
-            jk_print_xml_att_int(s, off+2, "error_time_unix_seconds", error_time);
+            jk_print_xml_att_int(s, off+2, "error_time_unix_seconds", (int)error_time);
             jk_print_xml_att_int(s, off+2, "error_time_ago", delta_error);
         }
         /* Terminate the tag */
@@ -2054,7 +2054,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         if (rc_time > 0) {
             jk_print_prop_att_string(s, w, name, "error_time_datetime", buf_time);
             jk_print_prop_att_string(s, w, name, "error_time_tz", buf_tz);
-            jk_print_prop_att_int(s, w, name, "error_time_unix seconds", error_time);
+            jk_print_prop_att_int(s, w, name, "error_time_unix seconds", (int)error_time);
             jk_print_prop_att_int(s, w, name, "error_time_ago seconds", delta_error);
         }
 
