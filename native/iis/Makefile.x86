@@ -37,7 +37,7 @@ CLEAN :"pcre_x86CLEAN"
 !ELSE 
 CLEAN :
 !ENDIF 
-	-@erase "$(INTDIR)\isapi_redirect.res"
+	-@erase "$(INTDIR)\jk.res"
 	-@erase "$(INTDIR)\isapi_redirector_src.idb"
 	-@erase "$(INTDIR)\isapi_redirector_src.pdb"
 	-@erase "$(INTDIR)\jk_ajp12_worker.obj"
@@ -103,7 +103,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk_url.obj" \
 	"$(INTDIR)\jk_util.obj" \
 	"$(INTDIR)\jk_worker.obj" \
-	"$(INTDIR)\isapi_redirect.res" \
+	"$(INTDIR)\jk.res" \
 	".\pcre\Release_x86\pcre.lib"
 
 "$(OUTDIR)\isapi_redirect.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -146,11 +146,11 @@ CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "pcre" /I "$(JAVA_HOME)\inclu
 <<
 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\isapi_redirect.res" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d BASENAME="isapi_redirect" /d "NDEBUG" 
 
-SOURCE=.\isapi_redirect.rc
+SOURCE=..\common\jk.rc
 
-"$(INTDIR)\isapi_redirect.res" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\jk.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 

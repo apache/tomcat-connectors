@@ -27,7 +27,6 @@
 #define JK_VERMAJOR     1
 #define JK_VERMINOR     2
 #define JK_VERFIX       31
-#define JK_VERSTRING    "1.2.31"
 
 /* set JK_VERISRELEASE to 1 when release (do not forget to commit!) */
 #define JK_VERISRELEASE 0
@@ -69,8 +68,25 @@
 #endif
 #endif
 
-#define JK_MAKEVERSION(major, minor, fix, beta) (((major) << 24) + ((minor) << 16) + ((fix) << 8) + (beta))
+#define JK_MAKEVERSION(major, minor, fix, beta) \
+            (((major) << 24) + ((minor) << 16) + ((fix) << 8) + (beta))
 
 #define JK_VERSION JK_MAKEVERSION(JK_VERMAJOR, JK_VERMINOR, JK_VERFIX, JK_VERBETA)
 
+/** Properly quote a value as a string in the C preprocessor */
+#define JK_STRINGIFY(n) JK_STRINGIFY_HELPER(n)
+/** Helper macro for JK_STRINGIFY */
+#define JK_STRINGIFY_HELPER(n) #n
+#define JK_VERSTRING \
+            JK_STRINGIFY(JK_VERMAJOR) "." \
+            JK_STRINGIFY(JK_VERMINOR) "." \
+            JK_STRINGIFY(JK_VERFIX)
+
+/* macro for Win32 .rc files using numeric csv representation */
+#define JK_VERSIONCSV JK_VERMAJOR ##, \
+                    ##JK_VERMINOR ##, \
+                    ##JK_VERFIX
+
+
 #endif /* __JK_VERSION_H */
+

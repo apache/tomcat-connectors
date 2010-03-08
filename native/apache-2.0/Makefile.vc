@@ -87,7 +87,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk_url.obj" \
 	"$(INTDIR)\jk_util.obj" \
 	"$(INTDIR)\jk_worker.obj" \
-	"$(INTDIR)\mod_jk.res" \
+	"$(INTDIR)\jk.res" \
 	"$(INTDIR)\mod_jk.obj"
 
 "$(OUTDIR)\mod_jk.so" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -131,11 +131,11 @@ CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "$(JAVA_HOME)\include" /I "$(
 <<
 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\mod_jk.res" /d "NDEBUG"
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d BASENAME="mod_jk" /d "NDEBUG"
 
-SOURCE=.\mod_jk.rc
+SOURCE=..\common\jk.rc
 
-"$(INTDIR)\mod_jk.res" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\k.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 
