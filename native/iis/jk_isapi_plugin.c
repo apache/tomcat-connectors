@@ -2445,7 +2445,9 @@ static int init_logger(int rotate, jk_logger_t **l)
 
     /* Close the current log file if required, and the effective log file name has changed */
     if (log_open && strncmp(log_file_name, log_file_effective, strlen(log_file_name)) != 0) {
-        jk_log(logger, JK_LOG_INFO, "Log rotated to %s", log_file_name);
+        FILE* lf = ((jk_file_logger_t* )logger->logger_private)->logfile;
+        fprintf(lf, "Log rotated to %s\r\n", log_file_name);
+        fflush(lf);
         rc = jk_close_file_logger(&logger);
         log_open = JK_FALSE;
     }
