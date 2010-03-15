@@ -90,8 +90,8 @@ Setting this to 0 (the default) disables log rotation based on time.
 </p></attribute>
 <attribute name="log_filesize" required="false"><p>
 The maximum log file size in megabytes, after which the log file will be rotated. Setting this to 0 (the default) disables log rotation based on file size.
-<br>The value can have an optional <b>M</b> suffix, i.e. both <b>5</b> and <b>5M</b> will rotate the log file when it grows to 5MB.
-<br>If <b>log_rotationtime</b> is specified, then this setting is ignored.  
+<br/>The value can have an optional <b>M</b> suffix, i.e. both <b>5</b> and <b>5M</b> will rotate the log file when it grows to 5MB.
+<br/>If <b>log_rotationtime</b> is specified, then this setting is ignored.  
 </p></attribute>
 <attribute name="worker_file" required="true"><p>
 A string value which is the full path to workers.properties file
