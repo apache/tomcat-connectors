@@ -55,6 +55,11 @@
         to prevent conversion of underscores '_' to hyphens '-' in header names.
         Old behaviour can be enabled by defining USE_CGI_HEADERS. (timw)
       </fix>
+      <update>
+        Docs: Grammar and style improvements and clarification about serving
+        static content by IIS.
+        Patch provided by Andr&#233; Warnier. (rjung)
+      </update>
       <fix>
         Docs: Update subversion paths used in docs. (rjung)
       </fix>

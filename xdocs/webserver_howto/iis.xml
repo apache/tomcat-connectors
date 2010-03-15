@@ -142,7 +142,7 @@ filter function for each in-coming request.
 <li>
 The filter then tests the request URL against a list of URI-paths held inside uriworkermap.properties, 
 If the current request matches one of the entries in the list of URI-paths, 
-the filter transfer the request to the extension.
+the filter transfers the request to the extension.
 </li>
 <li>
 The extension collects the request parameters and forwards them to the appropriate worker using the defined
@@ -202,7 +202,7 @@ Adding more contexts to the configuration.
 <p>
 In this document I will assume that isapi_redirect.dll is placed in 
 <b>c:\tomcat\bin\win32\i386\isapi_redirect.dll</b> and 
-that you created the properties files are in <b>c:\tomcat\conf</b>.
+that the properties files which you created are in <b>c:\tomcat\conf</b>.
 </p>
 <p>
 <ol>
@@ -312,36 +312,28 @@ uriworkermap.properties will be:
 </source>
 
 After saving uriworkermap.properties restart IIS and it will serve the new context.
-
 <p>
-A feature is present till Tomcat 3.2, where a uriworkermap.properties-auto is automatically 
-written each time Tomcat is started. This file includes settings for each of the contexts that 
-Tomcat will serve during its run. 
-</p>
-<p>
-Each context has settings to have Tomcat handle servlet and JSP requests, 
-but by default static content is left to be served by IIS. 
-</p>
-<p>
-Each context also has a commented out setting to have Tomcat handle all requests to the context. 
-You can rename this file (so it won't be overwritten the next time Tomcat is started) and 
-uncomment this setting or make other customisations. 
-</p>
-<p>
-You may also use this file as is in your worker_mount_file setting.
+The above should be all you need for IIS to pass through to Tomcat any request for any URI which corresponds
+to a Tomcat context (webapp).
 </p>
 </subsection>
 
 <subsection name="Advanced Context Configuration">
 <p>
-Sometimes it is better to have IIS serve the static pages (html, gif, jpeg etc.) 
-even if these files are part of a context served by Tomcat. 
+If your webiste is very busy (more than 100 requests/second, or more than 100 simultaneous client connections),
+it might sometimes be desirable to have IIS serve static content (html, gif, jpeg etc.) directly, 
+even if these files are part of a context served by Tomcat.  Allowing IIS to serve such files directly may
+ avoid the small overhead consisting of passing the request to Tomcat via the redirector, and may free up
+ Tomcat somewhat, by using it only to process requests that only Tomcat can handle (e.g. requests to JSP pages and java servlets).
 </p>
 <p>
-For example, consider the html and gif files in the examples context, there is no need 
-to serve them from the Tomcat process, IIS will suffice.
+For example, consider the html and gif files in the examples context : you could serve these files directly
+with IIS; there is no need to serve them from the Tomcat process.
 </p>
-
+<warn>However, you should be very careful when you implement the following configuration style, because by doing so you are
+in fact providing a "back-door" to IIS, and allowing it to serve files out of a Tomcat context without Tomcat's knowledge,
+thus bypassing any security
+restrictions which Tomcat itself and the Tomcat context (webapp) may place on those files.</warn>
 <p>
 Making IIS serve static files that are part of the Tomcat contexts requires the following:
 <ol>
@@ -361,7 +353,7 @@ For example adding a /example IIS virtual directory that covers the c:\tomcat\we
 
 <p>
 Configuring the redirector is somewhat harder, you will need to specify the exact 
-URL-Path pattern(s) that you want Tomcat to handle (usually only JSP files and servlets). 
+URL-Path pattern(s) which you want Tomcat to handle (usually only JSP files and servlets). 
 This requires a change to the uriworkermap.properties : 
 
 <source>
@@ -377,7 +369,6 @@ This requires a change to the uriworkermap.properties :
 As you can see the second configuration is more explicit, it actually instruct the redirector 
 to redirect only requests to resources under /examples/servlet/ and resources under /examples/ 
 whose name ends with .jsp. 
-This is similar to what is automatically written to the uriworkermap.properties-auto file for each context.
 </p>
 
 <p>
@@ -389,40 +380,42 @@ You can even be more explicit and provide lines such as:
 </p>
 
 <p>
-that instructs the redirector to redirect request whose URL-Path equals /example/servletname 
+that instructs the redirector to redirect all requests whose URL-path matches the leading string "/example/servletname" 
 to the worker named defworker.
 </p>
 
 </subsection>
 
-<subsection name="Protecting the WEB-INF Directory">
-<p>
-Each servlet application (context) has a special directory named WEB-INF, 
-this directory contains sensitive configurations data and Java classes and must be kept hidden from web users. 
-Using the IIS management console it is possible to protect the WEB-INF directory from user access, 
-this however requires the administrator to remember that. 
+<subsection name="Protecting the content of your Tomcat contexts">
+<p>Once again, be aware that by allowing IIS to access the content of your Tomcat context directly, you are
+potentially bypassing Tomcat's protection of that content.  You should thus make sure to protect this content
+at the IIS level if needed, by using the corresponding IIS management console functions. 
 </p>
 <p>
-To avoid this need the redirector plugin automatically protects your WEB-INF directories by rejecting 
-any request that contains WEB-INF in its URL-Path.
+In particular, each servlet application (context) has a special directory named WEB-INF, 
+which contains sensitive configuration data and Java classes, and which should always be kept hidden from web users. 
+Using the IIS management console it is possible to protect the WEB-INF directory from user access, but considering that
+this is a general requirement, and considering that it is easy to forget to implement this protection
+at the IIS level, the redirector plugin does it automatically for you, and it will reject any request
+which contains WEB-INF in its URL-path. 
 </p>
 </subsection>
 
 <subsection name="Advanced Worker Configuration">
 <p>
-Sometimes you want to serve different contexts with different Tomcat processes 
+Sometimes you may want to serve different contexts with different Tomcat processes 
 (for example to spread the load among different machines). 
-To achieve such goal you will need to define several workers and assign each context with its own worker.
+To achieve such a goal you will need to define several workers and assign each context to its own worker.
 </p>
 <p>
-Defining workers is done in workers.properties, this file includes two types of entries:
+Defining additional workers is done in the workers.properties file. This file includes two types of entries:
 </p>
 
 <p>
 <source>
   # An entry that lists all the workers defined
   worker.list=worker1, worker2
-  # Entries that define the host and port associated with these workers
+  # Entries that define the host and port associated with each of these workers
   worker.worker1.host=localhost
   worker.worker1.port=8009
   worker.worker1.type=ajp13
@@ -458,8 +451,8 @@ and in the <a href="../reference/workers.html">worker.properties configuration r
 
 <section name="Building ISAPI redirector">
 <p>
-The redirector was developed using Visual C++ Ver.6.0, so having this environment is a prereq if you want 
-to perform a custom build. You should also have IIS developer SDK
+The redirector was developed using Visual C++ Ver.6.0, so having this environment is a prerequisite if you want 
+to perform a custom build. You should also have the IIS developer SDK.
 
 The steps that you need to take are:
 <ul>
