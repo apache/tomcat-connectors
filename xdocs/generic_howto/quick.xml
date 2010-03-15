@@ -72,26 +72,26 @@
    more complete <a href="../webserver_howto/apache.html">separate HowTo for Apache</a> is available.
 </p>
 <p>
-	You should first have <b>mod_jk.so</b> (unix) or <b>mod_jk.dll</b> (Windows) installed
-	in your Apache module directory (see your Apache documentation to locate it).
+  You should first have <b>mod_jk.so</b> (unix) or <b>mod_jk.dll</b> (Windows) installed
+  in your Apache module directory (see your Apache documentation to locate it).
 </p>
 <p>
-	Usual locations for modules directory on Unix:
-	<ul>
-	<li>/usr/lib/apache/</li>
-	<li>/usr/lib/apache2/</li>
-	<li>/usr/local/apache/libexec/</li>
-	</ul>
+  Usual locations for modules directory on Unix:
+  <ul>
+  <li>/usr/lib/apache/</li>
+  <li>/usr/lib/apache2/</li>
+  <li>/usr/local/apache/libexec/</li>
+  </ul>
 </p>
 <p>
-	Usual locations for modules directory on Windows :
-	<ul>
-	<li>C:\Program Files\Apache Group\Apache\modules\</li>
-	<li>C:\Program Files\Apache Group\Apache2\modules\</li>
-	</ul>
+  Usual locations for modules directory on Windows :
+  <ul>
+  <li>C:\Program Files\Apache Group\Apache\modules\</li>
+  <li>C:\Program Files\Apache Group\Apache2\modules\</li>
+  </ul>
 </p>
 <p>
-	You'll find a link to prebuilt binaries
+  You'll find a link to prebuilt binaries
         <a href="http://tomcat.apache.org/download-connectors.cgi/">here</a>
 </p>
 <p>
@@ -99,19 +99,19 @@
     included from another file:
 </p>    
 <p>
-	Usual locations for configuration directory on Unix:
-	<ul>
-	<li>/etc/httpd/conf/</li>
-	<li>/etc/httpd2/conf/</li>
-	<li>/usr/local/apache/conf/</li>
-	</ul>
+  Usual locations for configuration directory on Unix:
+  <ul>
+  <li>/etc/httpd/conf/</li>
+  <li>/etc/httpd2/conf/</li>
+  <li>/usr/local/apache/conf/</li>
+  </ul>
 </p>
 <p>
-	Usual locations for configuration directory on Windows :
-	<ul>
-	<li>C:\Program Files\Apache Group\Apache\conf\</li>
-	<li>C:\Program Files\Apache Group\Apache2\conf\</li>
-	</ul>
+  Usual locations for configuration directory on Windows :
+  <ul>
+  <li>C:\Program Files\Apache Group\Apache\conf\</li>
+  <li>C:\Program Files\Apache Group\Apache2\conf\</li>
+  </ul>
 </p>
 <p>
 <source>
@@ -143,7 +143,7 @@
 
 <section name="Minimum IIS web server configuration">
 <p>
-	A separate <a href="../webserver_howto/iis.html">HowTo for the IIS web server</a> is available.
+  A separate <a href="../webserver_howto/iis.html">HowTo for the IIS web server</a> is available.
 </p>
 <todo>
 More information to be added!
@@ -152,7 +152,7 @@ More information to be added!
 
 <section name="Minimum NES/iPlanet/Sun web server configuration">
 <p>
-	A separate <a href="../webserver_howto/nes.html">HowTo for the Netscape/iPlanet/Sun web server</a> is available.
+  A separate <a href="../webserver_howto/nes.html">HowTo for the Netscape/iPlanet/Sun web server</a> is available.
 <todo>
 More information to be added?
 </todo>
@@ -162,7 +162,7 @@ More information to be added?
 
 <section name="Test your configuration">
 <p>
-	(Re)start the web server and browse to the <a href="http://localhost/examples/">http://localhost/examples/</a>
+  (Re)start the web server and browse to the <a href="http://localhost/examples/">http://localhost/examples/</a>
 </p>
 
 </section>

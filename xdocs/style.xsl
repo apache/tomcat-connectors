@@ -68,7 +68,7 @@
       <meta name="author" value="{$name}"/>
       <meta name="email" value="{$email}"/>
     </xsl:for-each>
-    <link href="{$relative-path}/style.css" type="text/css" rel="stylesheet"/>    
+    <link href="{$relative-path}/style.css" type="text/css" rel="stylesheet"/>
     </head>
 
     <body bgcolor="{$body-bg}" text="{$body-fg}" link="{$body-link}"
@@ -264,14 +264,14 @@
     <table border="1" cellpadding="5">
       <tr>
         <th width="20%" bgcolor="{$attributes-color}">
-     	  <xsl:choose>
+          <xsl:choose>
             <xsl:when test="@name != ''">
                <font color="#ffffff"><xsl:value-of select="@name"/></font>
             </xsl:when>
             <xsl:otherwise>
                <font color="#ffffff">Attribute</font>
             </xsl:otherwise>
-          </xsl:choose>          
+          </xsl:choose>
         </th>
         <th width="80%" bgcolor="{$attributes-color}">
           <font color="#ffffff">Description</font>
@@ -319,18 +319,18 @@
               <code><xsl:value-of select="@name"/></code>
             </xsl:if>
           </td>
-     	  <xsl:choose>
+            <xsl:choose>
             <xsl:when test="@default != ''">
-               <td align="center" valign="center">          
+               <td align="center" valign="center">
                <code><xsl:value-of select="@default"/></code>
               </td>
             </xsl:when>
             <xsl:otherwise>
-              <td align="center" valign="center">          
+              <td align="center" valign="center">
               <code>-</code>
               </td>
             </xsl:otherwise>
-          </xsl:choose>          
+          </xsl:choose>
           <td align="left" valign="center">
             <xsl:apply-templates/>
           </td>
@@ -366,30 +366,30 @@
               <code><xsl:value-of select="@name"/></code>
             </xsl:if>
           </td>
-     	  <xsl:choose>
+          <xsl:choose>
             <xsl:when test="@workers != ''">
-               <td align="left" valign="center">          
+               <td align="left" valign="center">
                <code><xsl:value-of select="@workers"/></code>
               </td>
             </xsl:when>
             <xsl:otherwise>
-              <td align="left" valign="center">          
+              <td align="left" valign="center">
               <code>?</code>
               </td>
             </xsl:otherwise>
-          </xsl:choose>          
-     	  <xsl:choose>
+          </xsl:choose>
+          <xsl:choose>
             <xsl:when test="@default != ''">
-               <td align="center" valign="center">          
+               <td align="center" valign="center">
                <code><xsl:value-of select="@default"/></code>
               </td>
             </xsl:when>
             <xsl:otherwise>
-              <td align="center" valign="center">          
+              <td align="center" valign="center">
               <code>-</code>
               </td>
             </xsl:otherwise>
-          </xsl:choose>          
+          </xsl:choose>
           <td align="left" valign="center">
             <xsl:apply-templates/>
           </td>
@@ -420,30 +420,30 @@
           <td align="left" valign="center">
             <code><xsl:value-of select="@name"/></code>
           </td>
-     	  <xsl:choose>
+          <xsl:choose>
             <xsl:when test="@successor != ''">
-               <td align="center" valign="center">          
+               <td align="center" valign="center">
                <code><xsl:value-of select="@successor"/></code>
               </td>
             </xsl:when>
             <xsl:otherwise>
-              <td align="center" valign="center">          
+              <td align="center" valign="center">
               <code>-</code>
               </td>
             </xsl:otherwise>
-          </xsl:choose>          
-     	  <xsl:choose>
+          </xsl:choose>
+          <xsl:choose>
             <xsl:when test="@default != ''">
-               <td align="center" valign="center">          
+               <td align="center" valign="center">
                <code><xsl:value-of select="@default"/></code>
               </td>
             </xsl:when>
             <xsl:otherwise>
-              <td align="center" valign="center">          
+              <td align="center" valign="center">
               <code>-</code>
               </td>
             </xsl:otherwise>
-          </xsl:choose>          
+          </xsl:choose>
           <td align="left" valign="center">
             <xsl:apply-templates/>
           </td>
@@ -477,7 +477,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-    
+
   <!-- Warning -->
   <xsl:template match="warn">
     <p>
@@ -592,7 +592,7 @@
       </xsl:if>
     </p>
   </xsl:template>
- 
+
   <!-- Screens -->
 
   <xsl:template match="screen">
@@ -608,7 +608,7 @@
       </div>
     </p>
   </xsl:template>
-  
+
   <xsl:template match="note">
     <div class="screen">
       <xsl:value-of select="text()"/>
@@ -656,7 +656,7 @@
     </code>
     <br/>
   </xsl:template>
- 
+
   <xsl:template match="type5250">
     <code>
       <nobr>
@@ -674,7 +674,7 @@
   <xsl:template match="typenext">
     <code>
       <nobr>
-        <em class="screen">        
+        <em class="screen">
           <xsl:text> </xsl:text>
         </em>
         <xsl:if test="string-length(text()) > 0">
@@ -684,7 +684,7 @@
     </code>
     <br/>
   </xsl:template>
-   
+
   <xsl:template match="read">
     <code class="screen">
       <nobr>
@@ -697,8 +697,8 @@
   <xsl:template match="enter">
     <b class="screen"><xsl:value-of select="text()"/></b>
   </xsl:template>
- 
-  
+
+
 
   <!-- Process everything else by just passing it through -->
   <xsl:template match="*|@*">
