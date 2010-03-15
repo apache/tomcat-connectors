@@ -52,8 +52,11 @@
       </update>
       <fix>
         <bug>38895</bug>: IIS: Use RAW headers instead of CGI headers by default
-		to prevent conversion of underscores '_' to hyphens '-' in header names.
-		Old behaviour can be enabled by defining USE_CGI_HEADERS. (timw)
+        to prevent conversion of underscores '_' to hyphens '-' in header names.
+        Old behaviour can be enabled by defining USE_CGI_HEADERS. (timw)
+      </fix>
+      <fix>
+        Docs: Update subversion paths used in docs. (rjung)
       </fix>
     </changelog>
   </subsection>

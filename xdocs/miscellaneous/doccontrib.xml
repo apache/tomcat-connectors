@@ -73,7 +73,7 @@ line.
 <p>
     Ant is used to build the documentation, among other things, and it must be 
 able to see a file called <b>build.xml</b>.  This file is located in the 
-<b>SVN_HOME\tomcat\jk\trunk\xdocs</b> directory.  In the 
+<b>xdocs</b> directory.  In the 
 <b>build.xml</b> file there is a target named <b>all</b> that will be used to build 
 the docs.
 </p>
@@ -111,22 +111,20 @@ the <b>svn update</b> command.
     <screen>
 <note>    To update your xdocs directory simply cd into the xdocs directory 
 and:</note>
-<read>C:\build\tomcat-connectors\jk\>cd xdocs</read>
-<read>C:\build\tomcat-connectors\jk\xdocs\>svn update</read>
+<read>C:\build\tomcat-connectors\>cd xdocs</read>
+<read>C:\build\tomcat-connectors\xdocs\>svn update</read>
 </screen>
 </p>
 </subsection>
 <subsection name="STEP 3.  Test your build environment">
 <p>
     Open a command prompt window and cd to the directory where you downloaded 
-the source.  Now cd into the jk directory and then into the xdocs directory so
-that <b>Ant</b> can see the 
+the source.  Now cd into the xdocs directory so that <b>Ant</b> can see the 
 <b>build.xml</b> file. Then from a command prompt, run the following:
 <screen>
 <read> </read>
-<read>C:\build\tomcat-connectors>cd jk</read>
-<read>C:\build\tomcat-connectors\jk>cd xdocs</read>
-<read>C:\build\tomcat-connectors\jk\xdocs>ant all</read>
+<read>C:\build\tomcat-connectors>cd xdocs</read>
+<read>C:\build\tomcat-connectors\xdocs>ant all</read>
 <read> </read>
 </screen>
 </p>.
@@ -134,31 +132,31 @@ that <b>Ant</b> can see the
     You should see the ant compiler messages scrolling by rapidly and then stop 
 with the following:
 <screen>
-<read>[style] Transforming into C:\build\tomcat-connectors\jk\build\docs\news\printer></read>
-<read>[style] Processing C:\build\tomcat-connectors\jk\xdocs\news\20041100.xml 
+<read>[style] Transforming into C:\build\tomcat-connectors\build\docs\news\printer></read>
+<read>[style] Processing C:\build\tomcat-connectors\xdocs\news\20041100.xml 
 to</read>
-<read>C:\build\tomcat-connectors\jk\build\docs\news/20041100.html</read>
-<read>[style] Loading stylesheet C:\build\tomcat-connectors\jk\xdocs\style.xsl</read>
-<read>[style] Processing C:\build\tomcat-connectors\jk\xdocs\news\20050101.xml 
+<read>C:\build\tomcat-connectors\build\docs\news/20041100.html</read>
+<read>[style] Loading stylesheet C:\build\tomcat-connectors\xdocs\style.xsl</read>
+<read>[style] Processing C:\build\tomcat-connectors\xdocs\news\20050101.xml 
 to</read>
-<read>C:\build\tomcat-connectors\jk\build\docs\news/20050101.html</read>
-<read>[style] Processing C:\build\tomcat-connectors\jk\xdocs\news\20060101.xml 
+<read>C:\build\tomcat-connectors\build\docs\news/20050101.html</read>
+<read>[style] Processing C:\build\tomcat-connectors\xdocs\news\20060101.xml 
 to</read>
-<read>C:\build\tomcat-connectors\jk\build\docs\news/20060101.html</read>
-<read>[style] Transforming into C:\build\tomcat-connectors\jk\build\docs></read>
-<read>[style] Processing C:\build\tomcat-connectors\jk\xdocs\index.xml 
+<read>C:\build\tomcat-connectors\build\docs\news/20060101.html</read>
+<read>[style] Transforming into C:\build\tomcat-connectors\build\docs></read>
+<read>[style] Processing C:\build\tomcat-connectors\xdocs\index.xml 
 to</read>
-<read>C:\build\tomcat-connectors\jk\build\docs\index.html</read>
-<read>[style] Loading stylesheet C:\build\tomcat-connectors\jk\xdocs\style.xsl</read>
+<read>C:\build\tomcat-connectors\build\docs\index.html</read>
+<read>[style] Loading stylesheet C:\build\tomcat-connectors\xdocs\style.xsl</read>
 <read> </read>
 <read>BUILD SUCCESSFUL</read>
 <read>Total time: 10 seconds</read>
-<read>C:\build\tomcat-connectors\jk></read>
+<read>C:\build\tomcat-connectors></read>
 </screen>
 </p>
 <p>
     All the xml files present in the xdocs directory structure were transformed 
-to html and copied to the <b>SVN_HOME\tomcat-connectors\jk\build\docs</b>
+to html and copied to the <b>SVN_HOME\tomcat-connectors\build\docs</b>
 directory.  Open one of the 
 html files in your browser and see how it looks.
 </p>
@@ -166,7 +164,7 @@ html files in your browser and see how it looks.
 <subsection name="STEP 4.   The editing process.">
 <p>
     I find it easier to use two windows while doing my updates.  One I call my 
-<b>build</b> window.  I keep this one in the <b>SVN_HOME\tomcat-connectors\jk\xdocs</b>
+<b>build</b> window.  I keep this one in the <b>SVN_HOME\tomcat-connectors\xdocs</b>
 directory and I only run two commands in this window:
 <screen>
 <read> </read>
@@ -179,7 +177,7 @@ directory and I only run two commands in this window:
 </p>
 <p>
     My second window I call my <b>edit</b> window and I keep that one in the 
-<b>SVN_HOME\tomcat-connectors\jk\xdocs</b> directory where I'm doing my
+<b>SVN_HOME\tomcat-connectors\xdocs</b> directory where I'm doing my
 edits, diffs and svn updates.
 </p>
 <p>
@@ -187,9 +185,9 @@ edits, diffs and svn updates.
 prevent conflicts.
 <screen>
 <note>    You only need to update the xdocs directory</note>
-<read>C:\build\tomcat-connectors\jk>cd xdocs</read>
-<read>C:\build\tomcat-connectors\jk\xdocs></read>
-<read>C:\build\tomcat-connectors\jk\xdocs>svn update</read>
+<read>C:\build\tomcat-connectors>cd xdocs</read>
+<read>C:\build\tomcat-connectors\xdocs></read>
+<read>C:\build\tomcat-connectors\xdocs>svn update</read>
 </screen>
 </p>
 <p>
@@ -197,10 +195,10 @@ prevent conflicts.
 something in the documentation to edit.  When you find something remember the 
 name of the file.  In your <b>edit</b> window find and edit the xml source file 
 with the same name.  After you are done return to the  <b>build</b> window, and 
-in the <b>SVN_HOME\tomcat-connectors\jk\xdocs</b> directory run:
+in the <b>SVN_HOME\tomcat-connectors\xdocs</b> directory run:
 <screen>
 <read> </read>
-<read>C:\build\tomcat-connectors\jk\xdocs> ant clean</read>
+<read>C:\build\tomcat-connectors\xdocs> ant clean</read>
 <read> </read>
 </screen>
 </p>
@@ -210,13 +208,13 @@ updated material.  Now to make fresh documents that incorporate your changes
 run:
 <screen>
 <read> </read>
-<read>C:\build\tomcat-connectors\jk\xdocs>ant all</read>
+<read>C:\build\tomcat-connectors\xdocs>ant all</read>
 <read> </read>
 </screen>
 </p>
 <p>
     Use your browser to view the edits you just made, they will be in the 
-<b>SVN_HOME\tomcat-connectors\jk\build\docs</b> sub-tree.  If it looks
+<b>SVN_HOME\tomcat-connectors\build\docs</b> sub-tree.  If it looks
 good and is ready to go, 
 all that is left to do is to create a patch and submit it.
 </p>
@@ -228,7 +226,7 @@ file you are working on, and run the <b>svn update</b> command.  For example,
 to produce a diff of the index.xml file and call it patch.txt, you 
 would cd into the directory containing the index.xml file and:
 <screen>
-<read>C:\build\tomcat-connectors\jk\xdocs\>svn diff index.xml >  
+<read>C:\build\tomcat-connectors\xdocs\>svn diff index.xml >  
 patch.txt.</read>
 <read> </read>
 </screen>
