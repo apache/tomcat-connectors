@@ -90,6 +90,11 @@ if <code>tomcatAuthentication="false"</code>
 </li>
 <li>query string: <code>getQueryString()</code>
 </li>
+</ul>
+The following additional SSL-related data will be made available by Apache and forwarded by mod_jk only
+if you set <code>SSLOptions +StdEnvVars</code>. For the certificate information you also need
+to set <code>SSLOptions +ExportCertData</code>.
+<ul>
 <li>SSL cipher: <code>getAttribute(javax.servlet.request.cipher_suite)</code>
 </li>
 <li>SSL key size: <code>getAttribute(javax.servlet.request.key_size)</code>.

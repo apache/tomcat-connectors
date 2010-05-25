@@ -55,6 +55,9 @@
         to prevent conversion of underscores '_' to hyphens '-' in header names.
         Old behaviour can be enabled by defining USE_CGI_HEADERS. (timw)
       </fix>
+      <fix>
+        Docs: Document SSLOptions needed for SSL information forwarding. (rjung)
+      </fix>
       <update>
         Docs: Grammar and style improvements and clarification about serving
         static content by IIS.

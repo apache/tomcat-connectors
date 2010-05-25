@@ -267,6 +267,10 @@ is turned off.
 Turns on SSL processing and information gathering by mod_jk
 <br/>
 The default value is On.
+<br/>
+In order to make SSL data available for mod_jk in Apache, you need to
+set <code>SSLOptions +StdEnvVars</code>. For the certificate information you also need
+to add <code>SSLOptions +ExportCertData</code>.
 </p></attribute>
 <attribute name="JkHTTPSIndicator" required="false"><p>
 Name of the Apache environment variable that contains SSL indication.
