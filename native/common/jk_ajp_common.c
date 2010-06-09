@@ -1835,6 +1835,16 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
 
     case JK_AJP13_SEND_BODY_CHUNK:
         if (ae->last_op == JK_AJP13_FORWARD_REQUEST) {
+            /* AJP13_SEND_BODY_CHUNK with length 0 is
+             * explicit flush packet message.
+             * Ignore those if they are left over from previous responses.
+             * Reportedly some versions of JBoss suffer from that problem.
+             */
+            if (jk_b_get_int(msg) == 0) {
+                jk_log(l, JK_LOG_DEBUG,
+                       "Ignoring flush message received while sending the request");
+                return ae->last_op;
+            }
             /* We have just send a request but received something
              * that probably originates from buffered response.
              */

@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>49413</bug>: AJP13: Drop flush packets send by the backend
+        after the response has been finished. (rjung)
+      </fix>
       <update>
         Apache: Added version number resource for mod_jk.so on Windows. (timw)
       </update>
