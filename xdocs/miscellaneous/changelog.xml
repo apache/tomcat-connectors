@@ -45,10 +45,6 @@
   <subsection name="Native">
     <changelog>
       <fix>
-        Windows: Fix end of line setting for MSVC build files.
-        Patch provided by sebb. (rjung)
-      </fix>
-      <fix>
         <bug>49413</bug>: AJP13: Drop flush packets send by the backend
         after the response has been finished. (rjung)
       </fix>
