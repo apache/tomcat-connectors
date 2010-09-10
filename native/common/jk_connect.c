@@ -496,7 +496,7 @@ jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
                    "failed setting SIO_KEEPALIVE_VALS (errno=%d)", errno);
             jk_close_socket(sd, l);
             JK_TRACE_EXIT(l);
-            return JK_INVALID_SOCKET;                                                
+            return JK_INVALID_SOCKET;
         }
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
@@ -718,9 +718,11 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     }
 
     save_errno = errno;
-    if (JK_IS_DEBUG_LEVEL(l))
-        jk_log(l, JK_LOG_DEBUG, "About to shutdown socket %d", sd);
-
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        char buf[64];
+        jk_log(l, JK_LOG_DEBUG, "About to shutdown socket %d %s",
+               sd, jk_dump_sinfo(sd, buf));
+    }
     /* Shut down the socket for write, which will send a FIN
      * to the peer.
      */
@@ -935,6 +937,21 @@ char *jk_dump_hinfo(struct sockaddr_in *saddr, char *buf)
     return buf;
 }
 
+char *jk_dump_sinfo(jk_sock_t sd, char *buf)
+{
+    struct sockaddr_in s_addr;
+    socklen_t          s_alen;
+
+    s_alen = sizeof(struct sockaddr);
+    if (getsockname(sd, (struct sockaddr *)&s_addr, &s_alen) == 0) {
+        return jk_dump_hinfo(&s_addr, buf);
+    }
+    else {
+        sprintf(buf, "???%d:%d", sd, errno);
+        return buf;
+    }
+}
+
 /** Wait for input event on socket until timeout
  * @param sd      socket to use
  * @param timeout wait timeout in milliseconds
@@ -989,7 +1006,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         }
         errno = save_errno;
         JK_TRACE_EXIT(l);
-        return JK_FALSE;        
+        return JK_FALSE;
     }
     errno = 0;
     JK_TRACE_EXIT(l);
