@@ -719,8 +719,8 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 
     save_errno = errno;
     if (JK_IS_DEBUG_LEVEL(l)) {
-        char buf[64];
-        jk_log(l, JK_LOG_DEBUG, "About to shutdown socket %d %s",
+        char buf[128];
+        jk_log(l, JK_LOG_DEBUG, "About to shutdown socket %d [%s]",
                sd, jk_dump_sinfo(sd, buf));
     }
     /* Shut down the socket for write, which will send a FIN
@@ -940,16 +940,27 @@ char *jk_dump_hinfo(struct sockaddr_in *saddr, char *buf)
 char *jk_dump_sinfo(jk_sock_t sd, char *buf)
 {
     struct sockaddr_in s_addr;
+    struct sockaddr_in r_addr;
     socklen_t          s_alen;
 
     s_alen = sizeof(struct sockaddr);
     if (getsockname(sd, (struct sockaddr *)&s_addr, &s_alen) == 0) {
-        return jk_dump_hinfo(&s_addr, buf);
+        s_alen = sizeof(struct sockaddr);
+        if (getpeername(sd, (struct sockaddr *)&r_addr, &s_alen) == 0) {
+            unsigned long  laddr = (unsigned  long)htonl(s_addr.sin_addr.s_addr);
+            unsigned short lport = (unsigned short)htons(s_addr.sin_port);
+            unsigned long  raddr = (unsigned  long)htonl(r_addr.sin_addr.s_addr);
+            unsigned short rport = (unsigned short)htons(r_addr.sin_port);
+            sprintf(buf, "%d.%d.%d.%d:%d -> %d.%d.%d.%d:%d",
+                    (int)(laddr >> 24), (int)((laddr >> 16) & 0xff),
+                    (int)((laddr >> 8) & 0xff), (int)(laddr & 0xff), (int)lport,
+                    (int)(raddr >> 24), (int)((raddr >> 16) & 0xff),
+                    (int)((raddr >> 8) & 0xff), (int)(raddr & 0xff), (int)rport);
+            return buf;
+        }
     }
-    else {
-        sprintf(buf, "???%d:%d", sd, errno);
-        return buf;
-    }
+    sprintf(buf, "error=%d", errno);
+    return buf;
 }
 
 /** Wait for input event on socket until timeout
