@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Microsoft Developer Studio Generated NMAKE File, Based on isapi.dsp
 # Use Platform SDK:
 # SetEnv.cmd /X64 /RETAIL
@@ -12,21 +27,21 @@ INTDIR=.\Release_amd64
 OutDir=.\Release_amd64
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "$(OUTDIR)\isapi_redirect.dll"
 
-!ELSE 
+!ELSE
 
 ALL : "pcre_amd64" "$(OUTDIR)\isapi_redirect.dll"
 
-!ENDIF 
+!ENDIF
 
-!IF "$(RECURSE)" == "1" 
-CLEAN :"pcre_amd64CLEAN" 
-!ELSE 
+!IF "$(RECURSE)" == "1"
+CLEAN :"pcre_amd64CLEAN"
+!ELSE
 CLEAN :
-!ENDIF 
+!ENDIF
 	-@erase "$(INTDIR)\jk.res"
 	-@erase "$(INTDIR)\isapi_redirector_src.idb"
 	-@erase "$(INTDIR)\isapi_redirector_src.pdb"
@@ -62,11 +77,11 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\isapi.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\isapi.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib bufferoverflowu.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\isapi_redirect.pdb" /debug /machine:AMD64 /def:".\isapi.def" /out:"$(OUTDIR)\isapi_redirect.dll" /implib:"$(OUTDIR)\isapi_redirect.lib" 
+LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib bufferoverflowu.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\isapi_redirect.pdb" /debug /machine:AMD64 /def:".\isapi.def" /out:"$(OUTDIR)\isapi_redirect.dll" /implib:"$(OUTDIR)\isapi_redirect.lib"
 DEF_FILE= \
 	".\isapi.def"
 LINK32_OBJS= \
@@ -103,40 +118,40 @@ LINK32_OBJS= \
 	IF EXIST $(OUTDIR)\isapi_redirect.manifest \
 		mt -nologo -manifest $(OUTDIR)\isapi_redirect.manifest -outputresource:$(OUTDIR)\isapi_redirect.dll;2
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "pcre" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /Wp64 /FIPRE64PRA.H /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" $(CFLAGS) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "pcre" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /Wp64 /FIPRE64PRA.H /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" $(CFLAGS) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\isapi_redirect.res" /i "..\common" /d BASENAME="isapi_redirect" /d "NDEBUG" 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\isapi_redirect.res" /i "..\common" /d BASENAME="isapi_redirect" /d "NDEBUG"
 
 SOURCE=..\common\jk.rc
 
@@ -281,12 +296,12 @@ SOURCE=..\common\jk_worker.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-"pcre_amd64" : 
+"pcre_amd64" :
    cd ".\pcre"
    $(MAKE) /$(MAKEFLAGS) /F ".\pcre.amd64"
    cd ".."
 
-"pcre_amd64CLEAN" : 
+"pcre_amd64CLEAN" :
    cd ".\pcre"
-   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.amd64" RECURSE=1 CLEAN 
+   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.amd64" RECURSE=1 CLEAN
    cd ".."

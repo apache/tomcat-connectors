@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 CPP=cl.exe
 RSC=rc.exe
 OUTDIR=.
@@ -18,11 +33,11 @@ CLEAN :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\dftables.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\dftables.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\Release\dftables.pdb" /machine:I386 /out:"$(OUTDIR)\dftables.exe" /opt:ref 
+LINK32_FLAGS=kernel32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\Release\dftables.pdb" /machine:I386 /out:"$(OUTDIR)\dftables.exe" /opt:ref
 LINK32_OBJS= \
 	"$(INTDIR)\dftables.obj"
 
@@ -31,36 +46,36 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-CPP_PROJ=/nologo /MD /W3 /O2 /D "_WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\dftables" /FD /wd4996 /c 
+CPP_PROJ=/nologo /MD /W3 /O2 /D "_WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\dftables" /FD /wd4996 /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 
@@ -74,21 +89,21 @@ SOURCE=.\config.hw
 InputPath=.\config.hw
 
 ".\config.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	<<tempfile.bat 
-	@echo off 
+	<<tempfile.bat
+	@echo off
 	type .\config.hw > .\config.h
-<< 
-	
+<<
+
 SOURCE=.\maketables.c
 SOURCE=.\pcre.hw
 InputPath=.\pcre.hw
 
 ".\pcre.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	<<tempfile.bat 
-	@echo off 
+	<<tempfile.bat
+	@echo off
 	type .\pcre.hw > .\pcre.h
-<< 
-	
+<<
 
-!ENDIF 
+
+!ENDIF
 

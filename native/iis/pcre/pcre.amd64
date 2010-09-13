@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Microsoft Developer Studio Generated NMAKE File, Based on pcre.dsp
 # Use Platform SDK:
 # SetEnv.cmd /X64 /RETAIL
@@ -12,15 +27,15 @@ INTDIR=.\Release_amd64
 OutDir=.\Release_amd64
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "$(OUTDIR)\pcre.lib"
 
-!ELSE 
+!ELSE
 
 ALL : "$(OUTDIR)\pcre.lib"
 
-!ENDIF 
+!ENDIF
 
 CLEAN :
 	-@erase "$(INTDIR)\get.obj"
@@ -35,11 +50,11 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\pcre.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\pcre.bsc"
 BSC32_SBRS= \
-	
+
 LIB32=link.exe -lib
-LIB32_FLAGS=/nologo /out:"$(OUTDIR)\pcre.lib" 
+LIB32_FLAGS=/nologo /out:"$(OUTDIR)\pcre.lib"
 LIB32_OBJS= \
 	"$(INTDIR)\get.obj" \
 	"$(INTDIR)\maketables.obj" \
@@ -51,47 +66,47 @@ LIB32_OBJS= \
   $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
 <<
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O2 /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /Wp64 /FIPRE64PRA.H /D "PCRE_STATIC" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\pcre_src" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /Zi /O2 /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /Wp64 /FIPRE64PRA.H /D "PCRE_STATIC" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\pcre_src" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 SOURCE=.\dftables.exe
 InputPath=.\dftables.exe
 
 ".\chartables.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	<<tempfile.bat 
-	@echo off 
-	.\dftables.exe chartables.c 
-<< 
-	
+	<<tempfile.bat
+	@echo off
+	.\dftables.exe chartables.c
+<<
+
 SOURCE=.\get.c
 
 "$(INTDIR)\get.obj" : $(SOURCE) "$(INTDIR)" ".\config.h" ".\pcre.h"
@@ -116,16 +131,16 @@ SOURCE=.\config.hw
 InputPath=.\config.hw
 
 ".\config.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	<<tempfile.bat 
-	@echo off 
+	<<tempfile.bat
+	@echo off
 	type .\config.hw > .\config.h
-<< 
-	
+<<
+
 SOURCE=.\pcre.hw
 InputPath=.\pcre.hw
 
 ".\pcre.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	<<tempfile.bat 
-	@echo off 
+	<<tempfile.bat
+	@echo off
 	type .\pcre.hw > .\pcre.h
-<< 
+<<

@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 !IFDEF APACHE22
 APACHE2_HOME=$(APACHE22_HOME)
 APR_LIB=libapr-1.lib
@@ -60,11 +75,11 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\mod_jk.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\mod_jk.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=libhttpd.lib $(APR_LIB) $(APU_LIB) kernel32.lib user32.lib advapi32.lib mswsock.lib ws2_32.lib /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\mod_jk.pdb" /debug /machine:I386 /out:"$(OUTDIR)\mod_jk.so" /implib:"$(OUTDIR)\mod_jk.lib" /libpath:"$(APACHE2_HOME)\lib" /opt:ref 
+LINK32_FLAGS=libhttpd.lib $(APR_LIB) $(APU_LIB) kernel32.lib user32.lib advapi32.lib mswsock.lib ws2_32.lib /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\mod_jk.pdb" /debug /machine:I386 /out:"$(OUTDIR)\mod_jk.so" /implib:"$(OUTDIR)\mod_jk.lib" /libpath:"$(APACHE2_HOME)\lib" /opt:ref
 LINK32_OBJS= \
 	"$(INTDIR)\jk_ajp12_worker.obj" \
 	"$(INTDIR)\jk_ajp13.obj" \
@@ -98,36 +113,36 @@ LINK32_OBJS= \
 		mt -nologo -manifest $(OUTDIR)\mod_jk.manifest -outputresource:$(OUTDIR)\mod_jk.so;2
 
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /I "$(APACHE2_HOME)\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /I "$(APACHE2_HOME)\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
