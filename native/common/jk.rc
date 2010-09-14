@@ -61,10 +61,10 @@ BEGIN
       VALUE "CompanyName", "Apache Software Foundation\0"
       VALUE "FileDescription", "Apache Tomcat Connector\0"
       VALUE "FileVersion", JK_VERSTRING "\0"
-      VALUE "InternalName", JK_DLL_BASENAME "\0"
+      VALUE "InternalName", PACKAGE "\0"
       VALUE "LegalCopyright", ASF_COPYRIGHT "\0"
-      VALUE "OriginalFilename", JK_DLL_BASENAME ".dll\0"
-      VALUE "ProductName", "Apache Tomcat Connectors project\0"
+      VALUE "OriginalFilename", PACKAGE "." JK_DLL_SUFFIX "\0"
+      VALUE "ProductName", "Apache Tomcat " PACKAGE " Connector\0"
       VALUE "ProductVersion", JK_VERSTRING "\0"
     END
   END

@@ -44,10 +44,13 @@
 #if !defined(PACKAGE)
 #if defined(JK_ISAPI)
 #define PACKAGE "isapi_redirector"
+#define JK_DLL_SUFFIX "dll"
 #elif defined(JK_NSAPI)
 #define PACKAGE "nsapi_redirector"
+#define JK_DLL_SUFFIX "dll"
 #else
 #define PACKAGE "mod_jk"
+#define JK_DLL_SUFFIX "so"
 #endif
 #endif
 
