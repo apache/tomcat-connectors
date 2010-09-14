@@ -1,10 +1,10 @@
-# Microsoft Developer Studio Project File - Name="apache" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="mod_jk" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=apache - Win32 Debug
+CFG=mod_jk - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=apache - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "mod_jk.mak" CFG="apache - Win32 Debug"
+!MESSAGE NMAKE /f "mod_jk.mak" CFG="mod_jk - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "apache - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "apache - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mod_jk - Win32 Release httpd 2.0" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mod_jk - Win32 Debug httpd 2.0" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mod_jk - Win32 Release httpd 2.2" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mod_jk - Win32 Debug httpd 2.2" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -29,7 +31,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "apache - Win32 Release"
+!IF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.0"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -47,7 +49,7 @@ RSC=rc.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /fo"Release/mod_jk.res" /I "..\common" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -55,7 +57,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib advapi32.lib /nologo /dll /machine:I386
 # ADD LINK32 libhttpd.lib libapr.lib libaprutil.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib /nologo /base:"0x6A6B0000" /subsystem:windows /dll /debug /machine:I386 /out:"Release/mod_jk.so" /libpath:"$(APACHE2_HOME)\Release" /libpath:"$(APACHE2_HOME)\srclib\apr\Release" /libpath:"$(APACHE2_HOME)\srclib\apr-util\Release" /libpath:"$(APACHE2_HOME)\lib" /opt:ref
 
-!ELSEIF  "$(CFG)" == "apache - Win32 Debug"
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.0"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -73,7 +75,7 @@ LINK32=link.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
-# ADD RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /fo"Debug/mod_jk.res" /I "..\common" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -81,12 +83,66 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 libhttpd.lib libapr.lib libaprutil.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"Debug/mod_jk.so" /libpath:"$(APACHE2_HOME)/Debug" /libpath:"$(APACHE2_HOME)\srclib\apr\Debug" /libpath:"$(APACHE2_HOME)\srclib\apr-util\Debug" /libpath:"$(APACHE2_HOME)\lib"
 
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.2"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "Release22"
+# PROP BASE Intermediate_Dir "Release22"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "Release22"
+# PROP Intermediate_Dir "Release22"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /Zi /O2 /Oy- /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O2 /Oy- /I "..\common" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /I "$(APACHE2_HOME)\include" /I "$(APACHE2_HOME)\srclib\apr\include" /I "$(APACHE2_HOME)\srclib\apr-util\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "HAVE_APR" /Fd"Release22/mod_jk_src" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /fo"Release22/mod_jk.res" /I "..\common" /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib advapi32.lib /nologo /dll /machine:I386
+# ADD LINK32 libhttpd.lib libapr-1.lib libaprutil-1.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib /nologo /base:"0x6A6B0000" /subsystem:windows /dll /debug /machine:I386 /out:"Release22/mod_jk.so" /libpath:"$(APACHE2_HOME)\Release" /libpath:"$(APACHE2_HOME)\srclib\apr\Release" /libpath:"$(APACHE2_HOME)\srclib\apr-util\Release" /libpath:"$(APACHE2_HOME)\lib" /opt:ref
+
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.2"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "Debug22"
+# PROP BASE Intermediate_Dir "Debug22"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "Debug22"
+# PROP Intermediate_Dir "Debug22"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\common" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /I "$(APACHE2_HOME)\include" /I "$(APACHE2_HOME)\srclib\apr\include" /I "$(APACHE2_HOME)\srclib\apr-util\include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "HAVE_APR" /Fd"Debug22/mod_jk_src" /FD /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /fo"Debug22/mod_jk.res" /I "..\common" /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 libhttpd.lib libapr-1.lib libaprutil-1.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"Debug22/mod_jk.so" /libpath:"$(APACHE2_HOME)/Debug" /libpath:"$(APACHE2_HOME)\srclib\apr\Debug" /libpath:"$(APACHE2_HOME)\srclib\apr-util\Debug" /libpath:"$(APACHE2_HOME)\lib"
+
 !ENDIF 
 
 # Begin Target
 
-# Name "apache - Win32 Release"
-# Name "apache - Win32 Debug"
+# Name "mod_jk - Win32 Release httpd 2.0"
+# Name "mod_jk - Win32 Debug httpd 2.0"
+# Name "mod_jk - Win32 Release httpd 2.2"
+# Name "mod_jk - Win32 Debug httpd 2.2"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -290,6 +346,10 @@ SOURCE=..\common\jk_worker.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=..\common\jk.rc
+# End Source File
 # End Group
 # End Target
 # End Project

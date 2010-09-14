@@ -151,7 +151,7 @@ CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "pcre" /I "$(JAVA_HOME)\inclu
 <<
 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d BASENAME="isapi_redirect" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d "JK_ISAPI" /d "NDEBUG" 
 
 SOURCE=..\common\jk.rc
 
