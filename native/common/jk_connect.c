@@ -939,18 +939,18 @@ char *jk_dump_hinfo(struct sockaddr_in *saddr, char *buf)
 
 char *jk_dump_sinfo(jk_sock_t sd, char *buf)
 {
-    struct sockaddr_in s_addr;
-    struct sockaddr_in r_addr;
-    socklen_t          s_alen;
+    struct sockaddr_in rsaddr;
+    struct sockaddr_in lsaddr;
+    socklen_t          salen;
 
-    s_alen = sizeof(struct sockaddr);
-    if (getsockname(sd, (struct sockaddr *)&s_addr, &s_alen) == 0) {
-        s_alen = sizeof(struct sockaddr);
-        if (getpeername(sd, (struct sockaddr *)&r_addr, &s_alen) == 0) {
-            unsigned long  laddr = (unsigned  long)htonl(s_addr.sin_addr.s_addr);
-            unsigned short lport = (unsigned short)htons(s_addr.sin_port);
-            unsigned long  raddr = (unsigned  long)htonl(r_addr.sin_addr.s_addr);
-            unsigned short rport = (unsigned short)htons(r_addr.sin_port);
+    salen = sizeof(struct sockaddr);
+    if (getsockname(sd, (struct sockaddr *)&lsaddr, &salen) == 0) {
+        salen = sizeof(struct sockaddr);
+        if (getpeername(sd, (struct sockaddr *)&rsaddr, &salen) == 0) {
+            unsigned long  laddr = (unsigned  long)htonl(lsaddr.sin_addr.s_addr);
+            unsigned short lport = (unsigned short)htons(lsaddr.sin_port);
+            unsigned long  raddr = (unsigned  long)htonl(rsaddr.sin_addr.s_addr);
+            unsigned short rport = (unsigned short)htons(rsaddr.sin_port);
             sprintf(buf, "%d.%d.%d.%d:%d -> %d.%d.%d.%d:%d",
                     (int)(laddr >> 24), (int)((laddr >> 16) & 0xff),
                     (int)((laddr >> 8) & 0xff), (int)(laddr & 0xff), (int)lport,
