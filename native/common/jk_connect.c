@@ -736,32 +736,10 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     }
 
     do {
-#ifdef HAVE_POLL
-        struct pollfd fds;
-
-        fds.fd = sd;
-        fds.events = POLLIN;
-#else
-        fd_set rs;
-
-        FD_ZERO(&rs);
-        /* Read all data from the peer until we reach "end-of-file"
-         * (FIN from peer) or we've exceeded our overall timeout. If the
-         * backend does not send us bytes within 2 seconds
-         * (a value pulled from Apache 1.3 which seems to work well),
-         * close the connection.
-         */
-        FD_SET(sd, &rs);
-        tv.tv_sec  = timeout / 1000;
-        tv.tv_usec = (timeout % 1000) * 1000;
-#endif
-        rp = 0;
-#ifdef HAVE_POLL
-        if ((rc = poll(&fds, 1, timeout)) > 0)
-#else
-        if ((rc = select((int)sd + 1, &rs, NULL, NULL, &tv)) > 0)
-#endif
-        {
+        if (jk_is_input_event(sd, timeout, l)) {
+            /* Do a restartable read on the socket
+             * draining out all the data currently in the socket buffer.
+             */
             do {
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
                 rc = recv(sd, &dummy[0], sizeof(dummy), 0);
@@ -774,18 +752,17 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
                     rp += rc;
             } while (JK_IS_SOCKET_ERROR(rc) && (errno == EINTR || errno == EAGAIN));
 
-            if (rc < 0)
+            if (rc < 0) {
+                /* Read failed.
+                 * Bail out from the loop.
+                 */
                 break;
+            }
         }
         else {
-            if (JK_IS_DEBUG_LEVEL(l)) {
-                if (rc == 0)
-                    jk_log(l, JK_LOG_DEBUG,
-                           "waiting on socket %d timed out", sd);
-                else
-                    jk_log(l, JK_LOG_DEBUG,
-                           "waiting on socket %d failed with error=%d", errno);
-            }
+            /* Error or timeout (reason is logged within jk_is_input_event)
+             * Exit the drain loop
+             */
             break;
         }
         rd += rp;
