@@ -962,13 +962,6 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    ae->last_errno = 0;
-    if (JK_IS_DEBUG_LEVEL(l)) {
-        jk_log(l, JK_LOG_DEBUG,
-               "Connected socket %d to (%s)",
-               ae->sd,
-               jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
-    }
     /* set last_access only if needed */
     if (ae->worker->cache_timeout > 0)
         ae->last_access = time(NULL);
