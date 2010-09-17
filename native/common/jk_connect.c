@@ -757,9 +757,9 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 #endif
         rp = 0;
 #ifdef HAVE_POLL
-        if (poll(&fds, 1, timeout) > 0)
+        if ((rc = poll(&fds, 1, timeout)) > 0)
 #else
-        if (select((int)sd + 1, &rs, NULL, NULL, &tv) > 0)
+        if ((rc = select((int)sd + 1, &rs, NULL, NULL, &tv)) > 0)
 #endif
         {
             do {
@@ -777,8 +777,17 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
             if (rc < 0)
                 break;
         }
-        else
+        else {
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                if (rc == 0)
+                    jk_log(l, JK_LOG_DEBUG,
+                           "waiting on socket %d timed out", sd);
+                else
+                    jk_log(l, JK_LOG_DEBUG,
+                           "waiting on socket %d failed with error=%d", errno);
+            }
             break;
+        }
         rd += rp;
         if (rp < sizeof(dummy)) {
             if (timeout > SECONDS_TO_LINGER) {
