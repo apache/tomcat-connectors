@@ -755,8 +755,8 @@ static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-        "(%s) resetting endpoint with sd = %u %s",
-         ae->worker->name, ae->sd, ae->reuse? "" : "(socket shutdown)");
+        "(%s) resetting endpoint with socket %d%s",
+         ae->worker->name, ae->sd, ae->reuse? "" : " (socket shutdown)");
     if (!ae->reuse) {
         ajp_abort_endpoint(ae, JK_TRUE, l);
     }
@@ -773,8 +773,8 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "closing endpoint with sd = %u%s",
-               ae->sd, ae->reuse ? "" : " (socket shutdown)");
+               "(%s) closing endpoint with socket %d%s",
+               ae->worker->name, ae->sd, ae->reuse ? "" : " (socket shutdown)");
     if (IS_VALID_SOCKET(ae->sd)) {
         jk_shutdown_socket(ae->sd, l);
     }
@@ -821,7 +821,7 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
             ret = JK_TRUE;
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "(%s) Will try pooled connection sd = %d from slot %d",
+                       "(%s) Will try pooled connection socket %d from slot %d",
                         ae->worker->name, ae->sd, i);
         }
     }
