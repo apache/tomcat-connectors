@@ -700,6 +700,8 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
 int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 {
     char dummy[512];
+    char buf[64];
+    char *sb = NULL;
     int rc = 0;
     int rd = 0;
     int rp = 0;
@@ -719,9 +721,9 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 
     save_errno = errno;
     if (JK_IS_DEBUG_LEVEL(l)) {
-        char buf[128];
+        sb = jk_dump_sinfo(sd, buf);
         jk_log(l, JK_LOG_DEBUG, "About to shutdown socket %d [%s]",
-               sd, jk_dump_sinfo(sd, buf));
+               sd, sb);
     }
     /* Shut down the socket for write, which will send a FIN
      * to the peer.
@@ -729,7 +731,9 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     if (shutdown(sd, SHUT_WR)) {
         rc = jk_close_socket(sd, l);
         if (JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG, "Failed sending SHUT_WR for socket %d", sd);
+            jk_log(l, JK_LOG_DEBUG,
+                   "Failed sending SHUT_WR for socket %d [%s]",
+                   sd, sb);
         JK_TRACE_EXIT(l);
         errno = save_errno;
         return rc;
@@ -782,14 +786,16 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
                 rc = jk_close_socket(sd, l);
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                           "error setting socket %d to nonblocking", sd);
+                           "error setting socket %d [%s] to nonblocking",
+                           sd, sb);
                 errno = save_errno;
                 JK_TRACE_EXIT(l);
                 return rc;
             }
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "shutting down the read side of socket %d", sd);
+                       "shutting down the read side of socket %d [%s]",
+                       sd, sb);
             shutdown(sd, SHUT_RD);
             break;
         }
@@ -799,8 +805,8 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     rc = jk_close_socket(sd, l);
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "Shutdown socket %d and read %d lingering bytes in %d sec.",
-               sd, rd, (int)difftime(time(NULL), start));
+               "Shutdown socket %d [%s] and read %d lingering bytes in %d sec.",
+               sd, sb, rd, (int)difftime(time(NULL), start));
     JK_TRACE_EXIT(l);
     errno = save_errno;
     return rc;
@@ -967,6 +973,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     struct pollfd fds;
     int rc;
     int save_errno;
+    char buf[64];
 
     JK_TRACE_ENTER(l);
 
@@ -982,8 +989,8 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     if (rc == 0) {
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "timeout during poll on socket %d (timeout=%d)",
-                   sd, timeout);
+                   "timeout during poll on socket %d [%s] (timeout=%d)",
+                   sd, jk_dump_sinfo(sd, buf), timeout);
         }
         /* Timeout. Set the errno to timeout */
         JK_TRACE_EXIT(l);
@@ -994,7 +1001,8 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         save_errno = errno;
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "error during poll on socket %d (errno=%d)", sd, errno);
+                   "error during poll on socket %d [%s] (errno=%d)",
+                   sd, jk_dump_sinfo(sd, buf), errno);
         }
         JK_TRACE_EXIT(l);
         errno = save_errno;
@@ -1004,8 +1012,8 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         save_errno = fds.revents & (POLLERR | POLLHUP);
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "error event during poll on socket %d (event=%d)",
-               sd, save_errno);
+                   "error event during poll on socket %d [%s] (event=%d)",
+                   sd, jk_dump_sinfo(sd, buf), save_errno);
         }
         JK_TRACE_EXIT(l);
         errno = save_errno;
@@ -1022,6 +1030,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     struct timeval tv;
     int rc;
     int save_errno;
+    char buf[64];
 
     JK_TRACE_ENTER(l);
 
@@ -1038,8 +1047,8 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     if (rc == 0) {
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "timeout during select on socket %d (timeout=%d)",
-                   sd, timeout);
+                   "timeout during select on socket %d [%s] (timeout=%d)",
+                   sd, jk_dump_sinfo(sd, buf), timeout);
         }
         JK_TRACE_EXIT(l);
         /* Timeout. Set the errno to timeout */
@@ -1054,8 +1063,8 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         save_errno = errno;
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "error during select on socket %d (errno=%d)",
-                   sd, errno);
+                   "error during select on socket %d [%s] (errno=%d)",
+                   sd, jk_dump_sinfo(sd, buf), errno);
         }
         JK_TRACE_EXIT(l);
         errno = save_errno;
