@@ -1002,6 +1002,11 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     } while (rc < 0 && errno == EINTR);
 
     if (rc == 0) {
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "timeout during poll on socket sd = %d (timeout=%d)",
+                   sd, timeout);
+        }
         /* Timeout. Set the errno to timeout */
         errno = ETIMEDOUT;
         JK_TRACE_EXIT(l);
@@ -1053,6 +1058,11 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     } while (rc < 0 && errno == EINTR);
 
     if (rc == 0) {
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "timeout during select on socket sd = %d (timeout=%d)",
+                   sd, timeout);
+        }
         /* Timeout. Set the errno to timeout */
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
         errno = WSAETIMEDOUT - WSABASEERR;
