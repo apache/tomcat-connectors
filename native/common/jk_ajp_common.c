@@ -3177,11 +3177,14 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
         if (rc) {
             unsigned int n = 0, k = 0, cnt = 0;
             int i;
+            unsigned int m, m_count = 0;
+            jk_sock_t   *m_sock;
             /* Count open slots */
             for (i = (int)aw->ep_cache_sz - 1; i >= 0; i--) {
                 if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd))
                     cnt++;
             }
+            m_sock = (jk_sock_t *)malloc((cnt + 1) * sizeof(jk_sock_t));
             /* Handle worker cache timeouts */
             if (aw->cache_timeout > 0) {
                 for (i = (int)aw->ep_cache_sz - 1;
@@ -3195,6 +3198,8 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
                             if (JK_IS_DEBUG_LEVEL(l))
                                 rt = time(NULL);
                             aw->ep_cache[i]->reuse = JK_FALSE;
+                            m_sock[m_count++] = aw->ep_cache[i]->sd;
+                            aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                             ajp_reset_endpoint(aw->ep_cache[i], l);
                             if (JK_IS_DEBUG_LEVEL(l))
                                 jk_log(l, JK_LOG_DEBUG,
@@ -3232,6 +3237,8 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
                                        aw->ep_cache[i]->sd,
                                        aw->ep_cache[i]->last_errno);
                                 aw->ep_cache[i]->reuse = JK_FALSE;
+                                m_sock[m_count++] = aw->ep_cache[i]->sd;
+                                aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                                 ajp_reset_endpoint(aw->ep_cache[i], l);
                             }
                             else {
@@ -3243,6 +3250,14 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
                 }
             }
             JK_LEAVE_CS(&aw->cs, rc);
+            /* Shutdown sockets outside of the lock.
+             * This has benefits only if maintain was
+             * called from the watchdog thread.
+             */
+            for (m = 0; m < m_count; m++) {
+                jk_shutdown_socket(m_sock[m], l);
+            }
+            free(m_sock);
             if (n && JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                         "recycled %u sockets in %d seconds from %u pool slots",
