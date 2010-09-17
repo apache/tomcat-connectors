@@ -423,7 +423,7 @@ jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
                          int timeout, int connect_timeout,
                          int sock_buf, jk_logger_t *l)
 {
-    char buf[32];
+    char buf[64];
     jk_sock_t sd;
     int set = 1;
     int ret = 0;
@@ -627,8 +627,8 @@ iSeries when Unix98 is required at compil time */
     }
     else {
         if (JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG, "socket %d connected to %s",
-                   sd, jk_dump_hinfo(addr, buf));
+            jk_log(l, JK_LOG_DEBUG, "socket %d [%s] connected",
+                   sd, jk_dump_sinfo(sd, buf));
     }
     JK_TRACE_EXIT(l);
     return sd;
