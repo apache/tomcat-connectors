@@ -981,7 +981,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     if (rc == 0) {
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "timeout during poll on socket sd = %d (timeout=%d)",
+                   "timeout during poll on socket %d (timeout=%d)",
                    sd, timeout);
         }
         /* Timeout. Set the errno to timeout */
@@ -993,7 +993,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         save_errno = errno;
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "error during poll on socket sd = %d (errno=%d)", sd, errno);
+                   "error during poll on socket %d (errno=%d)", sd, errno);
         }
         errno = save_errno;
         JK_TRACE_EXIT(l);
@@ -1003,7 +1003,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         save_errno = fds.revents & (POLLERR | POLLHUP);
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "error event during poll on socket sd = %d (event=%d)",
+                   "error event during poll on socket %d (event=%d)",
                sd, save_errno);
         }
         errno = save_errno;
@@ -1037,7 +1037,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     if (rc == 0) {
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "timeout during select on socket sd = %d (timeout=%d)",
+                   "timeout during select on socket %d (timeout=%d)",
                    sd, timeout);
         }
         /* Timeout. Set the errno to timeout */
@@ -1053,7 +1053,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         save_errno = errno;
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
-                   "error during select on socket sd = %d (errno=%d)",
+                   "error during select on socket %d (errno=%d)",
                    sd, errno);
         }
         errno = save_errno;
