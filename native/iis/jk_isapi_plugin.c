@@ -536,6 +536,8 @@ typedef struct isapi_log_data_t isapi_log_data_t;
 struct isapi_log_data_t {
     char uri[INTERNET_MAX_URL_LENGTH];
     char query[INTERNET_MAX_URL_LENGTH];
+    int request_matched;        /* Whether this request (within a multi-request connection)
+                                   was handled and needs the log values adjusted */
 };
 
 typedef struct iis_info_t iis_info_t;
@@ -1856,6 +1858,12 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         SetHeader(pfc, WORKER_HEADER_INDEX, NULL);
         SetHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, NULL);
 
+        // Suppress logging of original uri/query when we don't map a URL
+        if (pfc->pFilterContext) {
+            isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
+            ld->request_matched = JK_FALSE;
+        }
+
         if (!GetHeader(pfc, "url", (LPVOID) uri, (LPDWORD) & sz)) {
             jk_log(logger, JK_LOG_ERROR,
                    "error while getting the url");
@@ -2055,12 +2063,14 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                     memset(ld, 0, sizeof(isapi_log_data_t));
                     StringCbCopy(ld->uri, INTERNET_MAX_URL_LENGTH, forwardURI);
                     StringCbCopy(ld->query, INTERNET_MAX_URL_LENGTH, squery);
+                    ld->request_matched = JK_TRUE;
                     pfc->pFilterContext = ld;
                 } else {
                     isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
                     memset(ld, 0, sizeof(isapi_log_data_t));
                     StringCbCopy(ld->uri, INTERNET_MAX_URL_LENGTH, forwardURI);
                     StringCbCopy(ld->query, INTERNET_MAX_URL_LENGTH, squery);
+                    ld->request_matched = JK_TRUE;
                 }
             }
             else {
@@ -2084,9 +2094,11 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
     else if (dwNotificationType == SF_NOTIFY_LOG) {
         if (pfc->pFilterContext) {
             isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
-            HTTP_FILTER_LOG  *pl = (HTTP_FILTER_LOG *)pvNotification;
-            pl->pszTarget = ld->uri;
-            pl->pszParameters = ld->query;
+            if (ld->request_matched) {
+                HTTP_FILTER_LOG  *pl = (HTTP_FILTER_LOG *)pvNotification;
+                pl->pszTarget = ld->uri;
+                pl->pszParameters = ld->query;
+            }
         }
     }
     return SF_STATUS_REQ_NEXT_NOTIFICATION;
