@@ -49,6 +49,14 @@
         after the response has been finished. (rjung)
       </fix>
       <update>
+        AJP: Log the local and remote socket address. (mturk)
+      </update>
+      <update>
+        Watchdog: Move the maintain workers outside the critical
+        section allowing other threads to use the connection
+        pool during maintenance. (mturk)
+      </update>
+      <update>
         Apache: Added version number resource for mod_jk.so on Windows. (timw)
       </update>
       <update>
@@ -406,13 +414,13 @@
         connection timeout but higher operational timeouts. (mturk)
       </add>
       <fix>
-        AJP13: 
+        AJP13:
         [<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2008-5519"><b>CVE-2008-5519</b></a>]
         Always send initial POST packet even if the client
         disconnected after sending request but before providing
         POST data. In that case or in case the client broke the
         connection in a middle of read send an zero size packet
-        informing container about broken client connection. (mturk) 
+        informing container about broken client connection. (mturk)
       </fix>
       <add>
         AJP13: Added connection_acquire_timeout directive for setting the
@@ -742,7 +750,7 @@
         as a prefix. (rjung)
       </fix>
       <fix>
-        jkstatus: Fix correct parameter validation at JkStatusUpdateTask and 
+        jkstatus: Fix correct parameter validation at JkStatusUpdateTask and
         JkStatusUpdateLoadbalancerTask ant tasks. Reported by Christian Mittendorf. (pero)
       </fix>
     </changelog>
