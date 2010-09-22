@@ -2448,7 +2448,7 @@ static int init_logger(int rotate, jk_logger_t **l)
             tm_now = localtime(&t);
             strftime(log_file_name, sizeof(log_file_name_buf), log_file, tm_now);
         } else {
-            /* Otherwise append the number of seconds to the base name */        
+            /* Otherwise append the number of seconds to the base name */
             StringCbPrintf(log_file_name, sizeof(log_file_name_buf), "%s.%d", log_file, (long)t);
         }
     } else {
@@ -2494,7 +2494,7 @@ static int JK_METHOD rotate_log_file(jk_logger_t **l)
 
     if (log_rotationtime > 0) {
         time_t t = time(NULL);
-        
+
         if (t >= log_next_rotate_time) {
             rotate = JK_TRUE;
         }
@@ -2531,11 +2531,11 @@ static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
             what[used++] = '\r';
             what[used++] = '\n';
             what[used] = '\0';
-    
+
             /* Perform logging within critical section to protect rotation */
             JK_ENTER_CS(&(log_cs), rc);
             if (rc && rotate_log_file(&l)) {
-                /* The rotation process will reallocate the jk_logger_t structure, so refetch */ 
+                /* The rotation process will reallocate the jk_logger_t structure, so refetch */
                 FILE *rotated = ((jk_file_logger_t *)l->logger_private)->logfile;
                 fputs(what, rotated);
                 fflush(rotated);
@@ -2550,7 +2550,7 @@ static int init_jk(char *serverName)
 {
     char shm_name[MAX_PATH];
     int rc = JK_FALSE;
-    
+
     init_logger(JK_FALSE, &logger);
     /* TODO: Use System logging to notify the user that
      *       we cannot open the configured log file.
@@ -2618,7 +2618,7 @@ static int init_jk(char *serverName)
     }
 
     if ((log_rotationtime > 0) && (log_filesize > 0)) {
-        jk_log(logger, JK_LOG_WARNING, 
+        jk_log(logger, JK_LOG_WARNING,
             "%s is defined in configuration, but will be ignored because %s is set. ",
             LOG_FILESIZE_TAG, LOG_ROTATION_TIME_TAG);
     }
