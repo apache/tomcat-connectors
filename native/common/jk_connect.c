@@ -734,8 +734,8 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
             jk_log(l, JK_LOG_DEBUG,
                    "Failed sending SHUT_WR for socket %d [%s]",
                    sd, sb);
-        JK_TRACE_EXIT(l);
         errno = save_errno;
+        JK_TRACE_EXIT(l);
         return rc;
     }
 
@@ -807,8 +807,8 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
         jk_log(l, JK_LOG_DEBUG,
                "Shutdown socket %d [%s] and read %d lingering bytes in %d sec.",
                sd, sb, rd, (int)difftime(time(NULL), start));
-    JK_TRACE_EXIT(l);
     errno = save_errno;
+    JK_TRACE_EXIT(l);
     return rc;
 }
 
@@ -993,8 +993,8 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
                    sd, jk_dump_sinfo(sd, buf), timeout);
         }
         /* Timeout. Set the errno to timeout */
-        JK_TRACE_EXIT(l);
         errno = ETIMEDOUT;
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     else if (rc < 0) {
@@ -1004,8 +1004,8 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
                    "error during poll on socket %d [%s] (errno=%d)",
                    sd, jk_dump_sinfo(sd, buf), errno);
         }
-        JK_TRACE_EXIT(l);
         errno = save_errno;
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     if ((fds.revents & (POLLERR | POLLHUP))) {
@@ -1015,12 +1015,12 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
                    "error event during poll on socket %d [%s] (event=%d)",
                    sd, jk_dump_sinfo(sd, buf), save_errno);
         }
-        JK_TRACE_EXIT(l);
         errno = save_errno;
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    JK_TRACE_EXIT(l);
     errno = 0;
+    JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
 #else
@@ -1050,13 +1050,13 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
                    "timeout during select on socket %d [%s] (timeout=%d)",
                    sd, jk_dump_sinfo(sd, buf), timeout);
         }
-        JK_TRACE_EXIT(l);
         /* Timeout. Set the errno to timeout */
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
         errno = WSAETIMEDOUT - WSABASEERR;
 #else
         errno = ETIMEDOUT;
 #endif
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     else if (rc < 0) {
@@ -1066,12 +1066,12 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
                    "error during select on socket %d [%s] (errno=%d)",
                    sd, jk_dump_sinfo(sd, buf), errno);
         }
-        JK_TRACE_EXIT(l);
         errno = save_errno;
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    JK_TRACE_EXIT(l);
     errno = 0;
+    JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
 #endif
