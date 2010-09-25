@@ -109,13 +109,17 @@ struct jk_file_logger_t
 #define JK_TRACE_ENTER(l)                               \
     do {                                                \
         if ((l) && (l)->level == JK_LOG_TRACE_LEVEL) {  \
+            int tmp_errno = errno;                      \
             jk_log((l), JK_LOG_TRACE, "enter");         \
+            errno = tmp_errno;                          \
     } } while (0)
 
 #define JK_TRACE_EXIT(l)                                \
     do {                                                \
         if ((l) && (l)->level == JK_LOG_TRACE_LEVEL) {  \
+            int tmp_errno = errno;                      \
             jk_log((l), JK_LOG_TRACE, "exit");          \
+            errno = tmp_errno;                          \
     } } while (0)
 
 #endif  /* JK_PRODUCTION */

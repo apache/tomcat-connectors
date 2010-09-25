@@ -56,6 +56,9 @@
         section allowing other threads to use the connection
         pool during maintenance. (mturk)
       </update>
+      <fix>
+        Common: Don't destroy errno during trace logging. (rjung)
+      </fix>
       <update>
         Apache: Added version number resource for mod_jk.so on Windows. (timw)
       </update>
