@@ -46,12 +46,6 @@
 #include "util_charset.h"       /* ap_hdrs_from_ascii */
 #endif
 
-/* moved to apr since http-2.0.19-dev */
-#if (MODULE_MAGIC_NUMBER_MAJOR < 20010523)
-#define apr_date_parse_http ap_parseHTTPdate
-#include "util_date.h"
-#endif
-
 /* deprecated with apr 0.9.3 */
 
 #include "apr_version.h"
