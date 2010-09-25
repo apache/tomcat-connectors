@@ -68,8 +68,8 @@
         Old behaviour can be enabled by defining USE_CGI_HEADERS. (timw)
       </fix>
       <fix>
-		<bug>49511</bug>: IIS: Do not override IIS log information when subsequent
-		requests on a keep-alive connection are not mapped into the ISAPI Redirector. (timw)
+        <bug>49511</bug>: IIS: Do not override IIS log information when subsequent
+        requests on a keep-alive connection are not mapped into the ISAPI Redirector. (timw)
       </fix>
       <fix>
         Docs: Document SSLOptions needed for SSL information forwarding. (rjung)
