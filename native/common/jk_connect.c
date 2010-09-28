@@ -707,9 +707,6 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     int rp = 0;
     int save_errno;
     int timeout = SECONDS_TO_LINGER * 1000;
-#ifndef HAVE_POLL
-    struct timeval tv;
-#endif
     time_t start = time(NULL);
 
     JK_TRACE_ENTER(l);
@@ -847,8 +844,9 @@ int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_log
         } while (JK_IS_SOCKET_ERROR(wr) && (errno == EINTR || errno == EAGAIN));
 
         if (JK_IS_SOCKET_ERROR(wr)) {
+            int err;
             jk_shutdown_socket(sd, l);
-            int err = (errno > 0) ? -errno : errno;
+            err = (errno > 0) ? -errno : errno;
             JK_TRACE_EXIT(l);
             return err;
         }
