@@ -60,7 +60,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\mod_jk.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=ApacheCore.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\mod_jk.pdb" /debug /machine:I386 /out:"$(OUTDIR)\mod_jk.so" /implib:"$(OUTDIR)\mod_jk.lib" /libpath:"$(APACHE1_HOME)\lib" /libpath:"$(APACHE1_HOME)\libexec" /opt:ref 
+LINK32_FLAGS=ApacheCore.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\mod_jk.pdb" /debug /machine:I386 /out:"$(OUTDIR)\mod_jk.so" /implib:"$(OUTDIR)\mod_jk.lib" /libpath:"$(APACHE1_HOME)\lib" /libpath:"$(APACHE1_HOME)\libexec" /opt:ref 
 LINK32_OBJS= \
 	"$(INTDIR)\jk_ajp12_worker.obj" \
 	"$(INTDIR)\jk_ajp13.obj" \
@@ -90,7 +90,7 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O2 /I "..\common" /I "$(APACHE1_HOME)\include" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" $(DEF_EAPI) /D "MOD_JK_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c 
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "$(APACHE1_HOME)\include" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" $(DEF_EAPI) /D "MOD_JK_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<

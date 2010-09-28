@@ -54,7 +54,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\pcre.bsc"
 BSC32_SBRS= \
 
 LIB32=link.exe -lib
-LIB32_FLAGS=/nologo /out:"$(OUTDIR)\pcre.lib"
+LIB32_FLAGS=kernel32.lib $(EXTRA_LIBS) /nologo /out:"$(OUTDIR)\pcre.lib"
 LIB32_OBJS= \
 	"$(INTDIR)\get.obj" \
 	"$(INTDIR)\maketables.obj" \
@@ -66,7 +66,7 @@ LIB32_OBJS= \
   $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
 <<
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O2 /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /Wp64 /FIPRE64PRA.H /D "PCRE_STATIC" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\pcre_src" /FD /c
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /Wp64 /FIPRE64PRA.H /D "PCRE_STATIC" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\pcre_src" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<

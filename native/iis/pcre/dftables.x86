@@ -37,7 +37,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\dftables.bsc"
 BSC32_SBRS= \
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\Release\dftables.pdb" /machine:I386 /out:"$(OUTDIR)\dftables.exe" /opt:ref
+LINK32_FLAGS=kernel32.lib $(EXTRA_LIBS) /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\Release\dftables.pdb" /machine:I386 /out:"$(OUTDIR)\dftables.exe" /opt:ref
 LINK32_OBJS= \
 	"$(INTDIR)\dftables.obj"
 
@@ -46,7 +46,7 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-CPP_PROJ=/nologo /MD /W3 /O2 /D "_WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\dftables" /FD /wd4996 /c
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /D "_WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\dftables" /FD /wd4996 /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
