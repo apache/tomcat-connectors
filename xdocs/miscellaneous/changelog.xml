@@ -60,6 +60,9 @@
         Common: Don't destroy errno during trace logging. (rjung)
       </fix>
       <update>
+        Apache: Add support for Apache 2.3/2.4. (rjung)
+      </update>
+      <update>
         Apache: Added version number resource for mod_jk.so on Windows. (timw)
       </update>
       <update>

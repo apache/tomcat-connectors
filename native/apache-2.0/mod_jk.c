@@ -123,6 +123,8 @@
 #define NULL_FOR_EMPTY(x)   ((x && !strlen(x)) ? NULL : x)
 #define STRNULL_FOR_NULL(x) ((x) ? (x) : "(null)")
 #define JK_LOG_LOCK_KEY     ("jk_log_lock_key")
+#define JKLOG_MARK          __FILE__,__LINE__
+
 /*
  * If you are not using SSL, comment out the following line. It will make
  * apache run faster.
@@ -130,6 +132,11 @@
  * Personally, I (DM), think this may be a lie.
  */
 #define ADD_SSL_INFO
+
+/* Needed for Apache 2.3/2.4 per-module log config */
+#ifdef APLOG_USE_MODULE
+APLOG_USE_MODULE(jk);
+#endif
 
 /* module MODULE_VAR_EXPORT jk_module; */
 AP_MODULE_DECLARE_DATA module jk_module;
@@ -636,9 +643,17 @@ static void jk_error_exit(const char *file,
         ch++;
     }
 
+#if (MODULE_MAGIC_NUMBER_MAJOR >= 20100606)
+    ap_log_error(file, line, APLOG_MODULE_INDEX, level, 0, s, res);
+#else
     ap_log_error(file, line, level, 0, s, res);
+#endif
     if ( s ) {
+#if (MODULE_MAGIC_NUMBER_MAJOR >= 20100606)
+        ap_log_error(file, line, APLOG_MODULE_INDEX, level, 0, NULL, res);
+#else
         ap_log_error(file, line, level, 0, NULL, res);
+#endif
     }
 
     /* Exit process */
@@ -2826,7 +2841,7 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
     if (overrides->uri_to_context && overrides->mountcopy == JK_TRUE) {
 /* jk_map_copy() preserves existing entries in overrides map */
         if (jk_map_copy(base->uri_to_context, overrides->uri_to_context) == JK_FALSE) {
-                jk_error_exit(APLOG_MARK, APLOG_EMERG, overrides->s, p, "Memory error");
+                jk_error_exit(JKLOG_MARK, APLOG_EMERG, overrides->s, p, "Memory error");
         }
         if (!overrides->mount_file)
             overrides->mount_file = base->mount_file;
@@ -3269,7 +3284,7 @@ static int jk_post_config(apr_pool_t * pconf,
                     if (sconf->uri_to_context) {
                         if (!uri_worker_map_alloc(&(sconf->uw_map),
                                                   sconf->uri_to_context, sconf->log))
-                            jk_error_exit(APLOG_MARK, APLOG_EMERG, srv,
+                            jk_error_exit(JKLOG_MARK, APLOG_EMERG, srv,
                                           srv->process->pool, "Memory error");
                         if (sconf->options & JK_OPT_REJECTUNSAFE)
                             sconf->uw_map->reject_unsafe = 1;
