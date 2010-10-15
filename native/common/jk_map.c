@@ -634,10 +634,13 @@ static size_t trim(char *s)
     /* check for empty strings */
     if (!(i = strlen(s)))
         return 0;
-    for (i = i - 1; (i >= 0) &&
+    for (i = i - 1; (i > 0) &&
          isspace((int)((unsigned char)s[i])); i--);
+    if ((i > 0) || !isspace((int)((unsigned char)s[i]))) {
+       i++;
+    }
 
-    s[i + 1] = '\0';
+    s[i] = '\0';
 
     for (i = 0; ('\0' != s[i]) &&
          isspace((int)((unsigned char)s[i])); i++);
