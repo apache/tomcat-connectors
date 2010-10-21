@@ -3079,7 +3079,7 @@ static void jk_child_init(apr_pool_t * pconf, server_rec * s)
                jk_shm_name(), rc);
 
     if (JK_IS_DEBUG_LEVEL(conf->log))
-        jk_log(conf->log, JK_LOG_DEBUG, "Initialized %s", JK_EXPOSED_VERSION);
+        jk_log(conf->log, JK_LOG_DEBUG, "Initialized %s", JK_FULL_EXPOSED_VERSION);
     JK_TRACE_EXIT(conf->log);
 }
 
@@ -3197,7 +3197,7 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
         ap_add_version_component(pconf, JK_EXPOSED_VERSION);
         jk_log(conf->log, JK_LOG_INFO,
                "%s initialized",
-               JK_EXPOSED_VERSION);
+               JK_FULL_EXPOSED_VERSION);
     }
     else {
         ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s,

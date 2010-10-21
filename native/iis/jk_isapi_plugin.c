@@ -52,6 +52,7 @@
 #include <strsafe.h>
 
 #define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION
+#define FULL_VERSION_STRING "Jakarta/ISAPI/" JK_FULL_EXPOSED_VERSION
 #define SHM_DEF_NAME   "JKISAPISHMEM"
 #define DEFAULT_WORKER_NAME ("ajp13")
 
@@ -202,7 +203,7 @@ char HTML_ERROR_HEAD[] =        "<!--\n"
 #define HTML_ERROR_BODY_FMT     "<TITLE>%s!</TITLE>\n</HEAD>\n<BODY>\n<H1>%s!</H1>\n<P>\n%s\n</P>\n"
 
 char HTML_ERROR_TAIL[] =        "<P>\n<BR/>&nbsp;<BR/>&nbsp;<BR/>&nbsp;<BR/>&nbsp;\n"
-                                VERSION_STRING "\n"
+                                FULL_VERSION_STRING "\n"
                                 "<BR/>&nbsp;\n"
                                 "<HR/>\n"
                                 "<P id=\"footer\">\n"
@@ -2267,7 +2268,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
 
     JK_ENTER_CS(&(init_cs), rc);
     if (is_inited) {
-        jk_log(logger, JK_LOG_INFO, "%s stopping", (VERSION_STRING));
+        jk_log(logger, JK_LOG_INFO, "%s stopping", (FULL_VERSION_STRING));
         is_inited = JK_FALSE;
         watchdog_interval = 0;
         if (watchdog_handle) {
@@ -2558,7 +2559,7 @@ static int init_jk(char *serverName)
 
     StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME);
 
-    jk_log(logger, JK_LOG_INFO, "Starting %s", (VERSION_STRING));
+    jk_log(logger, JK_LOG_INFO, "Starting %s", (FULL_VERSION_STRING));
 
     if (*serverName) {
         size_t i;
@@ -2737,7 +2738,7 @@ static int init_jk(char *serverName)
                 watchdog_interval = 0;
             }
         }
-        jk_log(logger, JK_LOG_INFO, "%s initialized", (VERSION_STRING));
+        jk_log(logger, JK_LOG_INFO, "%s initialized", (FULL_VERSION_STRING));
     }
     return rc;
 }

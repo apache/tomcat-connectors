@@ -2902,7 +2902,7 @@ static void jk_init(server_rec * s, ap_pool * p)
 #endif
         jk_log(conf->log, JK_LOG_INFO,
                "%s initialized",
-               JK_EXPOSED_VERSION);
+               JK_FULL_EXPOSED_VERSION);
     }
     else {
         jk_error_exit(APLOG_MARK, APLOG_EMERG | APLOG_NOERRNO, s, p,

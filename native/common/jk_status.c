@@ -4682,7 +4682,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     }
                     jk_print_xml_start_elt(s, w, 0, 0, "software");
                     jk_print_xml_att_string(s, 2, "web_server", s->server_software);
-                    jk_print_xml_att_string(s, 2, "jk_version", JK_EXPOSED_VERSION);
+                    jk_print_xml_att_string(s, 2, "jk_version", JK_FULL_EXPOSED_VERSION);
                     jk_print_xml_stop_elt(s, 0, 1);
                 }
                 if (cmd == JK_STATUS_CMD_LIST) {
@@ -4713,7 +4713,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     }
                     jk_puts(s, "Software:");
                     jk_printf(s, " web_server=\"%s\"", s->server_software);
-                    jk_printf(s, " jk_version=%s", JK_EXPOSED_VERSION);
+                    jk_printf(s, " jk_version=%s", JK_FULL_EXPOSED_VERSION);
                     jk_puts(s, "\n");
                 }
                 if (cmd == JK_STATUS_CMD_LIST) {
@@ -4739,7 +4739,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                         jk_print_prop_att_long(s, w, NULL, "time_unix", unix_seconds);
                     }
                     jk_print_prop_att_string(s, w, NULL, "web_server", s->server_software);
-                    jk_print_prop_att_string(s, w, NULL, "jk_version", JK_EXPOSED_VERSION);
+                    jk_print_prop_att_string(s, w, NULL, "jk_version", JK_FULL_EXPOSED_VERSION);
                 }
                 if (cmd == JK_STATUS_CMD_LIST) {
                     /* Step 2: Display configuration */
@@ -4780,7 +4780,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     }
                     jk_puts(s, "</td></tr>\n");
                     jk_putv(s, "<tr><td>JK Version:</td><td>",
-                            JK_EXPOSED_VERSION, "</td><td></td><td>", NULL);
+                            JK_FULL_EXPOSED_VERSION, "</td><td></td><td>", NULL);
                     jk_printf(s, "Unix Seconds:</td><td>%d", unix_seconds);
                     jk_puts(s, "</td></tr></table>\n<hr/>\n");
                 }
