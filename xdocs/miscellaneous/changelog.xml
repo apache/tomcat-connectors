@@ -56,6 +56,9 @@
         section allowing other threads to use the connection
         pool during maintenance. (mturk)
       </update>
+      <update>
+        Common: Add svn revision to init log message. (rjung)
+      </update>
       <fix>
         Common: Don't destroy errno during trace logging. (rjung)
       </fix>
