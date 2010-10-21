@@ -55,6 +55,10 @@ static apr_pool_t *jk_apr_pool = NULL;
 #define JK_GET_SOCKET_ERRNO() ((void)0)
 #endif /* WIN32 */
 
+#if defined(NETWARE) && defined(__NOVELL_LIBC__)
+#define USE_SOCK_CLOEXEC
+#endif
+
 /* our compiler cant deal with char* <-> const char* ... */
 #if defined(NETWARE) && !defined(__NOVELL_LIBC__)
 typedef char* SET_TYPE;
@@ -71,7 +75,13 @@ typedef const char* SET_TYPE;
 static int soblock(jk_sock_t sd)
 {
 /* BeOS uses setsockopt at present for non blocking... */
-#ifndef WIN32
+#if defined (WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+    u_long on = 0;
+    if (JK_IS_SOCKET_ERROR(ioctlsocket(sd, FIONBIO, &on))) {
+        JK_GET_SOCKET_ERRNO();
+        return errno;
+    }
+#else
     int fd_flags;
 
     fd_flags = fcntl(sd, F_GETFL, 0);
@@ -87,13 +97,7 @@ static int soblock(jk_sock_t sd)
     if (fcntl(sd, F_SETFL, fd_flags) == -1) {
         return errno;
     }
-#else
-    u_long on = 0;
-    if (JK_IS_SOCKET_ERROR(ioctlsocket(sd, FIONBIO, &on))) {
-        JK_GET_SOCKET_ERRNO();
-        return errno;
-    }
-#endif /* WIN32 */
+#endif /* WIN32 || (NETWARE && __NOVELL_LIBC__) */
     return 0;
 }
 
@@ -105,7 +109,13 @@ static int soblock(jk_sock_t sd)
  */
 static int sononblock(jk_sock_t sd)
 {
-#ifndef WIN32
+#if defined (WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+    u_long on = 1;
+    if (JK_IS_SOCKET_ERROR(ioctlsocket(sd, FIONBIO, &on))) {
+        JK_GET_SOCKET_ERRNO();
+        return errno;
+    }
+#else
     int fd_flags;
 
     fd_flags = fcntl(sd, F_GETFL, 0);
@@ -121,13 +131,7 @@ static int sononblock(jk_sock_t sd)
     if (fcntl(sd, F_SETFL, fd_flags) == -1) {
         return errno;
     }
-#else
-    u_long on = 1;
-    if (JK_IS_SOCKET_ERROR(ioctlsocket(sd, FIONBIO, &on))) {
-        JK_GET_SOCKET_ERRNO();
-        return errno;
-    }
-#endif /* WIN32 */
+#endif /* WIN32 || (NETWARE && __NOVELL_LIBC__) */
     return 0;
 }
 
