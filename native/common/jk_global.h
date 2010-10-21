@@ -117,7 +117,6 @@ extern char *strdup(const char *str);
 #include <winsock2.h>
 #include <mswsock.h>
 #include <mstcpip.h>
-#include <ws2tcpip.h>
 #endif /* _WINDOWS_ */
 #ifdef _WINDOWS_
 #ifndef SIO_RCVALL
@@ -127,6 +126,7 @@ extern char *strdup(const char *str);
 #include <sys/timeb.h>
 #include <process.h>
 #include <io.h>
+#include <ws2tcpip.h>
 #else /* WIN32 */
 #include <unistd.h>
 #if defined(NETWARE) && defined(__NOVELL_LIBC__)
@@ -396,3 +396,4 @@ typedef int jk_sock_t;
 #endif                          /* __cplusplus */
 
 #endif                          /* JK_GLOBAL_H */
+
