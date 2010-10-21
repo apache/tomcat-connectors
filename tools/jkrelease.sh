@@ -45,8 +45,10 @@ SIGN_OPTS=""
 #################### FUNCTIONS ##############
 
 usage() {
-    echo "Usage:: $0 -t VERSION [-r revision] [-b BRANCH | -T | -d DIR]"
-    echo "        -t: version to package"
+    echo "Usage:: $0 -v VERSION [-f] [-r revision] [-t tag | -b BRANCH | -T | -d DIR]"
+    echo "        -v: version to package"
+    echo "        -f: force, do not validate tag against version"
+    echo "        -t: tag to use if different from version"
     echo "        -r: revision to package"
     echo "        -b: package from branch BRANCH"
     echo "        -T: package from trunk"
@@ -70,10 +72,12 @@ copy_files() {
 #################### MAIN ##############
 
 conflict=0
-while getopts :t:r:b:d:p:T c
+while getopts :v:t:r:b:d:p:Tf c
 do
     case $c in
-    t)         tag=$OPTARG;;
+    v)         version=$OPTARG;;
+    t)         tag=$OPTARG
+               conflict=$(($conflict+1));;
     r)         revision=$OPTARG;;
     p)         SIGN_OPTS="--passphrase=$OPTARG";;
     b)         branch=$OPTARG
@@ -82,6 +86,7 @@ do
                conflict=$(($conflict+1));;
     d)         local_dir=$OPTARG
                conflict=$(($conflict+1));;
+    f)         force='y';;
     \:)        usage
                exit 2;;
     \?)        usage
@@ -93,7 +98,7 @@ shift `expr $OPTIND - 1`
 if [ $conflict -gt 1 ]
 then
     usage
-    echo "Only one of the options '-b', '-T'  and '-d' is allowed."
+    echo "Only one of the options '-t', '-b', '-T'  and '-d' is allowed."
     exit 2
 fi
 
@@ -114,7 +119,7 @@ then
     fi
 fi
 
-if [ -z "$tag" ]
+if [ -z "$version" ]
 then
     usage
     exit 2
@@ -158,8 +163,22 @@ then
     JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
     JK_DIST=${JK_CVST}-${tag}-dev${JK_SUFFIX}-src
 else
-    JK_VER=$tag
-    JK_TAG=`echo $tag | sed -e 's#^#JK_#' -e 's#\.#_#g'`
+    JK_VER=$version
+    JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
+    if [ -n $tag ]
+    then
+        if [ -z $force ]
+        then
+            echo $tag | grep "^$JK_TAG" > /dev/null 2>&1
+            if [ $? -gt 0 ]
+            then
+                echo "Tag '$tag' doesn't belong to version '$version'."
+                echo "Force using '-f' if you are sure."
+                exit 5
+            fi
+        fi
+        JK_TAG=$tag
+    fi
     JK_SVN_URL="${SVNROOT}/${SVNPROJ}/tags/${JK_TAG}"
     JK_REV=`svn info $revision ${JK_SVN_URL} | awk '$1 == "Revision:" {print $2}'`
     JK_SUFFIX=" ($JK_REV)"
