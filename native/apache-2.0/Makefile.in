@@ -95,3 +95,5 @@ install_dynamic:
 clean:
 	rm -f *.o *.lo *.a *.la *.so *.so.* *.slo
 	rm -rf .libs
+
+maintainer-clean: clean

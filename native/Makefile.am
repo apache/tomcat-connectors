@@ -17,7 +17,7 @@
 # Tell automake what it should do
 AUTOMAKE_OPTIONS = foreign
 MAINTAINERCLEANFILES=config.cache config.status config.log \
-Makefile.in configure
+Makefile.in configure common/portable.h.in
 
 SUBDIRS = @WEBSERVER@
 
