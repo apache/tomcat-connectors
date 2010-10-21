@@ -132,8 +132,8 @@ then
        echo "No Revision found at '$JK_SVN_URL'"
        exit 3
     fi
-    JK_SUFFIX=${JK_REV}
-    JK_DIST=${JK_CVST}-${tag}-dev-${JK_SUFFIX}-src
+    JK_SUFFIX=-${JK_REV}
+    JK_DIST=${JK_CVST}-${tag}-dev${JK_SUFFIX}-src
 elif [ -n "$branch" ]
 then
     JK_BRANCH=`echo $branch | sed -e 's#/#__#g'`
@@ -144,8 +144,8 @@ then
        echo "No Revision found at '$JK_SVN_URL'"
        exit 3
     fi
-    JK_SUFFIX=${JK_BRANCH}-${JK_REV}
-    JK_DIST=${JK_CVST}-${tag}-dev-${JK_SUFFIX}-src
+    JK_SUFFIX=-${JK_BRANCH}-${JK_REV}
+    JK_DIST=${JK_CVST}-${tag}-dev${JK_SUFFIX}-src
 elif [ -n "$local_dir" ]
 then
     JK_SVN_URL="$local_dir"
@@ -155,13 +155,14 @@ then
        echo "No Revision found at '$JK_SVN_URL'"
        exit 3
     fi
-    JK_SUFFIX=local-`date +%Y%m%d%H%M%S`-${JK_REV}
-    JK_DIST=${JK_CVST}-${tag}-dev-${JK_SUFFIX}-src
+    JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
+    JK_DIST=${JK_CVST}-${tag}-dev${JK_SUFFIX}-src
 else
     JK_VER=$tag
     JK_TAG=`echo $tag | sed -e 's#^#JK_#' -e 's#\.#_#g'`
     JK_SVN_URL="${SVNROOT}/${SVNPROJ}/tags/${JK_TAG}"
-    JK_SUFFIX=''
+    JK_REV=`svn info $revision ${JK_SVN_URL} | awk '$1 == "Revision:" {print $2}'`
+    JK_SUFFIX=" ($JK_REV)"
     JK_DIST=${JK_CVST}-${JK_VER}-src
 fi
 
@@ -190,7 +191,7 @@ cd ../../..
 # Update version information
 file=${JK_DIST}.tmp/jk/native/common/jk_version.h
 cp -p $file $file.orig
-sed -e 's/^#define JK_REVISION .*/#define JK_REVISION "-'$JK_SUFFIX'"/' \
+sed -e 's/^#define JK_REVISION .*/#define JK_REVISION "'"$JK_SUFFIX"'"/' \
   $file.orig > $file
 rm $file.orig
 
