@@ -37,7 +37,7 @@
 #define JK_VERRC        0
 #define JK_RCSTRING     "0"
 /* Source Control Revision as a suffix, e.g. "-r12345" */
-#define JK_REVISION ""
+#define JK_REVISION "$Revision$"
 
 /************** END OF AREA TO MODIFY BEFORE RELEASING *************/
 
@@ -65,7 +65,7 @@
 #if (JK_VERRC != 0)
 #define JK_EXPOSED_VERSION JK_EXPOSED_VERSION_INT "-rc-" JK_RCSTRING
 #elif (JK_VERISRELEASE == 1)
-#define JK_EXPOSED_VERSION JK_EXPOSED_VERSION_INT
+#define JK_EXPOSED_VERSION JK_EXPOSED_VERSION_INT JK_REVISION
 #else
 #define JK_EXPOSED_VERSION JK_EXPOSED_VERSION_INT "-dev" JK_REVISION
 #endif
