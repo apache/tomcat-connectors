@@ -26,7 +26,7 @@ AC_CANONICAL_SYSTEM
 
 dnl package and version. (synchronization with common/jk_version.h ?)
 PACKAGE=mod_jk
-VERSION=1.2.29
+VERSION=1.2.31
 
 AM_INIT_AUTOMAKE(${PACKAGE}, ${VERSION})
 
@@ -209,7 +209,7 @@ elif test "$ac_cv_sizeof_long" = "8"; then
     int64_value="long"
 elif test "$ac_cv_sizeof_long_long" = "8"; then
     # Linux, Solaris, FreeBSD all support ll with printf.
-    # BSD 4.4 originated 'q'.  Solaris is more popular and 
+    # BSD 4.4 originated 'q'.  Solaris is more popular and
     # doesn't support 'q'.  Solaris wins.  Exceptions can
     # go to the OS-dependent section.
     int64_t_fmt='#define JK_INT64_T_FMT "lld"'
@@ -278,16 +278,16 @@ case $host in
 esac
 
 AC_SUBST(int32_value)
-AC_SUBST(int32_t_fmt) 
-AC_SUBST(uint32_t_fmt) 
-AC_SUBST(uint32_t_hex_fmt) 
+AC_SUBST(int32_t_fmt)
+AC_SUBST(uint32_t_fmt)
+AC_SUBST(uint32_t_hex_fmt)
 AC_SUBST(int64_value)
-AC_SUBST(int64_t_fmt) 
-AC_SUBST(uint64_t_fmt) 
-AC_SUBST(uint64_t_hex_fmt) 
-AC_SUBST(pid_t_fmt) 
-AC_SUBST(pthread_t_fmt) 
-AC_SUBST(pthread_t_value) 
+AC_SUBST(int64_t_fmt)
+AC_SUBST(uint64_t_fmt)
+AC_SUBST(uint64_t_hex_fmt)
+AC_SUBST(pid_t_fmt)
+AC_SUBST(pthread_t_fmt)
+AC_SUBST(pthread_t_value)
 
 dnl check for snprintf and vsnprintf.
 AC_CHECK_FUNC(snprintf, AC_DEFINE(HAVE_SNPRINTF,1,[Have snprintf()]))
