@@ -138,7 +138,7 @@ then
        exit 3
     fi
     JK_SUFFIX=-${JK_REV}
-    JK_DIST=${JK_CVST}-${tag}-dev${JK_SUFFIX}-src
+    JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 elif [ -n "$branch" ]
 then
     JK_BRANCH=`echo $branch | sed -e 's#/#__#g'`
@@ -150,7 +150,7 @@ then
        exit 3
     fi
     JK_SUFFIX=-${JK_BRANCH}-${JK_REV}
-    JK_DIST=${JK_CVST}-${tag}-dev${JK_SUFFIX}-src
+    JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 elif [ -n "$local_dir" ]
 then
     JK_SVN_URL="$local_dir"
@@ -161,7 +161,7 @@ then
        exit 3
     fi
     JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
-    JK_DIST=${JK_CVST}-${tag}-dev${JK_SUFFIX}-src
+    JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 else
     JK_VER=$version
     JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
@@ -184,6 +184,10 @@ else
     JK_SUFFIX=" ($JK_REV)"
     JK_DIST=${JK_CVST}-${JK_VER}-src
 fi
+
+echo "Using subversion URL: $JK_SVN_URL"
+echo "Rolling into file $JK_DIST.*"
+sleep 2
 
 umask 022
 
