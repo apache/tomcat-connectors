@@ -25,8 +25,8 @@
 #ifndef JK_GLOBAL_H
 #define JK_GLOBAL_H
 
-#if !defined(WIN32) && !defined(AS400) && !defined(NETWARE)
-#include "portable.h"
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
 #endif
 
 #if defined(WIN32)

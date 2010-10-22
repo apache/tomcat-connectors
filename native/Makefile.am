@@ -17,8 +17,8 @@
 # Tell automake what it should do
 AUTOMAKE_OPTIONS = foreign
 MAINTAINERCLEANFILES=config.cache config.status config.log \
-config.nice Makefile.in configure common/portable.h.in \
-aclocal.m4
+config.nice Makefile.in configure common/config.h.in \
+common/config.h aclocal.m4
 
 SUBDIRS = @WEBSERVER@
 
