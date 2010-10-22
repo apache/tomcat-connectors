@@ -21,10 +21,12 @@
  * Version:     $Revision$                                           *
  ***************************************************************************/
 
+#if defined(WIN32)
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
 #endif
 #include <winsock2.h>
+#endif
 
 #include "nsapi.h"
 #include "jk_global.h"
@@ -276,7 +278,7 @@ NSAPI_PUBLIC int jk_init(pblock * pb, Session * sn, Request * rq)
                              jk_parse_log_level(log_level_str))) {
         logger = NULL;
     }
-    
+
     if (jk_map_alloc(&init_map)) {
         if (jk_map_read_properties(init_map, NULL, worker_prp_file, NULL,
                                    JK_MAP_HANDLE_DUPLICATES, logger)) {
@@ -289,7 +291,7 @@ NSAPI_PUBLIC int jk_init(pblock * pb, Session * sn, Request * rq)
             }
 
             if (reject_unsafe) {
-                jk_map_add(init_map, "worker." REJECT_UNSAFE_TAG, reject_unsafe); 
+                jk_map_add(init_map, "worker." REJECT_UNSAFE_TAG, reject_unsafe);
             }
 
             jk_shm_size = jk_shm_calculate_size(init_map, logger);
