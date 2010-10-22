@@ -21,6 +21,10 @@
  * Version:     $Revision$                                           *
  ***************************************************************************/
 
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0500
+#endif
+#include <winsock2.h>
 
 #include "nsapi.h"
 #include "jk_global.h"

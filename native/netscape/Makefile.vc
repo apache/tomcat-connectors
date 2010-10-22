@@ -24,13 +24,16 @@ NULL=
 NULL=nul
 !ENDIF
 
+JK_VERSION=1.2.31
+TARGET=nsapi_redirect-$(JK_VERSION)
+
 OUTDIR=.\nsapi_release
 INTDIR=.\nsapi_release
 # Begin Custom Macros
 OutDir=.\nsapi_release
 # End Custom Macros
 
-ALL : "$(OUTDIR)\nsapi_redirect.dll"
+ALL : "$(OUTDIR)\$(TARGET).dll"
 
 
 CLEAN :
@@ -56,12 +59,12 @@ CLEAN :
 	-@erase "$(INTDIR)\jk_url.obj"
 	-@erase "$(INTDIR)\jk_util.obj"
 	-@erase "$(INTDIR)\jk_worker.obj"
-	-@erase "$(OUTDIR)\nsapi_redirect.dll"
+	-@erase "$(OUTDIR)\$(TARGET).dll"
 	-@erase "$(OUTDIR)\nsapi_redirect.exp"
 	-@erase "$(OUTDIR)\nsapi_redirect.lib"
-	-@erase "$(OUTDIR)\nsapi_redirect.pdb"
-	-@erase ".\Release\nsapi_redirect_src.idb"
-	-@erase ".\Release\nsapi_redirect_src.pdb"
+	-@erase "$(OUTDIR)\$(TARGET).pdb"
+	-@erase "$(OUTDIR)\nsapi_redirect_src.idb"
+	-@erase "$(OUTDIR)\\nsapi_redirect_src.pdb"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -108,7 +111,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\nsapi.bsc"
 BSC32_SBRS= \
 
 LINK32=link.exe
-LINK32_FLAGS=ns-httpd40.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /dll /incremental:no /pdb:"$(OUTDIR)\nsapi_redirect.pdb" /debug /machine:I386 /out:"$(OUTDIR)\nsapi_redirect.dll" /implib:"$(OUTDIR)\nsapi_redirect.lib" /libpath:"$(IPLANET_HOME)\lib"
+LINK32_FLAGS=ns-httpd40.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /dll /incremental:no /pdb:"$(OUTDIR)\$(TARGET).pdb" /debug /machine:I386 /out:"$(OUTDIR)\$(TARGET).dll" /implib:"$(OUTDIR)\nsapi_redirect.lib" /libpath:"$(IPLANET_HOME)\lib"
 LINK32_OBJS= \
 	"$(INTDIR)\jk_ajp12_worker.obj" \
 	"$(INTDIR)\jk_ajp13.obj" \
@@ -134,12 +137,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk.res" \
 	"$(INTDIR)\jk_worker.obj"
 
-"$(OUTDIR)\nsapi_redirect.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"$(OUTDIR)\$(TARGET).dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
-	IF EXIST $(OUTDIR)\nsapi_redirect.manifest \
-		mt -nologo -manifest $(OUTDIR)\nsapi_redirect.manifest -outputresource:$(OUTDIR)\nsapi_redirect.dll;2
+	IF EXIST $(OUTDIR)\$(TARGET).manifest \
+		mt -nologo -manifest $(OUTDIR)\$(TARGET).manifest -outputresource:$(OUTDIR)\$(TARGET).dll;2
 
 
 !IF "$(CFG)" == "nsapi - Win32 Release"
