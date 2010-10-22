@@ -1,8 +1,8 @@
 ABOUT
 -----
 
-The redirector was originally developed using Visual C++ Ver.6.0, 
-so having this environment is a prerequisite if you want to perform 
+The redirector was originally developed using Visual C++ Ver.6.0,
+so having this environment is a prerequisite if you want to perform
 a custom build on Windows systems
 
 On Unix system, a Makefile.solaris and Makefile.linux are provided
@@ -17,12 +17,12 @@ MS VC 6.0 (+ update, latest service pack is 6)
 
 BUILDING on Windows
 -------------------
- 
+
 The steps that you need to take are:
 
    1. Change directory to the nsapi redirector plugins source directory.
-   2. Set the SUNONE_HOME system environment value to SunONE installation
-      directory or edit the nsapi.dsp and replace all $(SUNONE_HOME)
+   2. Set the IPLANET_HOME system environment value to iPlanet installation
+      directory or edit the nsapi.dsp and replace all $(IPLANET_HOME)
       occurrences with the real path
    3. Execute the following command:
       MSDEV nsapi.dsp /MAKE ALL
@@ -30,5 +30,5 @@ The steps that you need to take are:
 
 This will build both release and debug versions of the redirector plugin.
 
-An alternative will be to open the isapi workspace file (nsapi.dsw) in msdev and 
+An alternative will be to open the isapi workspace file (nsapi.dsw) in msdev and
 build it using the build menu.
