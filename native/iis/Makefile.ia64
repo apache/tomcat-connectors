@@ -19,7 +19,7 @@
 # nmake -f Makefile.ia64
 #
 
-TARGET=isapi_redirect$(JK_VERSION)
+TARGET=isapi_redirect$(SO_VERSION)
 
 CPP=cl.exe
 MTL=midl.exe

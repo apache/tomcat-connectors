@@ -25,10 +25,7 @@ The steps that you need to take are:
       directory or edit the nsapi.dsp and replace all $(IPLANET_HOME)
       occurrences with the real path
    3. Execute the following command:
-      MSDEV nsapi.dsp /MAKE ALL
-      If msdev is not in your path, enter the full path to msdev.exe
-
-This will build both release and debug versions of the redirector plugin.
+      nmake -f Makefile.vc [SO_VERSION=-1.2.31]
 
 An alternative will be to open the isapi workspace file (nsapi.dsw) in msdev and
 build it using the build menu.
