@@ -2,27 +2,27 @@
 !IF "$(CFG)" == ""
 CFG=nsapi - Win32 Release
 !MESSAGE No configuration specified. Defaulting to nsapi - Win32 Release.
-!ENDIF 
+!ENDIF
 
 !IF "$(CFG)" != "nsapi - Win32 Release"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "nsapi.mak" CFG="nsapi - Win32 Release"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "nsapi - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE 
+!ELSE
 NULL=nul
-!ENDIF 
+!ENDIF
 
 OUTDIR=.\nsapi_release
 INTDIR=.\nsapi_release
@@ -67,48 +67,48 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "$(SUNONE_HOME)\include" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JK_NSAPI" /D "NSAPI_EXPORTS" /D "XP_WIN32" /D "MCC_HTTPD" /D "SPAPI20" /Fo"$(INTDIR)\\" /Fd"$(OUTDIR)\nsapi_redirect_src" /FD /c 
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "$(IPLANET_HOME)\include" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JK_NSAPI" /D "NSAPI_EXPORTS" /D "XP_WIN32" /D "MCC_HTTPD" /D "SPAPI20" /Fo"$(INTDIR)\\" /Fd"$(OUTDIR)\nsapi_redirect_src" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d "JK_NSAPI"  /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d "JK_NSAPI"  /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\nsapi.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\nsapi.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=ns-httpd40.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /dll /incremental:no /pdb:"$(OUTDIR)\nsapi_redirect.pdb" /debug /machine:I386 /out:"$(OUTDIR)\nsapi_redirect.dll" /implib:"$(OUTDIR)\nsapi_redirect.lib" /libpath:"$(SUNONE_HOME)\lib" 
+LINK32_FLAGS=ns-httpd40.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /dll /incremental:no /pdb:"$(OUTDIR)\nsapi_redirect.pdb" /debug /machine:I386 /out:"$(OUTDIR)\nsapi_redirect.dll" /implib:"$(OUTDIR)\nsapi_redirect.lib" /libpath:"$(IPLANET_HOME)\lib"
 LINK32_OBJS= \
 	"$(INTDIR)\jk_ajp12_worker.obj" \
 	"$(INTDIR)\jk_ajp13.obj" \
@@ -281,5 +281,5 @@ SOURCE=..\common\jk_worker.c
 
 
 
-!ENDIF 
+!ENDIF
 

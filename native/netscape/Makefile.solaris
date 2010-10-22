@@ -36,7 +36,6 @@ LDFLAGS=-shared
 # Change this according to location where on installed the server.
 # Don't forget to do the ./configure --enable-netscape=/opt/SUNWwbsvr/plugins
 # before doing gmake -f Makefile.solaris
-SUITSPOT_HOME=/opt/SUNWwbsvr/plugins
 
 CC_CMD=$(CC) $(CFLAGS) $(EXTRA_CFLAGS) \
 	-DNET_SSL -DSOLARIS -D_REENTRANT -DXP_UNIX -DMCC_HTTPD -DSPAPI20 -DJK_NSAPI
@@ -48,7 +47,7 @@ all:
 prepare:
 
 OS_TYPE=solaris
-INCLUDEDIR=$(SUITSPOT_HOME)/include
+INCLUDEDIR=$(IPLANET_HOME)/include
 JAVA_INCLUDE=$(JAVA_HOME)/include
 JK_DIR=../common
 VPATH=.:$(JK_DIR)
@@ -72,7 +71,7 @@ PLUGIN_OBJ = jk_nsapi_plugin.o
 INCLUDE_FLAGS=	-I$(JK_DIR) -I$(INCLUDEDIR) -I$(INCLUDEDIR)/base \
 		-I$(INCLUDEDIR)/frame -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/$(OS_TYPE)
 
-all: nsapi_redirector.so 
+all: nsapi_redirector.so
 
 
 nsapi_redirector.so: $(JK_OBJS) $(PLUGIN_OBJ)
