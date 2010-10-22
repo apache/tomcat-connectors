@@ -18,6 +18,10 @@
 # SetEnv.cmd /SRV64 /RETAIL
 # nmake -f Makefile.ia64
 #
+
+JK_VERSION=1.2.31
+TARGET=isapi_redirect-$(JK_VERSION)
+
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -29,11 +33,11 @@ OutDir=.\Release_ia64
 
 !IF "$(RECURSE)" == "0" 
 
-ALL : "$(OUTDIR)\isapi_redirect.dll"
+ALL : "$(OUTDIR)\$(TARGET).dll"
 
 !ELSE 
 
-ALL : "pcre_ia64" "$(OUTDIR)\isapi_redirect.dll"
+ALL : "pcre_ia64" "$(OUTDIR)\$(TARGET).dll"
 
 !ENDIF 
 
@@ -68,10 +72,10 @@ CLEAN :
 	-@erase "$(INTDIR)\jk_url.obj"
 	-@erase "$(INTDIR)\jk_util.obj"
 	-@erase "$(INTDIR)\jk_worker.obj"
-	-@erase "$(OUTDIR)\isapi_redirect.dll"
+	-@erase "$(OUTDIR)\$(TARGET).dll"
 	-@erase "$(OUTDIR)\isapi_redirect.exp"
 	-@erase "$(OUTDIR)\isapi_redirect.lib"
-	-@erase "$(OUTDIR)\isapi_redirect.pdb"
+	-@erase "$(OUTDIR)\$(TARGET).pdb"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -81,7 +85,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\isapi.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib bufferoverflowu.lib $(EXTRA_LIBS) /nologo /dll /incremental:no /pdb:"$(OUTDIR)\isapi_redirect.pdb" /debug /machine:IA64 /def:".\isapi.def" /out:"$(OUTDIR)\isapi_redirect.dll" /implib:"$(OUTDIR)\isapi_redirect.lib" 
+LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib bufferoverflowu.lib $(EXTRA_LIBS) /nologo /dll /incremental:no /pdb:"$(OUTDIR)\$(TARGET).pdb" /debug /machine:IA64 /def:".\isapi.def" /out:"$(OUTDIR)\$(TARGET).dll" /implib:"$(OUTDIR)\isapi_redirect.lib" 
 DEF_FILE= \
 	".\isapi.def"
 LINK32_OBJS= \
@@ -111,12 +115,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk.res" \
 	".\pcre\Release_ia64\pcre.lib"
 
-"$(OUTDIR)\isapi_redirect.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"$(OUTDIR)\$(TARGET).dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
-	IF EXIST $(OUTDIR)\isapi_redirect.manifest \
-		mt -nologo -manifest $(OUTDIR)\isapi_redirect.manifest -outputresource:$(OUTDIR)\isapi_redirect.dll;2
+	IF EXIST $(OUTDIR)\$(TARGET).manifest \
+		mt -nologo -manifest $(OUTDIR)\$(TARGET).manifest -outputresource:$(OUTDIR)\$(TARGET).dll;2
 
 CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "pcre" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_IA64_=1" -DWIN64 /D "_WIN64" /Wp64 /FIPRE64PRA.H /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" $(CFLAGS) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c 
 
