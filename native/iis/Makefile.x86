@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-JK_VERSION=1.2.31
-TARGET=isapi_redirect-$(JK_VERSION)
+TARGET=isapi_redirect$(JK_VERSION)
 
 CPP=cl.exe
 MTL=midl.exe

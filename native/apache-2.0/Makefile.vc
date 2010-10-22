@@ -19,17 +19,14 @@ APU_LIB=libaprutil.lib
 OUTDIR=.\Release20
 INTDIR=.\Release20
 APACHE2_HOME=$(APACHE20_HOME)
-HTTPD_VERSION=2.0.52
 !ELSE
 !IFDEF APACHE23_HOME
 APACHE2_HOME=$(APACHE23_HOME)
 OUTDIR=.\Release23
 INTDIR=.\Release23
-HTTPD_VERSION=2.3.1
 !ELSE
 OUTDIR=.\Release22
 INTDIR=.\Release22
-HTTPD_VERSION=2.2.3
 !ENDIF
 APR_LIB=libapr-1.lib
 APU_LIB=libaprutil-1.lib
@@ -39,8 +36,7 @@ APU_LIB=libaprutil-1.lib
 !ERROR Missing APACHE2_HOME environment variable.
 !ENDIF
 
-JK_VERSION=1.2.31
-TARGET=mod_jk-$(JK_VERSION)-httpd-$(HTTPD_VERSION)
+TARGET=mod_jk-$(JK_VERSION)$(HTTPD_VERSION)
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe

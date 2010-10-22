@@ -24,8 +24,7 @@ NULL=
 NULL=nul
 !ENDIF
 
-JK_VERSION=1.2.31
-TARGET=nsapi_redirect-$(JK_VERSION)
+TARGET=nsapi_redirect$(JK_VERSION)
 
 OUTDIR=.\nsapi_release
 INTDIR=.\nsapi_release

@@ -37,7 +37,7 @@ The steps that you need to take are:
    1. Change directory to the isapi redirector plugins source directory.
    
    2. Execute the following command:
-      nmake -f Makefile.x86
+      nmake -f Makefile.x86 [JK_VERSION=-1.2.31]
 
 This will build both release and debug versions of the redirector plugin.
 
