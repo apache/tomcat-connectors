@@ -36,7 +36,7 @@ APU_LIB=libaprutil-1.lib
 !ERROR Missing APACHE2_HOME environment variable.
 !ENDIF
 
-TARGET=mod_jk-$(JK_VERSION)$(HTTPD_VERSION)
+TARGET=mod_jk$(JK_VERSION)$(HTTPD_VERSION)
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
