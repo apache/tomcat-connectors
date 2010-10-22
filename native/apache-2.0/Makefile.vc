@@ -13,20 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-!IFDEF APACHE22
-APACHE2_HOME=$(APACHE22_HOME)
-APR_LIB=libapr-1.lib
-APU_LIB=libaprutil-1.lib
-OUTDIR=.\Release22
-INTDIR=.\Release22
-!ELSE
+!IFDEF APACHE20_HOME
 APR_LIB=libapr.lib
 APU_LIB=libaprutil.lib
 OUTDIR=.\Release20
 INTDIR=.\Release20
-!IFDEF APACHE20_HOME
 APACHE2_HOME=$(APACHE20_HOME)
+!ELSE
+!IFDEF APACHE23_HOME
+APACHE2_HOME=$(APACHE23_HOME)
+OUTDIR=.\Release23
+INTDIR=.\Release23
+!ELSE
+OUTDIR=.\Release22
+INTDIR=.\Release22
 !ENDIF
+APR_LIB=libapr-1.lib
+APU_LIB=libaprutil-1.lib
 !ENDIF
 
 !IFNDEF APACHE2_HOME
