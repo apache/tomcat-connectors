@@ -19,14 +19,17 @@ APU_LIB=libaprutil.lib
 OUTDIR=.\Release20
 INTDIR=.\Release20
 APACHE2_HOME=$(APACHE20_HOME)
+HTTPD_VERSION=2.0.52
 !ELSE
 !IFDEF APACHE23_HOME
 APACHE2_HOME=$(APACHE23_HOME)
 OUTDIR=.\Release23
 INTDIR=.\Release23
+HTTPD_VERSION=2.3.1
 !ELSE
 OUTDIR=.\Release22
 INTDIR=.\Release22
+HTTPD_VERSION=2.2.3
 !ENDIF
 APR_LIB=libapr-1.lib
 APU_LIB=libaprutil-1.lib
@@ -36,11 +39,13 @@ APU_LIB=libaprutil-1.lib
 !ERROR Missing APACHE2_HOME environment variable.
 !ENDIF
 
+JK_VERSION=1.2.31
+TARGET=mod_jk-$(JK_VERSION)-httpd-$(HTTPD_VERSION)
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-ALL : "$(OUTDIR)\mod_jk.so"
+ALL : "$(OUTDIR)\$(TARGET).so"
 
 
 CLEAN :
@@ -71,18 +76,18 @@ CLEAN :
 	-@erase "$(INTDIR)\mod_jk_src.pdb"
 	-@erase "$(OUTDIR)\mod_jk.exp"
 	-@erase "$(OUTDIR)\mod_jk.lib"
-	-@erase "$(OUTDIR)\mod_jk.pdb"
-	-@erase "$(OUTDIR)\mod_jk.so"
+	-@erase "$(OUTDIR)\$(TARGET).pdb"
+	-@erase "$(OUTDIR)\$(TARGET).so"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\mod_jk.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\$(TARGET).bsc"
 BSC32_SBRS= \
 
 LINK32=link.exe
-LINK32_FLAGS=libhttpd.lib $(APR_LIB) $(APU_LIB) kernel32.lib user32.lib advapi32.lib mswsock.lib ws2_32.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\mod_jk.pdb" /debug /machine:I386 /out:"$(OUTDIR)\mod_jk.so" /implib:"$(OUTDIR)\mod_jk.lib" /libpath:"$(APACHE2_HOME)\lib" /opt:ref
+LINK32_FLAGS=libhttpd.lib $(APR_LIB) $(APU_LIB) kernel32.lib user32.lib advapi32.lib mswsock.lib ws2_32.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\$(TARGET).pdb" /debug /machine:I386 /out:"$(OUTDIR)\$(TARGET).so" /implib:"$(OUTDIR)\mod_jk.lib" /libpath:"$(APACHE2_HOME)\lib" /opt:ref
 LINK32_OBJS= \
 	"$(INTDIR)\jk_ajp12_worker.obj" \
 	"$(INTDIR)\jk_ajp13.obj" \
@@ -108,12 +113,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk.res" \
 	"$(INTDIR)\mod_jk.obj"
 
-"$(OUTDIR)\mod_jk.so" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"$(OUTDIR)\$(TARGET).so" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
-	@IF EXIST $(OUTDIR)\mod_jk.manifest \
-		mt -nologo -manifest $(OUTDIR)\mod_jk.manifest -outputresource:$(OUTDIR)\mod_jk.so;2
+	@IF EXIST $(OUTDIR)\$(TARGET).manifest \
+		mt -nologo -manifest $(OUTDIR)\$(TARGET).manifest -outputresource:$(OUTDIR)\$(TARGET).so;2
 
 
 CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /I "$(APACHE2_HOME)\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c

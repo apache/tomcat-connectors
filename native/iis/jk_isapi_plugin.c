@@ -26,9 +26,9 @@
 
 // This define is needed to include wincrypt,h, needed to get client certificates
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0400
+#define _WIN32_WINNT 0x0500
 #endif
-
+#include <winsock2.h>
 #include <httpext.h>
 #include <httpfilt.h>
 #include <wininet.h>
