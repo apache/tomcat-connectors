@@ -16,7 +16,7 @@
 #
 
 #
-# Makefile for mod_jk (NetWare version - gnu make)
+# NetWare Makefile for mod_jk (uses build system of Apache 1.3.x - gnu make)
 # created by Guenter Knauf <fuankg@apache.org>
 #
 
@@ -24,9 +24,8 @@
 # Make sure all needed macro's are defined
 #
 
-# Edit the path below to point to the base of your NetWare Java SDK.
-ifndef JAVA_HOME
-JAVA_HOME = c:/projects/sdks/java-nw
+ifneq "$(wildcard $(JAVA_HOME)/include/netware/jni_md.h)" "$(JAVA_HOME)/include/netware/jni_md.h"
+$(error JAVA_HOME does not point to a valid NetWare Java SDK!) 
 endif
 
 LDLIBS = -l"$(METROWERKS)/Novell Support/libraries/runtime/mwcrtl.lib"

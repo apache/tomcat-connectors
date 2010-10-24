@@ -16,13 +16,13 @@
 #
 
 #
-# Makefile for mod_jk (uses the build system of Apache2 - gnu make)
-# created by Guenter Knauf <eflash@gmx.net>
+# NetWare Makefile for mod_jk (uses build system of Apache 2.x - gnu make)
+# created by Guenter Knauf <fuankg@apache.org>
 #
 
-#ifeq ($(strip $(JAVA_HOME)),)
-#@echo You must set the JAVA_HOME environment var pointing to the NetWare Java SDK!
-#endif
+ifneq "$(wildcard $(JAVA_HOME)/include/netware/jni_md.h)" "$(JAVA_HOME)/include/netware/jni_md.h"
+$(error JAVA_HOME does not point to a valid NetWare Java SDK!) 
+endif
 
 #
 # Declare the sub-directories to be built here
