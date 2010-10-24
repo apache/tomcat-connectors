@@ -130,7 +130,7 @@ extern char *strdup(const char *str);
 #else /* WIN32 */
 #include <unistd.h>
 #if defined(NETWARE) && defined(__NOVELL_LIBC__)
-#include "novsock2.h"
+#include <novsock2.h>
 #define __sys_socket_h__
 #define __netdb_h__
 #define __netinet_in_h__
@@ -141,7 +141,12 @@ extern char *strdup(const char *str);
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <fcntl.h>
-#ifndef NETWARE
+#ifdef NETWARE
+#ifndef _SOCKLEN_T
+#define _SOCKLEN_T
+typedef int socklen_t;
+#endif
+#else
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <sys/un.h>
