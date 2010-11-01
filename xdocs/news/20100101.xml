@@ -31,6 +31,22 @@
 
 <section name="2010 News &amp; Status">
 <br />
+<subsection name="1 November - JK-1.2.31 released">
+    <a name="20101101.1"></a>
+    <br />
+    <p>The Apache Tomcat team is proud to announce the immediate availability
+        of Tomcat Connectors 1.2.31. This is a stable release concentrating mainly on
+        some bug fixes.
+    </p><p>
+        Please see the <a href="../miscellaneous/changelog.html">ChangeLog</a> for a full list of changes.
+    </p>
+    <p>If you find any bugs while using this release, please fill in the
+        <a href="https://issues.apache.org/bugzilla/enter_bug.cgi?product=Tomcat%20Connectors">Bugzilla</a>
+        Bug Report.
+    </p>
+</subsection>
+
+<br />
 <subsection name="1 March - JK-1.2.30 released">
 <a name="20100301.1"></a>
 <br />
