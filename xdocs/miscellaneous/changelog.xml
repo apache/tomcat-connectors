@@ -40,6 +40,18 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.31 and 1.2.32">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <add>
+        LB: Add support for versioned webapps in Tomcat by accepting
+        multiple occurances of the route separator character '.' in
+        the session id. (rjung)
+      </add>
+    </changelog>
+  </subsection>
+</section>
 <section name="Changes between 1.2.30 and 1.2.31">
   <br />
   <subsection name="Native">
