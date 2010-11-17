@@ -1211,8 +1211,8 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
     /* If the return code is not negative */
     /* then we always get back the correct number of bytes. */
     if (rc < 0) {
-        ae->last_errno = errno;
         if (rc == JK_SOCKET_EOF) {
+            ae->last_errno = EPIPE;
             jk_log(l, JK_LOG_INFO,
                    "(%s) can't receive the response header message from tomcat, "
                    "tomcat (%s) has forced a connection close for socket %d",
@@ -1220,6 +1220,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                    ae->sd);
         }
         else {
+            ae->last_errno = -rc;
             jk_log(l, JK_LOG_INFO,
                    "(%s) can't receive the response header message from tomcat, "
                    "network problems or tomcat (%s) is down (errno=%d)",
@@ -1300,8 +1301,8 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
     /* If the return code is not negative */
     /* then we always get back the correct number of bytes. */
     if (rc < 0) {
-        ae->last_errno = errno;
         if (rc == JK_SOCKET_EOF) {
+            ae->last_errno = EPIPE;
             jk_log(l, JK_LOG_ERROR,
                    "(%s) can't receive the response body message from tomcat, "
                    "tomcat (%s) has forced a connection close for socket %d",
@@ -1309,6 +1310,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                    ae->sd);
         }
         else {
+            ae->last_errno = -rc;
             jk_log(l, JK_LOG_ERROR,
                    "(%s) can't receive the response body message from tomcat, "
                    "network problems or tomcat (%s) is down (errno=%d)",
