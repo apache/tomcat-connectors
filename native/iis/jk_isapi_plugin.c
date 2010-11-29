@@ -993,10 +993,19 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                 len_of_headers += 4;   /* extra for colon, space and crlf */
             }
 
+            /*
+             * Exclude status codes that MUST NOT include message bodies
+             */
+            if ((status == 204) || (status == 205) || (status == 304)) {
+                p->chunk_content = JK_FALSE;
+                /* Keep alive is still possible */
+                if (JK_IS_DEBUG_LEVEL(logger))
+                    jk_log(logger, JK_LOG_DEBUG, "Response status %d implies no message body", status );
+            }
             if (p->chunk_content) {
                 for (i = 0; i < num_of_headers; i++) {
                     /* Check the downstream response to see whether
-                     * it's appropriate the chunk the response content
+                     * it's appropriate to chunk the response content
                      * and whether it supports keeping the connection open.
 
                      * This implements the rules for HTTP/1.1 message length determination
