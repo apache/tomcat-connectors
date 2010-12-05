@@ -629,27 +629,29 @@ static void trim_prp_comment(char *prp)
 
 static size_t trim(char *s)
 {
-    size_t i;
+    size_t first;
+    size_t len;
 
     /* check for empty strings */
-    if (!(i = strlen(s)))
+    if (!(len = strlen(s)))
         return 0;
-    for (i = i - 1; (i > 0) &&
-         isspace((int)((unsigned char)s[i])); i--);
-    if ((i > 0) || !isspace((int)((unsigned char)s[i]))) {
-       i++;
+    for (len = len - 1; (len > 0) &&
+        isspace((int)((unsigned char)s[len])); len--);
+    if ((len > 0) || !isspace((int)((unsigned char)s[len]))) {
+        len++;
     }
 
-    s[i] = '\0';
+    s[len] = '\0';
+    len++;
 
-    for (i = 0; ('\0' != s[i]) &&
-         isspace((int)((unsigned char)s[i])); i++);
+    for (first = 0; (s[first] != '\0') &&
+        isspace((int)((unsigned char)s[first])); first++);
 
-    if (i > 0) {
-        strcpy(s, &s[i]);
+    if (first > 0) {
+        memmove(s, s + first, len - first);
     }
 
-    return strlen(s);
+    return len;
 }
 
 static int map_realloc(jk_map_t *m)
