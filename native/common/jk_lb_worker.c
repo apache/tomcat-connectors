@@ -947,7 +947,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                        "searching worker for partial sessionid %s",
                        sessionid);
             session_route = strchr(sessionid, '.');
-            while (session_route) {
+            if (session_route) {
                 ++session_route;
 
                 if (JK_IS_DEBUG_LEVEL(l))
@@ -971,7 +971,6 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                     JK_TRACE_EXIT(l);
                     return rc;
                 }
-                session_route = strchr(session_route, '.');
             }
             /* Try next partial sessionid if present */
             sessionid = next;

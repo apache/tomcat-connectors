@@ -49,11 +49,6 @@
         "JK_LB_ACTIVATION". Possible values are "ACT" (active),
         "DIS" (disabled) and "STP" (stopped). (rjung)
       </add>
-      <add>
-        LB: Add support for versioned webapps in Tomcat by accepting
-        multiple occurances of the route separator character '.' in
-        the session id. (rjung)
-      </add>
       <fix>
         <bug>41263</bug>: Support Servlet API getRemotePort().
         Works for Tomcat 5.5.28, 6.0.20 and 7.0.0 and Apache and ISAPI
