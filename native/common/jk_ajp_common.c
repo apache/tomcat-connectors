@@ -580,6 +580,25 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         }
     }
 
+    /* Forward the remote port information, which was forgotten
+     * from the builtin data of the AJP 13 protocol.
+     * Since the servlet spec allows to retrieve it via getRemotePort(),
+     * we provide the port to the Tomcat connector as a request
+     * attribute. Modern Tomcat versions know how to retrieve
+     * the remote port from this attribute.
+     */
+    {
+        if (jk_b_append_byte(msg, SC_A_REQ_ATTRIBUTE) ||
+            jk_b_append_string(msg, SC_A_REQ_REMOTE_PORT)   ||
+            jk_b_append_string(msg, s->remote_port)) {
+            jk_log(l, JK_LOG_ERROR,
+                   "failed appending the remote port %s",
+                   s->remote_port);
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+    }
+
     if (s->num_attributes > 0) {
         for (i = 0; i < s->num_attributes; i++) {
             if (jk_b_append_byte(msg, SC_A_REQ_ATTRIBUTE) ||

@@ -482,6 +482,8 @@ static int init_ws_service(nsapi_private_data_t * private_data,
 
     s->remote_host = session_dns(private_data->sn);
     s->remote_addr = pblock_findval("ip", private_data->sn->client);
+    /* Remote port is not available from NSAPI. */
+    s->remote_port = "0";
 
     tmp = pblock_findval("uri", private_data->rq->reqpb);
     size = 3 * strlen(tmp) + 1;

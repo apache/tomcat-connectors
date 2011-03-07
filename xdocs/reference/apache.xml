@@ -342,6 +342,16 @@ The default value is "JK_REMOTE_ADDR".
 <br/>
 This directive has been added in version 1.2.28 of mod_jk.
 </p></attribute>
+<attribute name="JkRemotePortIndicator" required="false"><p>
+Name of the Apache environment variable which can be used to overwrite
+the forwarded remote (client) IP address.
+Use this only if you need to adjust the data (see the
+<a href="../generic_howto/proxy.html">proxy</a> documentation).
+<br/>
+The default value is "JK_REMOTE_PORT".
+<br/>
+This directive has been added in version 1.2.32 of mod_jk.
+</p></attribute>
 <attribute name="JkRemoteUserIndicator" required="false"><p>
 Name of the Apache environment variable which can be used to overwrite
 the forwarded user name.

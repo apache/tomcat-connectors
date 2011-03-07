@@ -149,6 +149,7 @@ struct jk_ws_service
     const char *protocol;
     char *req_uri;
     const char *remote_addr;
+    const char *remote_port;
     const char *remote_host;
     const char *remote_user;
     const char *auth_type;

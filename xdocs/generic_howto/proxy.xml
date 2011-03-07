@@ -73,6 +73,16 @@ if it contains an explicit port, or is equal to the default port of the scheme u
 </li>
 <li>client address: <code>getRemoteAddr()</code>
 </li>
+<li>client port: <code>getRemotePort()</code>
+The remote port was initially not supported. It is available when using mod_jk 1.2.32
+with Apache or IIS (not for the NSAPI plugin) together with Tomcat version at least
+5.5.28, 6.0.20 or 7.0.0. For older versions, <code>getRemotePort()</code>
+will incorrectly return 0 or -1. As a workaround you can forward the remote port by setting
+<code>JkEnvVar REMOTE_PORT</code> and then either using
+<code>request.getAttribute("REMOTE_PORT")</code> instead of <code>getRemotePort()</code>
+or wrapping the request using a filter and overriding <code>getRemotePort()</code> with
+<code>request.getAttribute("REMOTE_PORT")</code>.
+</li>
 <li>client host: <code>getRemoteHost()</code>
 </li>
 <li>authentication type: <code>getAuthType()</code>
@@ -109,18 +119,6 @@ using the worker attribute <a href="../reference/workers.html">max_packet_size</
 This is for Tomcat, it has not yet been standardized.
 </li>
 </ul>
-</p>
-<warn>
-The remote port number has been forgotten in the AJP13 protocol.
-</warn>
-<p>
-So <code>getRemotePort()</code>
-will incorrectly return 0 or -1. As a workaround you can forward the remote port by setting
-<code>JkEnvVar REMOTE_PORT</code> and then either using
-<code>request.getAttribute("REMOTE_PORT")</code> instead of <code>getRemotePort()</code>
-or wrapping the request in a filter and overriding <code>getRemotePort()</code> with
-<code>request.getAttribute("REMOTE_PORT")</code>. Recent versions of Tomcat might
-automatically respect the forwarded attribute <code>REMOTE_PORT</code>.
 </p>
 </section>
 <section name="Fine Tuning">

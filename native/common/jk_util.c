@@ -2043,6 +2043,7 @@ void jk_init_ws_service(jk_ws_service_t *s)
     s->protocol = NULL;
     s->req_uri = NULL;
     s->remote_addr = NULL;
+    s->remote_port = NULL;
     s->remote_host = NULL;
     s->remote_user = NULL;
     s->auth_type = NULL;

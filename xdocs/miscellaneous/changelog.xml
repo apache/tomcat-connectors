@@ -50,6 +50,11 @@
         the session id. (rjung)
       </add>
       <fix>
+        <bug>41263</bug>: Support Servlet API getRemotePort().
+        Works for Tomcat 5.5.28, 6.0.20 and 7.0.0 and Apache and ISAPI
+        plugins.
+      </fix>
+      <fix>
         <bug>50363</bug>: IIS: Prevent chunk encoding of empty message
         bodies for 204, 205 and 304 responses. (timw)
       </fix>

@@ -101,6 +101,7 @@
 #define JK_LOG_DEF_FILE             ("logs/mod_jk.log")
 #define JK_SHM_DEF_FILE             ("logs/jk-runtime-status")
 #define JK_ENV_REMOTE_ADDR          ("JK_REMOTE_ADDR")
+#define JK_ENV_REMOTE_PORT          ("JK_REMOTE_PORT")
 #define JK_ENV_REMOTE_HOST          ("JK_REMOTE_HOST")
 #define JK_ENV_REMOTE_USER          ("JK_REMOTE_USER")
 #define JK_ENV_AUTH_TYPE            ("JK_AUTH_TYPE")
@@ -202,6 +203,7 @@ typedef struct
      * proxy in front of us.
      */
     char *remote_addr_indicator;
+    char *remote_port_indicator;
     char *remote_host_indicator;
     char *remote_user_indicator;
     char *auth_type_indicator;
@@ -729,12 +731,20 @@ static int init_ws_service(apache_private_data_t * private_data,
                                                 REMOTE_HOST, NULL);
     s->remote_host = get_env_string(r, s->remote_host,
                                     conf->remote_host_indicator, 1);
-    if (conf->options & JK_OPT_FWDLOCAL)
+    if (conf->options & JK_OPT_FWDLOCAL) {
         s->remote_addr = r->connection->local_ip;
-    else
+        /* We don't know the client port of the backend connection. */
+        s->remote_port = "0";
+    }
+    else {
         s->remote_addr = r->connection->remote_ip;
+        s->remote_port = apr_itoa(r->pool, r->connection->remote_addr->port);
+    }
     s->remote_addr = get_env_string(r, s->remote_addr,
                                     conf->remote_addr_indicator, 1);
+    s->remote_port = get_env_string(r, s->remote_port,
+                                    conf->remote_port_indicator, 1);
+
     if (conf->options & JK_OPT_FLUSHPACKETS)
         s->flush_packets = 1;
     if (conf->options & JK_OPT_FLUSHEADER)
@@ -1799,6 +1809,7 @@ static const char *jk_set_worker_indicator(cmd_parms * cmd,
  * Directives Handling for setting various environment names
  * used to overwrite the following request information:
  * - remote_addr
+ * - remote_port
  * - remote_host
  * - remote_user
  * - auth_type
@@ -1812,6 +1823,16 @@ static const char *jk_set_remote_addr_indicator(cmd_parms * cmd,
     jk_server_conf_t *conf =
         (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
     conf->remote_addr_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
+static const char *jk_set_remote_port_indicator(cmd_parms * cmd,
+                                                void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->remote_port_indicator = apr_pstrdup(cmd->pool, indicator);
     return NULL;
 }
 
@@ -2274,6 +2295,7 @@ static const command_rec jk_cmds[] = {
      * Environment variables used to overwrite the following
      * request information which gets forwarded:
      * - remote_addr
+     * - remote_port
      * - remote_host
      * - remote_user
      * - auth_type
@@ -2282,6 +2304,8 @@ static const command_rec jk_cmds[] = {
      */
     AP_INIT_TAKE1("JkRemoteAddrIndicator", jk_set_remote_addr_indicator, NULL, RSRC_CONF,
                   "Name of the Apache environment that contains the remote address"),
+    AP_INIT_TAKE1("JkRemotePortIndicator", jk_set_remote_port_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the remote port"),
     AP_INIT_TAKE1("JkRemoteHostIndicator", jk_set_remote_host_indicator, NULL, RSRC_CONF,
                   "Name of the Apache environment that contains the remote host name"),
     AP_INIT_TAKE1("JkRemoteUserIndicator", jk_set_remote_user_indicator, NULL, RSRC_CONF,
@@ -2715,6 +2739,7 @@ static void *create_jk_config(apr_pool_t * p, server_rec * s)
          * proxy in front of us.
          */
         c->remote_addr_indicator = JK_ENV_REMOTE_ADDR;
+        c->remote_port_indicator = JK_ENV_REMOTE_PORT;
         c->remote_host_indicator = JK_ENV_REMOTE_HOST;
         c->remote_user_indicator = JK_ENV_REMOTE_USER;
         c->auth_type_indicator = JK_ENV_AUTH_TYPE;
@@ -2789,6 +2814,8 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
 
     if (!overrides->remote_addr_indicator)
         overrides->remote_addr_indicator = base->remote_addr_indicator;
+    if (!overrides->remote_port_indicator)
+        overrides->remote_port_indicator = base->remote_port_indicator;
     if (!overrides->remote_host_indicator)
         overrides->remote_host_indicator = base->remote_host_indicator;
     if (!overrides->remote_user_indicator)
