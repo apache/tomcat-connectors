@@ -945,8 +945,8 @@ This features has been added in <b>jk 1.2.28</b>.
 Using this directive, a balanced worker of a load balancer
 can be configured as disabled or stopped. A disabled worker only gets
 requests, which belong to sessions for that worker. A stopped
-worker does not get any requests. Users will loose their sessions,
-unless session replication via clustering is used.
+worker does not get any requests. Users of a stopped worker will
+loose their sessions, unless session replication via clustering is used.
 <p>
 Use <b>d</b> or <b>D</b> to disable and <b>s</b> or <b>S</b> to stop.
 If this directive is not present the deprecated directives
