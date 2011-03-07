@@ -54,6 +54,11 @@
         bodies for 204, 205 and 304 responses. (timw)
       </fix>
       <fix>
+        NSAPI: Use lower case header names for responses.
+        Otherwise the web server might add chunked transfer encoding header
+        in addition to our content length header.
+      </fix>
+      <fix>
         <bug>50339</bug>: Fix whitespace trimming when parsing attribute
         lists. (rjung)
       </fix>

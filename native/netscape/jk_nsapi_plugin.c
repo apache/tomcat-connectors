@@ -125,6 +125,28 @@ static void init_workers_on_other_threads(void *init_d)
     init_on_other_thread_is_done = JK_TRUE;
 }
 
+/*
+ * Convert string to lower case.
+ * If string is longer than the provided buffer,
+ * just return the original string.
+ */
+static const char *to_lower(const char *str, char *buf, int bufsz)
+{
+    const char *from = str;
+    char *to = buf;
+    char *end = buf + (bufsz - 1);
+    while (to != end && *from) {
+        *to = (char)tolower(*from);
+        to++;
+        from++;
+    }
+    if (to != end) {
+        *to = '\0';
+        return buf;
+    }
+    return str;
+}
+
 static int JK_METHOD start_response(jk_ws_service_t *s,
                                     int status,
                                     const char *reason,
@@ -143,8 +165,16 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
             param_free(pblock_remove("content-type", p->rq->srvhdrs));
 
             if (num_of_headers) {
+                /*
+                 * NSAPI expects http header names to be lower case.
+                 * This is only relevant for the server itself or other
+                 * plugins searching for headers in the pblock.
+                 * We use a buffer of limited length, because conforming
+                 * with this rule should only matter for well-known headers.
+                 */
+                char name_buf[64];
                 for (i = 0; i < (int)num_of_headers; i++) {
-                    pblock_nvinsert(header_names[i],
+                    pblock_nvinsert(to_lower(header_names[i], name_buf, 64),
                                     header_values[i], p->rq->srvhdrs);
                 }
             }
