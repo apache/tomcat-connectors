@@ -44,6 +44,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Docs: Improve load balancer documentation. (rjung)
+      </update>
       <add>
         LB: Forward worker activation state as request attribute
         "JK_LB_ACTIVATION". Possible values are "ACT" (active),

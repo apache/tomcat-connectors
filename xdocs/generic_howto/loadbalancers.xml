@@ -29,121 +29,181 @@
 <body>
 <section name="Introduction"> 
 <br/>
-<p>A Load balancer is a virtual worker that does not really communicate with Tomcat workers.
-Instead it is responsible for the management of several "real" workers.
-The worker is supposed to be a load balancer if its worker type is <b>lb</b>.
-See workers <b>type</b> directive. For a complete reference of all load balancer configuration
-items, please consult the worker <a href="../reference/workers.html">reference</a>.
-The comprehensive status management features of the load balancer together with the status worker,
-makes its use an interesting option, even if only combined with a single "real" worker.
-<warn>As long as the "real" workers should only be used via the load balancer worker,
-there is no need to also put them into the <b>worker.list</b> property.</warn>
-</p>
-
-<subsection name="lb Worker properties">
+<p>A load balancer is a worker that does not directly communicate with Tomcat.
+Instead it is responsible for the management of several "real" workers,
+called members or sub workers of the load balancer.</p>
 <p>
-The load-balancing worker does not really communicate with Tomcat workers.
-Instead it is responsible for the management of several "real" workers. 
 This management includes:
 </p>
-
 <ul>
 <li>
 Instantiating the workers in the web server.
 </li>
 <li>
-Using the worker's load-balancing factor, perform weighed-round-robin load balancing where 
-high lbfactor means stronger machine (that is going to handle more requests)
+Using the worker's load-balancing factor, perform weighted load balancing
+(distributing load according to defined strengths of the targets).
 </li>
 <li>
-Keeping requests belonging to the same session executing on the same Tomcat worker.
+Keeping requests belonging to the same session executing on the same Tomcat
+(session stickyness).
 </li>
 <li>
-Identifying failed Tomcat workers, suspending requests to them and instead falling-back on 
-other workers managed by the lb worker.
+Identifying failed Tomcat workers, suspending requests to them and instead
+falling-back on other workers managed by the load balancer.
+</li>
+<li>
+Providing status and load metrics for the load balancer itself and all
+members via the status worker interface.
+</li>
+<li>
+Allowing to dynamically reconfigure load-balancing via the status worker
+interface.
 </li>
 </ul>
+<p>
+Workers managed by the same load balancer worker are load-balanced
+(based on their configured balancing factors and current request or session load)
+and also secured against failure by providing failover to other members of the same
+load balancer. So a single Tomcat process death will not "kill" the entire site.
+</p>
+<p>Some of the features provided by a load balancer are even interesting, when
+only working with a single member worker (where load balancing is not possible).</p>
 
-<p>
-The overall result is that workers managed by the same lb worker are load-balanced (based on their lbfactor and current user session) and also fall-backed so a single Tomcat process death will not "kill" the entire site.
+<subsection name="Basic Load Balancer Properties">
+<p>A worker is configured as a load balancer by setting its worker <code>type</code>
+to <b>lb</b>.
 </p>
-<warn>
-If you want to use session stickiness, you must set different jvmRoute attributes
-in the Engine element in Tomcat's server.xml. Furthermore the names of the workers
-which are managed by the balancer have to be equal to the jvmRoute of the Tomcat
-instance they connect with.
-</warn>
 <p>
-The following table specifies some properties that the lb worker can accept:
+The following table specifies some properties used to configure a load balancer worker:
+</p>
 <ul>
-<li><b>balance_workers</b> is a comma separated list of workers that the load balancer need to manage. 
-These workers do not need to appear in the worker.list property. This directive can be used multiple times for the same load balancer.</li>
-<li><b>sticky_session</b> specifies whether requests with SESSION ID's should be routed back to the same
-Tomcat worker. You can set sticky_session to False when Tomcat is using a Session Manager which
-can persist session data across multiple instances of Tomcat. By default sticky_session is set to True.</li>
+<li><b>balance_workers</b> is a comma separated list of names of the member workers of the
+load balancer. These workers are typically of type <b>ajp13</b>. The member workers do
+not need to appear in the <code>worker.list</code> property themselves, adding the
+load balancer to it suffices.</li>
+<li><b>sticky_session</b> specifies whether requests with SESSION ID's should be routed
+back to the same Tomcat instance that created the session. You can set sticky_session to
+<b>False</b> when Tomcat is using a session manager which can share session data across
+multiple instances of Tomcat - or if your application is stateless.
+By default sticky_session is set to <b>True</b>.</li>
+<li><b>lbfactor</b> can be added to each member worker to configure individual
+strengths for the members. A higher <code>lbfactor</code> will lead to more
+requests being balanced to that worker. The factors must be given by integers and the
+load will be distributed proportional to the factors given. Higher factors lead to
+more requests.</li>
 </ul>
-</p>
 
 <source>
-  # The worker balance1 while use "real" workers worker1 and worker2
+  # The load balancer worker balance1 will distribute
+  # load to the members worker1 and worker2
+  worker.balance1.type=lb
   worker.balance1.balance_workers=worker1, worker2
+  worker.worker1.type=ajp13
+  worker.worker1.host=myhost1
+  worker.worker1.port=8009
+  worker.worker2.type=ajp13
+  worker.worker1.host=myhost2
+  worker.worker1.port=8009
 </source>
 
+<warn>
+Session stickyness is not implemented using a tracking table for sessions.
+Instead each Tomcat instance gets an individual name and adds its name at
+the end of the session id. When the load balancer sees a session id, it
+finds the name of the Tomcat instance and sends the request via the correct
+member worker. For this to work you must set the name of the Tomcat instances
+as the value of the <code>jvmRoute</code> attribute in the Engine element of
+each Tomcat's server.xml. The name of the Tomcat needs to be equal to the name
+of the corresponding load balancer member. In the above example, Tomcat on host
+"myhost1" needs <code>jvmRoute="worker1"</code>, Tomcat on host "myhost2"
+needs <code>jvmRoute="worker2"</code>.
+</warn>
+
+<p>For a complete reference of all load balancer configuration
+attributes, please consult the worker <a href="../reference/workers.html">reference</a>.
+</p>
 </subsection>
 
-<subsection name="Advanced lb Worker properties">
-<p>
-With JK 1.2.x, new load-balancing and fault-tolerant support has been added via
-2 new properties, <b>redirect</b> and <b>activation</b>.
+<subsection name="Advanced Load Balancer Worker Properties">
+<p>The load balancer supports complex topologies and failover configurations.
+Using the member attribute <code>distance</code> you can group members.
+The load balancer will always send a request to a member of lowest distance.
+Only when all of those are broken, it will balance to the members of the
+next higher configured distance. This allows to define priorities between
+Tomcat instances in different data center locations.
 </p>
-
-<p>
-Let's take an example environment:
-</p>
-
-<p>
-A cluster with two nodes (worker1+worker2), running a webserver + tomcat tandem on each node and 
-a loadbalancer in front of the nodes.
-</p>
+<p>When working with shared sessions, either by using session replication
+or a persisting session manager (e.g. via a database), one often splits
+up the Tomcat farm into replication groups. In case of failure of a member,
+the load balancer needs to know, which other members share the session.
+This is configured using the <code>domain</code> attribute. All workers
+with the same domain are assumed to share the sessions.</p>
+<p>For maintenance purposes you can tell the load balancer to not
+allow any new sessions on some members, or even not use them at all.
+This is controlled by the member attribute <code>activation</code>.
+The value <b>Active</b> allows normal use of a member, <b>disabled</b>
+will not create new sessions on it, but still allow sticky requests,
+and <b>stopped</b> will no longer send any requests to the member.
+Switching the activation from "active" to "disabled" some time before
+maintenance will drain the sessions on the worker and minimize disruption.
+Depending on the usage pattern of the application, draining will take from
+minutes to hours. Switching the worker to stopped immediately before
+maintenance will reduce logging of false errors by mod_jk.</p>
+<p>Finally you can also configure hot spare workers by using
+<code>activation</code> set to <b>disabled</b> in combination with
+the attribute <code>redirect</code> added to the other workers:</p>
 
 <source>
   # The advanced router LB worker
   worker.list=router
+  worker.router.type=lb
+  worker.router.balance_workers=worker1,worker2
 
-  # Define a worker using ajp13
-  worker.worker1.port=8009
-  worker.worker1.host=node1.domain.org
+  # Define the first member worker
   worker.worker1.type=ajp13
-  worker.worker1.lbfactor=1
+  worker.worker1.host=myhost1
+  worker.worker1.port=8009
   # Define preferred failover node for worker1
   worker.worker1.redirect=worker2
 
-  # Define another worker using ajp13
-  worker.worker2.port=8009
-  worker.worker2.host=node2.domain.org
+  # Define the second member worker
   worker.worker2.type=ajp13
-  worker.worker2.lbfactor=1
+  worker.worker2.host=myhost2
+  worker.worker2.port=8009
   # Disable worker2 for all requests except failover
   worker.worker2.activation=disabled
-  
-  # Define the LB worker
-  worker.router.type=lb
-  worker.router.balance_workers=worker1,worker2
 </source>
 
 <p>
-The <b>redirect</b> flag on worker1 tells the <b>lb_worker</b> to redirect the requests
-to worker2 only if worker1 is in error state. In other cases worker2 will not receive
-any requests, thus acting like a hot standby.
+The <code>redirect</code> flag on worker1 tells the load balancer
+to redirect the requests to worker2 in case that worker1 has a problem.
+In all other cases worker2 will not receive any requests, thus acting
+like a hot standby.
 </p>
 
-
+<p>A final note about setting <code>activation</code> to <b>disabled</b>:
+The session id coming with a request is send either
+as part of the request URL (<code>;jsessionid=...</code>) or via a cookie.
+When using bookmarks or browsers that are running since a long time,
+it is possible to send a request carrying an old and invalid session id
+pointing at a disabled member.
+Since the load balancer does not have a list of valid sessions, it will
+forward the request to the disabled member. Thus draining takes longer than
+expected. To handle such cases, you can add a Servlet filter to your web
+application, which checks the request attribute <code>JK_LB_ACTIVATION</code>.
+This attribute contains one of the strings "ACT", "DIS" or "STP". If you
+detect "DIS" and the session for the request is no longer active, delete the
+session cookie and redirect using a self-referential URL. The redirected
+request will then no longer carry session information and thus the load
+balancer will not send it to the disabled worker. The request attribute
+<code>JK_LB_ACTIVATION</code> has been added in version 1.2.32.</p>
 </subsection>
 
 <subsection name="Status Worker properties">
 <p>
 The status worker does not communicate with Tomcat.
-Instead it is responsible for the load balancer management. 
+Instead it is responsible for the worker management. It is
+especially useful when combined with load balancer workers.
 </p>
 <source>
   # Add the status worker to the worker list
