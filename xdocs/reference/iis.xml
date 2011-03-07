@@ -82,12 +82,14 @@ A full list of format string substitutions can be found in the <a href="http://h
 </p></attribute>
 <attribute name="log_level" required="false"><p>
 A string value for log level 
-(can be debug, info, warn, error or trace).
-</p></attribute>
+(can be debug, info, warn, error or trace).</p>
+<p>This directive was added in version 1.2.31</p>
+</attribute>
 <attribute name="log_rotationtime" required="false"><p>
 The time between log file rotations in seconds.
-Setting this to 0 (the default) disables log rotation based on time. 
-</p></attribute>
+Setting this to 0 (the default) disables log rotation based on time.</p>
+<p>This directive was added in version 1.2.31</p>
+</attribute>
 <attribute name="log_filesize" required="false"><p>
 The maximum log file size in megabytes, after which the log file will be rotated. Setting this to 0 (the default) disables log rotation based on file size.
 <br/>The value can have an optional <b>M</b> suffix, i.e. both <b>5</b> and <b>5M</b> will rotate the log file when it grows to 5MB.

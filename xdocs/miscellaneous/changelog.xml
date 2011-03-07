@@ -89,7 +89,8 @@
         Apache: Added version number resource for mod_jk.so on Windows. (timw)
       </update>
       <update>
-        IIS: Added rotatelogs style log rotation to ISAPI Redirector. (timw)
+        <bug>48501</bug>: IIS: Added rotatelogs style log rotation to ISAPI
+        Redirector. (timw)
       </update>
       <fix>
         <bug>38895</bug>: IIS: Use RAW headers instead of CGI headers by default
