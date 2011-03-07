@@ -3011,6 +3011,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
     GET_SERVER_VARIABLE_VALUE("REMOTE_USER", s->remote_user);
     GET_SERVER_VARIABLE_VALUE("SERVER_PROTOCOL", s->protocol);
     GET_SERVER_VARIABLE_VALUE("REMOTE_HOST", s->remote_host);
+    GET_SERVER_VARIABLE_VALUE("REMOTE_ADDR", s->remote_addr);
     GET_SERVER_VARIABLE_VALUE("REMOTE_PORT", s->remote_port);
     GET_SERVER_VARIABLE_VALUE(SERVER_NAME, s->server_name);
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT", s->server_port, 80);
