@@ -895,11 +895,11 @@ static int find_best_worker(jk_ws_service_t *s,
     return rc;
 }
 
-static lb_sub_worker_t *get_most_suitable_worker(jk_ws_service_t *s,
-                                                 lb_worker_t *p,
-                                                 char *sessionid,
-                                                 int *states,
-                                                 jk_logger_t *l)
+static int get_most_suitable_worker(jk_ws_service_t *s,
+                                    lb_worker_t *p,
+                                    char *sessionid,
+                                    int *states,
+                                    jk_logger_t *l)
 {
     int rc = -1;
     int r;
@@ -917,12 +917,12 @@ static lb_sub_worker_t *get_most_suitable_worker(jk_ws_service_t *s,
         if (JK_WORKER_USABLE_STICKY(states[0], activation)) {
             if (activation != JK_LB_ACTIVATION_DISABLED) {
                 JK_TRACE_EXIT(l);
-                return p->lb_workers;
+                return 0;
             }
         }
         else {
             JK_TRACE_EXIT(l);
-            return NULL;
+            return -1;
         }
     }
     if (p->lblock == JK_LB_LOCK_PESSIMISTIC)
@@ -969,7 +969,7 @@ static lb_sub_worker_t *get_most_suitable_worker(jk_ws_service_t *s,
                                "found worker %s (%s) for route %s and partial sessionid %s",
                                wr->name, wr->route, session_route, sessionid);
                     JK_TRACE_EXIT(l);
-                    return wr;
+                    return rc;
                 }
                 session_route = strchr(session_route, '.');
             }
@@ -987,7 +987,7 @@ static lb_sub_worker_t *get_most_suitable_worker(jk_ws_service_t *s,
                    "all workers are in error state for session %s",
                    session);
             JK_TRACE_EXIT(l);
-            return NULL;
+            return -1;
         }
     }
     rc = find_best_worker(s, p, states, l);
@@ -1003,10 +1003,10 @@ static lb_sub_worker_t *get_most_suitable_worker(jk_ws_service_t *s,
                    "found best worker %s (%s) using method '%s'",
                    wr->name, wr->route, jk_lb_get_method(p, l));
         JK_TRACE_EXIT(l);
-        return wr;
+        return rc;
     }
     JK_TRACE_EXIT(l);
-    return NULL;
+    return -1;
 }
 
 static void lb_add_log_items(jk_ws_service_t *s,
@@ -1121,7 +1121,6 @@ static int JK_METHOD service(jk_endpoint_t *e,
                p->worker->sticky_session, sessionid ? sessionid : "empty");
 
     while (recoverable == JK_TRUE) {
-        lb_sub_worker_t *rec;
         if (attempt >= num_of_workers) {
             retry++;
             if (retry >= p->worker->retries) {
@@ -1142,20 +1141,23 @@ static int JK_METHOD service(jk_endpoint_t *e,
             }
             attempt = 0;
         }
-        rec = get_most_suitable_worker(s, p->worker, sessionid, p->states, l);
         rc = JK_FALSE;
         *is_error = JK_HTTP_SERVER_BUSY;
-        /* Do not reuse previous worker, because
-         * that worker already failed.
-         */
-        if (rec) {
+        i = get_most_suitable_worker(s, p->worker, sessionid, p->states, l);
+        if (i >= 0) {
             int r;
             int is_service_error = JK_HTTP_OK;
+            lb_sub_worker_t *rec = &(p->worker->lb_workers[i]);
             ajp_worker_t *aw = (ajp_worker_t *)rec->worker->worker_private;
             jk_endpoint_t *end = NULL;
-
+            int activation = s->extension.activation ?
+                             s->extension.activation[i] :
+                             JK_LB_ACTIVATION_UNSET;
+            if (activation == JK_LB_ACTIVATION_UNSET)
+                activation = rec->activation;
             if (!s->route)
                 s->route = rec->route;
+            s->activation = jk_lb_get_activation_direct(activation, l);
             prec = rec;
 
             if (JK_IS_DEBUG_LEVEL(l))
@@ -1423,7 +1425,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
             }
         }
         else {
-            /* NULL record, no more workers left ... */
+            /* No more workers left ... */
             if (!was_forced) {
                 int nf;
                 /* Force recovery only once.

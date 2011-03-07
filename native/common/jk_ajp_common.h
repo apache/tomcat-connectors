@@ -79,6 +79,15 @@ extern "C"
 #define SC_A_REQ_REMOTE_PORT    ("AJP_REMOTE_PORT")
 
 /*
+ * JK public request attributes
+ *
+ * Activation state of the worker in the load balancer.
+ * Can be any of the JK_LB_ACTIVATION_TEXT_* strings
+ * from jk_lb_worker.h.
+ */
+#define SC_A_JK_LB_ACTIVATION   ("JK_LB_ACTIVATION")
+
+/*
  * Request methods, coded as numbers instead of strings.
  * The list of methods was taken from Section 5.1.1 of RFC 2616,
  * RFC 2518, the ACL IETF draft, and the DeltaV IESG Proposed Standard.

@@ -2068,6 +2068,7 @@ void jk_init_ws_service(jk_ws_service_t *s)
     s->attributes_values = NULL;
     s->num_attributes = 0;
     s->route = NULL;
+    s->activation = JK_LB_ACTIVATION_ACTIVE;
     s->secret = NULL;
     s->reco_buf = NULL;
     s->reco_status = RECO_NONE;

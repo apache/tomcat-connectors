@@ -599,6 +599,29 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         }
     }
 
+    /* Forward activation information from the load balancer.
+     * It can be used by the backend to deny access by requests,
+     * which come with a session id but for an invalid session.
+     * Such requests get forwarded to backends even if they
+     * are disabled" in the load balancer, because the balancer
+     * does not know, which sessions are valid.
+     * If the backend can check, that is was "disabled" it can
+     * delete the session cookie and respond with a self-referential
+     * redirect. The new request will then be balanced to some
+     * other node that is not disabled.
+     */
+    {
+        if (jk_b_append_byte(msg, SC_A_REQ_ATTRIBUTE) ||
+            jk_b_append_string(msg, SC_A_JK_LB_ACTIVATION)   ||
+            jk_b_append_string(msg, s->activation)) {
+            jk_log(l, JK_LOG_ERROR,
+                   "failed appending the activation state %s",
+                   s->activation);
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+    }
+
     if (s->num_attributes > 0) {
         for (i = 0; i < s->num_attributes; i++) {
             if (jk_b_append_byte(msg, SC_A_REQ_ATTRIBUTE) ||

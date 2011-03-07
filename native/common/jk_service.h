@@ -218,6 +218,12 @@ struct jk_ws_service
      */
     const char *route;
 
+    /*
+     * Activation state of the worker in the load balancer.
+     * Will be forwarded as a request attribute.
+     */
+    const char *activation;
+
     /* Temp solution for auth. For native1 it'll be sent on each request,
        if an option is present. For native2 it'll be sent with the first
        request. On java side, both cases will work. For tomcat3.2 or
