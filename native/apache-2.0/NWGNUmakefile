@@ -36,7 +36,7 @@ SUBDIRS = \
 # paths to tools
 #
 
-include $(AP_WORK)\build\NWGNUhead.inc
+include $(AP_WORK)/build/NWGNUhead.inc
 
 #
 # build this level's files
@@ -195,7 +195,7 @@ XDCDATA		=
 # If there is an NLM target, put it here
 #
 TARGET_nlm = \
-	$(OBJDIR)/mod_jk.nlm \
+	$(OBJDIR)/$(NLM_NAME).nlm \
 	$(EOLIST)
 
 #
@@ -239,7 +239,7 @@ FILES_nlm_objs = \
 # These will be added as a library command in the link.opt file.
 #
 FILES_nlm_libs = \
-	libcpre.o \
+	$(NOVELLLIBC)/imports/libcpre.o \
 	$(EOLIST)
 
 #
@@ -270,8 +270,8 @@ FILE_nlm_copyright =
 # Any additional imports go here
 #
 FILES_nlm_Ximports = \
-	@$(APR)/aprlib.imp \
-	@$(NWOS)/httpd.imp \
+	@aprlib.imp \
+	@httpd.imp \
 	@libc.imp \
 	@ws2nlm.imp \
 	$(EOLIST)
@@ -327,6 +327,6 @@ $(OBJDIR)/version.inc: $(JKCOMMON)/jk_version.h $(OBJDIR)
 # in this makefile
 #
 
-include $(AP_WORK)\build\NWGNUtail.inc
+include $(AP_WORK)/build/NWGNUtail.inc
 
 
