@@ -3276,11 +3276,11 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 }
 
                 if (real_header) {
-                    i++;
                     if (JK_IS_DEBUG_LEVEL(logger)) {
                         jk_log(logger, JK_LOG_DEBUG, "Forwarding request header %s : %s",
                                s->headers_names[i], s->headers_values[i]);
                     }
+                    i++;
                 }
             }
             /* Add a content-length = 0 header if needed.
@@ -3288,6 +3288,9 @@ static int init_ws_service(isapi_private_data_t * private_data,
              * but non-zero length body.
              */
             if (need_content_length_header) {
+                if (JK_IS_DEBUG_LEVEL(logger)) {
+                    jk_log(logger, JK_LOG_DEBUG, "Incoming request needs explicit Content-Length: 0 in AJP13");
+                }
                 s->headers_names[cnt] = "Content-Length";
                 s->headers_values[cnt] = "0";
                 cnt++;
