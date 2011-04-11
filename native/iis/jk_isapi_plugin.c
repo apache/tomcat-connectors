@@ -3209,22 +3209,27 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 }
                 else if (!strnicmp(tmp, CONTENT_LENGTH,
                                    sizeof(CONTENT_LENGTH) - 1)) {
-                    if (need_content_length_header) {
-                        need_content_length_header = FALSE;
-                        /* If the content-length is unknown
-                         * or larger then 4Gb do not send it.
-                         */
-                        if (unknown_content_length || s->is_chunked) {
-                            if (JK_IS_DEBUG_LEVEL(logger)) {
-                                jk_log(logger, JK_LOG_DEBUG,
-                                       "Header Content-Length is %s",
-                                       s->is_chunked ? "chunked" : "unknown");
-                            }
-                            real_header = JK_FALSE;
+                    need_content_length_header = FALSE;
+                    
+                    /* If the content-length is unknown
+                     * or larger then 4Gb do not send it.
+                     * IIS can also create a synthetic Content-Length header to make
+                     * lpcbTotalBytes and the CONTENT_LENGTH server variable agree
+                     * on small requests where the entire chunk encoded message is
+                     * read into the available buffer.
+                     */
+                    if (unknown_content_length || s->is_chunked) {
+                        if (JK_IS_DEBUG_LEVEL(logger)) {
+                            jk_log(logger, JK_LOG_DEBUG,
+                                   "Disregarding Content-Length in request - content is %s",
+                                   s->is_chunked ? "chunked" : "unknown length");
                         }
+                        cnt--;
+                        real_header = JK_FALSE;
                     }
-                    if (real_header)
+                    else {
                         s->headers_names[i] = tmp;
+                    }
                 }
                 else if (!strnicmp(tmp, TOMCAT_TRANSLATE_HEADER_NAME,
                                    strlen(TOMCAT_TRANSLATE_HEADER_NAME))) {
