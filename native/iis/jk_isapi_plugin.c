@@ -1180,6 +1180,8 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
                            "Attempting to read %d bytes from client", l);
                 }
                 if (p->lpEcb->ReadClient(p->lpEcb->ConnID, buf, (LPDWORD)&l)) {
+                    /* ReadClient will succeed with dwSize == 0 for last chunk 
+                       if request chunk encoded */
                     *a += l;
                 }
                 else {
@@ -3024,8 +3026,12 @@ static int init_ws_service(isapi_private_data_t * private_data,
                          "HTTP_TRANSFER_ENCODING",
                          temp_buf,
                          (DWORD)sizeof(temp_buf))) {
-        if (strcasecmp(temp_buf, TRANSFER_ENCODING_CHUNKED_VALUE) == 0)
+        if (strcasecmp(temp_buf, TRANSFER_ENCODING_CHUNKED_VALUE) == 0) {
             s->is_chunked = JK_TRUE;
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG, "Request is Transfer-Encoding: chunked");
+            }
+        }
         else {
             /* XXX: What to do with non chunked T-E ?
              */
@@ -3277,6 +3283,10 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
                 if (real_header) {
                     i++;
+                    if (JK_IS_DEBUG_LEVEL(logger)) {
+                        jk_log(logger, JK_LOG_DEBUG, "Forwarding request header %s : %s",
+                               s->headers_names[i], s->headers_values[i]);
+                    }
                 }
             }
             /* Add a content-length = 0 header if needed.
