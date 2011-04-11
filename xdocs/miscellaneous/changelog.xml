@@ -70,6 +70,18 @@
         <bug>50339</bug>: Fix whitespace trimming when parsing attribute
         lists. (rjung)
       </fix>
+      <fix>
+        <bug>50975</bug>: IIS: Fix hanging of Transfer-Encoding: chunked
+        requests when Content-Length header is present in request as well.
+        Also addresses situation where IIS appears to create a Content-Length
+        header for a small chunk encoded request when none was present in the
+        original request. (timw)
+      </fix>
+      <fix>
+        <bug>47679</bug>: IIS: stop truncation of request headers when
+        ISAPI redirector used as an extension without the corresponding
+        filter installed. (timw)
+      </fix>
     </changelog>
   </subsection>
 </section>
