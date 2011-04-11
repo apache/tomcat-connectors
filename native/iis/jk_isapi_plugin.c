@@ -3180,11 +3180,6 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 need_content_length_header = TRUE;
             }
 
-            cnt -= 3;           /* For our three special headers:
-                                 * HTTP_TOMCATURI_XXXXXXXX
-                                 * HTTP_TOMCATWORKER_XXXXXXXX
-                                 * HTTP_TOMCATWORKERIDX_XXXXXXXX
-                                 */
             /* allocate an extra header slot in case we need to add a content-length header */
             s->headers_names =
                 jk_pool_alloc(&private_data->p, (cnt + 1) * sizeof(char *));
@@ -3206,15 +3201,9 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
                 if (!strnicmp(tmp, URI_HEADER_NAME, strlen(URI_HEADER_NAME))
                     || !strnicmp(tmp, WORKER_HEADER_NAME, strlen(WORKER_HEADER_NAME))
-                    || !strnicmp(tmp, WORKER_HEADER_INDEX, strlen(WORKER_HEADER_INDEX))) {
+                    || !strnicmp(tmp, WORKER_HEADER_INDEX, strlen(WORKER_HEADER_INDEX))
+                    || !strnicmp(tmp, QUERY_HEADER_NAME, strlen(QUERY_HEADER_NAME))) {
                     /* Skip redirector headers */
-                    real_header = JK_FALSE;
-                }
-                else if (!strnicmp(tmp, QUERY_HEADER_NAME,
-                                   strlen(QUERY_HEADER_NAME))) {
-                    /* HTTP_TOMCATQUERY_XXXXXXXX was supplied,
-                     * remove it from the count and skip
-                     */
                     cnt--;
                     real_header = JK_FALSE;
                 }
