@@ -672,9 +672,14 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
 }
 
 #ifndef MAX_SECS_TO_LINGER
-#define MAX_SECS_TO_LINGER 30
+#define MAX_SECS_TO_LINGER 2
 #endif
-#define SECONDS_TO_LINGER  2
+#define MS_TO_LINGER  500
+#define MS_TO_LINGER_LAST 2
+
+#ifndef MAX_LINGER_BYTES
+#define MAX_LINGER_BYTES 32768
+#endif
 
 #ifndef SHUT_WR
 #ifdef SD_SEND
@@ -710,7 +715,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     int rd = 0;
     int rp = 0;
     int save_errno;
-    int timeout = SECONDS_TO_LINGER * 1000;
+    int timeout = MS_TO_LINGER;
     time_t start = time(NULL);
 
     JK_TRACE_ENTER(l);
@@ -741,6 +746,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     }
 
     do {
+        rp = 0;
         if (jk_is_input_event(sd, timeout, l)) {
             /* Do a restartable read on the socket
              * draining out all the data currently in the socket buffer.
@@ -772,11 +778,10 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
         }
         rd += rp;
         if (rp < sizeof(dummy)) {
-            if (timeout > SECONDS_TO_LINGER) {
-                /* Try once again with 1000 times smaller timeout
-                 * In our case 2 msec.
-                 */
-                timeout = SECONDS_TO_LINGER;
+            if (timeout > MS_TO_LINGER_LAST) {
+                /* Try one last time with a short timeout 
+                */
+                timeout = MS_TO_LINGER_LAST;
                 continue;
             }
             /* We have read less then size of buffer
@@ -800,8 +805,8 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
             shutdown(sd, SHUT_RD);
             break;
         }
-        timeout = SECONDS_TO_LINGER * 1000;
-    } while (difftime(time(NULL), start) < MAX_SECS_TO_LINGER);
+        timeout = MS_TO_LINGER;
+    } while ((rd < MAX_LINGER_BYTES) && (difftime(time(NULL), start) < MAX_SECS_TO_LINGER));
 
     rc = jk_close_socket(sd, l);
     if (JK_IS_DEBUG_LEVEL(l))
