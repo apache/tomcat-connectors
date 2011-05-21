@@ -44,6 +44,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>41923</bug>AJP: Close AJP connection to Tomcat on client write
+        error when recovery_options 4 is specified, aborting the response
+        write on the Tomcat side. (timw)
+      </fix>
       <update>
         AJP: Cap the lingering bytes that will be read
         when shutting down an AJP socket at 32k to prevent CPU spikes
