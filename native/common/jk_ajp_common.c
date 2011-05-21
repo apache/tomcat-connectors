@@ -780,7 +780,15 @@ static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_logger_t *l
 {
     JK_TRACE_ENTER(l);
     if (shutdown == JK_TRUE && IS_VALID_SOCKET(ae->sd)) {
-        jk_shutdown_socket(ae->sd, l);
+        if (ae->hard_close) {
+            /* Force unclean connection close to communicate client write errors
+             * back to Tomcat by aborting AJP response writes.
+             */
+            jk_close_socket(ae->sd, l);
+        }
+        else {
+            jk_shutdown_socket(ae->sd, l);
+        }
     }
     ae->worker->s->connected--;
     ae->sd = JK_INVALID_SOCKET;
@@ -2403,6 +2411,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
 
     p->left_bytes_to_send = s->content_length;
     p->reuse = JK_FALSE;
+    p->hard_close = JK_FALSE;
 
     s->secret = aw->secret;
 
@@ -2479,6 +2488,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
             if (aw->recovery_opts & RECOVER_ABORT_IF_CLIENTERROR) {
                 /* Mark the endpoint for shutdown */
                 p->reuse = JK_FALSE;
+                p->hard_close = JK_TRUE;
             }
         }
         else if (err == JK_FATAL_ERROR) {
@@ -2514,6 +2524,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
                 if (aw->recovery_opts & RECOVER_ABORT_IF_CLIENTERROR) {
                     /* Mark the endpoint for shutdown */
                     p->reuse = JK_FALSE;
+                    p->hard_close = JK_TRUE;
                 }
             }
             else if (err == JK_CLIENT_WR_ERROR) {
@@ -2528,6 +2539,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
                 if (aw->recovery_opts & RECOVER_ABORT_IF_CLIENTERROR) {
                     /* Mark the endpoint for shutdown */
                     p->reuse = JK_FALSE;
+                    p->hard_close = JK_TRUE;
                 }
             }
             else if (err == JK_FATAL_ERROR) {
@@ -2720,6 +2732,7 @@ static int ajp_create_endpoint_cache(ajp_worker_t *p, int proto, jk_logger_t *l)
         }
         p->ep_cache[i]->sd = JK_INVALID_SOCKET;
         p->ep_cache[i]->reuse = JK_FALSE;
+        p->ep_cache[i]->hard_close = JK_FALSE;
         p->ep_cache[i]->last_access = now;
         jk_open_pool(&(p->ep_cache[i]->pool), p->ep_cache[i]->buf,
                      sizeof(p->ep_cache[i]->buf));

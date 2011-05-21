@@ -382,6 +382,10 @@ struct ajp_endpoint
     jk_sock_t sd;
     int reuse;
 
+    /* Used with RECOVER_ABORT_IF_CLIENTERROR to hard abort
+       write of AJP response on client write errors */
+    int hard_close;
+
     jk_endpoint_t endpoint;
 
     jk_uint64_t left_bytes_to_send;
