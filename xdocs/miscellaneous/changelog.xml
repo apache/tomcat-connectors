@@ -44,11 +44,17 @@
   <br />
   <subsection name="Native">
     <changelog>
-      <fix>
-        <bug>50839</bug>: Cap the lingering bytes that will be read
+      <update>
+        AJP: Cap the lingering bytes that will be read
         when shutting down an AJP socket at 32k to prevent CPU spikes
         in the web server when a client aborts on a large response body.
-        Also reduce total linger time to 2s.(timw)
+        Also reduce total linger time to 2s. (timw)
+      </update>
+      <fix>
+        <bug>50839</bug>AJP: Fix 30sec CPU spike due to incorrect counting
+        of lingering bytes causing a busy loop when a client aborts
+        connection during a response write.
+        Fixes regression in 1.2.31. (timw)
       </fix>
       <update>
         Docs: Improve load balancer documentation. (rjung)
