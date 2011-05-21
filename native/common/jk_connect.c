@@ -712,8 +712,8 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
     char buf[64];
     char *sb = NULL;
     int rc = 0;
-    int rd = 0;
-    int rp = 0;
+    size_t rd = 0;
+    size_t rp = 0;
     int save_errno;
     int timeout = MS_TO_LINGER;
     time_t start = time(NULL);
