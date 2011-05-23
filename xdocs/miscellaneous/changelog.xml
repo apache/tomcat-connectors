@@ -45,6 +45,15 @@
   <subsection name="Native">
     <changelog>
       <fix>
+      <fix>
+        <bug>50339</bug>: Fix whitespace trimming when parsing attribute
+        lists. (rjung)
+      </fix>
+      <fix>
+        <bug>41263</bug>: Support Servlet API getRemotePort().
+        Works for Tomcat 5.5.28, 6.0.20 and 7.0.0 and Apache and ISAPI
+        plugins. (rjung)
+      </fix>
         <bug>41923</bug>AJP: Close AJP connection to Tomcat on client write
         error when recovery_options 4 is specified, aborting the response
         write on the Tomcat side. (timw)
@@ -61,31 +70,14 @@
         connection during a response write.
         Fixes regression in 1.2.31. (timw)
       </fix>
-      <update>
-        Docs: Improve load balancer documentation. (rjung)
-      </update>
       <add>
         LB: Forward worker activation state as request attribute
         "JK_LB_ACTIVATION". Possible values are "ACT" (active),
         "DIS" (disabled) and "STP" (stopped). (rjung)
       </add>
       <fix>
-        <bug>41263</bug>: Support Servlet API getRemotePort().
-        Works for Tomcat 5.5.28, 6.0.20 and 7.0.0 and Apache and ISAPI
-        plugins. (rjung)
-      </fix>
-      <fix>
         <bug>50363</bug>: IIS: Prevent chunk encoding of empty message
         bodies for 204, 205 and 304 responses. (timw)
-      </fix>
-      <fix>
-        NSAPI: Use lower case header names for responses.
-        Otherwise the web server might add chunked transfer encoding header
-        in addition to our content length header.
-      </fix>
-      <fix>
-        <bug>50339</bug>: Fix whitespace trimming when parsing attribute
-        lists. (rjung)
       </fix>
       <fix>
         <bug>50975</bug>: IIS: Fix hanging of Transfer-Encoding: chunked
@@ -99,6 +91,14 @@
         ISAPI redirector used as an extension without the corresponding
         filter installed. (timw)
       </fix>
+      <fix>
+        NSAPI: Use lower case header names for responses.
+        Otherwise the web server might add chunked transfer encoding header
+        in addition to our content length header.
+      </fix>
+      <update>
+        Docs: Improve load balancer documentation. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>
