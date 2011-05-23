@@ -308,6 +308,33 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
     apache_private_data_t *p = s->ws_private;
     request_rec *r = p->r;
 
+    /* If we use proxy error pages, still pass
+     * through context headers needed for special status codes.
+     */
+    if (s->extension.use_server_error_pages &&
+        status >= s->extension.use_server_error_pages) {
+        if (status == HTTP_UNAUTHORIZED) {
+            int found = JK_FALSE;
+            for (h = 0; h < num_of_headers; h++) {
+                if (!strcasecmp(header_names[h], "WWW-Authenticate")) {
+                    char *tmp = apr_pstrdup(r->pool, header_values[h]);
+                    apr_table_set(r->err_headers_out,
+                                  "WWW-Authenticate", tmp);
+                    found = JK_TRUE;
+                }
+            }
+            if (found == JK_FALSE) {
+                jk_server_conf_t *xconf = (jk_server_conf_t *)
+                                           ap_get_module_config(r->server->module_config,
+                                                                &jk_module);
+                jk_log(xconf->log, JK_LOG_INFO,
+                       "origin server sent 401 without"
+                       " WWW-Authenticate header");
+            }
+        }
+        return JK_TRUE;
+    }
+
     /* If there is no reason given (or an empty one),
      * we'll try to guess a good one.
      */

@@ -950,6 +950,34 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
     if (s && s->ws_private) {
         int rv = JK_TRUE;
         isapi_private_data_t *p = s->ws_private;
+
+        /* If we use proxy error pages, still pass
+         * through context headers needed for special status codes.
+         */
+        if (s->extension.use_server_error_pages &&
+            status >= s->extension.use_server_error_pages) {
+            if (status == JK_HTTP_UNAUTHORIZED) {
+                int found = JK_FALSE;
+                for (h = 0; h < num_of_headers; h++) {
+                    if (!strcasecmp(header_names[h], "WWW-Authenticate")) {
+                        /*
+                         * TODO: we need to save a copy of header_values[h]
+                         * for later reuse in write_error_message()
+                         * which is called later on form HttpExtensionProc
+                         * because of use_server_error_pages.
+                         */
+                        found = JK_TRUE;
+                    }
+                }
+                if (found == JK_FALSE) {
+                    jk_log(logger, JK_LOG_INFO,
+                           "origin server sent 401 without"
+                           " WWW-Authenticate header");
+                }
+            }
+            return JK_TRUE;
+        }
+
         if (!s->response_started) {
             char *status_str = NULL;
             char *headers_str = NULL;

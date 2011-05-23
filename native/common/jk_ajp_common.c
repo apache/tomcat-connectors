@@ -1867,11 +1867,19 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 r->http_response_status >= r->extension.use_server_error_pages)
                 r->response_blocked = JK_TRUE;
 
+            /*
+             * Call even if response is blocked, since it also handles
+             * forwarding some headers for special http status codes
+             * even if the server uses an own error page.
+             * Example: The WWW-Authenticate header in case of
+             * HTTP_UNAUTHORIZED (401).
+             */
+            r->start_response(r, res.status, res.msg,
+                              (const char *const *)res.header_names,
+                              (const char *const *)res.header_values,
+                              res.num_headers);
+
             if (!r->response_blocked) {
-                r->start_response(r, res.status, res.msg,
-                                  (const char *const *)res.header_names,
-                                  (const char *const *)res.header_values,
-                                  res.num_headers);
                 if (r->flush && r->flush_header)
                     r->flush(r);
             }

@@ -229,6 +229,7 @@ extern "C"
 
 #define JK_HTTP_OK                200
 #define JK_HTTP_BAD_REQUEST       400
+#define JK_HTTP_UNAUTHORIZED      401
 #define JK_HTTP_REQUEST_TOO_LARGE 413
 #define JK_HTTP_SERVER_ERROR      500
 #define JK_HTTP_NOT_IMPLEMENTED   501
