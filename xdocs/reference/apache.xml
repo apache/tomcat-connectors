@@ -271,7 +271,48 @@ The default value is On.
 In order to make SSL data available for mod_jk in Apache, you need to
 set <code>SSLOptions +StdEnvVars</code>. For the certificate information you also need
 to add <code>SSLOptions +ExportCertData</code>.
-</p></attribute>
+</p>
+<p>
+  Specifically, mod_jk will export the following environment variables from
+  Apache httpd to Tomcat under these request attributes as per the
+  Servlet Specification 3.0, section 3.8:
+</p>
+<table>
+  <tr><th>Env Var</th><th>Request Attribute Name</th><th>Type</th><th>Example</th></tr>
+  <tr>
+    <td>SSL_CIPHER<br/>(or <code>JkKEYSIZEIndicator</code>)</td>
+    <td>javax.servlet.request.cipher_suite</td>
+    <td>java.lang.String</td>
+    <td>DHE-RSA-AES256-SHA</td>
+  </tr>
+  <tr>
+    <td>SSL_CIPHER_USEKEYSIZE<br/>(or <code>JkKEYSIZEIndicator</code>)</td>
+    <td>javax.servlet.request.key_size</td>
+    <td>java.lang.Integer</td>
+    <td>256</td>
+  </tr>
+  <tr>
+    <td>SSL_SESSION_ID<br/>(or <code>JkSESSIONIndicator</code>)</td>
+    <td>javax.servlet.request.ssl_session</td>
+    <td>java.lang.String</td>
+    <td>905...32E (a hex string)</td>
+  </tr>
+  <tr>
+    <td>SSL_CLIENT_CERT_CHAIN_<i>n</i><br/>(or <code>JkCERTCHAINPrefix</code><i>n</i>)</td>
+    <td>javax.servlet.request.X509Certificate</td>
+    <td>java.security.X509Certificate[]</td>
+    <td>(A chain of certs in ascending order of trust, the first one being
+        ths client's certificate, the second being the signer of that
+        certificate, and so on)</td>
+  </tr>
+</table>
+<p>
+  For all other SSL-related variables, use <code>JkEnvVar</code> for each
+  variable you want. Please note that, like <code>JkEnvVar</code>, these
+  variables are available from the request <i><b>attributes</b></i>, not as
+  environment variables or as request headers.
+</p>
+</attribute>
 <attribute name="JkHTTPSIndicator" required="false"><p>
 Name of the Apache environment variable that contains SSL indication.
 <br/>
