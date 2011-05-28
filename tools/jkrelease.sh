@@ -54,6 +54,7 @@ usage() {
     echo "        -T: package from trunk"
     echo "        -d: package from local directory"
     echo "        -p: GNU PG passphrrase used for signing"
+    echo "        -k: ID of GNU PG key to use for signing"
 }
 
 copy_files() {
@@ -72,14 +73,15 @@ copy_files() {
 #################### MAIN ##############
 
 conflict=0
-while getopts :v:t:r:b:d:p:Tf c
+while getopts :v:t:r:b:d:p:k:Tf c
 do
     case $c in
     v)         version=$OPTARG;;
     t)         tag=$OPTARG
                conflict=$(($conflict+1));;
     r)         revision=$OPTARG;;
-    p)         SIGN_OPTS="--passphrase=$OPTARG";;
+    k)         SIGN_OPTS="--default-key=$OPTARG $SIGN_OPTS";;
+    p)         SIGN_OPTS="--passphrase=$OPTARG $SIGN_OPTS";;
     b)         branch=$OPTARG
                conflict=$(($conflict+1));;
     T)         trunk=trunk
@@ -306,7 +308,7 @@ fi
 cd ../../
 
 # Pack
-tar cfz ${JK_DIST}.tar.gz --owner="${JK_OWNER}" --group="${JK_GROUP}" ${JK_DIST}
+tar cfz ${JK_DIST}.tar.gz --owner="${JK_OWNER}" --group="${JK_GROUP}" ${JK_DIST} || exit 1
 perl ${JK_DIST}/tools/lineends.pl --cr ${JK_DIST}
 zip -9 -r ${JK_DIST}.zip ${JK_DIST}
 

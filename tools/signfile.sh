@@ -25,6 +25,10 @@ do
      ;;
     esac
     case "$o" in
+        --default-key=*  )
+            gpgopts="$gpgopts --default-key $a"
+            shift
+        ;;
         --passphrase=*  )
             gpgopts="$gpgopts --passphrase $a"
             shift
