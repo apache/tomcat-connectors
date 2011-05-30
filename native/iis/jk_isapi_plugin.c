@@ -958,6 +958,7 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
             status >= s->extension.use_server_error_pages) {
             if (status == JK_HTTP_UNAUTHORIZED) {
                 int found = JK_FALSE;
+                unsigned int h;
                 for (h = 0; h < num_of_headers; h++) {
                     if (!strcasecmp(header_names[h], "WWW-Authenticate")) {
                         /*
