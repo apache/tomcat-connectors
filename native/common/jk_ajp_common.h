@@ -359,7 +359,7 @@ struct ajp_worker
 
     int retry_interval;            /*  Number of milliseconds to sleep before doing a retry */
 
-    /* 
+    /*
      * HTTP status that will cause failover (0 means disabled)
      */
      unsigned int http_status_fail_num;
@@ -457,6 +457,8 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
 int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t now, jk_logger_t *l);
 
 int jk_ajp_get_cping_mode(const char *m, int def);
+
+int ajp_has_endpoint(jk_worker_t *pThis, jk_logger_t *l);
 
 #ifdef __cplusplus
 }

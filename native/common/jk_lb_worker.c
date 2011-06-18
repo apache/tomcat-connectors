@@ -1085,8 +1085,18 @@ static int JK_METHOD service(jk_endpoint_t *e,
     if (p->worker->sequence != p->worker->s->h.sequence)
         jk_lb_pull(p->worker, JK_FALSE, l);
     for (i = 0; i < num_of_workers; i++) {
+        lb_sub_worker_t *rec = &(p->worker->lb_workers[i]);
+        if (rec->s->state == JK_LB_STATE_BUSY) {
+            if (ajp_has_endpoint(rec->worker, l)) {
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
+                           "worker %s busy count fixed",
+                           rec->name);
+                rec->s->state = JK_LB_STATE_OK;
+            }
+        }
         /* Copy the shared state info */
-        p->states[i] = p->worker->lb_workers[i].s->state;
+        p->states[i] = rec->s->state;
     }
 
     /* set the recovery post, for LB mode */

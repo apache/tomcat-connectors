@@ -3345,3 +3345,39 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
     JK_TRACE_EXIT(l);
     return JK_FALSE;
 }
+
+int ajp_has_endpoint(jk_worker_t *pThis,
+                     jk_logger_t *l)
+{
+    JK_TRACE_ENTER(l);
+
+    if (pThis && pThis->worker_private) {
+        ajp_worker_t *aw = pThis->worker_private;
+        int rc;
+
+        JK_ENTER_CS(&aw->cs, rc);
+        if (rc) {
+            unsigned int slot;
+            /* Try to find connected socket cache entry */
+            for (slot = 0; slot < aw->ep_cache_sz; slot++) {
+                if (aw->ep_cache[slot]) {
+                    JK_LEAVE_CS(&aw->cs, rc);
+                    return JK_TRUE;
+                }
+            }
+            JK_LEAVE_CS(&aw->cs, rc);
+        }
+        else {
+            jk_log(l, JK_LOG_ERROR,
+                    "locking thread (errno=%d)", errno);
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+    }
+    else {
+        JK_LOG_NULL_PARAMS(l);
+    }
+
+    JK_TRACE_EXIT(l);
+    return JK_FALSE;
+}
