@@ -997,7 +997,6 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
     JK_TRACE_ENTER(l);
 
     ae->last_errno = 0;
-    ae->worker->s->connected++;
     ae->sd = jk_open_socket(&ae->worker->worker_inet_addr,
                             ae->worker->keepalive,
                             ae->worker->socket_timeout,
@@ -1012,6 +1011,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
+    ae->worker->s->connected++;
     /* set last_access only if needed */
     if (ae->worker->cache_timeout > 0)
         ae->last_access = time(NULL);
