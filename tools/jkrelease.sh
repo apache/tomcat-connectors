@@ -133,7 +133,14 @@ fi
 if [ -n "$trunk" ]
 then
     JK_SVN_URL="${SVNROOT}/${SVNPROJ}/trunk"
-    JK_REV=`svn info $revision ${JK_SVN_URL} | awk '$1 == "Revision:" {print $2}'`
+    svn_url_info="`svn help info | grep URL`"
+    if [ -n "$svn_url_info" ]
+    then
+	JK_SVN_INFO="${JK_SVN_URL}"
+    else
+	JK_SVN_INFO=.
+    fi
+    JK_REV=`svn info $revision $JK_SVN_INFO | awk '$1 == "Revision:" {print $2}'`
     if [ -z "$JK_REV" ]
     then
        echo "No Revision found at '$JK_SVN_URL'"
@@ -242,7 +249,7 @@ cd ${JK_DIST}/native
 
 # Check for links, elinks or w3m
 W3MOPTS="-dump -cols 80 -t 4 -S -O iso-8859-1 -T text/html"
-ELNKOPTS="-dump -dump-width 80 -dump-charset iso-8859-1 -no-numbering -no-references -no-home"
+ELNKOPTS="-dump -dump-width 80 -dump-charset iso-8859-1 -no-numbering -no-home"
 LNKOPTS="-dump -width 80 -codepage iso-8859-1 -no-g -html-numbered-links 0"
 failed=true
 for tool in `echo "w3m elinks links"`
