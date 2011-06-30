@@ -46,6 +46,11 @@
     <changelog>
       <fix>
       <fix>
+        <bug>51417</bug>: Fix worker busy detection by querying the
+        worker endpoint. Abandoned connections can leave a worker
+        in busy state without decrementing busy counter. (mturk)
+      </fix>
+      <fix>
         <bug>50339</bug>: Fix whitespace trimming when parsing attribute
         lists. (rjung)
       </fix>
