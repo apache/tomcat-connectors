@@ -59,7 +59,7 @@
         plugins. (rjung)
       </fix>
       <fix>
-        <bug>41923</bug>AJP: Close AJP connection to Tomcat on client write
+        <bug>41923</bug>: AJP: Close AJP connection to Tomcat on client write
         error when recovery_options 4 is specified, aborting the response
         write on the Tomcat side. (timw)
       </fix>
@@ -70,7 +70,7 @@
         Also reduce total linger time to 2s. (timw)
       </update>
       <fix>
-        <bug>50839</bug>AJP: Fix 30sec CPU spike due to incorrect counting
+        <bug>50839</bug>: AJP: Fix 30sec CPU spike due to incorrect counting
         of lingering bytes causing a busy loop when a client aborts
         connection during a response write.
         Fixes regression in 1.2.31. (timw)
@@ -81,7 +81,7 @@
         "DIS" (disabled) and "STP" (stopped). (rjung)
       </add>
       <fix>
-        Apache: Forward WWW-Authenticate from backend when status is 401
+        HTTPD: Forward WWW-Authenticate from backend when status is 401
         and server generated error pages are used. (rjung)
       </fix>
       <fix>
