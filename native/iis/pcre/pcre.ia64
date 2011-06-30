@@ -50,7 +50,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 BSC32=bscmake.exe
-BSC32_FLAGS=kernel32.lib $(EXTRA_LIBS) /nologo /o"$(OUTDIR)\pcre.bsc"
+BSC32_FLAGS=kernel32.lib /nologo /o"$(OUTDIR)\pcre.bsc"
 BSC32_SBRS= \
 
 LIB32=link.exe -lib

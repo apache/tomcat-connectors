@@ -52,7 +52,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\pcre.bsc"
 BSC32_SBRS= \
 
 LIB32=link.exe -lib
-LIB32_FLAGS=kernel32.lib $(EXTRA_LIBS) /nologo /out:"$(OUTDIR)\pcre.lib"
+LIB32_FLAGS=kernel32.lib /nologo /out:"$(OUTDIR)\pcre.lib"
 LIB32_OBJS= \
 	"$(INTDIR)\get.obj" \
 	"$(INTDIR)\maketables.obj" \
