@@ -33,7 +33,7 @@
         <item name="workers.properties"         href="../reference/workers.html"/>
         <item name="uriworkermap.properties"    href="../reference/uriworkermap.html"/>
         <item name="Status Worker"              href="../reference/status.html"/>
-        <item name="Apache"                     href="../reference/apache.html"/>
+        <item name="Apache HTTP Server"         href="../reference/apache.html"/>
         <item name="IIS"                        href="../reference/iis.html"/>
     </menu>
 
@@ -46,7 +46,7 @@
     </menu>
 
     <menu name="Webserver HowTo">
-        <item name="Apache"                     href="../webserver_howto/apache.html"/>
+        <item name="Apache HTTP Server"         href="../webserver_howto/apache.html"/>
         <item name="IIS"                        href="../webserver_howto/iis.html"/>
         <item name="Netscape/SunOne/Sun"        href="../webserver_howto/nes.html"/>
     </menu>

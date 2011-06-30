@@ -21,7 +21,7 @@ Documentation for how to build mod_jk 1.2 from source and configure
 it for your webserver is located in the native/BUILDING.txt file in this
 source distribution.
 
-For the impatient Apache admins:
+For the impatient Apache HTTP Server admins:
 $> cd native
 $> ./configure --with-apxs=/usr/sbin/apxs (or where ever the apxs/apxs2 is)
 $> make

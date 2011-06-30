@@ -22,7 +22,7 @@
    limitations under the License.
 </copyright>
 <properties>
-<title>Apache HowTo</title>
+<title>Apache HTTP Server HowTo</title>
 <author email="hgomez@apache.org">Henri Gomez</author>
 <author email="shachor@il.ibm.com">Gal Shachor</author>
 <date>$Date$</date>
@@ -30,8 +30,8 @@
 <body>
 <section name="Introduction">
 <p>
-This document explains how to connect Tomcat to the popular open source web server, Apache.
-There is actually three versions of Apache, 1.3, 2.0 and 2.2 and all can be used with mod_jk,
+This document explains how to connect Tomcat to the popular open source web server, Apache httpd.
+There is actually three versions of Apache HTTP Server, 1.3, 2.0 and 2.2 and all can be used with mod_jk,
 the Tomcat redirector module.
 </p>
 
@@ -45,7 +45,7 @@ For more detailed configuration information consult the Reference Guide for
 and <a href="../reference/apache.html">Apache</a>.
 </p>
 
-<p><b>Waring: If Apache httpd and Tomcat are configured to serve content from
+<p><b>Waring: If Apache HTTP Server and Tomcat are configured to serve content from
 the same filing system location then care must be taken to ensure that httpd is
 not able to serve inappropriate content such as the contents of the WEB-INF
 directory or JSP source code.</b> This could occur if the httpd DocumentRoot
@@ -100,7 +100,7 @@ Cygwin (until you have an apache server and autoconf/automake support tools)
 Netware
 </li>
 <li>
-i5/OS V5R4 (System I) with Apache 2.0.58. Be sure to have the latest Apache PTF installed.
+i5/OS V5R4 (System I) with Apache HTTP Server 2.0.58. Be sure to have the latest Apache PTF installed.
 </li>
 <li>
 Tomcat 3.2.x, Tomcat 3.3.x, Tomcat 4.0.x, Tomcat 4.1.x, Tomcat 5.0.x, Tomcat 5.5.x and Tomcat 6.
@@ -215,7 +215,7 @@ mod_jk requires two entities:
 
 <ul>
 <li>
-<b>mod_jk.xxx</b> - The Apache module, depending on your operating system, it will be mod_jk.so, mod_jk.nlm or
+<b>mod_jk.xxx</b> - The Apache HTTP Server module, depending on your operating system, it will be mod_jk.so, mod_jk.nlm or
 or MOD_JK.SRVPGM (see the build section).
 </li>
 <li>
@@ -226,7 +226,7 @@ A sample workers.properties can be found under the conf directory in the source 
 </p>
 
 <p>
-Also as with other Apache modules, mod_jk should be first installed on the modules directory of your
+Also as with other Apache HTTP Server modules, mod_jk should be first installed on the modules directory of your
 Apache webserver, ie : /usr/lib/apache and you should update your <b>httpd.conf</b> file.
 </p>
 
@@ -248,8 +248,8 @@ The mod_jserv configuration directives are not compatible with mod_jk !
 
 <subsection name="Using Tomcat auto-configure">
 <p>
-The auto-configure works only for a single Tomcat running on the same machine where Apache (httpd) is running.
-The simplest way to configure Apache to use mod_jk is to turn on the Apache auto-configure setting
+The auto-configure works only for a single Tomcat running on the same machine where Apache HTTP Server is running.
+The simplest way to configure Apache HTTP Server to use mod_jk is to turn on the Apache HTTP Server auto-configure setting
 in Tomcat and put the following include directive at the end of your Apache httpd.conf file
 (make sure you replace $TOMCAT_HOME with the correct path for your Tomcat installation:
 </p>
@@ -264,7 +264,7 @@ Note: this file may also be generated as $TOMCAT_HOME/conf/auto/mod_jk.conf
 </p>
 
 <p>
-This will tell Apache to use directives in the <b>mod_jk.conf-auto</b> file in
+This will tell Apache HTTP Server to use directives in the <b>mod_jk.conf-auto</b> file in
 the Apache configuration. This file is created by enabling the Apache
 auto-configuration by creating your workers.properties file at
 $TOMCAT_HOME/conf/jk/workers.properties and adding the listener to the Engine

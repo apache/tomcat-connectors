@@ -200,7 +200,7 @@ install JK for the various web servers.
 </p>
 <ul>
 
-<li><a href="webserver_howto/apache.html"><b>Apache</b></a>
+<li><a href="webserver_howto/apache.html"><b>Apache HTTP Server</b></a>
 </li>
 <li><a href="webserver_howto/iis.html"><b>IIS</b></a>
 </li>
