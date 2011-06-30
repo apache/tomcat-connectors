@@ -45,7 +45,6 @@
   <subsection name="Native">
     <changelog>
       <fix>
-      <fix>
         <bug>51417</bug>: Fix worker busy detection by querying the
         worker endpoint. Abandoned connections can leave a worker
         in busy state without decrementing busy counter. (mturk)
@@ -59,6 +58,7 @@
         Works for Tomcat 5.5.28, 6.0.20 and 7.0.0 and Apache and ISAPI
         plugins. (rjung)
       </fix>
+      <fix>
         <bug>41923</bug>AJP: Close AJP connection to Tomcat on client write
         error when recovery_options 4 is specified, aborting the response
         write on the Tomcat side. (timw)
