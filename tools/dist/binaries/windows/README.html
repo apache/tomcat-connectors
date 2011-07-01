@@ -1,0 +1,63 @@
+<h2><a name="mirrors">Download from your
+    <a href="http://www.apache.org/dyn/closer.cgi/tomcat/tomcat-connectors/jk/binaries/windows">nearest mirror site!</a></a></h2>
+
+<p><strong>Please</strong> do not download from www.apache.org.  Use a mirror 
+   site to help us save apache.org bandwidth and to speed up your download.
+   <a href="http://www.apache.org/dyn/closer.cgi/tomcat/tomcat-connectors/jk/binaries/windows">
+   Click here</a> to find your nearest mirror.</p>
+
+<h2><a name="warnings">Windows Users, Read These First...</a></h2>
+
+<h3><strong>Warning:</strong> TCP/IP networking must be installed</h3>
+
+<p>TCP/IP must be correctly installed, configured and running in 
+   order to install and use Apache on Windows.  If you use dial-up networking 
+   exclusively, you may need to be connected to the internet for Apache to 
+   correctly determine that TCP/IP is installed.</p>
+
+<h3>If you are installing Apache on Windows XP prior to Service Pack 3</h3>
+
+<p>Install the Windows XP Service Pack 3. Refer to
+   <a href="http://support.microsoft.com/default.aspx?scid=kb;en-us;317949">
+   KB article 317949</a> if you need the gory details exactly why you must
+   not run the original Windows XP or SP1.
+</p>
+
+<h3><strong>Warning</strong> about the Quality of Service driver</h3>
+
+<p>We suggest disabling the "Quality of Service" (or QoS) network driver from 
+   Microsoft if you primarily use the machine as an Apache Server, as Apache
+   does not support the QoS extensions to the WinSock API.</p>
+
+<h3><strong>Warning</strong> about Firewall and similar software</h3>
+
+<p>Most Firewall programs, Web Spam filters and other TCP/IP driver-based
+   products (including spyware!) do not correctly implement the entire WinSock
+   API.  The shortcuts taken by the developers of such products cause Apache 
+   to fail.  If you insist on leaving such programs installed, and have
+   problems with your Apache installation, consider the suggestion below.
+</p>
+
+<h2><a name="released">The current stable release is 1.2.32</a></h2>
+
+<p>See the Apache Tomcat Connectors
+<a href="http://tomcat.apache.org/connectors-doc/miscellaneous/changelog.html">changelog</a>
+for the complete list of features and bug fixes for this release.</p>
+
+<h2><a name="source">Debugging and Source Code</a></h2>
+
+<p>You can find a corresponding -windows-i686-symbols.zip archive of the
+   debugging databases in the <a href="symbols/#symbols">symbols/</a>
+   directory, these are typically not needed.  This -windows-i686-symbols.zip
+   archive can be unpacked into the web server installation directory, providing
+   all of the .pdb diagnostic files allowing most Windows debugging tools
+   (and the Dr. Watson utility) to produce useful crash analysis.</p>
+
+<p>You will find the source code package in the 
+   <a href="../../../">/dist/tomcat-connectors/jk/</a> source tree.  The -src.zip file
+   contains <strong>only</strong> source and build files, and contains 
+   <strong>no</strong> binary executable files.</p>
+
+<p>This binary release was created with Microsoft Windows DDK 7.1,
+   using a more recent Platform SDK.
+</p>

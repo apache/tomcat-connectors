@@ -1,0 +1,68 @@
+<h2><a name="mirrors">Download from your
+    <a href="http://www.apache.org/dyn/closer.cgi/tomcat/tomcat-connectors">
+nearest mirror site!</a></a></h2>
+
+<p>Do not download from www.apache.org.  Please use a mirror site
+   to help us save apache.org bandwidth.
+   <a href="http://www.apache.org/dyn/closer.cgi/httpd/">
+   Go here to find your nearest mirror.</a>
+</p>
+
+<h2><a name="binaries">Binary Releases</a></h2>
+<p>Are available in the <a href="binaries/">binaries/</a> directory.
+   Every binary distribution contains an install script. See README 
+   for details.
+</p>
+
+<h2><a name="releases">Current Releases</a></h2>
+<p>For details on current releases, please see the 
+   <a href="http://tomcat.apache.org/download-connectors.cgi">Apache Tomcat
+   Connectors Download Page</a>.
+</p>
+<p>Note; the -src.zip versions of Apache are nearly identical to the
+   .tar.gz versions.  However, they offer the source files in DOS/Windows 
+   CR/LF text format, and include the Winows build files.
+   These -src.zip files <strong>do NOT contain binaries!</strong>
+   See the <a href="binaries/windows/">binaries/windows/</a>
+   directory for the Windows binary distributions.
+</p>
+
+<h2><a name="archive">Older Releases</a></h2>
+<p>Only current, recommended releases are available on www.apache.org
+   and the mirror sites.  Older releases can be obtained from the
+   <a href="http://archive.apache.org/dist/tomcat/tomcat-connectors/jk">archive site</a>.
+</p>
+
+<h2><a name="sig">PGP Signatures</a></h2>
+<p>All of the release distribution packages have been digitally signed
+   (using PGP or GPG) by the Apache Group members that constructed them.
+   There will be an accompanying <SAMP><EM>distribution</EM>.asc</SAMP> file
+   in the same directory as the distribution.  The PGP keys can be found
+   at the MIT key repository and within this project's
+   <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/KEYS">KEYS file</a>.
+</p>
+
+<p>Always use the signature files to verify the authenticity
+   of the distribution, <i>e.g.</i>,</p>
+
+<pre>
+% pgpk -a KEYS
+% pgpv tomcat-connectors-1.2.32-src.tar.gz.asc
+<i>or</i>,
+% pgp -ka KEYS
+% pgp tomcat-connectors-1.2.32-src.tar.gz.asc
+<i>or</i>,
+% gpg --import KEYS
+% gpg --verify tomcat-connectors-1.2.32-src.tar.gz.asc
+</pre>
+
+<p>We offer MD5 and SHA1 hashes as an alternative to validate the integrity
+   of the downloaded files. A unix program called <code>md5</code> or
+   <code>md5sum</code> is included in many unix distributions.  It is
+   also available as part of <a
+   href="http://www.gnu.org/software/textutils/textutils.html">GNU
+   Textutils</a>.  Windows users can get binary md5 programs from <a
+   href="http://www.fourmilab.ch/md5/">here</a>, <a
+   href="http://www.pc-tools.net/win32/freeware/console/">here</a>, or
+   <a href="http://www.slavasoft.com/fsum/">here</a>.
+</p>
