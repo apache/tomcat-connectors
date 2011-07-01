@@ -11,11 +11,9 @@
 <h3><strong>Warning:</strong> TCP/IP networking must be installed</h3>
 
 <p>TCP/IP must be correctly installed, configured and running in 
-   order to install and use Apache on Windows.  If you use dial-up networking 
-   exclusively, you may need to be connected to the internet for Apache to 
-   correctly determine that TCP/IP is installed.</p>
+   order to install and use Apache Tomcat Connectors on Windows.</p>
 
-<h3>If you are installing Apache on Windows XP prior to Service Pack 3</h3>
+<h3>If you are installing on Windows XP prior to Service Pack 3</h3>
 
 <p>Install the Windows XP Service Pack 3. Refer to
    <a href="http://support.microsoft.com/default.aspx?scid=kb;en-us;317949">
@@ -26,23 +24,22 @@
 <h3><strong>Warning</strong> about the Quality of Service driver</h3>
 
 <p>We suggest disabling the "Quality of Service" (or QoS) network driver from 
-   Microsoft if you primarily use the machine as an Apache Server, as Apache
+   Microsoft if you primarily use the machine as an Web Server, as connector
    does not support the QoS extensions to the WinSock API.</p>
 
 <h3><strong>Warning</strong> about Firewall and similar software</h3>
 
 <p>Most Firewall programs, Web Spam filters and other TCP/IP driver-based
    products (including spyware!) do not correctly implement the entire WinSock
-   API.  The shortcuts taken by the developers of such products cause Apache 
-   to fail.  If you insist on leaving such programs installed, and have
-   problems with your Apache installation, consider the suggestion below.
+   API. The shortcuts taken by the developers of such products could cause
+   connector to fail.
 </p>
 
 <h2><a name="released">The current stable release is 1.2.32</a></h2>
 
 <p>See the Apache Tomcat Connectors
 <a href="http://tomcat.apache.org/connectors-doc/miscellaneous/changelog.html">changelog</a>
-for the complete list of features and bug fixes for this release.</p>
+for the complete list of features and bugs fixed in this release.</p>
 
 <h2><a name="source">Debugging and Source Code</a></h2>
 
