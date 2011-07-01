@@ -1,0 +1,19 @@
+# Directives controlling the display of server-generated directory listings.
+IndexOptions DescriptionWidth=34
+AddDescription "OpenPGP ASCII armored signature" .asc
+AddDescription "MD5 checksum file" .md5
+AddDescription "SHA1 checksum file" .sha1
+AddDescription "SHA256 checksum file" .sha256
+AddDescription "ZIP compressed archive" .zip
+AddDescription "GZIP compressed document" .gz
+AddDescription "Unix tar archive" .tar
+AddDescription "GZIP compressed tar archive" .tgz
+AddDescription "plain text document" .txt
+AddDescription "Unified diff patch" .diff
+AddDescription "shared object file" .so
+AddDescription "dynamically linked library" .dll
+AddIcon /icons/generic.sec.gif .asc .key
+AddIcon /icons/patch.gif .diff
+AddIcon /icons/screw2.gif .md5
+AddIcon /icons/screw2.gif .sha1
+AddIcon /icons/screw2.gif .sha256
