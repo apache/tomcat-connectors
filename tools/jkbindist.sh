@@ -96,7 +96,7 @@ case "$websrv" in
     ;;
 esac
 
-dist=${prefix}-${version}-${websrv}-${opsys}-${arch}
+dist=${prefix}-${version}-${opsys}-${arch}-${websrv}
 dtop=${tools}/..
 copy="KEYS LICENSE NOTICE"
 
