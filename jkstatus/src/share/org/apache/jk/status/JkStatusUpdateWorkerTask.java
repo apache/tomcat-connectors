@@ -242,31 +242,31 @@ public class JkStatusUpdateWorkerTask extends AbstractJkStatusTask {
             sb.append("&sw=");
             sb.append(URLEncoder.encode(worker, getCharset()));
             if (loadfactor >= 0) {
-				sb.append("&wf=");
+				sb.append("&vwf=");
 				sb.append(loadfactor);
 			}
 			if (route != null) {
-				sb.append("&wn=");
+				sb.append("&vwn=");
 				sb.append(URLEncoder.encode(route, getCharset()));
 			}
 			if (activation == null && activationCode > 0 && activationCode < 4) {
-				sb.append("&wa=");
+				sb.append("&vwa=");
 				sb.append(activation);
 			}
 			if (activation != null) {
-				sb.append("&wa=");
+				sb.append("&vwa=");
 				sb.append(URLEncoder.encode(activation, getCharset()));
 			}
 			if (distance >= 0) {
-				sb.append("&wd=");
+				sb.append("&vwd=");
 				sb.append(distance);
 			}
 			if (redirect != null) { // other worker conrecte lb's
-				sb.append("&wr=");
+				sb.append("&vwr=");
 				sb.append(URLEncoder.encode(redirect, getCharset()));
 			}
 			if (domain != null) {
-				sb.append("&wc=");
+				sb.append("&vwc=");
 				sb.append(URLEncoder.encode(domain, getCharset()));
 			}
             
