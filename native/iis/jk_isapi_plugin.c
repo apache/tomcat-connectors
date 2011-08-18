@@ -108,6 +108,9 @@ static char HTTP_QUERY_HEADER_NAME[MAX_PATH];
 static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
 static char HTTP_WORKER_HEADER_INDEX[MAX_PATH];
 
+/* DLL Handle - used to unique shared memory file */
+static char DLL_INSTANCE_ID[MAX_PATH];
+
 #define REGISTRY_LOCATION       ("Software\\Apache Software Foundation\\Jakarta Isapi Redirector\\1.0")
 #define W3SVC_REGISTRY_KEY      ("SYSTEM\\CurrentControlSet\\Services\\W3SVC\\Parameters")
 #define EXTENSION_URI_TAG       ("extension_uri")
@@ -2402,6 +2405,8 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    // Instance Handle of the DLL
         StringCbPrintf(HTTP_WORKER_HEADER_NAME, MAX_PATH, HTTP_HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_WORKER_HEADER_INDEX, MAX_PATH, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
 
+        StringCbPrintf(DLL_INSTANCE_ID, MAX_PATH, "%p", hInst);
+
         JK_INIT_CS(&init_cs, rc);
         JK_INIT_CS(&log_cs, rc);
 
@@ -2600,6 +2605,9 @@ static int init_jk(char *serverName)
     StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME);
 
     jk_log(logger, JK_LOG_INFO, "Starting %s", (FULL_VERSION_STRING));
+
+    StringCbCat(shm_name, MAX_PATH, "_");
+    StringCbCat(shm_name, MAX_PATH, DLL_INSTANCE_ID);
 
     if (*serverName) {
         size_t i;
