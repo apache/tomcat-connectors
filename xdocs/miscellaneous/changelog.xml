@@ -40,19 +40,6 @@
   new documentation project for JK was started.
   </p>
 </section>
-<section name="Changes between 1.2.32 and 1.2.33">
-  <br />
-  <subsection name="Native">
-    <changelog>
-      <fix>
-        IIS: Made the shared memory file name used by the ISAPI Redirector
-        unique for each redirector DLL instance. Avoids issues caused by
-        shared memory being corrupted by other redirectors on the same site.
-        (timw)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
 <section name="Changes between 1.2.31 and 1.2.32">
   <br />
   <subsection name="Native">
