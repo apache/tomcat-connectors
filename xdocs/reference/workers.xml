@@ -881,7 +881,9 @@ This directive can be used multiple times for the same worker.
 You can set a secret keyword on the Tomcat AJP Connector. Then only requests
 from workers with the same secret keyword will be accepted.
 <p>
-Use <b>request.secret="secret key word"</b> in your Tomcat AJP Connector configuration.
+Use <b>request.secret="secret key word"</b> in your Tomcat AJP Connector
+configuration in Tomcat 5.5 or 6.0 and <b>requiredSecret="secret key word"</b>
+in Tomcat 7.0 onwards.
 </p>
 <p>
 If you set a secret on a load balancer, all its members will inherit this secret.
