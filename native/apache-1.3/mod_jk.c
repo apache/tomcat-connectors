@@ -50,6 +50,7 @@
 #define _INET_
 #define _SYS_TIMEVAL_H_
 #define _SYS_SOCKET_H_
+#undef  ntohs
 #endif
 #include "jk_global.h"
 #include "jk_util.h"
