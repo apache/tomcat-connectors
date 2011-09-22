@@ -1109,9 +1109,16 @@ variable <b>no-jk</b>.
     SetEnvIf REQUEST_URI ^/apps/([^/]*)/static no-jk
   &lt;/Location&gt;
 </source>
+</subsection>
+<subsection name="More Environment Variables">
 <p>
-Finally, starting with version 1.2.27 you can use the environment variable
-<b>JK_REPLY_TIMEOUT</b> to dynamically set a reply timeout.
+The environment variable
+<b>JK_REPLY_TIMEOUT</b> can be set to dynamically define a reply timeout.
+The value must be given in milliseconds.
+You can use <b>SetEnvIf</b> or <b>RewriteRule</b>
+for more complex rules to change the <b>JK_REPLY_TIMEOUT</b> according
+to request properties like e.g. the request URI.
+This is available since version 1.2.27.
 </p>
 </subsection>
  </section>
