@@ -804,15 +804,15 @@ static int init_ws_service(apache_private_data_t * private_data,
     sticky_ignore = apr_table_get(r->subprocess_env, JK_ENV_STICKY_IGNORE);
     if (sticky_ignore) {
         if (*sticky_ignore == '\0') {
-            s->extension.reply_timeout = JK_TRUE;
+            s->extension.sticky_ignore = JK_TRUE;
         }
         else {
             int r = atoi(sticky_ignore);
             if (r) {
-                s->extension.reply_timeout = JK_TRUE;
+                s->extension.sticky_ignore = JK_TRUE;
             }
             else {
-                s->extension.reply_timeout = JK_FALSE;
+                s->extension.sticky_ignore = JK_FALSE;
             }
         }
     }
