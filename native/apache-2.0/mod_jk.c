@@ -791,7 +791,7 @@ static int init_ws_service(apache_private_data_t * private_data,
             memcpy(s->extension.fail_on_status, e->fail_on_status, e->fail_on_status_size * sizeof(int));
         }
     }
-    reply_timeout = apr_table_get(r->subprocess_env, "JK_REPLY_TIMEOUT");
+    reply_timeout = apr_table_get(r->subprocess_env, JK_ENV_REPLY_TIMEOUT);
     if (reply_timeout) {
         int r = atoi(reply_timeout);
         if (r >= 0)
