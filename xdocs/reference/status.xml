@@ -487,7 +487,7 @@ contain the configuration information, you want to change. First the list for lo
 <b>vlf</b>: sticky_session_force (0/f/n/off=off, 1/t/y/on=on; case insensitive)
 </li>
 <li>
-<b>vlm</b>: method (0/r="Requests", 1/t="Traffic", 2/b="Busyness", 3/s="Sessions"; case insensitive, only first character is used)
+<b>vlm</b>: method (0/r="Requests", 1/t="Traffic", 2/b="Busyness", 3/s="Sessions", 4/s="Next"; case insensitive, only first character is used)
 </li>
 <li>
 <b>vll</b>: lock (0/o="Optimistic", 1/p="Pessimistic"; case insensitive, only first character is used)

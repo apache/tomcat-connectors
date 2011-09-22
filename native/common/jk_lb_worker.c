@@ -185,6 +185,8 @@ int jk_lb_get_method_code(const char *v)
         return JK_LB_METHOD_BUSYNESS;
     else if  (*v == 's' || *v == 'S' || *v == '3')
         return JK_LB_METHOD_SESSIONS;
+    else if  (*v == 'n' || *v == 'N' || *v == '4')
+        return JK_LB_METHOD_NEXT;
     else
         return JK_LB_METHOD_DEF;
 }
@@ -619,20 +621,33 @@ static jk_uint64_t decay_load(lb_worker_t *p,
 {
     unsigned int i;
     jk_uint64_t curmax = 0;
+    jk_uint64_t curmin;
     lb_sub_worker_t *w;
     ajp_worker_t *aw;
 
     JK_TRACE_ENTER(l);
+    curmin = (&p->lb_workers[0])->s->lb_value;
     for (i = 0; i < p->num_of_workers; i++) {
         w = &p->lb_workers[i];
         if (p->lbmethod != JK_LB_METHOD_BUSYNESS) {
-            w->s->lb_value >>= exponent;
+            if (p->lbmethod != JK_LB_METHOD_NEXT) {
+                w->s->lb_value >>= exponent;
+            }
+            if (w->s->lb_value < curmin) {
+                curmin = w->s->lb_value;
+            }
             if (w->s->lb_value > curmax) {
                 curmax = w->s->lb_value;
             }
         }
         aw = (ajp_worker_t *)w->worker->worker_private;
         aw->s->reply_timeouts >>= exponent;
+    }
+    if (p->lbmethod == JK_LB_METHOD_NEXT) {
+        for (i = 0; i < p->num_of_workers; i++) {
+            w = &p->lb_workers[i];
+            w->s->lb_value -= curmin;
+        }
     }
     JK_TRACE_EXIT(l);
     return curmax;
@@ -1219,10 +1234,11 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 rec->s->busy++;
                 if (p->worker->s->busy > p->worker->s->max_busy)
                     p->worker->s->max_busy = p->worker->s->busy;
-                if ( (p->worker->lbmethod == JK_LB_METHOD_REQUESTS) ||
-                     (p->worker->lbmethod == JK_LB_METHOD_BUSYNESS) ||
-                     (p->worker->lbmethod == JK_LB_METHOD_SESSIONS &&
-                      !sessionid) )
+                if (p->worker->lbmethod == JK_LB_METHOD_REQUESTS ||
+                    p->worker->lbmethod == JK_LB_METHOD_BUSYNESS ||
+                    (!sessionid &&
+                     (p->worker->lbmethod == JK_LB_METHOD_SESSIONS ||
+                      p->worker->lbmethod == JK_LB_METHOD_NEXT)))
                     rec->s->lb_value += rec->lb_mult;
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                     jk_shm_unlock();

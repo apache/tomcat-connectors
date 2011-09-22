@@ -2720,6 +2720,12 @@ static void form_worker(jk_ws_service_t *s,
     if (lb->lbmethod == JK_LB_METHOD_SESSIONS)
         jk_puts(s, " checked=\"checked\"");
     jk_puts(s, "/></td></tr>\n");
+    jk_putv(s, "<tr><td>&nbsp;&nbsp;Next</td><td><input name=\"",
+            JK_STATUS_ARG_LB_METHOD, "\" type=\"radio\"", NULL);
+    jk_printf(s, " value=\"%d\"", JK_LB_METHOD_NEXT);
+    if (lb->lbmethod == JK_LB_METHOD_NEXT)
+        jk_puts(s, " checked=\"checked\"");
+    jk_puts(s, "/></td></tr>\n");
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_LB_TEXT_LOCK,
             ":</td><td></td></tr>\n", NULL);
     jk_putv(s, "<tr><td>&nbsp;&nbsp;Optimistic</td><td><input name=\"",

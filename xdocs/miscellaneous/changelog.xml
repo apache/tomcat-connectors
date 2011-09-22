@@ -53,6 +53,10 @@
         variable JK_STICKY_IGNORE. This can be useful to break cookie stickyness
         for non-sticky requests like login forms. (rjung)
       </add>
+      <add>
+        LB: New balancing method "Next" to distribute sessions in a round-robin
+        way. (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

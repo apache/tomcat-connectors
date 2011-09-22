@@ -536,13 +536,13 @@ setting of worker.maintain. The value of the load counters can be inspected
 using the status worker.
 </p>
 <p>
-If method is set to <b>R[equest]</b> the balancer will use number of requests
+If method is set to <b>R[equest]</b> the balancer will use the number of requests
 to find the best worker. Accesses will be distributed according to the
 lbfactor in a sliding time window. This is the default value and should be
 working well for most applications.
 </p>
 <p>
-If method is set to <b>S[ession]</b> the balancer will use number of sessions
+If method is set to <b>S[ession]</b> the balancer will use the number of sessions
 to find the best worker. Accesses will be distributed according to the
 lbfactor in a sliding time window. Because the balancer does not keep any state,
 it actually does not know the number of sessions. Instead it counts each request
@@ -551,6 +551,18 @@ know, when a session is being invalidated, nor will it correct its load numbers
 according to session timeouts or worker failover. This method should be used,
 if sessions are your limiting resource, e.g. when you only have limited memory
 and your sessions need a lot of memory.
+</p>
+<p>
+If method is set to <b>N[ext]</b> the balancer will again use the number of sessions
+to find the best worker. The difference to the <b>S[ession]</b> method is how
+the session count is handled in the sliding time window. The <b>N[ext]</b> method
+does not divide by 2, instead it subtracts the minimum number. This should effectively
+result in a round-robin session balancing, thus the name <b>N[ext]</b>.
+Under high load, the two session balancing
+methods will result in a similar distribution, but <b>N[ext]</b> will be better
+if you need to distribute small numbers of sessions. Again this method will
+neither know, when a session is being invalidated, nor will it correct its load numbers
+according to session timeouts or worker failover.
 </p>
 <p>
 If set to <b>T[raffic]</b> the balancer will use
