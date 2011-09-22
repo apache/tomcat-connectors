@@ -1118,9 +1118,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
     jk_b_reset(s->reco_buf);
     s->reco_status = RECO_INITED;
 
-    if (p->worker->sticky_session) {
+    if (p->worker->sticky_session && s->extension.sticky_ignore != JK_TRUE) {
         /* Use sessionid only if sticky_session is
-         * defined for this load balancer
+         * defined and not overwritten for this load balancer
          */
         sessionid = get_sessionid(s, p->worker, l);
     }

@@ -40,6 +40,7 @@
 #endif
 
 #define JK_UWMAP_EXTENSION_REPLY_TIMEOUT  "reply_timeout="
+#define JK_UWMAP_EXTENSION_STICKY_IGNORE  "sticky_ignore="
 #define JK_UWMAP_EXTENSION_ACTIVE         "active="
 #define JK_UWMAP_EXTENSION_DISABLED       "disabled="
 #define JK_UWMAP_EXTENSION_STOPPED        "stopped="
@@ -637,6 +638,7 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
 
         w = jk_pool_strdup(p, worker);
         uwr->extensions.reply_timeout = -1;
+        uwr->extensions.sticky_ignore = JK_FALSE;
         uwr->extensions.active = NULL;
         uwr->extensions.disabled = NULL;
         uwr->extensions.stopped = NULL;
@@ -660,6 +662,15 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
 #endif
                 if (!strncmp(param, JK_UWMAP_EXTENSION_REPLY_TIMEOUT, strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT))) {
                     uwr->extensions.reply_timeout = atoi(param + strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT));
+                }
+                else if (!strncmp(param, JK_UWMAP_EXTENSION_STICKY_IGNORE, strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE))) {
+                    int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE));
+                    if (val) {
+                        uwr->extensions.sticky_ignore = JK_TRUE;
+                    }
+                    else {
+                        uwr->extensions.sticky_ignore = JK_FALSE;
+                    }
                 }
                 else if (!strncmp(param, JK_UWMAP_EXTENSION_USE_SRV_ERRORS, strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS))) {
                     uwr->extensions.use_server_error_pages = atoi(param + strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS));

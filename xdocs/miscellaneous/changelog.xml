@@ -40,6 +40,22 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.32 and 1.2.33">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <add>
+        URI Map: Add "sticky_ignore" extension attributes to uri worker map.
+        It allows to disable stickyness for individual mounts. (rjung)
+      </add>
+      <add>
+        HTTPD: Allow dynamic disabling of stickyness using the environment
+        variable JK_STICKY_IGNORE. This can be useful to break cookie stickyness
+        for non-sticky requests like login forms. (rjung)
+      </add>
+    </changelog>
+  </subsection>
+</section>
 <section name="Changes between 1.2.31 and 1.2.32">
   <br />
   <subsection name="Native">

@@ -114,6 +114,7 @@
 #define JK_ENV_KEY_SIZE             ("SSL_CIPHER_USEKEYSIZE")
 #define JK_ENV_CERTCHAIN_PREFIX     ("SSL_CLIENT_CERT_CHAIN_")
 #define JK_ENV_REPLY_TIMEOUT        ("JK_REPLY_TIMEOUT")
+#define JK_ENV_STICKY_IGNORE        ("JK_STICKY_IGNORE")
 #define JK_ENV_WORKER_NAME          ("JK_WORKER_NAME")
 #define JK_NOTE_WORKER_NAME         ("JK_WORKER_NAME")
 #define JK_NOTE_WORKER_TYPE         ("JK_WORKER_TYPE")
@@ -734,6 +735,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     request_rec *r = private_data->r;
     char *ssl_temp = NULL;
     const char *reply_timeout = NULL;
+    const char *sticky_ignore = NULL;
     rule_extension_t *e;
 
     /* Copy in function pointers (which are really methods) */
@@ -780,6 +782,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     e = (rule_extension_t *)ap_get_module_config(r->request_config, &jk_module);
     if (e) {
         s->extension.reply_timeout = e->reply_timeout;
+        s->extension.sticky_ignore = e->sticky_ignore;
         s->extension.use_server_error_pages = e->use_server_error_pages;
         if (e->activation) {
             s->extension.activation = apr_palloc(r->pool, e->activation_size * sizeof(int));
@@ -796,6 +799,22 @@ static int init_ws_service(apache_private_data_t * private_data,
         int r = atoi(reply_timeout);
         if (r >= 0)
             s->extension.reply_timeout = r;
+    }
+
+    sticky_ignore = apr_table_get(r->subprocess_env, JK_ENV_STICKY_IGNORE);
+    if (sticky_ignore) {
+        if (*sticky_ignore == '\0') {
+            s->extension.reply_timeout = JK_TRUE;
+        }
+        else {
+            int r = atoi(sticky_ignore);
+            if (r) {
+                s->extension.reply_timeout = JK_TRUE;
+            }
+            else {
+                s->extension.reply_timeout = JK_FALSE;
+            }
+        }
     }
 
     if (conf->options & JK_OPT_DISABLEREUSE)

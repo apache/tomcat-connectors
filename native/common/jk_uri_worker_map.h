@@ -73,6 +73,8 @@ struct rule_extension
 {
     /* reply_timeout overwrite */
     int reply_timeout;
+    /* Whether to ignore session routing info */
+    int sticky_ignore;
     /* activation state overwrites for load balancers */
     /* Number of elements in the array activations. */
     int activation_size;

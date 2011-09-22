@@ -1120,6 +1120,24 @@ for more complex rules to change the <b>JK_REPLY_TIMEOUT</b> according
 to request properties like e.g. the request URI.
 This is available since version 1.2.27.
 </p>
+<p>
+The environment variable
+<b>JK_IGNORE_STICKY</b> can be set to disable session stickyness
+for individual requests. If the variable is set to an empty string
+or a nonzero number, session stickyness will be disabled. Setting
+it to <b>0</b> will reset to the behaviour defined by the worker
+configuration.
+This is available since version 1.2.33.
+</p>
+<p>
+This feature can be useful to optimize load balancing when using
+cookie based session stickyness. In this case, as long as she keeps
+her browser open, any request by a user who started a session will
+be send to the same Tomcat instance, even if he left the part of
+the application which uses the session. You can for instance
+set this environment variable when a user requests a login form
+to ensure, that this initial session request is balanced non-sticky.
+</p>
 </subsection>
  </section>
 </body>

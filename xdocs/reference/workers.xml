@@ -503,6 +503,11 @@ Tomcat worker. If sticky_session is set to <b>True</b> or <b>1</b> sessions are 
 sticky_session is set to <b>False</b>. Set sticky_session to <b>False</b> when Tomcat
 is using a Session Manager which can persist session data across multiple
 instances of Tomcat.
+<p>
+The <b>sticky_session</b> setting can be overwritten using the Apache httpd
+environment variable <b>JK_STICKY_IGNORE</b> and the worker map extension for
+<b>sticky_ignore</b>. This has been added in version <b>1.2.33</b>.
+</p>
 </directive>
 
 <directive name="sticky_session_force" default="False" required="false">
