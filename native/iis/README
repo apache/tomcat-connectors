@@ -25,7 +25,7 @@ REQUIREMENT
   "c:\Program Files\Microsoft Platform SDK\setenv.bat"
 
   Note that the Windows Platform SDK is only needed if you want authenticate 
-  using IIS to compile a isapi_redirector.dll.. 
+  using IIS to compile a isapi_redirector.dll.
 
 
 
@@ -37,7 +37,7 @@ The steps that you need to take are:
    1. Change directory to the isapi redirector plugins source directory.
    
    2. Execute the following command:
-      nmake -f Makefile.x86 [SO_VERSION=-1.2.32]
+      nmake -f Makefile.x86 [SO_VERSION=-1.2.33]
 
 An alternative will be to open the isapi workspace file (isapi.dsw) in msdev and 
 build it using the build menu.
