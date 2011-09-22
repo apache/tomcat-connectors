@@ -306,7 +306,7 @@
                                            "<th>&nbsp;</th><th>Name</th>" \
                                            "<th>Act</th><th>State</th>" \
                                            "<th>D</th><th>F</th><th>M</th>" \
-                                           "<th>V</th><th>Acc</th>" \
+                                           "<th>V</th><th>Acc</th><th>Sess</th>" \
                                            "<th>Err</th><th>CE</th><th>RE</th>" \
                                            "<th>Wr</th><th>Rd</th><th>Busy</th><th>Max</th><th>Con</th>" \
                                            "<th>" JK_STATUS_ARG_LBM_TEXT_ROUTE "</th>" \
@@ -319,6 +319,7 @@
                                            "<td>%d</td>" \
                                            "<td>%" JK_UINT64_T_FMT "</td>" \
                                            "<td>%" JK_UINT64_T_FMT "</td>" \
+                                           "<td>%" JK_UINT64_T_FMT " (%d/sec)</td>" \
                                            "<td>%" JK_UINT64_T_FMT " (%d/sec)</td>" \
                                            "<td>%" JK_UINT32_T_FMT "</td>" \
                                            "<td>%" JK_UINT32_T_FMT "</td>" \
@@ -1831,6 +1832,8 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                       wr->s->lb_value,
                       aw->s->used,
                       delta_reset > 0 ? (int)(aw->s->used / delta_reset) : -1,
+                      wr->s->sessions,
+                      delta_reset > 0 ? (int)(wr->s->sessions / delta_reset) : -1,
                       wr->s->errors,
                       aw->s->client_errors,
                       aw->s->reply_timeouts,
@@ -1906,6 +1909,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_xml_att_uint64(s, off+2, "lbmult", wr->lb_mult);
             jk_print_xml_att_uint64(s, off+2, "lbvalue", wr->s->lb_value);
             jk_print_xml_att_uint64(s, off+2, "elected", aw->s->used);
+            jk_print_xml_att_uint64(s, off+2, "sessions", wr->s->sessions);
             jk_print_xml_att_uint32(s, off+2, "errors", wr->s->errors);
         }
         else {
@@ -1972,6 +1976,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_printf(s, " lbmult=%" JK_UINT64_T_FMT, wr->lb_mult);
             jk_printf(s, " lbvalue=%" JK_UINT64_T_FMT, wr->s->lb_value);
             jk_printf(s, " elected=%" JK_UINT64_T_FMT, aw->s->used);
+            jk_printf(s, " sessions=%" JK_UINT64_T_FMT, wr->s->sessions);
             jk_printf(s, " errors=%" JK_UINT32_T_FMT, wr->s->errors);
         }
         else {
@@ -2035,6 +2040,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_prop_att_uint64(s, w, ajp_name, "lbmult", wr->lb_mult);
             jk_print_prop_att_uint64(s, w, ajp_name, "lbvalue", wr->s->lb_value);
             jk_print_prop_att_uint64(s, w, ajp_name, "elected", aw->s->used);
+            jk_print_prop_att_uint64(s, w, ajp_name, "sessions", wr->s->sessions);
             jk_print_prop_att_uint32(s, w, ajp_name, "errors", wr->s->errors);
         }
         else {
@@ -3700,6 +3706,7 @@ static void display_legend(jk_ws_service_t *s,
             "<tr><th>M</th><td>Load Balancer multiplicity</td></tr>\n"
             "<tr><th>V</th><td>Load Balancer value</td></tr>\n"
             "<tr><th>Acc</th><td>Number of requests</td></tr>\n"
+            "<tr><th>Sess</th><td>Number of sessions created</td></tr>\n"
             "<tr><th>Err</th><td>Number of failed requests</td></tr>\n"
             "<tr><th>CE</th><td>Number of client errors</td></tr>\n"
             "<tr><th>RE</th><td>Number of reply timeouts (decayed)</td></tr>\n"
@@ -4273,6 +4280,7 @@ static int reset_worker(jk_ws_service_t *s,
                 aw = (ajp_worker_t *)wr->worker->worker_private;
                 wr->s->state            = JK_LB_STATE_IDLE;
                 wr->s->elected_snapshot = 0;
+                wr->s->sessions         = 0;
                 wr->s->error_time       = 0;
                 wr->s->errors           = 0;
                 wr->s->lb_value         = 0;
@@ -4300,6 +4308,7 @@ static int reset_worker(jk_ws_service_t *s,
             aw = (ajp_worker_t *)wr->worker->worker_private;
             wr->s->state            = JK_LB_STATE_IDLE;
             wr->s->elected_snapshot = 0;
+            wr->s->sessions         = 0;
             wr->s->error_time       = 0;
             wr->s->errors           = 0;
             wr->s->lb_value         = 0;

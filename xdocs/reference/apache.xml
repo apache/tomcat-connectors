@@ -599,6 +599,7 @@ Most of them are are only useful in combination with a load balancer worker.
   <attribute name="JK_LB_FIRST_NAME" required="false">Load-Balancer: Name of the first worker tried</attribute>
   <attribute name="JK_LB_FIRST_TYPE" required="false">Load-Balancer: Type of the first worker tried</attribute>
   <attribute name="JK_LB_FIRST_ACCESSED" required="false">Load-Balancer: Access count for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_SESSIONS" required="false">Load-Balancer: Count of created sessions for the first worker tried</attribute>
   <attribute name="JK_LB_FIRST_READ" required="false">Load-Balancer: Bytes read for the first worker tried</attribute>
   <attribute name="JK_LB_FIRST_TRANSFERRED" required="false">Load-Balancer: Bytes transferred for the first worker tried</attribute>
   <attribute name="JK_LB_FIRST_ERRORS" required="false">Load-Balancer: Error count for the first worker tried</attribute>
@@ -608,6 +609,7 @@ Most of them are are only useful in combination with a load balancer worker.
   <attribute name="JK_LB_LAST_NAME" required="false">Load-Balancer: Name of the last worker tried</attribute>
   <attribute name="JK_LB_LAST_TYPE" required="false">Load-Balancer: Type of the last worker tried</attribute>
   <attribute name="JK_LB_LAST_ACCESSED" required="false">Load-Balancer: Access count for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_SESSIONS" required="false">Load-Balancer: Count of created sessions for the last worker tried</attribute>
   <attribute name="JK_LB_LAST_READ" required="false">Load-Balancer: Bytes read for the last worker tried</attribute>
   <attribute name="JK_LB_LAST_TRANSFERRED" required="false">Load-Balancer: Bytes transferred for the last worker tried</attribute>
   <attribute name="JK_LB_LAST_ERRORS" required="false">Load-Balancer: Error count for the last worker tried</attribute>

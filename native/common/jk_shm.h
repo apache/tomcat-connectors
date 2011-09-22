@@ -151,6 +151,8 @@ struct jk_shm_lb_sub_worker
     volatile time_t error_time;
     /* Number of times the worker was elected - snapshot during maintenance */
     volatile jk_uint64_t  elected_snapshot;
+    /* Number of non-sticky requests handled, that were not marked as stateless */
+    volatile jk_uint64_t  sessions;
     /* Number of non 200 responses */
     volatile jk_uint32_t  errors;
 };

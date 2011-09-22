@@ -57,6 +57,11 @@
         LB: New balancing method "Next" to distribute sessions in a round-robin
         way. (rjung)
       </add>
+      <add>
+        LB: Add counter for created sessions to status worker and HTTPD notes.
+        It actually counts the number of requests that do not carry a session id.
+        (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

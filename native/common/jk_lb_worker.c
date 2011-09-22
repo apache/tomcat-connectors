@@ -93,6 +93,7 @@ static const char *lb_first_log_names[] = {
     JK_NOTE_LB_FIRST_NAME,
     JK_NOTE_LB_FIRST_VALUE,
     JK_NOTE_LB_FIRST_ACCESSED,
+    JK_NOTE_LB_FIRST_SESSIONS,
     JK_NOTE_LB_FIRST_READ,
     JK_NOTE_LB_FIRST_TRANSFERRED,
     JK_NOTE_LB_FIRST_ERRORS,
@@ -106,6 +107,7 @@ static const char *lb_last_log_names[] = {
     JK_NOTE_LB_LAST_NAME,
     JK_NOTE_LB_LAST_VALUE,
     JK_NOTE_LB_LAST_ACCESSED,
+    JK_NOTE_LB_LAST_SESSIONS,
     JK_NOTE_LB_LAST_READ,
     JK_NOTE_LB_LAST_TRANSFERRED,
     JK_NOTE_LB_LAST_ERRORS,
@@ -1042,25 +1044,29 @@ static void lb_add_log_items(jk_ws_service_t *s,
         /* JK_NOTE_LB_FIRST/LAST_ACCESSED */
         log_values[2] = buf;
         buf += JK_LB_UINT64_STR_SZ;
+        snprintf(buf, JK_LB_UINT64_STR_SZ, "%" JK_UINT64_T_FMT, w->s->sessions);
+        /* JK_NOTE_LB_FIRST/LAST_SESSIONS */
+        log_values[3] = buf;
+        buf += JK_LB_UINT64_STR_SZ;
         snprintf(buf, JK_LB_UINT64_STR_SZ, "%" JK_UINT64_T_FMT, aw->s->readed);
         /* JK_NOTE_LB_FIRST/LAST_READ */
-        log_values[3] = buf;
+        log_values[4] = buf;
         buf += JK_LB_UINT64_STR_SZ;
         snprintf(buf, JK_LB_UINT64_STR_SZ, "%" JK_UINT64_T_FMT, aw->s->transferred);
         /* JK_NOTE_LB_FIRST/LAST_TRANSFERRED */
-        log_values[4] = buf;
+        log_values[5] = buf;
         buf += JK_LB_UINT64_STR_SZ;
         snprintf(buf, JK_LB_UINT64_STR_SZ, "%" JK_UINT32_T_FMT, w->s->errors);
         /* JK_NOTE_LB_FIRST/LAST_ERRORS */
-        log_values[5] = buf;
+        log_values[6] = buf;
         buf += JK_LB_UINT64_STR_SZ;
         snprintf(buf, JK_LB_UINT64_STR_SZ, "%d", aw->s->busy);
         /* JK_NOTE_LB_FIRST/LAST_BUSY */
-        log_values[6] = buf;
+        log_values[7] = buf;
         /* JK_NOTE_LB_FIRST/LAST_ACTIVATION */
-        log_values[7] = jk_lb_get_activation(w, l);
+        log_values[8] = jk_lb_get_activation(w, l);
         /* JK_NOTE_LB_FIRST/LAST_STATE */
-        log_values[8] = jk_lb_get_state(w, l);
+        log_values[9] = jk_lb_get_state(w, l);
         s->add_log_items(s, log_names, log_values, JK_LB_NOTES_COUNT);
     }
 }
@@ -1240,6 +1246,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      (p->worker->lbmethod == JK_LB_METHOD_SESSIONS ||
                       p->worker->lbmethod == JK_LB_METHOD_NEXT)))
                     rec->s->lb_value += rec->lb_mult;
+                if (!sessionid) {
+                    rec->s->sessions++;
+                }
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                     jk_shm_unlock();
 
@@ -1604,6 +1613,8 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                 p->lb_workers[i].s->lb_value = 0;
                 p->lb_workers[i].s->state = JK_LB_STATE_IDLE;
                 p->lb_workers[i].s->error_time = 0;
+                p->lb_workers[i].s->elected_snapshot = 0;
+                p->lb_workers[i].s->sessions = 0;
                 p->lb_workers[i].activation =
                     jk_get_worker_activation(props, worker_names[i]);
                 if (!wc_create_worker(p->lb_workers[i].name, 0,
