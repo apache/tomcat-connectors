@@ -65,6 +65,7 @@ static const char *lb_method_type[] = {
     JK_LB_METHOD_TEXT_TRAFFIC,
     JK_LB_METHOD_TEXT_BUSYNESS,
     JK_LB_METHOD_TEXT_SESSIONS,
+    JK_LB_METHOD_TEXT_NEXT,
     "unknown",
     NULL
 };
