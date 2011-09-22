@@ -84,6 +84,9 @@ struct svc_extension
     int reply_timeout;
     /* Whether to ignore session routing info */
     int sticky_ignore;
+    /* Whether the request is stateless and should not
+     * influence session load balancing */
+    int stateless;
     /* activation state overwrites for load balancers */
     /* Dynamically allocated array with one entry per lb member. */
     int *activation;

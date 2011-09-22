@@ -1551,6 +1551,7 @@ static void display_map(jk_ws_service_t *s,
                           uri_worker_map_get_source(uwr, l),
                           uwr->extensions.reply_timeout,
                           uwr->extensions.sticky_ignore,
+                          uwr->extensions.stateless,
                           uwr->extensions.fail_on_status_str ? uwr->extensions.fail_on_status_str : "-",
                           uwr->extensions.active ? uwr->extensions.active : "-",
                           uwr->extensions.disabled ? uwr->extensions.disabled : "-",
@@ -1563,6 +1564,7 @@ static void display_map(jk_ws_service_t *s,
                           uri_worker_map_get_source(uwr, l),
                           uwr->extensions.reply_timeout,
                           uwr->extensions.sticky_ignore,
+                          uwr->extensions.stateless,
                           uwr->extensions.fail_on_status_str ? uwr->extensions.fail_on_status_str : "-",
                           uwr->extensions.active ? uwr->extensions.active : "-",
                           uwr->extensions.disabled ? uwr->extensions.disabled : "-",
@@ -1579,6 +1581,7 @@ static void display_map(jk_ws_service_t *s,
             jk_print_xml_att_string(s, 8, "source", uri_worker_map_get_source(uwr, l));
             jk_print_xml_att_int(s, 8, "reply_timeout", uwr->extensions.reply_timeout);
             jk_print_xml_att_int(s, 8, "sticky_ignore", uwr->extensions.sticky_ignore);
+            jk_print_xml_att_int(s, 8, "stateless", uwr->extensions.stateless);
             jk_print_xml_att_string(s, 8, "fail_on_status", uwr->extensions.fail_on_status_str);
             jk_print_xml_att_string(s, 8, "active", uwr->extensions.active);
             jk_print_xml_att_string(s, 8, "disabled", uwr->extensions.disabled);
@@ -1596,6 +1599,7 @@ static void display_map(jk_ws_service_t *s,
             jk_printf(s, " source=\"%s\"", uri_worker_map_get_source(uwr, l));
             jk_printf(s, " reply_timeout=\"%d\"", uwr->extensions.reply_timeout);
             jk_printf(s, " sticky_ignore=\"%d\"", uwr->extensions.sticky_ignore);
+            jk_printf(s, " stateless=\"%d\"", uwr->extensions.stateless);
             jk_printf(s, " fail_on_status=\"%s\"", uwr->extensions.fail_on_status_str ? uwr->extensions.fail_on_status_str : "");
             jk_printf(s, " active=\"%s\"", uwr->extensions.active ? uwr->extensions.active : "");
             jk_printf(s, " disabled=\"%s\"", uwr->extensions.disabled ? uwr->extensions.disabled : "");
@@ -1611,6 +1615,7 @@ static void display_map(jk_ws_service_t *s,
             jk_print_prop_item_string(s, w, worker, "map", count, "source", uri_worker_map_get_source(uwr, l));
             jk_print_prop_item_int(s, w, worker, "map", count, "reply_timeout", uwr->extensions.reply_timeout);
             jk_print_prop_item_int(s, w, worker, "map", count, "sticky_ignore", uwr->extensions.sticky_ignore);
+            jk_print_prop_item_int(s, w, worker, "map", count, "stateless", uwr->extensions.stateless);
             jk_print_prop_item_string(s, w, worker, "map", count, "fail_on_status", uwr->extensions.fail_on_status_str);
             jk_print_prop_item_string(s, w, worker, "map", count, "active", uwr->extensions.active);
             jk_print_prop_item_string(s, w, worker, "map", count, "disabled", uwr->extensions.disabled);

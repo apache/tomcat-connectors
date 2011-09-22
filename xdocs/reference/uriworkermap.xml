@@ -249,7 +249,8 @@ For a general description of reply timeouts see the
 <subsection name="Extension sticky_ignore">
 <br/>
 <p>
-The extension <code>sticky_ignore</code> can disable session stickyness for a single mapping rule.
+The extension <code>sticky_ignore</code> will disable session stickyness for a single
+mapping rule.
 <source>
   # Disable session stickyness
   # only for this mapping.
@@ -264,6 +265,22 @@ set this environment variable when a user requests a login form
 to ensure, that this initial session request is balanced non-sticky.
 </p>
 <p>
+This extension is available since version 1.2.33.
+</p>
+</subsection>
+<subsection name="Extension stateless">
+<br/>
+<p>
+The extension <code>stateless</code> is only useful when using session based
+load balancing. In this case normally any request which does not come with
+a session id counts as a new session. If you mark a mapping rule with
+the <code>stateless</code> extension, then the requests matching the mapping
+rule will not count as a new session, even if they do not come with a session
+id.
+<source>
+  # Don't let static content trash our session balancing
+  /myapp/static/*=myworker;stateless=1
+</source>
 This extension is available since version 1.2.33.
 </p>
 </subsection>

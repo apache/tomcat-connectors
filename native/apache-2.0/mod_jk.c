@@ -115,6 +115,7 @@
 #define JK_ENV_CERTCHAIN_PREFIX     ("SSL_CLIENT_CERT_CHAIN_")
 #define JK_ENV_REPLY_TIMEOUT        ("JK_REPLY_TIMEOUT")
 #define JK_ENV_STICKY_IGNORE        ("JK_STICKY_IGNORE")
+#define JK_ENV_STATELESS            ("JK_STATELESS")
 #define JK_ENV_WORKER_NAME          ("JK_WORKER_NAME")
 #define JK_NOTE_WORKER_NAME         ("JK_WORKER_NAME")
 #define JK_NOTE_WORKER_TYPE         ("JK_WORKER_TYPE")
@@ -736,6 +737,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     char *ssl_temp = NULL;
     const char *reply_timeout = NULL;
     const char *sticky_ignore = NULL;
+    const char *stateless = NULL;
     rule_extension_t *e;
 
     /* Copy in function pointers (which are really methods) */
@@ -783,6 +785,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     if (e) {
         s->extension.reply_timeout = e->reply_timeout;
         s->extension.sticky_ignore = e->sticky_ignore;
+        s->extension.stateless = e->stateless;
         s->extension.use_server_error_pages = e->use_server_error_pages;
         if (e->activation) {
             s->extension.activation = apr_palloc(r->pool, e->activation_size * sizeof(int));
@@ -813,6 +816,22 @@ static int init_ws_service(apache_private_data_t * private_data,
             }
             else {
                 s->extension.sticky_ignore = JK_FALSE;
+            }
+        }
+    }
+
+    stateless = apr_table_get(r->subprocess_env, JK_ENV_STATELESS);
+    if (stateless) {
+        if (*stateless == '\0') {
+            s->extension.stateless = JK_TRUE;
+        }
+        else {
+            int r = atoi(stateless);
+            if (r) {
+                s->extension.stateless = JK_TRUE;
+            }
+            else {
+                s->extension.stateless = JK_FALSE;
             }
         }
     }

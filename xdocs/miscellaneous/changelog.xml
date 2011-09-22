@@ -62,6 +62,14 @@
         It actually counts the number of requests that do not carry a session id.
         (rjung)
       </add>
+      <add>
+        URI Map: Add "stateless" extension attributes to uri worker map.
+        This can improve session load balancing. (rjung)
+      </add>
+      <add>
+        HTTPD: Allow dynamic switching of requests to "stateless" using the
+        environment variable JK_STATELESS. (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

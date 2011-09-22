@@ -807,8 +807,9 @@ static int find_best_byvalue(jk_ws_service_t *s,
          */
         if (JK_WORKER_USABLE(states[wr.i], activation)) {
             if (candidate < 0 || wr.distance < d ||
-                (wr.s->lb_value < curmin &&
-                wr.distance == d)) {
+                (s->extension.stateless != JK_TRUE &&
+                 wr.s->lb_value < curmin &&
+                 wr.distance == d)) {
                 candidate = i;
                 curmin = wr.s->lb_value;
                 d = wr.distance;
@@ -1244,10 +1245,11 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 if (p->worker->lbmethod == JK_LB_METHOD_REQUESTS ||
                     p->worker->lbmethod == JK_LB_METHOD_BUSYNESS ||
                     (!sessionid &&
+                     s->extension.stateless != JK_TRUE &&
                      (p->worker->lbmethod == JK_LB_METHOD_SESSIONS ||
                       p->worker->lbmethod == JK_LB_METHOD_NEXT)))
                     rec->s->lb_value += rec->lb_mult;
-                if (!sessionid) {
+                if (!sessionid && s->extension.stateless != JK_TRUE) {
                     rec->s->sessions++;
                 }
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)

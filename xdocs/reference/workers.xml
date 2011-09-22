@@ -544,25 +544,26 @@ working well for most applications.
 <p>
 If method is set to <b>S[ession]</b> the balancer will use the number of sessions
 to find the best worker. Accesses will be distributed according to the
-lbfactor in a sliding time window. Because the balancer does not keep any state,
+lbfactor in a sliding time window. This method should be used,
+if sessions are your limiting resource, e.g. when you only have limited memory
+and your sessions need a lot of memory. Because the balancer does not keep any state,
 it actually does not know the number of sessions. Instead it counts each request
 without a session cookie or URL encoding as a new session. This method will neither
 know, when a session is being invalidated, nor will it correct its load numbers
-according to session timeouts or worker failover. This method should be used,
-if sessions are your limiting resource, e.g. when you only have limited memory
-and your sessions need a lot of memory.
+according to session timeouts or worker failover. If you know request URLs, that will be
+called without a session ID but should not be counted as new sessions, you should
+add them to the <b>stateless</b> mapping rule extension or set the Apache HTTPD
+environment variable <b>JK_STATELESS</b> for them.
 </p>
 <p>
 If method is set to <b>N[ext]</b> the balancer will again use the number of sessions
-to find the best worker. The difference to the <b>S[ession]</b> method is how
-the session count is handled in the sliding time window. The <b>N[ext]</b> method
-does not divide by 2, instead it subtracts the minimum number. This should effectively
-result in a round-robin session balancing, thus the name <b>N[ext]</b>.
-Under high load, the two session balancing
-methods will result in a similar distribution, but <b>N[ext]</b> will be better
-if you need to distribute small numbers of sessions. Again this method will
-neither know, when a session is being invalidated, nor will it correct its load numbers
-according to session timeouts or worker failover.
+to find the best worker. All remarks concerning the <b>Session</b>method apply as well.
+The difference to the <b>Session</b> method is how the session count is handled in the
+sliding time window. The <b>Next</b> method does not divide by 2, instead it subtracts
+the current minimum number. This should effectively result in a round-robin session
+balancing, thus the name <b>Next</b>. Under high load, the two session balancing
+methods will result in a similar distribution, but <b>Next</b> will be better
+if you need to distribute small numbers of sessions.
 </p>
 <p>
 If set to <b>T[raffic]</b> the balancer will use
@@ -580,8 +581,9 @@ interesting, if your request take a long time to process, like for a download
 application.
 </p>
 <p>
-This feature has been added in <b>jk 1.2.9</b>.
-The Session method has been added in <b>jk 1.2.20</b>.
+This feature has been added in version <b>1.2.9</b>.
+The Session method has been added in version <b>1.2.20</b>,
+the <b>Next</b> method in version <b>1.2.32</b>..
 </p>
 </directive>
 

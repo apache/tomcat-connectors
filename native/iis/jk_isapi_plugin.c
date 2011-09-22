@@ -3085,6 +3085,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
             jk_log(logger, JK_LOG_DEBUG, "Applying service extensions" );
         s->extension.reply_timeout = e->reply_timeout;
         s->extension.sticky_ignore = e->sticky_ignore;
+        s->extension.stateless = e->stateless;
         s->extension.use_server_error_pages = e->use_server_error_pages;
         if (e->activation) {
             s->extension.activation = jk_pool_alloc(s->pool, e->activation_size * sizeof(int));

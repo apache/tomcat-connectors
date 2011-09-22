@@ -41,6 +41,7 @@
 
 #define JK_UWMAP_EXTENSION_REPLY_TIMEOUT  "reply_timeout="
 #define JK_UWMAP_EXTENSION_STICKY_IGNORE  "sticky_ignore="
+#define JK_UWMAP_EXTENSION_STATELESS      "stateless="
 #define JK_UWMAP_EXTENSION_ACTIVE         "active="
 #define JK_UWMAP_EXTENSION_DISABLED       "disabled="
 #define JK_UWMAP_EXTENSION_STOPPED        "stopped="
@@ -639,6 +640,7 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
         w = jk_pool_strdup(p, worker);
         uwr->extensions.reply_timeout = -1;
         uwr->extensions.sticky_ignore = JK_FALSE;
+        uwr->extensions.stateless = JK_FALSE;
         uwr->extensions.active = NULL;
         uwr->extensions.disabled = NULL;
         uwr->extensions.stopped = NULL;
@@ -670,6 +672,15 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
                     }
                     else {
                         uwr->extensions.sticky_ignore = JK_FALSE;
+                    }
+                }
+                else if (!strncmp(param, JK_UWMAP_EXTENSION_STATELESS, strlen(JK_UWMAP_EXTENSION_STATELESS))) {
+                    int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STATELESS));
+                    if (val) {
+                        uwr->extensions.stateless = JK_TRUE;
+                    }
+                    else {
+                        uwr->extensions.stateless = JK_FALSE;
                     }
                 }
                 else if (!strncmp(param, JK_UWMAP_EXTENSION_USE_SRV_ERRORS, strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS))) {
