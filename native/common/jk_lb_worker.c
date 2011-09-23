@@ -624,7 +624,7 @@ static jk_uint64_t decay_load(lb_worker_t *p,
 {
     unsigned int i;
     jk_uint64_t curmax = 0;
-    jk_uint64_t curmin;
+    jk_uint64_t curmin = 0;
     lb_sub_worker_t *w;
     ajp_worker_t *aw;
 
@@ -636,9 +636,6 @@ static jk_uint64_t decay_load(lb_worker_t *p,
             if (p->lbmethod != JK_LB_METHOD_NEXT) {
                 w->s->lb_value >>= exponent;
             }
-            if (w->s->lb_value < curmin) {
-                curmin = w->s->lb_value;
-            }
             if (w->s->lb_value > curmax) {
                 curmax = w->s->lb_value;
             }
@@ -649,7 +646,23 @@ static jk_uint64_t decay_load(lb_worker_t *p,
     if (p->lbmethod == JK_LB_METHOD_NEXT) {
         for (i = 0; i < p->num_of_workers; i++) {
             w = &p->lb_workers[i];
-            w->s->lb_value -= curmin;
+            /* Take into account only the workers that are
+             * not in error state, stopped, disabled or busy.
+             * Unfortunately we can not respect activations
+             * defined by mapping rules here.
+             */
+            if (JK_WORKER_USABLE(w->s->state, w->activation)) {
+                if (curmin == 0 || w->s->lb_value < curmin) {
+                    curmin = w->s->lb_value;
+                }
+            }
+        }
+        for (i = 0; i < p->num_of_workers; i++) {
+            w = &p->lb_workers[i];
+            if (w->s->lb_value >= curmin)
+                w->s->lb_value -= curmin;
+            else
+                w->s->lb_value = 0;
         }
     }
     JK_TRACE_EXIT(l);
@@ -752,7 +765,7 @@ static int find_best_bydomain(jk_ws_service_t *s,
             strlen(wr.domain) != domain_len ||
             strncmp(wr.domain, route_or_domain, domain_len))
             continue;
-        /* Take into calculation only the workers that are
+        /* Take into account only the workers that are
          * not in error state, stopped, disabled or busy.
          */
         activation = s->extension.activation ?
@@ -802,7 +815,7 @@ static int find_best_byvalue(jk_ws_service_t *s,
         if (activation == JK_LB_ACTIVATION_UNSET)
             activation = wr.activation;
 
-        /* Take into calculation only the workers that are
+        /* Take into account only the workers that are
          * not in error state, stopped, disabled or busy.
          */
         if (JK_WORKER_USABLE(states[wr.i], activation)) {
