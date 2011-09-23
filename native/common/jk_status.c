@@ -232,9 +232,9 @@
 #define JK_STATUS_FORM_HIDDEN_INT          "<input type=\"hidden\" name=\"%s\" value=\"%d\"/>\n"
 #define JK_STATUS_FORM_HIDDEN_STRING       "<input type=\"hidden\" name=\"%s\" value=\"%s\"/>\n"
 #define JK_STATUS_URI_MAP_TABLE_HEAD       "<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n"
-#define JK_STATUS_URI_MAP_TABLE_ROW        "<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n"
+#define JK_STATUS_URI_MAP_TABLE_ROW        "<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n"
 #define JK_STATUS_URI_MAP_TABLE_HEAD2      "<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n"
-#define JK_STATUS_URI_MAP_TABLE_ROW2       "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n"
+#define JK_STATUS_URI_MAP_TABLE_ROW2       "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n"
 #define JK_STATUS_SHOW_AJP_CONF_HEAD       "<tr>" \
                                            "<th>Type</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_TEXT_HOST_STR "</th>" \
@@ -1670,10 +1670,10 @@ static void display_maps(jk_ws_service_t *s,
             jk_puts(s, "]</h3><table>\n");
             if (has_server_iterator)
                 jk_printf(s, JK_STATUS_URI_MAP_TABLE_HEAD2,
-                          "Server", "URI", "Match Type", "Source", "Reply Timeout", "Sticky Ignore", "Fail on Status", "Active", "Disabled", "Stopped", "Use Server Errors");
+                          "Server", "URI", "Match Type", "Source", "Reply Timeout", "Sticky Ignore", "Stateless", "Fail on Status", "Active", "Disabled", "Stopped", "Use Server Errors");
             else
                 jk_printf(s, JK_STATUS_URI_MAP_TABLE_HEAD,
-                          "URI", "Match Type", "Source", "Reply Timeout", "Sticky Ignore", "Fail on Status", "Active", "Disabled", "Stopped", "Use Server Errors");
+                          "URI", "Match Type", "Source", "Reply Timeout", "Sticky Ignore", "Stateless", "Fail on Status", "Active", "Disabled", "Stopped", "Use Server Errors");
         }
         count = 0;
         if (has_server_iterator) {
