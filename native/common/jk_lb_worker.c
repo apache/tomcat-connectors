@@ -629,7 +629,6 @@ static jk_uint64_t decay_load(lb_worker_t *p,
     ajp_worker_t *aw;
 
     JK_TRACE_ENTER(l);
-    curmin = (&p->lb_workers[0])->s->lb_value;
     for (i = 0; i < p->num_of_workers; i++) {
         w = &p->lb_workers[i];
         if (p->lbmethod != JK_LB_METHOD_BUSYNESS) {
