@@ -959,7 +959,7 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf)
             return buf;
         }
     }
-    sprintf(buf, "error=%d", errno);
+    sprintf(buf, "errno=%d", errno);
     return buf;
 }
 
