@@ -625,6 +625,7 @@ static jk_uint64_t decay_load(lb_worker_t *p,
     unsigned int i;
     jk_uint64_t curmax = 0;
     jk_uint64_t curmin = 0;
+    int no_curmin = JK_TRUE;
     lb_sub_worker_t *w;
     ajp_worker_t *aw;
 
@@ -651,7 +652,8 @@ static jk_uint64_t decay_load(lb_worker_t *p,
              * defined by mapping rules here.
              */
             if (JK_WORKER_USABLE(w->s->state, w->activation)) {
-                if (curmin == 0 || w->s->lb_value < curmin) {
+                if (w->s->lb_value < curmin || no_curmin == JK_TRUE) {
+                    no_curmin = JK_FALSE;
                     curmin = w->s->lb_value;
                 }
             }
