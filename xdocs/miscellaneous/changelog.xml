@@ -70,6 +70,9 @@
         HTTPD: Allow dynamic switching of requests to "stateless" using the
         environment variable JK_STATELESS. (rjung)
       </add>
+      <update>
+        AJP: Improve logging when request does not fix into an AJP packet. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>

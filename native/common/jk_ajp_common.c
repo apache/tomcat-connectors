@@ -451,7 +451,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if ((sc = sc_for_req_header(s->headers_names[i])) != UNKNOWN_METHOD) {
             if (jk_b_append_int(msg, (unsigned short)sc)) {
                 jk_log(l, JK_LOG_ERROR,
-                       "failed appending the header name");
+                       "failed appending the header code");
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -459,7 +459,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         else {
             if (jk_b_append_string(msg, s->headers_names[i])) {
                 jk_log(l, JK_LOG_ERROR,
-                       "failed appending the header name");
+                       "failed appending the header name '%s'", s->headers_names[i]);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -467,7 +467,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
 
         if (jk_b_append_string(msg, s->headers_values[i])) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the header value");
+                   "failed appending the header value for header '%s' of length %u", s->headers_names[i], strlen(s->headers_names[i]));
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -509,7 +509,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
             jk_b_append_string(msg, s->query_string)) {
 #endif
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the query string");
+                   "failed appending the query string of length %u", strlen(s->query_string));
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -2429,8 +2429,8 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     if (!ajp_marshal_into_msgb(op->request, s, l, p)) {
         *is_error = JK_HTTP_REQUEST_TOO_LARGE;
         jk_log(l, JK_LOG_INFO,
-                "Creating AJP message failed, "
-                "without recovery");
+                "Creating AJP message failed "
+                "without recovery - check max_packet_size");
         aw->s->client_errors++;
         JK_TRACE_EXIT(l);
         return JK_CLIENT_ERROR;
