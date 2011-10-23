@@ -2501,6 +2501,7 @@ static int jk_handler(request_rec * r)
     jk_server_conf_t *xconf;
     jk_request_conf_t *rconf;
     int rc, dmt = 1;
+    int worker_name_extension = JK_FALSE;
 
     /* We do DIR_MAGIC_TYPE here to make sure TC gets all requests, even
      * if they are directory requests, in case there are no static files
@@ -2547,6 +2548,16 @@ static int jk_handler(request_rec * r)
                 jk_log(xconf->log, JK_LOG_DEBUG,
                        "Retrieved worker (%s) from env %s for %s",
                        worker_name, xconf->worker_indicator, r->uri);
+            if (strchr(worker_name, ';')) {
+                rule_extension_t *e = apr_palloc(r->pool, sizeof(rule_extension_t));
+                char *w = apr_pstrdup(r->pool, worker_name);
+                worker_name_extension = JK_TRUE;
+                parse_rule_extensions(w, e, xconf->log);
+                worker_name = w;
+                rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                                  &jk_module);
+                rconf->rule_extensions = e;
+            }
         }
         else if (worker_env.num_of_workers == 1) {
           /** We have a single worker ( the common case ).
@@ -2638,6 +2649,11 @@ static int jk_handler(request_rec * r)
 
             private_data.read_body_started = JK_FALSE;
             private_data.r = r;
+
+            if (worker_name_extension == JK_TRUE) {
+                extension_fix(&private_data.p, worker_name,
+                              rconf->rule_extensions, xconf->log);
+            }
 
             /* Maintain will be done by watchdog thread */
             if (!jk_watchdog_interval)

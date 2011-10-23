@@ -1086,7 +1086,11 @@ In order to control the worker using <b>SetEnvIf</b> or <b>RewriteRule</b>
 for more complex rules, you can set the environment variable <b>JK_WORKER_NAME</b>
 to the name of your chosen target worker. This enables you to decide on
 the chosen worker in a more flexible way, including dependencies on cookie values.
-This feature has been added in version 1.2.19 of mod_jk.
+This feature has been added in version 1.2.19 of mod_jk. Furthermore you might
+include rule extensions in the worker name. The extensions are separated from the
+worker name by a semicolon ";" using the same syntax as in the
+uriworkermap.properties file. Supporting rule extensions in the worker name has
+been added in version 1.2.33.
 </p>
 <p>
 In order to use another variable than <b>JK_WORKER_NAME</b>, you can set the name

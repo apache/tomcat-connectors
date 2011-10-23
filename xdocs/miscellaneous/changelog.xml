@@ -44,6 +44,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <add>
+        <bug>51743</bug>: HTTPD: Support rule extensions when defining
+        the request worker with an environment variable
+        (e.g. JK_WORKER_NAME). (rjung)
+      </add>
       <fix>
         <bug>51769</bug>: IIS: Allow URIs which contain "META-INF" or
         "WEB-INF" as long as they are not path components of the URI. (rjung)

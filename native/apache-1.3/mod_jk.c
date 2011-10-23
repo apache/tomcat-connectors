@@ -2359,6 +2359,7 @@ static int jk_handler(request_rec * r)
                                                   module_config,
                                                   &jk_module);
     jk_request_conf_t *rconf;
+    int worker_name_extension = JK_FALSE;
 
     /* Retrieve the worker name stored by jk_translate() */
     const char *worker_name;
@@ -2395,6 +2396,16 @@ static int jk_handler(request_rec * r)
                 jk_log(conf->log, JK_LOG_DEBUG,
                        "Retrieved worker (%s) from env %s for %s",
                        worker_name, conf->worker_indicator, r->uri);
+            if (strchr(worker_name, ';')) {
+                rule_extension_t *e = ap_palloc(r->pool, sizeof(rule_extension_t));
+                char *w = ap_pstrdup(r->pool, worker_name);
+                worker_name_extension = JK_TRUE;
+                parse_rule_extensions(w, e, conf->log);
+                worker_name = w;
+                rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                                  &jk_module);
+                rconf->rule_extensions = e;
+            }
         }
         else if (worker_env.num_of_workers == 1) {
           /* We have a single worker ( the common case ).
@@ -2461,6 +2472,11 @@ static int jk_handler(request_rec * r)
 
             private_data.read_body_started = JK_FALSE;
             private_data.r = r;
+
+            if (worker_name_extension == JK_TRUE) {
+                extension_fix(&private_data.p, worker_name,
+                              rconf->rule_extensions, conf->log);
+            }
 
             wc_maintain(conf->log);
             jk_init_ws_service(&s);
