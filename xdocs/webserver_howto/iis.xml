@@ -77,16 +77,17 @@ A worker is defined to be a tomcat process that accepts work from the IIS server
 
 <subsection name="Supported Configuration">
 <p>
-The IIS-Tomcat redirector was developed and tested on:
+The IIS-Tomcat redirector works for:
 <ul>
 <li>
-WinNT4.0-i386 SP4/SP5/SP6a (should be able to work with other service packs), Win2K and WinXP and Win98
+WinNT4.0-i386 SP4/SP5/SP6a (should be able to work with other service packs), Win98, WinXP, Win2K,
+and probably also Win2K3, Vista and Windows 7.
 </li>
 <li>
-IIS4.0 and PWS4.0 (numerous people have working IIS 5 and IIS 6 configurations)
+IIS4.0 and PWS4.0, IIS 5 to IIS 7.
 </li>
 <li>
-Tomcat 3.2 and later, Tomcat 4.x, Tomcat 5 and 5.5 and Tomcat 6
+Tomcat 3.2 to Tomcat 7.
 </li>
 </ul>
 </p>
@@ -109,6 +110,16 @@ There are extra steps you need to take for configuring Tomcat with IIS 5 and 6. 
 There is a known bug in IIS that may result in incomplete log messages. See <a
 href="https://issues.apache.org/bugzilla/show_bug.cgi?id=45769">bug 45769</a>
 for further details.
+</p>
+</subsection>
+
+<subsection name="64 Bit notes">
+<p>
+In a 64 Bit environment - at least for IIS 7 - the used IIS Application Pool
+should have "Enable 32-bit Applications" set to "False". Otherwise the redirector will
+not be called and returns an http code 404. If you think, the 32bit version of
+isapi_redirect.dll would do the job instead, you will get an http code 500,
+because the library is not loadable into a 64 Bit IIS.
 </p>
 </subsection>
 

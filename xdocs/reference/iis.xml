@@ -60,6 +60,13 @@ Adding more contexts to the configuration.
 </li>
 </ul>
 </p>
+<p>
+Note that in a 64 Bit environment - at least for IIS 7 - the used IIS Application Pool
+should have "Enable 32-bit Applications" set to "False". Otherwise the redirector will
+not be called and returns an http code 404. If you think, the 32bit version of
+isapi_redirect.dll would do the job instead, you will get an http code 500,
+because the library is not loadable into a 64 Bit IIS.
+</p>
 </section>
 <section name="Registry settings">
 <p>

@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        <bug>51333</bug>: IIS: Document configuration
+        requirement for 64 Bit environment. (rjung)
+      </update>
       <add>
         <bug>51743</bug>: HTTPD: Support rule extensions when defining
         the request worker with an environment variable
