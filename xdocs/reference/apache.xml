@@ -145,6 +145,12 @@ which gets inherited from the Location.
 By default JkMount entries are not inherited from the global
 server to other VirtualHosts or between VirtualHosts.
 For the complete inheritance rules, see: JkMountCopy.
+<br/>
+You might append rule extensions to the worker name.
+The extensions are separated from the worker name by a
+semicolon ";" using the same syntax as in the
+uriworkermap.properties file.
+</p>
 </p></attribute>
 <attribute name="JkUnMount" required="false"><p>
 An exclusion mount point from a context to a Tomcat worker.
@@ -1087,7 +1093,7 @@ for more complex rules, you can set the environment variable <b>JK_WORKER_NAME</
 to the name of your chosen target worker. This enables you to decide on
 the chosen worker in a more flexible way, including dependencies on cookie values.
 This feature has been added in version 1.2.19 of mod_jk. Furthermore you might
-include rule extensions in the worker name. The extensions are separated from the
+append rule extensions to the worker name. The extensions are separated from the
 worker name by a semicolon ";" using the same syntax as in the
 uriworkermap.properties file. Supporting rule extensions in the worker name has
 been added in version 1.2.33.
