@@ -842,12 +842,30 @@ static char *stristr(const char *s, const char *find)
     return ((char *)s);
 }
 
+/*
+ * Find the first occurrence of path in uri tokenized by "/".
+ * The comparison is done case insensitive.
+ */
+static const char *find_path_in_uri(const char *uri, const char *path)
+{
+    size_t len = strlen(path);
+    while (uri = strchr(uri, '/')) {
+        uri++;
+        if (!strncmp(uri, path, len) &&
+            (*(uri + len) == '/' ||
+             strlen(uri) == len)) {
+            return uri;
+        }
+    }
+    return NULL;
+}
+
 static int uri_is_web_inf(const char *uri)
 {
-    if (stristr(uri, "/web-inf")) {
+    if (find_path_in_uri(uri, "web-inf")) {
         return JK_TRUE;
     }
-    if (stristr(uri, "/meta-inf")) {
+    if (find_path_in_uri(uri, "meta-inf")) {
         return JK_TRUE;
     }
 

@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>51769</bug>: IIS: Allow URIs which contain "META-INF" or
+        "WEB-INF" as long as they are not path components of the URI. (rjung)
+      </fix>
+      <fix>
         <bug>52056</bug>: HTTPD: JK request log does not always log
         correct response status. Fixed by refactoring JK request
         log to use the standard request log hook. (rjung)
