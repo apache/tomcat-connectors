@@ -214,6 +214,15 @@ typedef struct
 
 
 /*
+ * Request specific configuration
+ */
+typedef struct
+{
+    rule_extension_t *rule_extensions;
+    int jk_handled;
+} jk_request_conf_t;
+
+/*
  * The "private", or subclass portion of the web server service class for
  * Apache 1.3.  An instance of this class is created for each request
  * handled.  See jk_service.h for details about the ws_service object in
@@ -729,7 +738,9 @@ static int init_ws_service(apache_private_data_t * private_data,
     if (conf->options & JK_OPT_FLUSHEADER)
         s->flush_header = 1;
 
-    e = (rule_extension_t *)ap_get_module_config(r->request_config, &jk_module);
+    jk_request_conf_t *rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                                         &jk_module);
+    e = rconf->rule_extensions;
     if (e) {
         s->extension.reply_timeout = e->reply_timeout;
         s->extension.sticky_ignore = e->sticky_ignore;
@@ -1431,7 +1442,7 @@ static const char *process_item(request_rec * r,
     return cp ? cp : "-";
 }
 
-static void request_log_transaction(request_rec * r, jk_server_conf_t * conf)
+static int request_log_transaction(request_rec * r)
 {
     request_log_format_item *items;
     char *str, *s;
@@ -1439,7 +1450,21 @@ static void request_log_transaction(request_rec * r, jk_server_conf_t * conf)
     int len = 0;
     const char **strs;
     int *strl;
-    array_header *format = conf->format;
+    jk_server_conf_t *conf;
+    jk_request_conf_t *rconf;
+    array_header *format;
+
+    conf = (jk_server_conf_t *) ap_get_module_config(r->server->module_config,
+                                                     &jk_module);
+    format = conf->format;
+    if (format == NULL) {
+        return DECLINED;
+    }
+    rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                      &jk_module);
+    if (rconf == NULL || rconf->jk_handled == JK_FALSE) {
+        return DECLINED;
+    }
 
     strs = ap_palloc(r->pool, sizeof(char *) * (format->nelts));
     strl = ap_palloc(r->pool, sizeof(int) * (format->nelts));
@@ -1457,6 +1482,7 @@ static void request_log_transaction(request_rec * r, jk_server_conf_t * conf)
     }
     *s = 0;
     jk_log(conf->log, JK_LOG_REQUEST, "%s", str);
+    return OK;
 }
 
 /*****************************************************************
@@ -2332,8 +2358,10 @@ static int jk_handler(request_rec * r)
         (jk_server_conf_t *) ap_get_module_config(r->server->
                                                   module_config,
                                                   &jk_module);
+    jk_request_conf_t *rconf;
+
     /* Retrieve the worker name stored by jk_translate() */
-    const char *worker_name = ap_table_get(r->notes, JK_NOTE_WORKER_NAME);
+    const char *worker_name;
     int rc;
 
     JK_TRACE_ENTER(conf->log);
@@ -2347,20 +2375,7 @@ static int jk_handler(request_rec * r)
         return DECLINED;
     }
 
-    if (r->proxyreq) {
-        jk_log(conf->log, JK_LOG_ERROR,
-               "Request has proxyreq flag set in mod_jk handler - aborting.");
-        JK_TRACE_EXIT(conf->log);
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
-
-    /* Set up r->read_chunked flags for chunked encoding, if present */
-    if ((rc = ap_setup_client_block(r, REQUEST_CHUNKED_DECHUNK))) {
-        jk_log(conf->log, JK_LOG_ERROR,
-               "Could not setup client_block for chunked encoding - aborting");
-        JK_TRACE_EXIT(conf->log);
-        return rc;
-    }
+    worker_name = ap_table_get(r->notes, JK_NOTE_WORKER_NAME);
 
     if (worker_name == NULL && r->handler && !strcmp(r->handler, JK_HANDLER)) {
         /* we may be here because of a manual directive ( that overrides
@@ -2400,6 +2415,30 @@ static int jk_handler(request_rec * r)
                        "Using first worker (%s) from %d workers for %s",
                        worker_name, worker_env.num_of_workers, r->uri);
         }
+    }
+
+    if (JK_IS_DEBUG_LEVEL(conf->log))
+       jk_log(conf->log, JK_LOG_DEBUG, "Into handler %s worker=%s"
+              " r->proxyreq=%d",
+              r->handler, STRNULL_FOR_NULL(worker_name), r->proxyreq);
+
+    rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                      &jk_module);
+    rconf->jk_handled = JK_TRUE;
+
+    if (r->proxyreq) {
+        jk_log(conf->log, JK_LOG_ERROR,
+               "Request has proxyreq flag set in mod_jk handler - aborting.");
+        JK_TRACE_EXIT(conf->log);
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /* Set up r->read_chunked flags for chunked encoding, if present */
+    if ((rc = ap_setup_client_block(r, REQUEST_CHUNKED_DECHUNK))) {
+        jk_log(conf->log, JK_LOG_ERROR,
+               "Could not setup client_block for chunked encoding - aborting");
+        JK_TRACE_EXIT(conf->log);
+        return rc;
     }
 
     if (worker_name) {
@@ -2471,9 +2510,6 @@ static int jk_handler(request_rec * r)
 #endif
                 if (s.route && *s.route)
                     ap_table_setn(r->notes, JK_NOTE_WORKER_ROUTE, s.route);
-                if (conf->format != NULL) {
-                    request_log_transaction(r, conf);
-                }
             }
             else {
                 jk_log(conf->log, JK_LOG_ERROR, "Could not init service"
@@ -3032,7 +3068,10 @@ static void jk_init(server_rec * s, ap_pool * p)
  */
 static int jk_translate(request_rec * r)
 {
-    ap_set_module_config(r->request_config, &jk_module, NULL);
+    jk_request_conf_t *rconf = ap_palloc(r->pool, sizeof(jk_request_conf_t));
+    rconf->jk_handled = JK_FALSE;
+    rconf->rule_extensions = NULL;
+    ap_set_module_config(r->request_config, &jk_module, rconf);
 
     if (!r->proxyreq) {
         jk_server_conf_t *conf =
@@ -3065,7 +3104,8 @@ static int jk_translate(request_rec * r)
                 rule_extension_t *e;
                 worker = map_uri_to_worker_ext(conf->uw_map, clean_uri,
                                                NULL, &e, NULL, conf->log);
-                ap_set_module_config(r->request_config, &jk_module, e);
+                rconf->rule_extensions = e;
+                ap_set_module_config(r->request_config, &jk_module, rconf);
             }
 
             /* Don't know the worker, ForwardDirectories is set, there is a
@@ -3365,7 +3405,7 @@ module MODULE_VAR_EXPORT jk_module = {
     NULL,                       /* [4] check access by host address */
     NULL,                       /* XXX [7] MIME type checker/setter */
     jk_fixups,                  /* [8] fixups */
-    NULL,                       /* [10] logger */
+    request_log_transaction,    /* [10] logger */
     NULL,                       /* [3] header parser */
     child_init_handler,         /* apache child process initializer */
     child_exit_handler,         /* apache child process exit/cleanup */

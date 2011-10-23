@@ -44,6 +44,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>52056</bug>: HTTPD: JK request log does not always log
+        correct response status. Fixed by refactoring JK request
+        log to use the standard request log hook. (rjung)
+      </fix>
       <add>
         HTTPD: Allow to choose a sticky worker using the environment
         variable JK_ROUTE. This can be used if sessions and routes

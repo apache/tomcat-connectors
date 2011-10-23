@@ -243,6 +243,15 @@ typedef struct
     server_rec *s;
 } jk_server_conf_t;
 
+/*
+ * Request specific configuration
+ */
+typedef struct
+{
+    rule_extension_t *rule_extensions;
+    int jk_handled;
+} jk_request_conf_t;
+
 struct apache_private_data
 {
     jk_pool_t p;
@@ -783,7 +792,9 @@ static int init_ws_service(apache_private_data_t * private_data,
     if (conf->options & JK_OPT_FLUSHEADER)
         s->flush_header = 1;
 
-    e = (rule_extension_t *)ap_get_module_config(r->request_config, &jk_module);
+    jk_request_conf_t *rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                                         &jk_module);
+    e = rconf->rule_extensions;
     if (e) {
         s->extension.reply_timeout = e->reply_timeout;
         s->extension.sticky_ignore = e->sticky_ignore;
@@ -1526,7 +1537,7 @@ static const char *process_item(request_rec * r,
     return cp ? cp : "-";
 }
 
-static void request_log_transaction(request_rec * r, jk_server_conf_t * conf)
+static int request_log_transaction(request_rec * r)
 {
     request_log_format_item *items;
     char *str, *s;
@@ -1534,7 +1545,21 @@ static void request_log_transaction(request_rec * r, jk_server_conf_t * conf)
     int len = 0;
     const char **strs;
     int *strl;
-    apr_array_header_t *format = conf->format;
+    jk_server_conf_t *conf;
+    jk_request_conf_t *rconf;
+    apr_array_header_t *format;
+
+    conf = (jk_server_conf_t *) ap_get_module_config(r->server->module_config,
+                                                     &jk_module);
+    format = conf->format;
+    if (format == NULL) {
+        return DECLINED;
+    }
+    rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                      &jk_module);
+    if (rconf == NULL || rconf->jk_handled == JK_FALSE) {
+        return DECLINED;
+    }
 
     strs = apr_palloc(r->pool, sizeof(char *) * (format->nelts));
     strl = apr_palloc(r->pool, sizeof(int) * (format->nelts));
@@ -1553,6 +1578,7 @@ static void request_log_transaction(request_rec * r, jk_server_conf_t * conf)
     *s = 0;
 
     jk_log(conf->log, JK_LOG_REQUEST, "%s", str);
+    return OK;
 
 }
 
@@ -2473,6 +2499,7 @@ static int jk_handler(request_rec * r)
 {
     const char *worker_name;
     jk_server_conf_t *xconf;
+    jk_request_conf_t *rconf;
     int rc, dmt = 1;
 
     /* We do DIR_MAGIC_TYPE here to make sure TC gets all requests, even
@@ -2502,13 +2529,8 @@ static int jk_handler(request_rec * r)
         JK_TRACE_EXIT(xconf->log);
         return DECLINED;
     }
-    worker_name = apr_table_get(r->notes, JK_NOTE_WORKER_NAME);
 
-    /* Set up r->read_chunked flags for chunked encoding, if present */
-    if ((rc = ap_setup_client_block(r, REQUEST_CHUNKED_DECHUNK)) != APR_SUCCESS) {
-        JK_TRACE_EXIT(xconf->log);
-        return rc;
-    }
+    worker_name = apr_table_get(r->notes, JK_NOTE_WORKER_NAME);
 
     if (worker_name == NULL) {
         /* we may be here because of a manual directive ( that overrides
@@ -2549,7 +2571,9 @@ static int jk_handler(request_rec * r)
                 rule_extension_t *e;
                 worker_name = map_uri_to_worker_ext(xconf->uw_map, r->uri,
                                                     NULL, &e, NULL, xconf->log);
-                ap_set_module_config(r->request_config, &jk_module, e);
+                rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                                  &jk_module);
+                rconf->rule_extensions = e;
             }
 
             if (worker_name == NULL && worker_env.num_of_workers) {
@@ -2569,6 +2593,10 @@ static int jk_handler(request_rec * r)
               " r->proxyreq=%d",
               r->handler, STRNULL_FOR_NULL(worker_name), r->proxyreq);
 
+    rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
+                                                      &jk_module);
+    rconf->jk_handled = JK_TRUE;
+
     /* If this is a proxy request, we'll notify an error */
     if (r->proxyreq) {
         jk_log(xconf->log, JK_LOG_INFO, "Proxy request for worker=%s"
@@ -2576,6 +2604,12 @@ static int jk_handler(request_rec * r)
               STRNULL_FOR_NULL(worker_name));
         JK_TRACE_EXIT(xconf->log);
         return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /* Set up r->read_chunked flags for chunked encoding, if present */
+    if ((rc = ap_setup_client_block(r, REQUEST_CHUNKED_DECHUNK)) != APR_SUCCESS) {
+        JK_TRACE_EXIT(xconf->log);
+        return rc;
     }
 
     if (worker_name) {
@@ -2678,10 +2712,6 @@ static int jk_handler(request_rec * r)
             if (s.route && *s.route)
                 apr_table_setn(r->notes, JK_NOTE_WORKER_ROUTE, s.route);
 
-            if (xconf->format != NULL) {
-                request_log_transaction(r, xconf);
-            }
-
             jk_close_pool(&private_data.p);
 
             if (rc > 0) {
@@ -2737,6 +2767,7 @@ static int jk_handler(request_rec * r)
         }
     }
 
+    rconf->jk_handled = JK_FALSE;
     JK_TRACE_EXIT(xconf->log);
     return DECLINED;
 }
@@ -3465,7 +3496,10 @@ static int jk_post_config(apr_pool_t * pconf,
  */
 static int jk_translate(request_rec * r)
 {
-    ap_set_module_config(r->request_config, &jk_module, NULL);
+    jk_request_conf_t *rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
+    rconf->jk_handled = JK_FALSE;
+    rconf->rule_extensions = NULL;
+    ap_set_module_config(r->request_config, &jk_module, rconf);
 
     if (!r->proxyreq) {
         jk_server_conf_t *conf =
@@ -3541,7 +3575,8 @@ static int jk_translate(request_rec * r)
                 rule_extension_t *e;
                 worker = map_uri_to_worker_ext(conf->uw_map, r->uri,
                                                NULL, &e, NULL, conf->log);
-                ap_set_module_config(r->request_config, &jk_module, e);
+                rconf->rule_extensions = e;
+                ap_set_module_config(r->request_config, &jk_module, rconf);
             }
 
             if (worker) {
@@ -3662,6 +3697,14 @@ static int jk_translate(request_rec * r)
 static int jk_map_to_storage(request_rec * r)
 {
 
+    jk_request_conf_t *rconf = ap_get_module_config(r->request_config, &jk_module);
+    if (rconf == NULL) {
+        jk_request_conf_t *rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
+        rconf->jk_handled = JK_FALSE;
+        rconf->rule_extensions = NULL;
+        ap_set_module_config(r->request_config, &jk_module, rconf);
+    }
+
     if (!r->proxyreq && !apr_table_get(r->notes, JK_NOTE_WORKER_NAME)) {
         jk_server_conf_t *conf =
             (jk_server_conf_t *) ap_get_module_config(r->server->
@@ -3700,7 +3743,8 @@ static int jk_map_to_storage(request_rec * r)
                 rule_extension_t *e;
                 worker = map_uri_to_worker_ext(conf->uw_map, r->uri,
                                                NULL, &e, NULL, conf->log);
-                ap_set_module_config(r->request_config, &jk_module, e);
+                rconf->rule_extensions = e;
+                ap_set_module_config(r->request_config, &jk_module, rconf);
             }
 
             if (worker) {
@@ -3776,11 +3820,12 @@ static int jk_map_to_storage(request_rec * r)
 
 static void jk_register_hooks(apr_pool_t * p)
 {
-    ap_hook_handler(jk_handler, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_post_config(jk_post_config, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_child_init(jk_child_init, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_translate_name(jk_translate, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_map_to_storage(jk_map_to_storage, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_handler(jk_handler, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_log_transaction(request_log_transaction, NULL, NULL, APR_HOOK_MIDDLE);
 }
 
 module AP_MODULE_DECLARE_DATA jk_module = {
