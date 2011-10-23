@@ -492,6 +492,18 @@ static char *get_cookie(jk_ws_service_t *s, const char *name)
 static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
 {
     char *val;
+
+    /* If the web server sets a route, ignore the real session id
+     * and fake a new one for that route.
+     */
+    if (s->route) {
+        size_t sz = strlen(s->route) + 1;
+        val = jk_pool_alloc(s->pool, sz + 1);
+        val[0] = '.';
+        memcpy(val + 1, s->route, sz);
+        return val;
+    }
+
     val = get_path_param(s, p->session_path);
     if (!val) {
         val = get_cookie(s, p->session_cookie);

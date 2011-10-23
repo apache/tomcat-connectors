@@ -81,6 +81,7 @@
 #define JK_ENV_REPLY_TIMEOUT        ("JK_REPLY_TIMEOUT")
 #define JK_ENV_STICKY_IGNORE        ("JK_STICKY_IGNORE")
 #define JK_ENV_STATELESS            ("JK_STATELESS")
+#define JK_ENV_ROUTE                ("JK_ROUTE")
 #define JK_ENV_WORKER_NAME          ("JK_WORKER_NAME")
 #define JK_NOTE_WORKER_NAME         ("JK_WORKER_NAME")
 #define JK_NOTE_WORKER_TYPE         ("JK_WORKER_TYPE")
@@ -683,6 +684,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     const char *reply_timeout = NULL;
     const char *sticky_ignore = NULL;
     const char *stateless = NULL;
+    const char *route = NULL;
     rule_extension_t *e;
 
     /* Copy in function pointers (which are really methods) */
@@ -784,6 +786,12 @@ static int init_ws_service(apache_private_data_t * private_data,
 
     if (conf->options & JK_OPT_DISABLEREUSE)
         s->disable_reuse = 1;
+
+    /* get route if known */
+    route = ap_table_get(r->subprocess_env, JK_ENV_ROUTE);
+    if (route && *route) {
+        s->route = route;
+    }
 
     /* get server name */
     /* s->server_name  = (char *)(r->hostname ? r->hostname : r->server->server_hostname); */

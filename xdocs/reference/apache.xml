@@ -1112,14 +1112,28 @@ variable <b>no-jk</b>.
   &lt;/Location&gt;
 </source>
 </subsection>
-<subsection name="More Environment Variables">
+<subsection name="Advanced Environment Variables">
+<p>
+Environment variables allow to overwrite the default behaviour
+of mod_jk depending on request properties like e.g. the request URI,
+header values or cookie. This can be done using the <b>SetEnvIf</b> or
+<b>RewriteRule</b> directives.
+</p>
+<p>
+The environment variable
+<b>JK_ROUTE</b> can be set to explicitely choose a member of a
+load balancer worker. The value must be equal to the
+route attribute of the member, or if that attribute is not
+used, equal to the member name. Note that this is only needed if
+session IDs and routes are encoded in a non standard way in the
+request. Stickyness using the Java Servlet compliant way of encoding
+the IDs is supported by default.
+This is available since version 1.2.33.
+</p>
 <p>
 The environment variable
 <b>JK_REPLY_TIMEOUT</b> can be set to dynamically define a reply timeout.
 The value must be given in milliseconds.
-You can use <b>SetEnvIf</b> or <b>RewriteRule</b>
-for more complex rules to change the <b>JK_REPLY_TIMEOUT</b> according
-to request properties like e.g. the request URI.
 This is available since version 1.2.27.
 </p>
 <p>

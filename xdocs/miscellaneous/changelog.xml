@@ -45,6 +45,11 @@
   <subsection name="Native">
     <changelog>
       <add>
+        HTTPD: Allow to choose a sticky worker using the environment
+        variable JK_ROUTE. This can be used if sessions and routes
+        are send with the request in a non-standard way. (rjung)
+      </add>
+      <add>
         URI Map: Add "sticky_ignore" extension attributes to uri worker map.
         It allows to disable stickyness for individual mounts. (rjung)
       </add>
