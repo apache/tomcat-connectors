@@ -150,7 +150,6 @@ You might append rule extensions to the worker name.
 The extensions are separated from the worker name by a
 semicolon ";" using the same syntax as in the
 uriworkermap.properties file.
-</p>
 </p></attribute>
 <attribute name="JkUnMount" required="false"><p>
 An exclusion mount point from a context to a Tomcat worker.
