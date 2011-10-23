@@ -580,6 +580,105 @@ void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
 
 }
 
+/* Parse rule extensions */
+void parse_rule_extensions(char *rule, rule_extension_t *extensions,
+                           jk_logger_t *l)
+{
+    char *param;
+#ifdef _MT_CODE_PTHREAD
+    char *lasts = NULL;
+#endif
+
+    extensions->reply_timeout = -1;
+    extensions->sticky_ignore = JK_FALSE;
+    extensions->stateless = JK_FALSE;
+    extensions->active = NULL;
+    extensions->disabled = NULL;
+    extensions->stopped = NULL;
+    extensions->activation_size = 0;
+    extensions->activation = NULL;
+    extensions->fail_on_status_size = 0;
+    extensions->fail_on_status = NULL;
+    extensions->fail_on_status_str = NULL;
+    extensions->use_server_error_pages = 0;
+
+#ifdef _MT_CODE_PTHREAD
+    param = strtok_r(rule, ";", &lasts);
+#else
+    param = strtok(rule, ";");
+#endif
+    if (param) {
+#ifdef _MT_CODE_PTHREAD
+        for (param = strtok_r(NULL, ";", &lasts); param; param = strtok_r(NULL, ";", &lasts)) {
+#else
+        for (param = strtok(NULL, ";"); param; param = strtok(NULL, ";")) {
+#endif
+            if (!strncmp(param, JK_UWMAP_EXTENSION_REPLY_TIMEOUT, strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT))) {
+                extensions->reply_timeout = atoi(param + strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT));
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_STICKY_IGNORE, strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE))) {
+                int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE));
+                if (val) {
+                    extensions->sticky_ignore = JK_TRUE;
+                }
+                else {
+                    extensions->sticky_ignore = JK_FALSE;
+                }
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_STATELESS, strlen(JK_UWMAP_EXTENSION_STATELESS))) {
+                int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STATELESS));
+                if (val) {
+                    extensions->stateless = JK_TRUE;
+                }
+                else {
+                    extensions->stateless = JK_FALSE;
+                }
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_USE_SRV_ERRORS, strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS))) {
+                extensions->use_server_error_pages = atoi(param + strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS));
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_ACTIVE, strlen(JK_UWMAP_EXTENSION_ACTIVE))) {
+                if (extensions->active)
+                    jk_log(l, JK_LOG_WARNING,
+                           "rule extension '%s' only allowed once",
+                           JK_UWMAP_EXTENSION_ACTIVE);
+                else
+                    extensions->active = param + strlen(JK_UWMAP_EXTENSION_ACTIVE);
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_DISABLED, strlen(JK_UWMAP_EXTENSION_DISABLED))) {
+                if (extensions->disabled)
+                    jk_log(l, JK_LOG_WARNING,
+                           "rule extension '%s' only allowed once",
+                           JK_UWMAP_EXTENSION_DISABLED);
+                else
+                    extensions->disabled = param + strlen(JK_UWMAP_EXTENSION_DISABLED);
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_STOPPED, strlen(JK_UWMAP_EXTENSION_STOPPED))) {
+                if (extensions->stopped)
+                    jk_log(l, JK_LOG_WARNING,
+                           "rule extension '%s' only allowed once",
+                           JK_UWMAP_EXTENSION_STOPPED);
+                else
+                    extensions->stopped = param + strlen(JK_UWMAP_EXTENSION_STOPPED);
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_FAIL_ON_STATUS, strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS))) {
+                if (extensions->fail_on_status_str)
+                    jk_log(l, JK_LOG_WARNING,
+                           "rule extension '%s' only allowed once",
+                           JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
+                else
+                    extensions->fail_on_status_str = param + strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
+            }
+            else {
+                jk_log(l, JK_LOG_WARNING,
+                       "unknown rule extension '%s'",
+                       param);
+            }
+        }
+    }
+}
+
+
 /* Add new entry to NEXT generation */
 int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
                        const char *puri, const char *worker,
@@ -631,101 +730,8 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
     }
 
     if (*uri == '/') {
-        char *w;
-        char *param;
-#ifdef _MT_CODE_PTHREAD
-        char *lasts = NULL;
-#endif
-
-        w = jk_pool_strdup(p, worker);
-        uwr->extensions.reply_timeout = -1;
-        uwr->extensions.sticky_ignore = JK_FALSE;
-        uwr->extensions.stateless = JK_FALSE;
-        uwr->extensions.active = NULL;
-        uwr->extensions.disabled = NULL;
-        uwr->extensions.stopped = NULL;
-        uwr->extensions.activation_size = 0;
-        uwr->extensions.activation = NULL;
-        uwr->extensions.fail_on_status_size = 0;
-        uwr->extensions.fail_on_status = NULL;
-        uwr->extensions.fail_on_status_str = NULL;
-        uwr->extensions.use_server_error_pages = 0;
-
-#ifdef _MT_CODE_PTHREAD
-        param = strtok_r(w, ";", &lasts);
-#else
-        param = strtok(w, ";");
-#endif
-        if (param) {
-#ifdef _MT_CODE_PTHREAD
-            for (param = strtok_r(NULL, ";", &lasts); param; param = strtok_r(NULL, ";", &lasts)) {
-#else
-            for (param = strtok(NULL, ";"); param; param = strtok(NULL, ";")) {
-#endif
-                if (!strncmp(param, JK_UWMAP_EXTENSION_REPLY_TIMEOUT, strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT))) {
-                    uwr->extensions.reply_timeout = atoi(param + strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT));
-                }
-                else if (!strncmp(param, JK_UWMAP_EXTENSION_STICKY_IGNORE, strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE))) {
-                    int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE));
-                    if (val) {
-                        uwr->extensions.sticky_ignore = JK_TRUE;
-                    }
-                    else {
-                        uwr->extensions.sticky_ignore = JK_FALSE;
-                    }
-                }
-                else if (!strncmp(param, JK_UWMAP_EXTENSION_STATELESS, strlen(JK_UWMAP_EXTENSION_STATELESS))) {
-                    int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STATELESS));
-                    if (val) {
-                        uwr->extensions.stateless = JK_TRUE;
-                    }
-                    else {
-                        uwr->extensions.stateless = JK_FALSE;
-                    }
-                }
-                else if (!strncmp(param, JK_UWMAP_EXTENSION_USE_SRV_ERRORS, strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS))) {
-                    uwr->extensions.use_server_error_pages = atoi(param + strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS));
-                }
-                else if (!strncmp(param, JK_UWMAP_EXTENSION_ACTIVE, strlen(JK_UWMAP_EXTENSION_ACTIVE))) {
-                    if (uwr->extensions.active)
-                        jk_log(l, JK_LOG_WARNING,
-                               "extension '%s' in uri worker map only allowed once",
-                               JK_UWMAP_EXTENSION_ACTIVE);
-                    else
-                        uwr->extensions.active = param + strlen(JK_UWMAP_EXTENSION_ACTIVE);
-                }
-                else if (!strncmp(param, JK_UWMAP_EXTENSION_DISABLED, strlen(JK_UWMAP_EXTENSION_DISABLED))) {
-                    if (uwr->extensions.disabled)
-                        jk_log(l, JK_LOG_WARNING,
-                               "extension '%s' in uri worker map only allowed once",
-                               JK_UWMAP_EXTENSION_DISABLED);
-                    else
-                        uwr->extensions.disabled = param + strlen(JK_UWMAP_EXTENSION_DISABLED);
-                }
-                else if (!strncmp(param, JK_UWMAP_EXTENSION_STOPPED, strlen(JK_UWMAP_EXTENSION_STOPPED))) {
-                    if (uwr->extensions.stopped)
-                        jk_log(l, JK_LOG_WARNING,
-                               "extension '%s' in uri worker map only allowed once",
-                               JK_UWMAP_EXTENSION_STOPPED);
-                    else
-                        uwr->extensions.stopped = param + strlen(JK_UWMAP_EXTENSION_STOPPED);
-                }
-                else if (!strncmp(param, JK_UWMAP_EXTENSION_FAIL_ON_STATUS, strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS))) {
-                    if (uwr->extensions.fail_on_status_str)
-                        jk_log(l, JK_LOG_WARNING,
-                               "extension '%s' in uri worker map only allowed once",
-                               JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
-                    else
-                        uwr->extensions.fail_on_status_str = param + strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
-                }
-                else {
-                    jk_log(l, JK_LOG_WARNING,
-                           "unknown extension '%s' in uri worker map",
-                           param);
-                }
-            }
-        }
-
+        char *w = jk_pool_strdup(p, worker);
+        parse_rule_extensions(w, &uwr->extensions, l);
         uwr->source_type = source_type;
         uwr->worker_name = w;
         uwr->uri = uri;
