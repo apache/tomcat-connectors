@@ -361,8 +361,7 @@ static int uri_worker_map_clear(jk_uri_worker_map_t *uw_map,
     return JK_TRUE;
 }
 
-static void extract_activation(jk_uri_worker_map_t *uw_map,
-                               uri_worker_record_t *uwr,
+static void extract_activation(jk_pool_t *p,
                                lb_worker_t *lb,
                                int *activations,
                                char *workers,
@@ -370,7 +369,6 @@ static void extract_activation(jk_uri_worker_map_t *uw_map,
                                jk_logger_t *l)
 {
     unsigned int i;
-    jk_pool_t *p;
     char *worker;
 #ifdef _MT_CODE_PTHREAD
     char *lasts;
@@ -378,10 +376,6 @@ static void extract_activation(jk_uri_worker_map_t *uw_map,
 
     JK_TRACE_ENTER(l);
 
-    if (uwr->source_type == SOURCE_TYPE_URIMAP)
-        p = &IND_NEXT(uw_map->p_dyn);
-    else
-        p = &uw_map->p;
     worker = jk_pool_strdup(p, workers);
 
 #ifdef _MT_CODE_PTHREAD
@@ -413,14 +407,14 @@ static void extract_activation(jk_uri_worker_map_t *uw_map,
 
 }
 
-static void extract_fail_on_status(jk_uri_worker_map_t *uw_map,
-                                   uri_worker_record_t *uwr,
-                                   jk_logger_t *l)
+static void extension_fix_fail_on_status(jk_pool_t *p,
+                                         const char *name,
+                                         rule_extension_t *extensions,
+                                         jk_logger_t *l)
 {
     unsigned int i;
     int j;
     int cnt = 1;
-    jk_pool_t *p;
     char *status;
 #ifdef _MT_CODE_PTHREAD
     char *lasts;
@@ -428,33 +422,30 @@ static void extract_fail_on_status(jk_uri_worker_map_t *uw_map,
 
     JK_TRACE_ENTER(l);
 
-    for (i=0; i<strlen(uwr->extensions.fail_on_status_str); i++) {
-        if (uwr->extensions.fail_on_status_str[i] == ',' ||
-            uwr->extensions.fail_on_status_str[i] == ' ')
+    for (i=0; i<strlen(extensions->fail_on_status_str); i++) {
+        if (extensions->fail_on_status_str[i] == ',' ||
+            extensions->fail_on_status_str[i] == ' ')
             cnt++;
     }
-    uwr->extensions.fail_on_status_size = cnt;
+    extensions->fail_on_status_size = cnt;
 
-    if (uwr->source_type == SOURCE_TYPE_URIMAP)
-        p = &IND_NEXT(uw_map->p_dyn);
-    else
-        p = &uw_map->p;
-    status = jk_pool_strdup(p, uwr->extensions.fail_on_status_str);
-    uwr->extensions.fail_on_status = (int *)jk_pool_alloc(p,
-                                            uwr->extensions.fail_on_status_size * sizeof(int));
-    if (!uwr->extensions.fail_on_status) {
+    status = jk_pool_strdup(p, extensions->fail_on_status_str);
+    extensions->fail_on_status = (int *)jk_pool_alloc(p,
+                                            extensions->fail_on_status_size * sizeof(int));
+    if (!extensions->fail_on_status) {
         jk_log(l, JK_LOG_ERROR,
-               "can't alloc extensions fail_on_status list");
+               "can't alloc extensions fail_on_status list for worker (%s)",
+               name);
         JK_TRACE_EXIT(l);
         return;
     } else if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "Allocated fail_on_status array of size %d for worker %s",
-               uwr->extensions.fail_on_status_size, uwr->worker_name);
+               "Allocated fail_on_status array of size %d for worker (%s)",
+               extensions->fail_on_status_size, name);
 
 
-    for (j=0; j<uwr->extensions.fail_on_status_size; j++) {
-        uwr->extensions.fail_on_status[j] = 0;
+    for (j=0; j<extensions->fail_on_status_size; j++) {
+        extensions->fail_on_status[j] = 0;
     }
 
     cnt = 0;
@@ -464,12 +455,85 @@ static void extract_fail_on_status(jk_uri_worker_map_t *uw_map,
 #else
     for (status = strtok(status, ", "); status; status = strtok(NULL, ", ")) {
 #endif
-        uwr->extensions.fail_on_status[cnt] = atoi(status);
+        extensions->fail_on_status[cnt] = atoi(status);
         cnt++;
     }
 
     JK_TRACE_EXIT(l);
 
+}
+
+static void extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t *jw,
+                                      rule_extension_t *extensions, jk_logger_t *l)
+{
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG,
+               "Checking extension for worker %s of type %s (%d)",
+               name, wc_get_name_for_type(jw->type,l), jw->type);
+
+    if (jw->type == JK_LB_WORKER_TYPE &&
+        (extensions->active || extensions->disabled || extensions->stopped)) {
+        int j;
+        lb_worker_t *lb = (lb_worker_t *)jw->worker_private;
+        if (!extensions->activation) {
+            extensions->activation_size = lb->num_of_workers;
+            extensions->activation = (int *)jk_pool_alloc(p,
+                                                    extensions->activation_size * sizeof(int));
+            if (!extensions->activation) {
+                jk_log(l, JK_LOG_ERROR,
+                       "can't alloc extensions activation list");
+                return;
+            } else if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
+                       "Allocated activations array of size %d for lb worker %s",
+                       extensions->activation_size, name);
+            for (j=0; j<extensions->activation_size; j++) {
+                extensions->activation[j] = JK_LB_ACTIVATION_UNSET;
+            }
+        }
+        if (extensions->active)
+            extract_activation(p, lb, extensions->activation,
+                               extensions->active, JK_LB_ACTIVATION_ACTIVE, l);
+        if (extensions->disabled)
+            extract_activation(p, lb, extensions->activation,
+                               extensions->disabled, JK_LB_ACTIVATION_DISABLED, l);
+        if (extensions->stopped)
+            extract_activation(p, lb, extensions->activation,
+                               extensions->stopped, JK_LB_ACTIVATION_STOPPED, l);
+    }
+    else if (extensions->active) {
+        jk_log(l, JK_LOG_WARNING,
+               "Worker %s is not of type lb, activation extension "
+               JK_UWMAP_EXTENSION_ACTIVE " for %s ignored",
+               name, extensions->active);
+    }
+    else if (extensions->disabled) {
+        jk_log(l, JK_LOG_WARNING,
+               "Worker %s is not of type lb, activation extension "
+               JK_UWMAP_EXTENSION_DISABLED " for %s ignored",
+               name, extensions->disabled);
+    }
+    else if (extensions->stopped) {
+        jk_log(l, JK_LOG_WARNING,
+               "Worker %s is not of type lb, activation extension "
+               JK_UWMAP_EXTENSION_STOPPED " for %s ignored",
+               name, extensions->stopped);
+    }
+}
+
+void extension_fix(jk_pool_t *p, const char *name,
+                   rule_extension_t *extensions, jk_logger_t *l)
+{
+    jk_worker_t *jw = wc_get_worker_for_name(name, l);
+    if(!jw) {
+        jk_log(l, JK_LOG_ERROR,
+               "Could not find worker with name '%s' in uri map post processing.",
+               name);
+    }
+    extension_fix_activation(p, name, jw, extensions, l);
+    if (extensions->fail_on_status_str) {
+        extension_fix_fail_on_status(p, name, extensions, l);
+    }
 }
 
 void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
@@ -500,77 +564,14 @@ void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
 
     for (i = 0; i < IND_NEXT(uw_map->size); i++) {
         uri_worker_record_t *uwr = IND_NEXT(uw_map->maps)[i];
-        jk_worker_t *jw;
+        jk_pool_t *p;
         if(uwr->match_type & MATCH_TYPE_NO_MATCH)
             continue;
-        jw = wc_get_worker_for_name(uwr->worker_name, l);
-        if(!jw) {
-            jk_log(l, JK_LOG_ERROR,
-                   "Could not find worker with name '%s' in uri map post processing.",
-                   uwr->worker_name);
-            continue;
-        }
-        if (JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG,
-                   "Checking extension for worker %d: %s of type %s (%d)",
-                   i, uwr->worker_name, wc_get_name_for_type(jw->type,l), jw->type);
-
-        if (jw->type == JK_LB_WORKER_TYPE &&
-            (uwr->extensions.active || uwr->extensions.disabled || uwr->extensions.stopped)) {
-            int j;
-            lb_worker_t *lb = (lb_worker_t *)jw->worker_private;
-            jk_pool_t *p;
-            if (!uwr->extensions.activation) {
-                uwr->extensions.activation_size = lb->num_of_workers;
-                if (uwr->source_type == SOURCE_TYPE_URIMAP)
-                    p = &IND_NEXT(uw_map->p_dyn);
-                else
-                    p = &uw_map->p;
-                uwr->extensions.activation = (int *)jk_pool_alloc(p,
-                                                        uwr->extensions.activation_size * sizeof(int));
-                if (!uwr->extensions.activation) {
-                    jk_log(l, JK_LOG_ERROR,
-                           "can't alloc extensions activation list");
-                    continue;
-                } else if (JK_IS_DEBUG_LEVEL(l))
-                    jk_log(l, JK_LOG_DEBUG,
-                           "Allocated activations array of size %d for lb worker %s",
-                           uwr->extensions.activation_size, uwr->worker_name);
-                for (j=0; j<uwr->extensions.activation_size; j++) {
-                    uwr->extensions.activation[j] = JK_LB_ACTIVATION_UNSET;
-                }
-            }
-            if (uwr->extensions.active)
-                extract_activation(uw_map, uwr, lb, uwr->extensions.activation,
-                                   uwr->extensions.active, JK_LB_ACTIVATION_ACTIVE, l);
-            if (uwr->extensions.disabled)
-                extract_activation(uw_map, uwr, lb, uwr->extensions.activation,
-                                   uwr->extensions.disabled, JK_LB_ACTIVATION_DISABLED, l);
-            if (uwr->extensions.stopped)
-                extract_activation(uw_map, uwr, lb, uwr->extensions.activation,
-                                   uwr->extensions.stopped, JK_LB_ACTIVATION_STOPPED, l);
-        }
-        else if (uwr->extensions.active) {
-            jk_log(l, JK_LOG_WARNING,
-                   "Worker %s is not of type lb, activation extension "
-                   JK_UWMAP_EXTENSION_ACTIVE " for %s ignored",
-                   uwr->worker_name, uwr->extensions.active);
-        }
-        else if (uwr->extensions.disabled) {
-            jk_log(l, JK_LOG_WARNING,
-                   "Worker %s is not of type lb, activation extension "
-                   JK_UWMAP_EXTENSION_DISABLED " for %s ignored",
-                   uwr->worker_name, uwr->extensions.disabled);
-        }
-        else if (uwr->extensions.stopped) {
-            jk_log(l, JK_LOG_WARNING,
-                   "Worker %s is not of type lb, activation extension "
-                   JK_UWMAP_EXTENSION_STOPPED " for %s ignored",
-                   uwr->worker_name, uwr->extensions.stopped);
-        }
-        if (uwr->extensions.fail_on_status_str) {
-            extract_fail_on_status(uw_map, uwr, l);
-        }
+        if (uwr->source_type == SOURCE_TYPE_URIMAP)
+            p = &IND_NEXT(uw_map->p_dyn);
+        else
+            p = &uw_map->p;
+        extension_fix(p, uwr->worker_name, &uwr->extensions, l);
     }
     if (JK_IS_DEBUG_LEVEL(l))
         uri_worker_map_dump(uw_map, "after extension stripping", l);

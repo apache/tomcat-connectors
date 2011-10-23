@@ -168,6 +168,12 @@ struct jk_uri_worker_map
 };
 typedef struct jk_uri_worker_map jk_uri_worker_map_t;
 
+void extension_fix(jk_pool_t *p, const char *name,
+                                      rule_extension_t *extensions, jk_logger_t *l);
+
+void parse_rule_extensions(char *rule, rule_extension_t *extensions,
+                           jk_logger_t *l);
+
 const char *uri_worker_map_get_source(uri_worker_record_t *uwr, jk_logger_t *l);
 
 char *uri_worker_map_get_match(uri_worker_record_t *uwr, char *buf, jk_logger_t *l);
@@ -183,9 +189,6 @@ int uri_worker_map_open(jk_uri_worker_map_t *uw_map,
 void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_logger_t *l);
 
 void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l);
-
-void parse_rule_extensions(char *rule, rule_extension_t *extensions,
-                           jk_logger_t *l);
 
 int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
                        const char *puri, const char *worker,
