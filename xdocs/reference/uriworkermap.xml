@@ -340,6 +340,14 @@ for this status code.
 </source>
 </p>
 </subsection>
+<subsection name="Extensions session_cookie and session_path">
+<br/>
+<p>
+The extensions <code>session_cookie</code> and <code>session_path</code>
+allows to define the load balancer worker attributes of the same name
+per mount.
+</p>
+</subsection>
 </section>
 
 <section name="Virtual host integration">

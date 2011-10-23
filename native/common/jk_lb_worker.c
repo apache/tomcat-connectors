@@ -492,6 +492,8 @@ static char *get_cookie(jk_ws_service_t *s, const char *name)
 static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
 {
     char *val;
+    char *session_path;
+    char *session_cookie;
 
     /* If the web server sets a route, ignore the real session id
      * and fake a new one for that route.
@@ -504,9 +506,16 @@ static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
         return val;
     }
 
-    val = get_path_param(s, p->session_path);
+    // set sesson_path
+    session_path = (s->extension.session_path) ?
+            s->extension.session_path : p->session_path;
+    // set session_cookie
+    session_cookie = (s->extension.session_cookie) ?
+            s->extension.session_cookie : p->session_cookie;
+
+    val = get_path_param(s, session_path);
     if (!val) {
-        val = get_cookie(s, p->session_cookie);
+        val = get_cookie(s, session_cookie);
     }
     if (val && !*val) {
         /* TODO: For now only log the empty sessions.
@@ -517,6 +526,8 @@ static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
                "Detected empty session identifier.");
         return NULL;
     }
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG, "Detected session identifier [%s].", val);
     return val;
 }
 

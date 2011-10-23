@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <add>
+        <bug>51326</bug>: URI Map: Add "session_cookie" and "session_path"
+        rule extensions. Contributed by Eiji Takahashi. (rjung)
+      </add>
       <update>
         <bug>51333</bug>: IIS: Document configuration
         requirement for 64 Bit environment. (rjung)

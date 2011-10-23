@@ -47,6 +47,8 @@
 #define JK_UWMAP_EXTENSION_STOPPED        "stopped="
 #define JK_UWMAP_EXTENSION_FAIL_ON_STATUS "fail_on_status="
 #define JK_UWMAP_EXTENSION_USE_SRV_ERRORS "use_server_errors="
+#define JK_UWMAP_EXTENSION_SESSION_COOKIE "session_cookie="
+#define JK_UWMAP_EXTENSION_SESSION_PATH   "session_path="
 
 #define IND_SWITCH(x)                      (((x)+1) % 2)
 #define IND_THIS(x)                        ((x)[uw_map->index])
@@ -466,6 +468,9 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
 static void extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t *jw,
                                       rule_extension_t *extensions, jk_logger_t *l)
 {
+
+    JK_TRACE_ENTER(l);
+
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "Checking extension for worker %s of type %s (%d)",
@@ -482,6 +487,7 @@ static void extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t
             if (!extensions->activation) {
                 jk_log(l, JK_LOG_ERROR,
                        "can't alloc extensions activation list");
+                JK_TRACE_EXIT(l);
                 return;
             } else if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
@@ -519,6 +525,26 @@ static void extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t
                JK_UWMAP_EXTENSION_STOPPED " for %s ignored",
                name, extensions->stopped);
     }
+
+    JK_TRACE_EXIT(l);
+
+}
+
+static void extension_fix_session(jk_pool_t *p, const char *name, jk_worker_t *jw,
+                                  rule_extension_t *extensions, jk_logger_t *l)
+{
+        if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie) {
+            jk_log(l, JK_LOG_WARNING,
+                   "Worker %s is not of type lb, extension "
+                   JK_UWMAP_EXTENSION_SESSION_COOKIE " for %s ignored",
+                   name, extensions->session_cookie);
+        }
+        if (jw->type != JK_LB_WORKER_TYPE && extensions->session_path) {
+            jk_log(l, JK_LOG_WARNING,
+                   "Worker %s is not of type lb, extension "
+                   JK_UWMAP_EXTENSION_SESSION_PATH " for %s ignored",
+                   name, extensions->session_path);
+        }
 }
 
 void extension_fix(jk_pool_t *p, const char *name,
@@ -534,6 +560,7 @@ void extension_fix(jk_pool_t *p, const char *name,
     if (extensions->fail_on_status_str) {
         extension_fix_fail_on_status(p, name, extensions, l);
     }
+    extension_fix_session(p, name, jw, extensions, l);
 }
 
 void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
@@ -602,6 +629,8 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
     extensions->fail_on_status = NULL;
     extensions->fail_on_status_str = NULL;
     extensions->use_server_error_pages = 0;
+    extensions->session_cookie = NULL;
+    extensions->session_path = NULL;
 
 #ifdef _MT_CODE_PTHREAD
     param = strtok_r(rule, ";", &lasts);
@@ -669,6 +698,32 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
                            JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
                 else
                     extensions->fail_on_status_str = param + strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE, strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE))) {
+                if (extensions->session_cookie)
+                    jk_log(l, JK_LOG_WARNING,
+                           "extension '%s' in uri worker map only allowed once",
+                           JK_UWMAP_EXTENSION_SESSION_COOKIE);
+                else
+                    extensions->session_cookie = param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE);
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_PATH, strlen(JK_UWMAP_EXTENSION_SESSION_PATH))) {
+                if (extensions->session_path)
+                    jk_log(l, JK_LOG_WARNING,
+                           "extension '%s' in uri worker map only allowed once",
+                           JK_UWMAP_EXTENSION_SESSION_PATH);
+                else {
+                    // Check if the session identifier starts with semicolon.
+                    if (!strcmp(param, JK_UWMAP_EXTENSION_SESSION_PATH)) {
+#ifdef _MT_CODE_PTHREAD
+                        param = strtok_r(NULL, ";", &lasts);
+#else
+                        param = strtok(NULL, ";");
+#endif
+                        extensions->session_path = param;
+                    } else
+                        extensions->session_path = param + strlen(JK_UWMAP_EXTENSION_SESSION_PATH);
+                }
             }
             else {
                 jk_log(l, JK_LOG_WARNING,

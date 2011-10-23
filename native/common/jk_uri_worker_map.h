@@ -96,6 +96,10 @@ struct rule_extension
     char *fail_on_status_str;
     /* Use server error pages for responses >= 400. */
     int use_server_error_pages;
+    /* session_cookie overwrite */
+    char *session_cookie;
+    /* session_path overwrite */
+    char *session_path;
 };
 typedef struct rule_extension rule_extension_t;
 

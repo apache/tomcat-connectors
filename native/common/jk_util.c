@@ -2081,6 +2081,8 @@ void jk_init_ws_service(jk_ws_service_t *s)
     s->extension.activation = NULL;
     s->extension.fail_on_status_size = 0;
     s->extension.fail_on_status = NULL;
+    s->extension.session_cookie = NULL;
+    s->extension.session_path = NULL;
     s->response_started = JK_FALSE;
     s->response_blocked = JK_FALSE;
     s->http_response_status = JK_HTTP_OK;

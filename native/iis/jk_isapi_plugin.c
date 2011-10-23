@@ -3114,6 +3114,13 @@ static int init_ws_service(isapi_private_data_t * private_data,
             s->extension.fail_on_status = jk_pool_alloc(s->pool, e->fail_on_status_size * sizeof(int));
             memcpy(s->extension.fail_on_status, e->fail_on_status, e->fail_on_status_size * sizeof(int));
         }
+        if (e->session_cookie) {
+            s->extension.session_cookie = jk_pool_strdup(s->pool, e->session_cookie);
+        }
+        if (e->session_path) {
+            s->extension.session_path = jk_pool_strdup(s->pool, e->session_path);
+        }
+
     }
 
     s->uw_map = uw_map;
