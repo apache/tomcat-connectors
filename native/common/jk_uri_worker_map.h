@@ -184,6 +184,9 @@ void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_logger_t *l);
 
 void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l);
 
+void parse_rule_extensions(char *rule, rule_extension_t *extensions,
+                           jk_logger_t *l);
+
 int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
                        const char *puri, const char *worker,
                        unsigned int source_type, jk_logger_t *l);
