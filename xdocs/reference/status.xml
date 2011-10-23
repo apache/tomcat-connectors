@@ -58,7 +58,7 @@ The documentation of the status worker starts with <b>jk 1.2.20</b>
 <subsection name="Actions">
 <br/>
 <p>
-The status worker knows about six actions.
+The status worker knows about the following actions:
 <ul>
 <li>
 <b>list</b>: lists the configurations and runtime information of all configured workers.
