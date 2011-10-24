@@ -97,9 +97,9 @@ struct svc_extension
     int *fail_on_status;
     /* Use server error pages for responses >= 400. */
     int use_server_error_pages;
-    /* sesson_cookie overwrite */
+    /* session_cookie overwrite */
     char *session_cookie;
-    /* sesson_path overwrite */
+    /* session_path overwrite */
     char *session_path;
 };
 typedef struct svc_extension svc_extension_t;

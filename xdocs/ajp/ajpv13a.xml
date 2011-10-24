@@ -553,7 +553,7 @@ additional methods, even if they are not in this list.
   corresponding pieces of HTTP and HTTPS.
 </p><p>
   The <code>route</code>, as I understand it, is used to support sticky
-  sessions -- associating a user's sesson with a particular Tomcat instance
+  sessions -- associating a user's session with a particular Tomcat instance
   in the presence of multiple, load-balancing servers.  I don't know the
   details.
 </p><p>
