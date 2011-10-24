@@ -851,7 +851,7 @@ static const char *find_path_in_uri(const char *uri, const char *path)
     size_t len = strlen(path);
     while (uri = strchr(uri, '/')) {
         uri++;
-        if (!strncmp(uri, path, len) &&
+        if (!strnicmp(uri, path, len) &&
             (*(uri + len) == '/' ||
              strlen(uri) == len)) {
             return uri;
