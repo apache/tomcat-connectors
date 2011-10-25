@@ -216,11 +216,13 @@ typedef struct
 /*
  * Request specific configuration
  */
-typedef struct
+struct jk_request_conf
 {
     rule_extension_t *rule_extensions;
     int jk_handled;
-} jk_request_conf_t;
+};
+
+typedef struct jk_request_conf jk_request_conf_t;
 
 /*
  * The "private", or subclass portion of the web server service class for
@@ -695,6 +697,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     const char *stateless = NULL;
     const char *route = NULL;
     rule_extension_t *e;
+    jk_request_conf_t *rconf;
 
     /* Copy in function pointers (which are really methods) */
     s->start_response = ws_start_response;
@@ -738,8 +741,8 @@ static int init_ws_service(apache_private_data_t * private_data,
     if (conf->options & JK_OPT_FLUSHEADER)
         s->flush_header = 1;
 
-    jk_request_conf_t *rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
-                                                                         &jk_module);
+    rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config, &jk_module);
+
     e = rconf->rule_extensions;
     if (e) {
         s->extension.reply_timeout = e->reply_timeout;
