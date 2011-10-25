@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>47038</bug>: Fix compiler warning when using --enable-flock
+         for configure. (rjung)
+      </fix>
       <add>
         <bug>51326</bug>: URI Map: Add "session_cookie" and "session_path"
         rule extensions. Contributed by Eiji Takahashi. (rjung)

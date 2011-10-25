@@ -92,11 +92,13 @@ typedef void *JK_CRIT_SEC;
 #include <fcntl.h>
 
 
-#define USE_FLOCK_LK 0
 #if HAVE_FLOCK
 #ifdef JK_USE_FLOCK
 #define USE_FLOCK_LK 1
 #endif
+#endif
+#ifndef USE_FLOCK_LK
+#define USE_FLOCK_LK 0
 #endif
 
 #if USE_FLOCK_LK
