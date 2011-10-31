@@ -1873,19 +1873,13 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         char uri[INTERNET_MAX_URL_LENGTH];
         char snuri[INTERNET_MAX_URL_LENGTH] = "/";
         char Host[INTERNET_MAX_URL_LENGTH] = "";
-        char Port[INTERNET_MAX_URL_LENGTH] = "";
         char Translate[INTERNET_MAX_URL_LENGTH];
         char squery[INTERNET_MAX_URL_LENGTH] = "";
-        char swindex[MAX_INSTANCEID] = "";
-        BOOL(WINAPI * GetHeader)
-            (struct _HTTP_FILTER_CONTEXT * pfc, LPSTR lpszName,
-             LPVOID lpvBuffer, LPDWORD lpdwSize);
-        BOOL(WINAPI * SetHeader)
-            (struct _HTTP_FILTER_CONTEXT * pfc, LPSTR lpszName,
-             LPSTR lpszValue);
-        BOOL(WINAPI * AddHeader)
-            (struct _HTTP_FILTER_CONTEXT * pfc, LPSTR lpszName,
-             LPSTR lpszValue);
+        char swindex[32] = "";
+        char Port[16] = "";
+        BOOL (WINAPI * GetHeader)(PHTTP_FILTER_CONTEXT, LPSTR, LPVOID, LPDWORD);
+        BOOL (WINAPI * SetHeader)(PHTTP_FILTER_CONTEXT, LPSTR, LPSTR);
+        BOOL (WINAPI * AddHeader)(PHTTP_FILTER_CONTEXT, LPSTR, LPSTR);
         char *query;
         DWORD sz = sizeof(uri);
         DWORD szHost = sizeof(Host);
@@ -1920,7 +1914,8 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
             ld->request_matched = JK_FALSE;
         }
 
-        if (!GetHeader(pfc, "url", (LPVOID) uri, (LPDWORD) & sz)) {
+        if (!GetHeader(pfc, "url", uri, &sz)) {
+            
             jk_log(logger, JK_LOG_ERROR,
                    "error while getting the url");
             return SF_STATUS_REQ_ERROR;
@@ -1954,16 +1949,14 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
             }
             getparents(uri);
             if (pfc->
-                GetServerVariable(pfc, SERVER_NAME, (LPVOID) Host,
-                                  (LPDWORD) & szHost)) {
+                GetServerVariable(pfc, SERVER_NAME, Host, &szHost)) {
                 if (szHost > 0) {
                     Host[szHost - 1] = '\0';
                 }
             }
             Port[0] = '\0';
             if (pfc->
-                GetServerVariable(pfc, "SERVER_PORT", (LPVOID) Port,
-                                  (LPDWORD) & szPort)) {
+                GetServerVariable(pfc, "SERVER_PORT", Port, &szPort)) {
                 if (szPort > 0) {
                     Port[szPort - 1] = '\0';
                 }
@@ -2013,7 +2006,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                 /* get URI we should forward */
                 if (uri_select_option == URI_SELECT_OPT_UNPARSED) {
                     /* get original unparsed URI */
-                    GetHeader(pfc, "url", (LPVOID) uri, (LPDWORD) & sz);
+                    GetHeader(pfc, "url", uri, &sz);
                     /* restore terminator for uri portion */
                     if (query)
                         *(query - 1) = '\0';
@@ -2081,8 +2074,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
 
                 itoa(worker_index, swindex, 10);
                 if (!AddHeader(pfc, URI_HEADER_NAME, forwardURI) ||
-                    ((strlen(squery) > 0)
-                     ? !AddHeader(pfc, QUERY_HEADER_NAME, squery) : FALSE) ||
+                    ((strlen(squery) > 0) ? !AddHeader(pfc, QUERY_HEADER_NAME, squery) : FALSE) ||
                     !AddHeader(pfc, WORKER_HEADER_NAME, (LPSTR)worker) ||
                     !AddHeader(pfc, WORKER_HEADER_INDEX, swindex) ||
                     !SetHeader(pfc, "url", extension_uri)) {
@@ -2096,12 +2088,9 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                  * that the extension proc will be called.
                  * This allows the servlet to handle 'Translate: f'.
                  */
-                if (GetHeader
-                    (pfc, TRANSLATE_HEADER, (LPVOID) Translate,
-                     (LPDWORD) & szTranslate) && Translate != NULL
-                    && szTranslate > 0) {
-                    if (!AddHeader
-                        (pfc, TOMCAT_TRANSLATE_HEADER_NAME, Translate)) {
+                if (GetHeader(pfc, TRANSLATE_HEADER, Translate, &szTranslate) &&
+                              Translate != NULL && szTranslate > 0) {
+                    if (!AddHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, Translate)) {
                         jk_log(logger, JK_LOG_ERROR,
                                "error while adding Tomcat-Translate headers");
                         return SF_STATUS_REQ_ERROR;
@@ -2121,7 +2110,8 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                     StringCbCopy(ld->query, INTERNET_MAX_URL_LENGTH, squery);
                     ld->request_matched = JK_TRUE;
                     pfc->pFilterContext = ld;
-                } else {
+                }
+                else {
                     isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
                     memset(ld, 0, sizeof(isapi_log_data_t));
                     StringCbCopy(ld->uri, INTERNET_MAX_URL_LENGTH, forwardURI);
