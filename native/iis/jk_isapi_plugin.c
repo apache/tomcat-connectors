@@ -904,15 +904,15 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
 
     if (error_page) {
         char error_page_url[INTERNET_MAX_URL_LENGTH] = "";
-        int len_of_error_page;
+        DWORD len_of_error_page;
         StringCbPrintf(error_page_url, INTERNET_MAX_URL_LENGTH,
-                       (LPCSTR)error_page, err);
-        len_of_error_page = (int)strlen(error_page_url);
+                       error_page, err);
+        len_of_error_page = (DWORD)strlen(error_page_url);
         if (!lpEcb->ServerSupportFunction(lpEcb->ConnID,
                                           HSE_REQ_SEND_URL_REDIRECT_RESP,
                                           error_page_url,
-                                          (LPDWORD)&len_of_error_page,
-                                          (LPDWORD)NULL)) {
+                                          &len_of_error_page,
+                                          NULL)) {
             lpEcb->dwHttpStatusCode = err;
         }
         else {
@@ -1224,7 +1224,7 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
                     jk_log(logger, JK_LOG_DEBUG,
                            "Attempting to read %d bytes from client", l);
                 }
-                if (p->lpEcb->ReadClient(p->lpEcb->ConnID, buf, (LPDWORD)&l)) {
+                if (p->lpEcb->ReadClient(p->lpEcb->ConnID, buf, &l)) {
                     /* ReadClient will succeed with dwSize == 0 for last chunk
                        if request chunk encoded */
                     *a += l;
@@ -1348,8 +1348,7 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
                 if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
                     HSE_REQ_VECTOR_SEND,
                     &response_vector,
-                    (LPDWORD)NULL,
-                    (LPDWORD)NULL)) {
+                    NULL, NULL)) {
                         jk_log(logger, JK_LOG_ERROR,
                                "Vector write of chunk encoded response failed with %d (0x%08x)",
                                GetLastError(), GetLastError());
@@ -1440,8 +1439,7 @@ static int JK_METHOD iis_done(jk_ws_service_t *s)
             if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
                                                  HSE_REQ_VECTOR_SEND,
                                                  &response_vector,
-                                                 (LPDWORD)NULL,
-                                                 (LPDWORD)NULL)) {
+                                                 NULL, NULL)) {
                     jk_log(logger, JK_LOG_ERROR,
                            "Vector termination of chunk encoded response failed with %d (0x%08x)",
                            GetLastError(), GetLastError());
@@ -2968,7 +2966,7 @@ static int get_registry_config_parameter(HKEY hkey,
     sz = sz - 1; /* Reserve space for RegQueryValueEx to add null terminator */
     b[sz] = '\0'; /* Null terminate in case RegQueryValueEx doesn't */
 
-    lrc = RegQueryValueEx(hkey, tag, (LPDWORD) 0, &type, (LPBYTE) b, &sz);
+    lrc = RegQueryValueEx(hkey, tag, NULL, &type, (LPBYTE)b, &sz);
     if ((ERROR_SUCCESS != lrc) || (type != REG_SZ)) {
         return JK_FALSE;
     }
@@ -2984,7 +2982,7 @@ static int get_registry_config_number(HKEY hkey,
     DWORD sz   = sizeof(DWORD);
     LONG lrc;
 
-    lrc = RegQueryValueEx(hkey, tag, (LPDWORD)0, &type, (LPBYTE)&data, &sz);
+    lrc = RegQueryValueEx(hkey, tag, NULL, &type, (LPBYTE)&data, &sz);
     if ((ERROR_SUCCESS != lrc) || (type != REG_DWORD)) {
         return JK_FALSE;
     }
@@ -3171,20 +3169,17 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
                 if (private_data->lpEcb->
                     ServerSupportFunction(private_data->lpEcb->ConnID,
-                                          (DWORD) HSE_REQ_GET_CERT_INFO_EX,
-                                          (LPVOID) & cc, NULL,
-                                          NULL) != FALSE) {
+                                          HSE_REQ_GET_CERT_INFO_EX,
+                                          &cc, NULL, NULL) != FALSE) {
                     jk_log(logger, JK_LOG_DEBUG,
                            "Client Certificate encoding:%d sz:%d flags:%ld",
                            cc.CertContext.
                            dwCertEncodingType & X509_ASN_ENCODING,
                            cc.CertContext.cbCertEncoded,
                            cc.dwCertificateFlags);
-                    s->ssl_cert =
-                        jk_pool_alloc(&private_data->p,
+                    s->ssl_cert = jk_pool_alloc(&private_data->p,
                                       base64_encode_cert_len(cc.CertContext.
                                                              cbCertEncoded));
-
                     s->ssl_cert_len = base64_encode_cert(s->ssl_cert,
                                                          huge_buf,
                                                          cc.CertContext.
@@ -3385,7 +3380,7 @@ static int get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
     DWORD sz = bufsz;
     buf[0]   = '\0';
     if (!lpEcb->GetServerVariable(lpEcb->ConnID, name,
-                                  buf, (LPDWORD) &sz))
+                                  buf, &sz))
         return JK_FALSE;
 
     if (sz <= bufsz)
