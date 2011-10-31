@@ -121,9 +121,7 @@ static char HTTP_WORKER_HEADER_INDEX[MAX_PATH];
 #define SHM_SIZE_TAG                ("shm_size")
 #define WORKER_MOUNT_RELOAD_TAG     ("worker_mount_reload")
 #define STRIP_SESSION_TAG           ("strip_session")
-#ifndef AUTOMATIC_AUTH_NOTIFICATION
 #define AUTH_COMPLETE_TAG           ("auth_complete")
-#endif
 #define REJECT_UNSAFE_TAG           ("reject_unsafe")
 #define WATCHDOG_INTERVAL_TAG       ("watchdog_interval")
 #define ENABLE_CHUNKED_ENCODING_TAG ("enable_chunked_encoding")
@@ -504,9 +502,7 @@ static int  worker_mount_reload = JK_URIMAP_DEF_RELOAD;
 static char rewrite_rule_file[MAX_PATH * 2] = {0};
 static size_t shm_config_size = 0;
 static int  strip_session = 0;
-#ifndef AUTOMATIC_AUTH_NOTIFICATION
 static int  use_auth_notification_flags = 1;
-#endif
 static int  chunked_encoding_enabled = JK_FALSE;
 static int  reject_unsafe = 0;
 static int  watchdog_interval = 0;
@@ -1489,6 +1485,10 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
         rv = initialize_extension();
     }
     JK_LEAVE_CS(&(init_cs), rc);
+    if (iis_info.major < 5 || (iis_info.major == 5 && iis_info.minor < 1)) {
+        SetLastError(ERROR_OLD_WIN_VERSION);
+        return FALSE;
+    }
     pVer->dwFlags = SF_NOTIFY_ORDER_HIGH |
                     SF_NOTIFY_SECURE_PORT |
                     SF_NOTIFY_NONSECURE_PORT |
@@ -2807,6 +2807,10 @@ static BOOL initialize_extension(void)
     if (read_registry_init_data()) {
         if (get_iis_info(&iis_info) != JK_TRUE) {
             jk_log(logger, JK_LOG_ERROR, "Could not retrieve IIS version from registry");
+            if (use_auth_notification_flags)
+                iis_info.filter_notify_event = SF_NOTIFY_AUTH_COMPLETE;
+            else
+                iis_info.filter_notify_event = SF_NOTIFY_PREPROC_HEADERS;
         }
         is_inited = JK_TRUE;
     }
@@ -2904,9 +2908,7 @@ static int read_registry_init_data(void)
     shm_config_size = (size_t) get_config_int(src, SHM_SIZE_TAG, 0);
     worker_mount_reload = get_config_int(src, WORKER_MOUNT_RELOAD_TAG, JK_URIMAP_DEF_RELOAD);
     strip_session = get_config_bool(src, STRIP_SESSION_TAG, JK_FALSE);
-#ifndef AUTOMATIC_AUTH_NOTIFICATION
     use_auth_notification_flags = get_config_int(src, AUTH_COMPLETE_TAG, 1);
-#endif
     reject_unsafe = get_config_bool(src, REJECT_UNSAFE_TAG, JK_FALSE);
     watchdog_interval = get_config_int(src, WATCHDOG_INTERVAL_TAG, 0);
     if (watchdog_interval < 0)
@@ -3484,39 +3486,19 @@ static int base64_encode_cert(char *encoded,
 static int get_iis_info(iis_info_t* iis_info)
 {
     HKEY hkey;
-    long rc;
     int rv = JK_FALSE;
 
     iis_info->major = 0;
     iis_info->minor = 0;
-    iis_info->filter_notify_event = SF_NOTIFY_PREPROC_HEADERS;
 
     /* Retrieve the IIS version Major/Minor */
-    rc = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                      W3SVC_REGISTRY_KEY, (DWORD) 0, KEY_READ, &hkey);
-    if (ERROR_SUCCESS == rc) {
-        if (get_registry_config_number(hkey, "MajorVersion", &iis_info->major) == JK_TRUE) {
-#ifdef AUTOMATIC_AUTH_NOTIFICATION
-            if (iis_info->major > 4)
-#else
-            if (use_auth_notification_flags && iis_info->major > 4)
-#endif
-                iis_info->filter_notify_event = SF_NOTIFY_AUTH_COMPLETE;
-            if (get_registry_config_number(hkey, "MinorVersion", &iis_info->minor) == JK_TRUE) {
-
-#ifdef AUTOMATIC_AUTH_NOTIFICATION
-                /* SF_NOTIFY_AUTH_COMPLETE causes redirect failures
-                 * (ERROR_INVALID_PARAMETER) on IIS 5.1 with OPTIONS/PUT
-                 * and is only available from IIS 5+
-                 */
-                if (iis_info->major == 5 && iis_info->minor == 1) {
-                    iis_info->filter_notify_event = SF_NOTIFY_PREPROC_HEADERS;
-                }
-#endif
-                rv = JK_TRUE;
-            }
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, W3SVC_REGISTRY_KEY,
+                     0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+        if (get_registry_config_number(hkey, "MajorVersion", &iis_info->major) == JK_TRUE &&
+            get_registry_config_number(hkey, "MinorVersion", &iis_info->minor) == JK_TRUE) {
+            rv = JK_TRUE;
         }
+        CloseHandle(hkey);
     }
-    CloseHandle(hkey);
     return rv;
 }
