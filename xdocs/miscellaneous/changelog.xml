@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        IIS: Use Windows Server 2003 SP1, Windows XP SP2 as minimal
+        version supported. (mturk)
+      </update>        
       <fix>
         <bug>47038</bug>: Fix compiler warning when using --enable-flock
          for configure. (rjung)
