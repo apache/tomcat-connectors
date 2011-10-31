@@ -1227,7 +1227,7 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
                            "Attempting to read %d bytes from client", l);
                 }
                 if (p->lpEcb->ReadClient(p->lpEcb->ConnID, buf, (LPDWORD)&l)) {
-                    /* ReadClient will succeed with dwSize == 0 for last chunk 
+                    /* ReadClient will succeed with dwSize == 0 for last chunk
                        if request chunk encoded */
                     *a += l;
                 }
@@ -3266,7 +3266,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 else if (!strnicmp(tmp, CONTENT_LENGTH,
                                    sizeof(CONTENT_LENGTH) - 1)) {
                     need_content_length_header = FALSE;
-                    
+
                     /* If the content-length is unknown
                      * or larger then 4Gb do not send it.
                      * IIS can also create a synthetic Content-Length header to make
