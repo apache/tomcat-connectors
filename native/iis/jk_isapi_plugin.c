@@ -24,7 +24,9 @@
  * Version:     $Revision$                                        *
  ***************************************************************************/
 
-// This define is needed to include wincrypt,h, needed to get client certificates
+/*
+ * Define WIN32 API we are going to use.
+ */
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0502
 #endif
@@ -1917,7 +1919,9 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         SetHeader(pfc, WORKER_HEADER_INDEX, NULL);
         SetHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, NULL);
 
-        // Suppress logging of original uri/query when we don't map a URL
+        /*
+         * Suppress logging of original uri/query when we don't map a URL
+         */
         if (pfc->pFilterContext) {
             isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
             ld->request_matched = JK_FALSE;
@@ -2369,9 +2373,9 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
 }
 
 
-BOOL WINAPI DllMain(HINSTANCE hInst,    // Instance Handle of the DLL
-                    ULONG ulReason,     // Reason why NT called this DLL
-                    LPVOID lpReserved)  // Reserved parameter for future use
+BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           */
+                    ULONG ulReason,     /* Reason why NT called this DLL        */
+                    LPVOID lpReserved)  /* Reserved parameter for future use    */
 {
     int rc;
     BOOL fReturn = TRUE;
