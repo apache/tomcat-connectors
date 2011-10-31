@@ -156,6 +156,7 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 /* HTTP protocol CRLF */
 #define CRLF                        ("\r\n")
 #define CRLF_LEN                    (2)
+#define NIL                         ("")
 
 /* Transfer-Encoding: chunked content trailer */
 #define CHUNKED_ENCODING_TRAILER     ("0\r\n\r\n")
@@ -1900,11 +1901,11 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         /*
          * Just in case somebody set these headers in the request!
          */
-        SetHeader(pfc, URI_HEADER_NAME, NULL);
-        SetHeader(pfc, QUERY_HEADER_NAME, NULL);
-        SetHeader(pfc, WORKER_HEADER_NAME, NULL);
-        SetHeader(pfc, WORKER_HEADER_INDEX, NULL);
-        SetHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, NULL);
+        SetHeader(pfc, URI_HEADER_NAME, NIL);
+        SetHeader(pfc, QUERY_HEADER_NAME, NIL);
+        SetHeader(pfc, WORKER_HEADER_NAME, NIL);
+        SetHeader(pfc, WORKER_HEADER_INDEX, NIL);
+        SetHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, NIL);
 
         /*
          * Suppress logging of original uri/query when we don't map a URL
@@ -2095,7 +2096,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                                "error while adding Tomcat-Translate headers");
                         return SF_STATUS_REQ_ERROR;
                     }
-                    SetHeader(pfc, "Translate:", NULL);
+                    SetHeader(pfc, "Translate:", NIL);
                 }
                 if (!pfc->pFilterContext) {
                     isapi_log_data_t *ld = (isapi_log_data_t *)pfc->AllocMem(pfc, sizeof(isapi_log_data_t), 0);
