@@ -487,9 +487,6 @@ static jk_map_t *jk_environment_map = NULL;
 
 static jk_logger_t *logger = NULL;
 static JK_CRIT_SEC log_cs;
-static char *SERVER_NAME = "SERVER_NAME";
-static char *SERVER_SOFTWARE = "SERVER_SOFTWARE";
-static char *INSTANCE_ID = "INSTANCE_ID";
 static char *CONTENT_TYPE = "Content-Type:text/html\r\n\r\n";
 
 static char extension_uri[INTERNET_MAX_URL_LENGTH] =
@@ -1841,11 +1838,11 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         char instanceId[MAX_INSTANCEID] = "";
         DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
 
-        if (pfc->GetServerVariable(pfc, SERVER_NAME, serverName, &dwLen)) {
+        if (pfc->GetServerVariable(pfc, "SERVER_NAME", serverName, &dwLen)) {
             if (dwLen > 0) {
                 serverName[dwLen - 1] = '\0';
                 dwLen = MAX_INSTANCEID;
-                if (pfc->GetServerVariable(pfc, INSTANCE_ID, instanceId, &dwLen)) {
+                if (pfc->GetServerVariable(pfc, "INSTANCE_ID", instanceId, &dwLen)) {
                     if (dwLen > 0) {
                         instanceId[dwLen - 1] = '\0';
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
@@ -1949,15 +1946,13 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                 return SF_STATUS_REQ_FINISHED;
             }
             getparents(uri);
-            if (pfc->
-                GetServerVariable(pfc, SERVER_NAME, Host, &szHost)) {
+            if (pfc->GetServerVariable(pfc, "SERVER_NAME", Host, &szHost)) {
                 if (szHost > 0) {
                     Host[szHost - 1] = '\0';
                 }
             }
             Port[0] = '\0';
-            if (pfc->
-                GetServerVariable(pfc, "SERVER_PORT", Port, &szPort)) {
+            if (pfc->GetServerVariable(pfc, "SERVER_PORT", Port, &szPort)) {
                 if (szPort > 0) {
                     Port[szPort - 1] = '\0';
                 }
@@ -2186,13 +2181,13 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
         char instanceId[MAX_INSTANCEID] = "";
 
         DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
-        if (lpEcb->GetServerVariable(lpEcb->ConnID,
-                    SERVER_NAME, serverName, &dwLen)) {
+        if (lpEcb->GetServerVariable(lpEcb->ConnID, "SERVER_NAME",
+                                     serverName, &dwLen)) {
             if (dwLen > 0) {
                 serverName[dwLen - 1] = '\0';
                 dwLen = MAX_INSTANCEID;
-                if (lpEcb->GetServerVariable(lpEcb->ConnID,
-                            INSTANCE_ID, instanceId, &dwLen)) {
+                if (lpEcb->GetServerVariable(lpEcb->ConnID, "INSTANCE_ID",
+                                             instanceId, &dwLen)) {
                     if (dwLen > 0) {
                         instanceId[dwLen - 1] = '\0';
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
@@ -3052,9 +3047,9 @@ static int init_ws_service(isapi_private_data_t * private_data,
     GET_SERVER_VARIABLE_VALUE("REMOTE_HOST", s->remote_host);
     GET_SERVER_VARIABLE_VALUE("REMOTE_ADDR", s->remote_addr);
     GET_SERVER_VARIABLE_VALUE("REMOTE_PORT", s->remote_port);
-    GET_SERVER_VARIABLE_VALUE(SERVER_NAME, s->server_name);
+    GET_SERVER_VARIABLE_VALUE("SERVER_NAME", s->server_name);
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT", s->server_port, 80);
-    GET_SERVER_VARIABLE_VALUE(SERVER_SOFTWARE, s->server_software);
+    GET_SERVER_VARIABLE_VALUE("SERVER_SOFTWARE", s->server_software);
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT_SECURE", s->is_ssl, 0);
 
     s->method = private_data->lpEcb->lpszMethod;
