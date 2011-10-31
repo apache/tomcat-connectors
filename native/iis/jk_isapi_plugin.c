@@ -1786,15 +1786,15 @@ static int simple_rewrite(char *uri)
 {
     if (rewrite_map) {
         int i;
-        char buf[INTERNET_MAX_URL_LENGTH];
+        char buf[8192];
         for (i = 0; i < jk_map_size(rewrite_map); i++) {
             const char *src = jk_map_name_at(rewrite_map, i);
             if (*src == '~')
                 continue;   /* Skip regexp rewrites */
             if (strncmp(uri, src, strlen(src)) == 0) {
-                StringCbCopy(buf, INTERNET_MAX_URL_LENGTH, jk_map_value_at(rewrite_map, i));
-                StringCbCat(buf,  INTERNET_MAX_URL_LENGTH, uri + strlen(src));
-                StringCbCopy(uri, INTERNET_MAX_URL_LENGTH, buf);
+                StringCbCopy(buf, sizeof(buf), jk_map_value_at(rewrite_map, i));
+                StringCbCat(buf,  sizeof(buf), uri + strlen(src));
+                StringCbCopy(uri, sizeof(buf), buf);
                 return 1;
             }
         }
@@ -1814,12 +1814,12 @@ static int rregex_rewrite(char *uri)
                 char *subs = ap_pregsub(regexp->fake, uri,
                                        AP_MAX_REG_MATCH, regm);
                 if (subs) {
-                    char buf[INTERNET_MAX_URL_LENGTH];
+                    char buf[8192];
                     size_t diffsz = strlen(subs) - (regm[0].rm_eo - regm[0].rm_so);
                     memcpy(&buf[0], uri, regm[0].rm_so);
-                    StringCbCopy(&buf[regm[0].rm_so], INTERNET_MAX_URL_LENGTH - regm[0].rm_so, subs);
-                    StringCbCat(&buf[0], INTERNET_MAX_URL_LENGTH, uri + regm[0].rm_eo);
-                    StringCbCopy(uri, INTERNET_MAX_URL_LENGTH, &buf[0]);
+                    StringCbCopy(&buf[regm[0].rm_so], sizeof(buf) - regm[0].rm_so, subs);
+                    StringCbCat(&buf[0], sizeof(buf), uri + regm[0].rm_eo);
+                    StringCbCopy(uri, sizeof(buf), &buf[0]);
                     free(subs);
                     return 1;
                 }
