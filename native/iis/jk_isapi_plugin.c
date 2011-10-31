@@ -1892,22 +1892,13 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         DWORD szPort = sizeof(Port);
         DWORD szTranslate = sizeof(Translate);
 
-        if (iis_info.filter_notify_event == SF_NOTIFY_AUTH_COMPLETE) {
-            GetHeader =
-                ((PHTTP_FILTER_AUTH_COMPLETE_INFO) pvNotification)->GetHeader;
-            SetHeader =
-                ((PHTTP_FILTER_AUTH_COMPLETE_INFO) pvNotification)->SetHeader;
-            AddHeader =
-                ((PHTTP_FILTER_AUTH_COMPLETE_INFO) pvNotification)->AddHeader;
-        }
-        else {
-            GetHeader =
-                ((PHTTP_FILTER_PREPROC_HEADERS) pvNotification)->GetHeader;
-            SetHeader =
-                ((PHTTP_FILTER_PREPROC_HEADERS) pvNotification)->SetHeader;
-            AddHeader =
-                ((PHTTP_FILTER_PREPROC_HEADERS) pvNotification)->AddHeader;
-        }
+        /* This can be either HTTP_FILTER_PREPROC_HEADERS or
+         * HTTP_FILTER_AUTH_COMPLETE_INFO. In either case the
+         * requested functions are at the same structure offset
+         */
+        GetHeader = ((PHTTP_FILTER_PREPROC_HEADERS)pvNotification)->GetHeader;
+        SetHeader = ((PHTTP_FILTER_PREPROC_HEADERS)pvNotification)->SetHeader;
+        AddHeader = ((PHTTP_FILTER_PREPROC_HEADERS)pvNotification)->AddHeader;
 
         if (JK_IS_DEBUG_LEVEL(logger))
             jk_log(logger, JK_LOG_DEBUG, "Filter started");
