@@ -63,6 +63,8 @@
  * for MaxClients
  */
 #define DEFAULT_WORKER_THREADS  250
+#define RES_BUFFER_SIZE         64
+#define HDR_BUFFER_SIZE         1024
 
 /*
  * We use special headers to pass values from the filter to the
@@ -96,19 +98,19 @@
 #define HEADER_TEMPLATE      "%s%p:"
 #define HTTP_HEADER_TEMPLATE HTTP_HEADER_PREFIX "%s%p"
 
-static char URI_HEADER_NAME[MAX_PATH];
-static char QUERY_HEADER_NAME[MAX_PATH];
-static char WORKER_HEADER_NAME[MAX_PATH];
-static char TOMCAT_TRANSLATE_HEADER_NAME[MAX_PATH];
-static char WORKER_HEADER_INDEX[MAX_PATH];
+static char URI_HEADER_NAME[RES_BUFFER_SIZE];
+static char QUERY_HEADER_NAME[RES_BUFFER_SIZE];
+static char WORKER_HEADER_NAME[RES_BUFFER_SIZE];
+static char TOMCAT_TRANSLATE_HEADER_NAME[RES_BUFFER_SIZE];
+static char WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 
 /* The variants of the special headers after IIS adds
  * "HTTP_" to the front of them
  */
-static char HTTP_URI_HEADER_NAME[MAX_PATH];
-static char HTTP_QUERY_HEADER_NAME[MAX_PATH];
-static char HTTP_WORKER_HEADER_NAME[MAX_PATH];
-static char HTTP_WORKER_HEADER_INDEX[MAX_PATH];
+static char HTTP_URI_HEADER_NAME[RES_BUFFER_SIZE];
+static char HTTP_QUERY_HEADER_NAME[RES_BUFFER_SIZE];
+static char HTTP_WORKER_HEADER_NAME[RES_BUFFER_SIZE];
+static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 
 #define REGISTRY_LOCATION       ("Software\\Apache Software Foundation\\Jakarta Isapi Redirector\\1.0")
 #define W3SVC_REGISTRY_KEY      ("SYSTEM\\CurrentControlSet\\Services\\W3SVC\\Parameters")
@@ -872,13 +874,13 @@ static int uri_is_web_inf(const char *uri)
 
 static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
 {
-    char status[MAX_PATH];
+    char status[1024];
     char body[8192] = "";
     DWORD len;
 
     /* reject !!! */
     pfc->AddResponseHeaders(pfc, CONTENT_TYPE, 0);
-    StringCbPrintf(status, MAX_PATH, "%d %s", err, status_reason(err));
+    StringCbPrintf(status, sizeof(status), "%d %s", err, status_reason(err));
     pfc->ServerSupportFunction(pfc,
                                SF_REQ_SEND_RESPONSE_HEADER,
                                status, 0, 0);
@@ -899,7 +901,7 @@ static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
 static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
 {
     DWORD len;
-    char status[MAX_PATH];
+    char status[1024];
     char body[8192] = "";
 
     if (error_page) {
@@ -921,7 +923,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
     }
     lpEcb->dwHttpStatusCode = err;
 
-    StringCbPrintf(status, MAX_PATH, "%d %s", err, status_reason(err));
+    StringCbPrintf(status, sizeof(status), "%d %s", err, status_reason(err));
     lpEcb->ServerSupportFunction(lpEcb->ConnID,
                                  HSE_REQ_SEND_RESPONSE_HEADER,
                                  status,
@@ -2412,17 +2414,17 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
             fReturn = JK_FALSE;
         }
         /* Construct redirector headers to use for this redirector instance */
-        StringCbPrintf(URI_HEADER_NAME, MAX_PATH, HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
-        StringCbPrintf(QUERY_HEADER_NAME, MAX_PATH, HEADER_TEMPLATE, QUERY_HEADER_NAME_BASE, hInst);
-        StringCbPrintf(WORKER_HEADER_NAME, MAX_PATH, HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
-        StringCbPrintf(WORKER_HEADER_INDEX, MAX_PATH, HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
-        StringCbPrintf(TOMCAT_TRANSLATE_HEADER_NAME, MAX_PATH, HEADER_TEMPLATE, TOMCAT_TRANSLATE_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(URI_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(QUERY_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, QUERY_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(WORKER_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(WORKER_HEADER_INDEX, RES_BUFFER_SIZE, HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
+        StringCbPrintf(TOMCAT_TRANSLATE_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, TOMCAT_TRANSLATE_HEADER_NAME_BASE, hInst);
 
         /* Construct the HTTP_ headers that will be seen in ExtensionProc */
-        StringCbPrintf(HTTP_URI_HEADER_NAME, MAX_PATH, HTTP_HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
-        StringCbPrintf(HTTP_QUERY_HEADER_NAME, MAX_PATH, HTTP_HEADER_TEMPLATE, QUERY_HEADER_NAME_BASE, hInst);
-        StringCbPrintf(HTTP_WORKER_HEADER_NAME, MAX_PATH, HTTP_HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
-        StringCbPrintf(HTTP_WORKER_HEADER_INDEX, MAX_PATH, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
+        StringCbPrintf(HTTP_URI_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(HTTP_QUERY_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, QUERY_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(HTTP_WORKER_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(HTTP_WORKER_HEADER_INDEX, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
 
         JK_INIT_CS(&init_cs, rc);
         JK_INIT_CS(&log_cs, rc);
