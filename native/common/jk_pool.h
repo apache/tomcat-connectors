@@ -118,7 +118,9 @@ void *jk_pool_alloc(jk_pool_t *p, size_t sz);
 void *jk_pool_realloc(jk_pool_t *p,
                       size_t sz, const void *old, size_t old_sz);
 
-void *jk_pool_strdup(jk_pool_t *p, const char *s);
+char *jk_pool_strdup(jk_pool_t *p, const char *s);
+
+char *jk_pool_strdcat(jk_pool_t *p, const char *s, const char *a);
 
 #ifdef __cplusplus
 }

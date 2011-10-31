@@ -95,9 +95,9 @@ void *jk_pool_realloc(jk_pool_t *p, size_t sz, const void *old, size_t old_sz)
     return rc;
 }
 
-void *jk_pool_strdup(jk_pool_t *p, const char *s)
+char *jk_pool_strdup(jk_pool_t *p, const char *s)
 {
-    void *rc = NULL;
+    char *rc = NULL;
     if (s && p) {
         size_t size = strlen(s);
 
@@ -109,6 +109,28 @@ void *jk_pool_strdup(jk_pool_t *p, const char *s)
         rc = jk_pool_alloc(p, size);
         if (rc) {
             memcpy(rc, s, size);
+        }
+    }
+
+    return rc;
+}
+
+char *jk_pool_strcat(jk_pool_t *p, const char *s, const char *a)
+{
+    char *rc = NULL;
+    if (s && p) {
+        size_t size = strlen(s);
+        if (a)
+            size += strlen(a);
+        if (size == 0) {
+            return "";
+        }            
+        size++;
+        rc = jk_pool_alloc(p, size);
+        if (rc) {
+            if (rc != s)
+                strcpy(rc, s);
+            strcat(rc, a);
         }
     }
 
