@@ -118,19 +118,52 @@ char *jk_pool_strdup(jk_pool_t *p, const char *s)
 char *jk_pool_strcat(jk_pool_t *p, const char *s, const char *a)
 {
     char *rc = NULL;
-    if (s && p) {
-        size_t size = strlen(s);
-        if (a)
-            size += strlen(a);
+
+    if (s && a && p) {
+        size_t szs = strlen(s);
+        size_t sza = strlen(a);
+        if ((szs + sza) == 0) {
+            return "";
+        }
+        rc = jk_pool_alloc(p, szs + sza + 1);
+        if (rc) {
+            memcpy(rc, s, szs);
+            memcpy(rc + szs, a, sza + 1);
+        }
+    }
+
+    return rc;
+}
+
+char *jk_pool_strcatv(jk_pool_t *p, ...)
+{
+    char *cp;
+    char *rc = NULL;
+    va_list ap;
+
+    if (p) {
+        char   *str;
+        size_t size = 0;
+        va_start(ap, p);
+        while ((str = va_arg(ap, char *)) != 0) {
+            size += strlen(str);
+        }
+        va_end(ap);
         if (size == 0) {
             return "";
-        }            
+        }
         size++;
-        rc = jk_pool_alloc(p, size);
+        cp = rc = jk_pool_alloc(p, size);
         if (rc) {
-            if (rc != s)
-                strcpy(rc, s);
-            strcat(rc, a);
+            size_t len = 0;
+            va_start(ap, p);
+            while ((str = va_arg(ap, char *)) != 0) {
+                len = strlen(str);
+                memcpy(cp, str, len);
+                cp += len;
+            }
+            va_end(ap);
+            *cp = '\0';
         }
     }
 
@@ -173,7 +206,7 @@ static void *jk_pool_dyn_alloc(jk_pool_t *p, size_t size)
         else {
 #if defined (DEBUG) || defined(_DEBUG)
             jk_dump_pool(p, stderr);
-#endif            
+#endif
             return NULL;
         }
     }

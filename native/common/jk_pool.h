@@ -120,7 +120,9 @@ void *jk_pool_realloc(jk_pool_t *p,
 
 char *jk_pool_strdup(jk_pool_t *p, const char *s);
 
-char *jk_pool_strdcat(jk_pool_t *p, const char *s, const char *a);
+char *jk_pool_strcat(jk_pool_t *p, const char *s, const char *a);
+
+char *jk_pool_strcatv(jk_pool_t *p, ...);
 
 #ifdef __cplusplus
 }
