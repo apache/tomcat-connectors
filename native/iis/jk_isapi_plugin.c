@@ -1814,7 +1814,7 @@ static char *rregex_rewrite(jk_pool_t *p, const char *uri)
                     size_t orgsz = strlen(uri);
                     size_t subsz = strlen(subs);
                     size_t lefts = orgsz - regm[0].rm_eo;
-                    
+
                     ptr = buf = jk_pool_alloc(p, regm[0].rm_so + subsz + lefts + 1);
                     memcpy(buf, uri, regm[0].rm_so);
                     ptr += regm[0].rm_so;
@@ -1847,7 +1847,7 @@ static __inline LPSTR get_pheader(jk_pool_t *pool,
 
     if (!pfp->GetHeader(pfc, lpszName, lpszBuf, &dwLen)) {
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-            return NULL;   
+            return NULL;
         if ((rv = jk_pool_alloc(pool, dwLen)) == NULL)
             return NULL;
         /* Try again with dynamic buffer */
@@ -1902,7 +1902,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         ld->request_matched = JK_FALSE;
     }
     uri = get_pheader(&pool, pfp, pfc, "url", szUB, sizeof(szUB));
-    if (uri == NULL) {        
+    if (uri == NULL) {
         jk_log(logger, JK_LOG_ERROR,
                "error while getting the url");
         return SF_STATUS_REQ_ERROR;
@@ -1922,7 +1922,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     if (uri_select_option == URI_SELECT_OPT_UNPARSED) {
         /* Duplicate unparsed uri */
         uri_undec = jk_pool_strdup(&pool, uri);
-    }   
+    }
     rc = unescape_url(uri);
     if (rc == BAD_REQUEST) {
         jk_log(logger, JK_LOG_ERROR,
@@ -1941,7 +1941,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         goto cleanup;
     }
     getparents(uri);
-    len = ISIZEOF(szHB) - 1;    
+    len = ISIZEOF(szHB) - 1;
     if (pfc->GetServerVariable(pfc, "SERVER_NAME", &szHB[1], &len) && len > 1) {
         len = ISIZEOF(szPB);
         if (pfc->GetServerVariable(pfc, "SERVER_PORT", szPB, &len))
@@ -2023,7 +2023,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
                        uri);
                 write_error_response(pfc, 400);
                 rv = SF_STATUS_REQ_FINISHED;
-                goto cleanup;                
+                goto cleanup;
             }
             if (JK_IS_DEBUG_LEVEL(logger))
                 jk_log(logger, JK_LOG_DEBUG,
@@ -2052,13 +2052,13 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             forwardURI = rewriteURI;
         }
         itoa(worker_index, swindex, 10);
-        rs = pfp->AddHeader(pfc, URI_HEADER_NAME, forwardURI); 
+        rs = pfp->AddHeader(pfc, URI_HEADER_NAME, forwardURI);
         if (rs && query)
-            rs = pfp->AddHeader(pfc, QUERY_HEADER_NAME, query); 
+            rs = pfp->AddHeader(pfc, QUERY_HEADER_NAME, query);
         rs = rs && pfp->AddHeader(pfc, WORKER_HEADER_NAME, (LPSTR)worker);
         rs = rs && pfp->AddHeader(pfc, WORKER_HEADER_INDEX, swindex);
         rs = rs && pfp->SetHeader(pfc, "url", extension_uri);
-            
+
         if (!rs) {
             jk_log(logger, JK_LOG_ERROR,
                    "error while adding request headers");
@@ -2112,13 +2112,13 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
                            "removing session identifier [%s] for non servlet url [%s]",
                            jsessionid, uri);
                 *jsessionid = '\0';
-                pfp->SetHeader(pfc, "url", uri);                
+                pfp->SetHeader(pfc, "url", uri);
             }
         }
     }
 cleanup:
     jk_close_pool(&pool);
-    return rv;    
+    return rv;
 }
 
 DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
@@ -2432,7 +2432,6 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
 
         JK_INIT_CS(&init_cs, rc);
         JK_INIT_CS(&log_cs, rc);
-
     break;
     case DLL_PROCESS_DETACH:
         __try {
@@ -2817,6 +2816,8 @@ static BOOL initialize_extension(void)
     if (read_registry_init_data()) {
         if (get_iis_info(&iis_info) != JK_TRUE) {
             jk_log(logger, JK_LOG_ERROR, "Could not retrieve IIS version from registry");
+        }
+        else {
             if (use_auth_notification_flags)
                 iis_info.filter_notify_event = SF_NOTIFY_AUTH_COMPLETE;
             else
@@ -2934,6 +2935,7 @@ static int read_registry_init_data(void)
     else {
         RegCloseKey(hkey);
     }
+
     return ok;
 }
 
@@ -3233,7 +3235,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                                                 &huge_buf_sz)) {
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
             JK_TRACE_EXIT(logger);
-            return JK_FALSE;                
+            return JK_FALSE;
         }
         /* User has more then 64K of headers.
          * Resize initial buffer
@@ -3247,7 +3249,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                                                     huge_buf,
                                                     &huge_buf_sz)) {
             JK_TRACE_EXIT(logger);
-            return JK_FALSE;        
+            return JK_FALSE;
         }
     }
     for (tmp = huge_buf; *tmp; tmp++) {
