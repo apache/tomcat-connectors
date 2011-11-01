@@ -2874,7 +2874,7 @@ static int read_registry_init_data(void)
             return JK_FALSE;
         }
         else {
-            src = &hkey;
+            src = hkey;
         }
     }
     ok = ok && get_config_parameter(src, JK_LOG_FILE_TAG, log_file, sizeof(log_file));
@@ -2953,7 +2953,7 @@ static int get_config_parameter(LPVOID src, const char *tag,
             return JK_FALSE;
         }
     } else {
-        return get_registry_config_parameter(*((HKEY*)src), tag, val, sz);
+        return get_registry_config_parameter((HKEY)src, tag, val, sz);
     }
 }
 
@@ -2963,7 +2963,7 @@ static int get_config_int(LPVOID src, const char *tag, int def)
         return jk_map_get_int((jk_map_t*)src, tag, def);
     } else {
         int val;
-        if (get_registry_config_number(*((HKEY*)src), tag, &val) ) {
+        if (get_registry_config_number(src, tag, &val) ) {
             return val;
         }
         else {
@@ -2978,7 +2978,7 @@ static int get_config_bool(LPVOID src, const char *tag, int def)
         return jk_map_get_bool((jk_map_t*)src, tag, def);
     } else {
         char tmpbuf[128];
-        if (get_registry_config_parameter(*((HKEY*)src), tag,
+        if (get_registry_config_parameter(src, tag,
                                           tmpbuf, sizeof(tmpbuf))) {
             return jk_get_bool_code(tmpbuf, def);
         }
