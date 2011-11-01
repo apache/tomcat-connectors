@@ -491,8 +491,7 @@ static jk_logger_t *logger = NULL;
 static JK_CRIT_SEC log_cs;
 static char *CONTENT_TYPE = "Content-Type:text/html\r\n\r\n";
 
-static char extension_uri[INTERNET_MAX_URL_LENGTH] =
-    "/jakarta/isapi_redirect.dll";
+static char extension_uri[INTERNET_MAX_URL_LENGTH];
 static char log_file[MAX_PATH * 2];
 static char log_file_effective[MAX_PATH * 2];
 static int  log_level = JK_LOG_DEF_LEVEL;
