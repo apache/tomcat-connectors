@@ -2000,7 +2000,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         else if (uri_select_option == URI_SELECT_OPT_ESCAPED) {
             size_t elen  = strlen(uri) * 4;
             char *escuri = jk_pool_alloc(&pool, elen);
-            if (!escape_url(uri, escuri, elen)) {
+            if (!escape_url(uri, escuri, (int)elen)) {
                 jk_log(logger, JK_LOG_ERROR,
                        "[%s] re-encoding request exceeds maximum buffer size.",
                        uri);
@@ -2017,7 +2017,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         else if (uri_select_option == URI_SELECT_OPT_PROXY) {
             size_t clen  = strlen(uri) * 4;
             char *canuri = jk_pool_alloc(&pool, clen);
-            if (!jk_canonenc(uri, canuri, clen)) {
+            if (!jk_canonenc(uri, canuri, (int)clen)) {
                 jk_log(logger, JK_LOG_ERROR,
                        "[%s] re-encoding request exceeds maximum buffer size.",
                        uri);
