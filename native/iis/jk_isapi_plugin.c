@@ -1866,7 +1866,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     const char *worker = NULL;
     rule_extension_t *extensions;
     int worker_index = -1;
-    int port;
+    int port = 0;
     jk_pool_atom_t pbuf[HUGE_POOL_SIZE];
     jk_pool_t pool;
 
@@ -1944,9 +1944,9 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     len = ISIZEOF(szHB) - 1;    
     if (pfc->GetServerVariable(pfc, "SERVER_NAME", &szHB[1], &len) && len > 1) {
         len = ISIZEOF(szPB);
-        pfc->GetServerVariable(pfc, "SERVER_PORT", szPB, &len);
-        port = atoi(szPB);
-        if (port != 80 && port != 443) {
+        if (pfc->GetServerVariable(pfc, "SERVER_PORT", szPB, &len))
+            port = atoi(szPB);
+        if (port != 0 && port != 80 && port != 443) {
             host = jk_pool_strcatv(&pool, szHB, ":", szPB, NULL);
         }
         else
