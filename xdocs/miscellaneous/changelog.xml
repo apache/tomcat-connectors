@@ -44,6 +44,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>50233</bug>: Do not use hard limit on uri size (mturk).
+      </fix>        
       <update>
         IIS: Use Windows Server 2003 SP1, Windows XP SP2 as minimal
         version supported. (mturk)
