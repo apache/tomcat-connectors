@@ -577,14 +577,14 @@ static BOOL initialize_extension(void);
 static int read_registry_init_data(void);
 
 static int get_config_parameter(LPVOID src, const char *tag,
-                                char *val, DWORD sz);
+                                char *val, size_t sz);
 
 static int get_config_bool(LPVOID src, const char *tag, int def);
 
 static int get_config_int(LPVOID src, const char *tag, int def);
 
 static int get_registry_config_parameter(HKEY hkey,
-                                         const char *tag, char *b, DWORD sz);
+                                         const char *tag, char *b, size_t sz);
 
 static int get_registry_config_number(HKEY hkey, const char *tag,
                                       int *val);
@@ -2383,7 +2383,6 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
                     LPVOID lpReserved)  /* Reserved parameter for future use    */
 {
     int rc;
-    BOOL fReturn = TRUE;
     char fname[MAX_PATH];
 
     UNREFERENCED_PARAMETER(lpReserved);
@@ -2399,7 +2398,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
             }
             else {
                 /* Cannot obtain file name ? */
-                fReturn = JK_FALSE;
+                return FALSE;
             }
             if ((p = strrchr(fname, '\\'))) {
                 *(p++) = '\0';
@@ -2410,11 +2409,11 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
             }
             else {
                 /* Cannot obtain file name ? */
-                fReturn = JK_FALSE;
+                return JK_FALSE;
             }
         }
         else {
-            fReturn = JK_FALSE;
+            return JK_FALSE;
         }
         /* Construct redirector headers to use for this redirector instance */
         StringCbPrintf(URI_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
@@ -2446,7 +2445,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         break;
     }
 
-    return fReturn;
+    return TRUE;
 }
 
 static DWORD WINAPI watchdog_thread(void *param)
@@ -2941,7 +2940,7 @@ static int read_registry_init_data(void)
 }
 
 static int get_config_parameter(LPVOID src, const char *tag,
-                                char *val, DWORD sz)
+                                char *val, size_t sz)
 {
     const char *tmp = NULL;
     if (using_ini_file) {
@@ -2990,15 +2989,14 @@ static int get_config_bool(LPVOID src, const char *tag, int def)
 }
 
 static int get_registry_config_parameter(HKEY hkey,
-                                         const char *tag, char *b, DWORD sz)
+                                         const char *tag, char *b, size_t sz)
 {
     DWORD type = 0;
-    LONG lrc;
+    LONG  lrc;
+    DWORD ssz = (DWORD)sz -1;
 
-    sz = sz - 1; /* Reserve space for RegQueryValueEx to add null terminator */
-    b[sz] = '\0'; /* Null terminate in case RegQueryValueEx doesn't */
-
-    lrc = RegQueryValueEx(hkey, tag, NULL, &type, (LPBYTE)b, &sz);
+    b[ssz] = '\0'; /* Null terminate in case RegQueryValueEx doesn't */
+    lrc = RegQueryValueEx(hkey, tag, NULL, &type, (LPBYTE)b, &ssz);
     if ((ERROR_SUCCESS != lrc) || (type != REG_SZ)) {
         return JK_FALSE;
     }
