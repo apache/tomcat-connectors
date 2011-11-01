@@ -1998,7 +1998,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             forwardURI = uri_undec;
         }
         else if (uri_select_option == URI_SELECT_OPT_ESCAPED) {
-            size_t elen  = strlen(uri) * 4;
+            size_t elen  = strlen(uri) * 3 + 1;
             char *escuri = jk_pool_alloc(&pool, elen);
             if (!escape_url(uri, escuri, (int)elen)) {
                 jk_log(logger, JK_LOG_ERROR,
@@ -2015,9 +2015,9 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             forwardURI = escuri;
         }
         else if (uri_select_option == URI_SELECT_OPT_PROXY) {
-            size_t clen  = strlen(uri) * 4;
-            char *canuri = jk_pool_alloc(&pool, clen);
-            if (!jk_canonenc(uri, canuri, (int)clen)) {
+            size_t elen  = strlen(uri) * 3 + 1;
+            char *escuri = jk_pool_alloc(&pool, elen);
+            if (!jk_canonenc(uri, escuri, (int)elen)) {
                 jk_log(logger, JK_LOG_ERROR,
                        "[%s] re-encoding request exceeds maximum buffer size.",
                        uri);
@@ -2028,8 +2028,8 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             if (JK_IS_DEBUG_LEVEL(logger))
                 jk_log(logger, JK_LOG_DEBUG,
                        "fowarding escaped URI [%s]",
-                       canuri);
-            forwardURI = canuri;
+                       escuri);
+            forwardURI = escuri;
         }
         else {
             forwardURI = uri;
