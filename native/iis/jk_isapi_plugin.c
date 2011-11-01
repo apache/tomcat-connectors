@@ -167,7 +167,7 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 
 #define BAD_REQUEST     -1
 #define BAD_PATH        -2
-#define MAX_SERVERNAME  128
+#define MAX_SERVERNAME  1024
 #define MAX_INSTANCEID  32
 #define MAX_PACKET_SIZE 65536
 
@@ -444,6 +444,8 @@ static struct error_reasons {
 #define JK_TOLOWER(x)   ((char)tolower((BYTE)(x)))
 #endif
 
+#define ISIZEOF(X)      (int)sizeof(X)
+
 #define GET_SERVER_VARIABLE_VALUE(name, place)          \
   do {                                                  \
     (place) = NULL;                                     \
@@ -589,9 +591,9 @@ static int get_registry_config_number(HKEY hkey, const char *tag,
                                       int *val);
 
 
-static int get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
-                            char *name,
-                            char *buf, DWORD bufsz);
+static BOOL get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
+                             char *name,
+                             char *buf, size_t bufsz);
 
 static int base64_encode_cert_len(int len);
 
@@ -882,7 +884,7 @@ static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
     pfc->ServerSupportFunction(pfc,
                                SF_REQ_SEND_RESPONSE_HEADER,
                                status, 0, 0);
-    len = (DWORD)(sizeof(HTML_ERROR_HEAD) - 1);
+    len = ISIZEOF(HTML_ERROR_HEAD) - 1;
     pfc->WriteClient(pfc, HTML_ERROR_HEAD, &len,
                      HSE_IO_SYNC);
     StringCbPrintf(body, sizeof(body), HTML_ERROR_BODY_FMT,
@@ -891,7 +893,7 @@ static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
     len = (DWORD)(strlen(body));
     pfc->WriteClient(pfc, body, &len,
                      HSE_IO_SYNC);
-    len = (DWORD)(sizeof(HTML_ERROR_TAIL) - 1);
+    len = ISIZEOF(HTML_ERROR_TAIL) - 1;
     pfc->WriteClient(pfc, HTML_ERROR_TAIL, &len,
                      HSE_IO_SYNC);
 }
@@ -928,7 +930,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
                                  0,
                                  (LPDWORD)CONTENT_TYPE);
     /* First write the HEAD */
-    len = (DWORD)(sizeof(HTML_ERROR_HEAD) - 1);
+    len = ISIZEOF(HTML_ERROR_HEAD) - 1;
     lpEcb->WriteClient(lpEcb->ConnID,
                        HTML_ERROR_HEAD, &len,
                        HSE_IO_SYNC);
@@ -939,7 +941,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
     lpEcb->WriteClient(lpEcb->ConnID,
                        body, &len,
                        HSE_IO_SYNC);
-    len = (DWORD)(sizeof(HTML_ERROR_TAIL) - 1);
+    len = ISIZEOF(HTML_ERROR_TAIL) - 1;
     lpEcb->WriteClient(lpEcb->ConnID,
                        HTML_ERROR_TAIL, &len,
                        HSE_IO_SYNC);
@@ -1778,27 +1780,25 @@ static char *ap_pregsub(const char *input,
     return dest;
 }
 
-static int simple_rewrite(char *uri)
+static char *simple_rewrite(jk_pool_t *p, const char *uri)
 {
     if (rewrite_map) {
         int i;
-        char buf[8192];
         for (i = 0; i < jk_map_size(rewrite_map); i++) {
+            size_t len;
             const char *src = jk_map_name_at(rewrite_map, i);
             if (*src == '~')
                 continue;   /* Skip regexp rewrites */
-            if (strncmp(uri, src, strlen(src)) == 0) {
-                StringCbCopy(buf, sizeof(buf), jk_map_value_at(rewrite_map, i));
-                StringCbCat(buf,  sizeof(buf), uri + strlen(src));
-                StringCbCopy(uri, sizeof(buf), buf);
-                return 1;
+            len = strlen(src);
+            if (strncmp(uri, src, len) == 0) {
+                return jk_pool_strcat(p, jk_map_value_at(rewrite_map, i), uri + len);
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
-static int rregex_rewrite(char *uri)
+static char *rregex_rewrite(jk_pool_t *p, const char *uri)
 {
     ap_regmatch_t regm[AP_MAX_REG_MATCH];
 
@@ -1810,19 +1810,315 @@ static int rregex_rewrite(char *uri)
                 char *subs = ap_pregsub(regexp->fake, uri,
                                        AP_MAX_REG_MATCH, regm);
                 if (subs) {
-                    char buf[8192];
-                    size_t diffsz = strlen(subs) - (regm[0].rm_eo - regm[0].rm_so);
-                    memcpy(&buf[0], uri, regm[0].rm_so);
-                    StringCbCopy(&buf[regm[0].rm_so], sizeof(buf) - regm[0].rm_so, subs);
-                    StringCbCat(&buf[0], sizeof(buf), uri + regm[0].rm_eo);
-                    StringCbCopy(uri, sizeof(buf), &buf[0]);
-                    free(subs);
-                    return 1;
+                    char *buf, *ptr;
+                    size_t orgsz = strlen(uri);
+                    size_t subsz = strlen(subs);
+                    size_t lefts = orgsz - regm[0].rm_eo;
+                    
+                    ptr = buf = jk_pool_alloc(p, regm[0].rm_so + subsz + lefts + 1);
+                    memcpy(buf, uri, regm[0].rm_so);
+                    ptr += regm[0].rm_so;
+                    memcpy(ptr, subs, subsz);
+                    ptr += subsz;
+                    memcpy(ptr, uri + regm[0].rm_eo, lefts);
+                    ptr[lefts] = '\0';
+                    return buf;
                 }
             }
         }
     }
-    return 0;
+    return NULL;
+}
+
+static __inline void clear_header(PHTTP_FILTER_PREPROC_HEADERS pfp,
+                                 PHTTP_FILTER_CONTEXT pfc,
+                                 LPSTR lpszName)
+{
+    pfp->SetHeader(pfc, lpszName, NIL);
+}
+
+static __inline LPSTR get_pheader(jk_pool_t *pool,
+                                  PHTTP_FILTER_PREPROC_HEADERS pfp,
+                                  PHTTP_FILTER_CONTEXT pfc,
+                                  LPSTR lpszName, LPSTR lpszBuf, size_t bsize)
+{
+    LPSTR rv    = lpszBuf;
+    DWORD dwLen = (DWORD)bsize;
+
+    if (!pfp->GetHeader(pfc, lpszName, lpszBuf, &dwLen)) {
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+            return NULL;   
+        if ((rv = jk_pool_alloc(pool, dwLen)) == NULL)
+            return NULL;
+        /* Try again with dynamic buffer */
+        if (!pfp->GetHeader(pfc, lpszName, rv, &dwLen)) {
+            return NULL;
+        }
+    }
+    return rv;
+}
+
+static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
+                                 PHTTP_FILTER_PREPROC_HEADERS pfp)
+{
+    int rc;
+    DWORD rv = SF_STATUS_REQ_NEXT_NOTIFICATION;
+    const char *worker = NULL;
+    rule_extension_t *extensions;
+    int worker_index = -1;
+    int port;
+    jk_pool_atom_t pbuf[HUGE_POOL_SIZE];
+    jk_pool_t pool;
+
+    char *uri_undec  = NULL;
+    char *uri  = NULL;
+    char *host = NULL;
+    char *translate = NULL;
+    char szHB[HDR_BUFFER_SIZE] = "/";
+    char szUB[HDR_BUFFER_SIZE] = "";
+    char szTB[16] = "";
+    char szPB[16] = "";
+    char swindex[32] = "";
+    char *query;
+    DWORD len;
+
+    if (JK_IS_DEBUG_LEVEL(logger))
+        jk_log(logger, JK_LOG_DEBUG, "Filter started");
+    jk_open_pool(&pool, pbuf, sizeof(jk_pool_atom_t) * HUGE_POOL_SIZE);
+    /*
+     * Just in case somebody set these headers in the request!
+     */
+    clear_header(pfp, pfc, URI_HEADER_NAME);
+    clear_header(pfp, pfc, QUERY_HEADER_NAME);
+    clear_header(pfp, pfc, WORKER_HEADER_NAME);
+    clear_header(pfp, pfc, WORKER_HEADER_INDEX);
+    clear_header(pfp, pfc, TOMCAT_TRANSLATE_HEADER_NAME);
+
+    /*
+     * Suppress logging of original uri/query when we don't map a URL
+     */
+    if (pfc->pFilterContext) {
+        isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
+        ld->request_matched = JK_FALSE;
+    }
+    uri = get_pheader(&pool, pfp, pfc, "url", szUB, sizeof(szUB));
+    if (uri == NULL) {        
+        jk_log(logger, JK_LOG_ERROR,
+               "error while getting the url");
+        return SF_STATUS_REQ_ERROR;
+    }
+    if (*uri == '\0') {
+        /* Empty url */
+        return SF_STATUS_REQ_NEXT_NOTIFICATION;
+    }
+    query = strchr(uri, '?');
+    if (query) {
+        *query++ = '\0';
+        if (*query)
+            query = jk_pool_strdup(&pool, query);
+        else
+            query = NULL;
+    }
+    if (uri_select_option == URI_SELECT_OPT_UNPARSED) {
+        /* Duplicate unparsed uri */
+        uri_undec = jk_pool_strdup(&pool, uri);
+    }   
+    rc = unescape_url(uri);
+    if (rc == BAD_REQUEST) {
+        jk_log(logger, JK_LOG_ERROR,
+               "[%s] contains one or more invalid escape sequences.",
+               uri);
+        write_error_response(pfc, 400);
+        rv = SF_STATUS_REQ_FINISHED;
+        goto cleanup;
+    }
+    else if (rc == BAD_PATH) {
+        jk_log(logger, JK_LOG_EMERG,
+               "[%s] contains forbidden escape sequences.",
+               uri);
+        write_error_response(pfc, 404);
+        rv = SF_STATUS_REQ_FINISHED;
+        goto cleanup;
+    }
+    getparents(uri);
+    len = ISIZEOF(szHB) - 1;    
+    if (pfc->GetServerVariable(pfc, "SERVER_NAME", &szHB[1], &len) && len > 1) {
+        len = ISIZEOF(szPB);
+        pfc->GetServerVariable(pfc, "SERVER_PORT", szPB, &len);
+        port = atoi(szPB);
+        if (port != 80 && port != 443) {
+            host = jk_pool_strcatv(&pool, szHB, ":", szPB, NULL);
+        }
+        else
+            host = szHB;
+    }
+    if (host) {
+        worker = map_uri_to_worker_ext(uw_map, uri, host,
+                                       &extensions, &worker_index, logger);
+    }
+    else {
+        worker = map_uri_to_worker_ext(uw_map, uri, NULL,
+                                       &extensions, &worker_index, logger);
+    }
+    /*
+     * Check if somebody is feading us with his own TOMCAT data headers.
+     * We reject such postings !
+     */
+    if (worker) {
+        char *forwardURI;
+        char *rewriteURI;
+        isapi_log_data_t *ld;
+        BOOL rs;
+
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG,
+                   "check if [%s] points to the web-inf directory",
+                    uri);
+
+        if (uri_is_web_inf(uri)) {
+            jk_log(logger, JK_LOG_EMERG,
+                   "[%s] points to the web-inf or meta-inf directory. "
+                   "Somebody tries to hack into the site!!!",
+                   uri);
+
+            write_error_response(pfc, 404);
+            rv = SF_STATUS_REQ_FINISHED;
+            goto cleanup;
+        }
+
+        /* This is a servlet, should redirect ... */
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG,
+                "[%s] is a servlet url - should redirect to %s",
+                uri, worker);
+
+        /* get URI we should forward */
+        if (uri_select_option == URI_SELECT_OPT_UNPARSED) {
+            /* get original unparsed URI */
+            forwardURI = uri_undec;
+        }
+        else if (uri_select_option == URI_SELECT_OPT_ESCAPED) {
+            size_t elen  = strlen(uri) * 4;
+            char *escuri = jk_pool_alloc(&pool, elen);
+            if (!escape_url(uri, escuri, elen)) {
+                jk_log(logger, JK_LOG_ERROR,
+                       "[%s] re-encoding request exceeds maximum buffer size.",
+                       uri);
+                write_error_response(pfc, 400);
+                rv = SF_STATUS_REQ_FINISHED;
+                goto cleanup;
+            }
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG,
+                       "fowarding escaped URI [%s]",
+                       escuri);
+            forwardURI = escuri;
+        }
+        else if (uri_select_option == URI_SELECT_OPT_PROXY) {
+            size_t clen  = strlen(uri) * 4;
+            char *canuri = jk_pool_alloc(&pool, clen);
+            if (!jk_canonenc(uri, canuri, clen)) {
+                jk_log(logger, JK_LOG_ERROR,
+                       "[%s] re-encoding request exceeds maximum buffer size.",
+                       uri);
+                write_error_response(pfc, 400);
+                rv = SF_STATUS_REQ_FINISHED;
+                goto cleanup;                
+            }
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG,
+                       "fowarding escaped URI [%s]",
+                       canuri);
+            forwardURI = canuri;
+        }
+        else {
+            forwardURI = uri;
+        }
+        /* Do a simple rewrite .
+         * Note that URI can be escaped, so thus the rule has
+         * to be in that case.
+         *
+         * TODO: Add more advanced regexp rewrite.
+         */
+        rewriteURI = simple_rewrite(&pool, forwardURI);
+        if (rewriteURI == NULL)
+            rewriteURI = rregex_rewrite(&pool, forwardURI);
+        if (rewriteURI) {
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG,
+                       "rewritten URI [%s]->[%s]",
+                       forwardURI, rewriteURI);
+            }
+            forwardURI = rewriteURI;
+        }
+        itoa(worker_index, swindex, 10);
+        rs = pfp->AddHeader(pfc, URI_HEADER_NAME, forwardURI); 
+        if (rs && query)
+            rs = pfp->AddHeader(pfc, QUERY_HEADER_NAME, query); 
+        rs = rs && pfp->AddHeader(pfc, WORKER_HEADER_NAME, (LPSTR)worker);
+        rs = rs && pfp->AddHeader(pfc, WORKER_HEADER_INDEX, swindex);
+        rs = rs && pfp->SetHeader(pfc, "url", extension_uri);
+            
+        if (!rs) {
+            jk_log(logger, JK_LOG_ERROR,
+                   "error while adding request headers");
+            SetLastError(ERROR_INVALID_PARAMETER);
+            rv = SF_STATUS_REQ_ERROR;
+            goto cleanup;
+        }
+
+        translate = get_pheader(&pool, pfp, pfc, TRANSLATE_HEADER,
+                                szTB, sizeof(szTB));
+        /* Move Translate: header to a temporary header so
+         * that the extension proc will be called.
+         * This allows the servlet to handle 'Translate: f'.
+         */
+        if (translate && &translate) {
+            if (!pfp->AddHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, translate)) {
+                jk_log(logger, JK_LOG_ERROR,
+                       "error while adding Tomcat-Translate headers");
+                rv = SF_STATUS_REQ_ERROR;
+                goto cleanup;
+            }
+            clear_header(pfp, pfc, TRANSLATE_HEADER);
+        }
+        ld = (isapi_log_data_t *)pfc->pFilterContext;
+        if (ld == NULL) {
+            ld = (isapi_log_data_t *)pfc->AllocMem(pfc, sizeof(isapi_log_data_t), 0);
+            if (ld == NULL) {
+                jk_log(logger, JK_LOG_ERROR,
+                       "error while allocating memory");
+                SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+                rv = SF_STATUS_REQ_ERROR;
+                goto cleanup;
+            }
+            pfc->pFilterContext = ld;
+        }
+        memset(ld, 0, sizeof(isapi_log_data_t));
+        StringCbCopy(ld->uri, sizeof(ld->uri), forwardURI);
+        if (query)
+            StringCbCopy(ld->query, sizeof(ld->query), query);
+        ld->request_matched = JK_TRUE;
+    }
+    else {
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG,
+                   "[%s] is not a servlet url", uri);
+        if (strip_session) {
+            char *jsessionid = strstr(uri, JK_PATH_SESSION_IDENTIFIER);
+            if (jsessionid) {
+                if (JK_IS_DEBUG_LEVEL(logger))
+                    jk_log(logger, JK_LOG_DEBUG,
+                           "removing session identifier [%s] for non servlet url [%s]",
+                           jsessionid, uri);
+                *jsessionid = '\0';
+                pfp->SetHeader(pfc, "url", uri);                
+            }
+        }
+    }
+cleanup:
+    jk_close_pool(&pool);
+    return rv;    
 }
 
 DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
@@ -1837,12 +2133,10 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
 
         if (pfc->GetServerVariable(pfc, "SERVER_NAME", serverName, &dwLen)) {
-            if (dwLen > 0) {
-                serverName[dwLen - 1] = '\0';
+            if (dwLen > 1) {
                 dwLen = MAX_INSTANCEID;
                 if (pfc->GetServerVariable(pfc, "INSTANCE_ID", instanceId, &dwLen)) {
-                    if (dwLen > 0) {
-                        instanceId[dwLen - 1] = '\0';
+                    if (dwLen > 1) {
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
                         StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                     }
@@ -1866,270 +2160,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
          return SF_STATUS_REQ_ERROR;
     }
     if (iis_info.filter_notify_event == dwNotificationType) {
-        char uri[INTERNET_MAX_URL_LENGTH];
-        char snuri[INTERNET_MAX_URL_LENGTH] = "/";
-        char Host[INTERNET_MAX_URL_LENGTH] = "";
-        char Translate[INTERNET_MAX_URL_LENGTH];
-        char squery[INTERNET_MAX_URL_LENGTH] = "";
-        char swindex[32] = "";
-        char Port[16] = "";
-        BOOL (WINAPI * GetHeader)(PHTTP_FILTER_CONTEXT, LPSTR, LPVOID, LPDWORD);
-        BOOL (WINAPI * SetHeader)(PHTTP_FILTER_CONTEXT, LPSTR, LPSTR);
-        BOOL (WINAPI * AddHeader)(PHTTP_FILTER_CONTEXT, LPSTR, LPSTR);
-        char *query;
-        DWORD sz = sizeof(uri);
-        DWORD szHost = sizeof(Host);
-        DWORD szPort = sizeof(Port);
-        DWORD szTranslate = sizeof(Translate);
-
-        /* This can be either HTTP_FILTER_PREPROC_HEADERS or
-         * HTTP_FILTER_AUTH_COMPLETE_INFO. In either case the
-         * requested functions are at the same structure offset
-         */
-        GetHeader = ((PHTTP_FILTER_PREPROC_HEADERS)pvNotification)->GetHeader;
-        SetHeader = ((PHTTP_FILTER_PREPROC_HEADERS)pvNotification)->SetHeader;
-        AddHeader = ((PHTTP_FILTER_PREPROC_HEADERS)pvNotification)->AddHeader;
-
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG, "Filter started");
-
-        /*
-         * Just in case somebody set these headers in the request!
-         */
-        SetHeader(pfc, URI_HEADER_NAME, NIL);
-        SetHeader(pfc, QUERY_HEADER_NAME, NIL);
-        SetHeader(pfc, WORKER_HEADER_NAME, NIL);
-        SetHeader(pfc, WORKER_HEADER_INDEX, NIL);
-        SetHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, NIL);
-
-        /*
-         * Suppress logging of original uri/query when we don't map a URL
-         */
-        if (pfc->pFilterContext) {
-            isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
-            ld->request_matched = JK_FALSE;
-        }
-
-        if (!GetHeader(pfc, "url", uri, &sz)) {
-            
-            jk_log(logger, JK_LOG_ERROR,
-                   "error while getting the url");
-            return SF_STATUS_REQ_ERROR;
-        }
-
-        if (strlen(uri)) {
-            int rc;
-            const char *worker = NULL;
-            rule_extension_t *extensions;
-            int worker_index = -1;
-            query = strchr(uri, '?');
-            if (query) {
-                *query++ = '\0';
-                StringCbCopy(squery, INTERNET_MAX_URL_LENGTH, query);
-            }
-
-            rc = unescape_url(uri);
-            if (rc == BAD_REQUEST) {
-                jk_log(logger, JK_LOG_ERROR,
-                       "[%s] contains one or more invalid escape sequences.",
-                       uri);
-                write_error_response(pfc, 400);
-                return SF_STATUS_REQ_FINISHED;
-            }
-            else if (rc == BAD_PATH) {
-                jk_log(logger, JK_LOG_EMERG,
-                       "[%s] contains forbidden escape sequences.",
-                       uri);
-                write_error_response(pfc, 404);
-                return SF_STATUS_REQ_FINISHED;
-            }
-            getparents(uri);
-            if (pfc->GetServerVariable(pfc, "SERVER_NAME", Host, &szHost)) {
-                if (szHost > 0) {
-                    Host[szHost - 1] = '\0';
-                }
-            }
-            Port[0] = '\0';
-            if (pfc->GetServerVariable(pfc, "SERVER_PORT", Port, &szPort)) {
-                if (szPort > 0) {
-                    Port[szPort - 1] = '\0';
-                }
-            }
-            szPort = atoi(Port);
-            if (szPort != 80 && szPort != 443 && szHost > 0) {
-                StringCbCat(Host, INTERNET_MAX_URL_LENGTH, ":");
-                StringCbCat(Host, INTERNET_MAX_URL_LENGTH, Port);
-            }
-            if (szHost > 0) {
-                StringCbCat(snuri, INTERNET_MAX_URL_LENGTH, Host);
-                worker = map_uri_to_worker_ext(uw_map, uri, snuri,
-                                               &extensions, &worker_index, logger);
-            }
-            else {
-                worker = map_uri_to_worker_ext(uw_map, uri, NULL,
-                                               &extensions, &worker_index, logger);
-            }
-            /*
-             * Check if somebody is feading us with his own TOMCAT data headers.
-             * We reject such postings !
-             */
-            if (worker) {
-                char *forwardURI;
-
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG,
-                           "check if [%s] points to the web-inf directory",
-                        uri);
-
-                if (uri_is_web_inf(uri)) {
-                    jk_log(logger, JK_LOG_EMERG,
-                           "[%s] points to the web-inf or meta-inf directory. "
-                           "Somebody tries to hack into the site!!!",
-                           uri);
-
-                    write_error_response(pfc, 404);
-                    return SF_STATUS_REQ_FINISHED;
-                }
-
-                /* This is a servlet, should redirect ... */
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG,
-                        "[%s] is a servlet url - should redirect to %s",
-                        uri, worker);
-
-                /* get URI we should forward */
-                if (uri_select_option == URI_SELECT_OPT_UNPARSED) {
-                    /* get original unparsed URI */
-                    GetHeader(pfc, "url", uri, &sz);
-                    /* restore terminator for uri portion */
-                    if (query)
-                        *(query - 1) = '\0';
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG,
-                               "forwarding original URI [%s]",
-                               uri);
-                    forwardURI = uri;
-                }
-                else if (uri_select_option == URI_SELECT_OPT_ESCAPED) {
-                    if (!escape_url(uri, snuri, INTERNET_MAX_URL_LENGTH)) {
-                        jk_log(logger, JK_LOG_ERROR,
-                               "[%s] re-encoding request exceeds maximum buffer size.",
-                               uri);
-                        write_error_response(pfc, 400);
-                        return SF_STATUS_REQ_FINISHED;
-                    }
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG,
-                               "fowarding escaped URI [%s]",
-                               snuri);
-                    forwardURI = snuri;
-                }
-                else if (uri_select_option == URI_SELECT_OPT_PROXY) {
-                    if (!jk_canonenc(uri, snuri, INTERNET_MAX_URL_LENGTH)) {
-                        jk_log(logger, JK_LOG_ERROR,
-                               "[%s] re-encoding request exceeds maximum buffer size.",
-                               uri);
-                        write_error_response(pfc, 400);
-                        return SF_STATUS_REQ_FINISHED;
-                    }
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG,
-                               "fowarding escaped URI [%s]",
-                               snuri);
-                    forwardURI = snuri;
-                }
-                else {
-                    forwardURI = uri;
-                }
-                /* Do a simple rewrite .
-                 * Note that URI can be escaped, so thus the rule has
-                 * to be in that case.
-                 *
-                 * TODO: Add more advanced regexp rewrite.
-                 */
-                if (JK_IS_DEBUG_LEVEL(logger)) {
-                    char duri[INTERNET_MAX_URL_LENGTH];
-                    StringCbCopy(duri, INTERNET_MAX_URL_LENGTH, forwardURI);
-                    if (simple_rewrite(forwardURI)) {
-                        jk_log(logger, JK_LOG_DEBUG,
-                               "rewritten URI [%s]->[%s]",
-                               duri, forwardURI);
-                    }
-                    else if (rregex_rewrite(forwardURI)) {
-                        jk_log(logger, JK_LOG_DEBUG,
-                               "rewritten URI [%s]->[%s]",
-                               duri, forwardURI);
-                    }
-                }
-                else {
-                    if (!simple_rewrite(forwardURI))
-                        rregex_rewrite(forwardURI);
-                }
-
-                itoa(worker_index, swindex, 10);
-                if (!AddHeader(pfc, URI_HEADER_NAME, forwardURI) ||
-                    ((strlen(squery) > 0) ? !AddHeader(pfc, QUERY_HEADER_NAME, squery) : FALSE) ||
-                    !AddHeader(pfc, WORKER_HEADER_NAME, (LPSTR)worker) ||
-                    !AddHeader(pfc, WORKER_HEADER_INDEX, swindex) ||
-                    !SetHeader(pfc, "url", extension_uri)) {
-                    jk_log(logger, JK_LOG_ERROR,
-                           "error while adding request headers");
-                    SetLastError(ERROR_INVALID_PARAMETER);
-                    return SF_STATUS_REQ_ERROR;
-                }
-
-                /* Move Translate: header to a temporary header so
-                 * that the extension proc will be called.
-                 * This allows the servlet to handle 'Translate: f'.
-                 */
-                if (GetHeader(pfc, TRANSLATE_HEADER, Translate, &szTranslate) &&
-                              Translate != NULL && szTranslate > 0) {
-                    if (!AddHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, Translate)) {
-                        jk_log(logger, JK_LOG_ERROR,
-                               "error while adding Tomcat-Translate headers");
-                        return SF_STATUS_REQ_ERROR;
-                    }
-                    SetHeader(pfc, "Translate:", NIL);
-                }
-                if (!pfc->pFilterContext) {
-                    isapi_log_data_t *ld = (isapi_log_data_t *)pfc->AllocMem(pfc, sizeof(isapi_log_data_t), 0);
-                    if (!ld) {
-                        jk_log(logger, JK_LOG_ERROR,
-                               "error while allocating memory");
-                        SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-                        return SF_STATUS_REQ_ERROR;
-                    }
-                    memset(ld, 0, sizeof(isapi_log_data_t));
-                    StringCbCopy(ld->uri, INTERNET_MAX_URL_LENGTH, forwardURI);
-                    StringCbCopy(ld->query, INTERNET_MAX_URL_LENGTH, squery);
-                    ld->request_matched = JK_TRUE;
-                    pfc->pFilterContext = ld;
-                }
-                else {
-                    isapi_log_data_t *ld = (isapi_log_data_t *)pfc->pFilterContext;
-                    memset(ld, 0, sizeof(isapi_log_data_t));
-                    StringCbCopy(ld->uri, INTERNET_MAX_URL_LENGTH, forwardURI);
-                    StringCbCopy(ld->query, INTERNET_MAX_URL_LENGTH, squery);
-                    ld->request_matched = JK_TRUE;
-                }
-            }
-            else {
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG,
-                           "[%s] is not a servlet url", uri);
-                if (strip_session) {
-                    char *jsessionid = strstr(uri, JK_PATH_SESSION_IDENTIFIER);
-                    if (jsessionid) {
-                        if (JK_IS_DEBUG_LEVEL(logger))
-                            jk_log(logger, JK_LOG_DEBUG,
-                                   "removing session identifier [%s] for non servlet url [%s]",
-                                   jsessionid, uri);
-                        *jsessionid = '\0';
-                        SetHeader(pfc, "url", uri);
-                    }
-                }
-            }
-        }
+        return handle_notify_event(pfc, pvNotification);
     }
     else if (dwNotificationType == SF_NOTIFY_LOG) {
         if (pfc->pFilterContext) {
@@ -2181,13 +2212,11 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
         DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
         if (lpEcb->GetServerVariable(lpEcb->ConnID, "SERVER_NAME",
                                      serverName, &dwLen)) {
-            if (dwLen > 0) {
-                serverName[dwLen - 1] = '\0';
+            if (dwLen > 1) {
                 dwLen = MAX_INSTANCEID;
                 if (lpEcb->GetServerVariable(lpEcb->ConnID, "INSTANCE_ID",
                                              instanceId, &dwLen)) {
-                    if (dwLen > 0) {
-                        instanceId[dwLen - 1] = '\0';
+                    if (dwLen > 1) {
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
                         StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                     }
@@ -3001,6 +3030,14 @@ static int init_ws_service(isapi_private_data_t * private_data,
     char  temp_buf[64];
     DWORD huge_buf_sz;
     BOOL  unknown_content_length = FALSE;
+#ifndef USE_CGI_HEADERS
+    char *all_hdrs = "ALL_RAW";
+#else
+    char *all_hdrs = "ALL_HTTP";
+#endif
+    unsigned int cnt = 0;
+    char *tmp;
+
 
     JK_TRACE_ENTER(logger);
 
@@ -3055,7 +3092,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
     if (get_server_value(private_data->lpEcb,
                          "HTTP_TRANSFER_ENCODING",
                          temp_buf,
-                         (DWORD)sizeof(temp_buf))) {
+                         sizeof(temp_buf))) {
         if (strcasecmp(temp_buf, TRANSFER_ENCODING_CHUNKED_VALUE) == 0) {
             s->is_chunked = JK_TRUE;
             if (JK_IS_DEBUG_LEVEL(logger)) {
@@ -3190,154 +3227,162 @@ static int init_ws_service(isapi_private_data_t * private_data,
     }
 
     huge_buf_sz = MAX_PACKET_SIZE;
-    if (get_server_value(private_data->lpEcb,
-#ifndef USE_CGI_HEADERS
-                         "ALL_RAW", huge_buf, huge_buf_sz)) {
-#else
-                         "ALL_HTTP", huge_buf, huge_buf_sz)) {
-#endif
-        unsigned int cnt = 0;
-        char *tmp;
+    if (!private_data->lpEcb->GetServerVariable(private_data->lpEcb,
+                                                all_hdrs,
+                                                huge_buf,
+                                                &huge_buf_sz)) {
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;                
+        }
+        /* User has more then 64K of headers.
+         * Resize initial buffer
+         */
+        if (!(huge_buf = jk_pool_alloc(&private_data->p, MAX_PACKET_SIZE))) {
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;
+        }
+        if (!private_data->lpEcb->GetServerVariable(private_data->lpEcb,
+                                                    all_hdrs,
+                                                    huge_buf,
+                                                    &huge_buf_sz)) {
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;        
+        }
+    }
+    for (tmp = huge_buf; *tmp; tmp++) {
+        if (*tmp == '\n') {
+            cnt++;
+        }
+    }
 
-        for (tmp = huge_buf; *tmp; tmp++) {
-            if (*tmp == '\n') {
-                cnt++;
-            }
+    if (cnt) {
+        char *headers_buf = huge_buf;
+        unsigned int i;
+        BOOL need_content_length_header = FALSE;
+
+        if (s->content_length == 0 && unknown_content_length == FALSE) {
+            /* Add content-length=0 only if really zero
+             */
+            need_content_length_header = TRUE;
         }
 
-        if (cnt) {
-            char *headers_buf = huge_buf;
-            unsigned int i;
-            BOOL need_content_length_header = FALSE;
+        /* allocate an extra header slot in case we need to add a content-length header */
+        s->headers_names =
+            jk_pool_alloc(&private_data->p, (cnt + 1) * sizeof(char *));
+        s->headers_values =
+            jk_pool_alloc(&private_data->p, (cnt + 1) * sizeof(char *));
 
-            if (s->content_length == 0 && unknown_content_length == FALSE) {
-                /* Add content-length=0 only if really zero
-                 */
-                need_content_length_header = TRUE;
-            }
+        if (!s->headers_names || !s->headers_values || !headers_buf) {
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;
+        }
 
-            /* allocate an extra header slot in case we need to add a content-length header */
-            s->headers_names =
-                jk_pool_alloc(&private_data->p, (cnt + 1) * sizeof(char *));
-            s->headers_values =
-                jk_pool_alloc(&private_data->p, (cnt + 1) * sizeof(char *));
-
-            if (!s->headers_names || !s->headers_values || !headers_buf) {
-                JK_TRACE_EXIT(logger);
-                return JK_FALSE;
-            }
-
-            for (i = 0, tmp = headers_buf; *tmp && i < cnt;) {
-                int real_header = JK_TRUE;
+        for (i = 0, tmp = headers_buf; *tmp && i < cnt;) {
+            int real_header = JK_TRUE;
 
 #ifdef USE_CGI_HEADERS
-                /* Skip the HTTP_ prefix to the beginning of the header name */
-                tmp += HTTP_HEADER_PREFIX_LEN;
+            /* Skip the HTTP_ prefix to the beginning of the header name */
+            tmp += HTTP_HEADER_PREFIX_LEN;
 #endif
 
-                if (!strnicmp(tmp, URI_HEADER_NAME, strlen(URI_HEADER_NAME))
-                    || !strnicmp(tmp, WORKER_HEADER_NAME, strlen(WORKER_HEADER_NAME))
-                    || !strnicmp(tmp, WORKER_HEADER_INDEX, strlen(WORKER_HEADER_INDEX))
-                    || !strnicmp(tmp, QUERY_HEADER_NAME, strlen(QUERY_HEADER_NAME))) {
-                    /* Skip redirector headers */
+            if (!strnicmp(tmp, URI_HEADER_NAME, strlen(URI_HEADER_NAME)) ||
+                !strnicmp(tmp, WORKER_HEADER_NAME, strlen(WORKER_HEADER_NAME)) ||
+                !strnicmp(tmp, WORKER_HEADER_INDEX, strlen(WORKER_HEADER_INDEX)) ||
+                !strnicmp(tmp, QUERY_HEADER_NAME, strlen(QUERY_HEADER_NAME))) {
+                /* Skip redirector headers */
+                cnt--;
+                real_header = JK_FALSE;
+            }
+            else if (!strnicmp(tmp, CONTENT_LENGTH,
+                               sizeof(CONTENT_LENGTH) - 1)) {
+                need_content_length_header = FALSE;
+
+                /* If the content-length is unknown
+                 * or larger then 4Gb do not send it.
+                 * IIS can also create a synthetic Content-Length header to make
+                 * lpcbTotalBytes and the CONTENT_LENGTH server variable agree
+                 * on small requests where the entire chunk encoded message is
+                 * read into the available buffer.
+                 */
+                if (unknown_content_length || s->is_chunked) {
+                    if (JK_IS_DEBUG_LEVEL(logger)) {
+                        jk_log(logger, JK_LOG_DEBUG,
+                               "Disregarding Content-Length in request - content is %s",
+                               s->is_chunked ? "chunked" : "unknown length");
+                    }
                     cnt--;
                     real_header = JK_FALSE;
-                }
-                else if (!strnicmp(tmp, CONTENT_LENGTH,
-                                   sizeof(CONTENT_LENGTH) - 1)) {
-                    need_content_length_header = FALSE;
-
-                    /* If the content-length is unknown
-                     * or larger then 4Gb do not send it.
-                     * IIS can also create a synthetic Content-Length header to make
-                     * lpcbTotalBytes and the CONTENT_LENGTH server variable agree
-                     * on small requests where the entire chunk encoded message is
-                     * read into the available buffer.
-                     */
-                    if (unknown_content_length || s->is_chunked) {
-                        if (JK_IS_DEBUG_LEVEL(logger)) {
-                            jk_log(logger, JK_LOG_DEBUG,
-                                   "Disregarding Content-Length in request - content is %s",
-                                   s->is_chunked ? "chunked" : "unknown length");
-                        }
-                        cnt--;
-                        real_header = JK_FALSE;
-                    }
-                    else {
-                        s->headers_names[i] = tmp;
-                    }
-                }
-                else if (!strnicmp(tmp, TOMCAT_TRANSLATE_HEADER_NAME,
-                                   strlen(TOMCAT_TRANSLATE_HEADER_NAME))) {
-                    s->headers_names[i] = TRANSLATE_HEADER_NAME_LC;
                 }
                 else {
                     s->headers_names[i] = tmp;
                 }
+            }
+            else if (!strnicmp(tmp, TOMCAT_TRANSLATE_HEADER_NAME,
+                               strlen(TOMCAT_TRANSLATE_HEADER_NAME))) {
+                s->headers_names[i] = TRANSLATE_HEADER_NAME_LC;
+            }
+            else {
+                s->headers_names[i] = tmp;
+            }
 
-                while (':' != *tmp && *tmp) {
+            while (':' != *tmp && *tmp) {
 #ifdef USE_CGI_HEADERS
-                    if (real_header) {
-                        if ('_' == *tmp) {
-                            *tmp = '-';
-                        }
-                        else {
-                            *tmp = JK_TOLOWER(*tmp);
-                        }
+                if (real_header) {
+                    if ('_' == *tmp) {
+                        *tmp = '-';
                     }
+                    else {
+                        *tmp = JK_TOLOWER(*tmp);
+                    }
+                }
 #endif
-                    tmp++;
-                }
-                *tmp = '\0';
                 tmp++;
-
-                /* Skip all the WS chars after the ':' to the beginning of the header value */
-                while (' ' == *tmp || '\t' == *tmp || '\v' == *tmp) {
-                    tmp++;
-                }
-
-                if (real_header) {
-                    s->headers_values[i] = tmp;
-                }
-
-                while (*tmp && *tmp != '\n' && *tmp != '\r') {
-                    tmp++;
-                }
-                *tmp = '\0';
-                tmp++;
-
-                /* skip CR LF */
-                while (*tmp == '\n' || *tmp == '\r') {
-                    tmp++;
-                }
-
-                if (real_header) {
-                    if (JK_IS_DEBUG_LEVEL(logger)) {
-                        jk_log(logger, JK_LOG_DEBUG, "Forwarding request header %s : %s",
-                               s->headers_names[i], s->headers_values[i]);
-                    }
-                    i++;
-                }
             }
-            /* Add a content-length = 0 header if needed.
-             * Ajp13 assumes an absent content-length header means an unknown,
-             * but non-zero length body.
-             */
-            if (need_content_length_header) {
+            *tmp = '\0';
+            tmp++;
+
+            /* Skip all the WS chars after the ':' to the beginning of the header value */
+            while (' ' == *tmp || '\t' == *tmp || '\v' == *tmp) {
+                tmp++;
+            }
+
+            if (real_header) {
+                s->headers_values[i] = tmp;
+            }
+
+            while (*tmp && *tmp != '\n' && *tmp != '\r') {
+                tmp++;
+            }
+            *tmp = '\0';
+            tmp++;
+
+            /* skip CR LF */
+            while (*tmp == '\n' || *tmp == '\r') {
+                tmp++;
+            }
+
+            if (real_header) {
                 if (JK_IS_DEBUG_LEVEL(logger)) {
-                    jk_log(logger, JK_LOG_DEBUG, "Incoming request needs explicit Content-Length: 0 in AJP13");
+                    jk_log(logger, JK_LOG_DEBUG, "Forwarding request header %s : %s",
+                           s->headers_names[i], s->headers_values[i]);
                 }
-                s->headers_names[cnt] = "Content-Length";
-                s->headers_values[cnt] = "0";
-                cnt++;
+                i++;
             }
-            s->num_headers = cnt;
         }
-        else {
-            /* We must have our two headers */
-            JK_TRACE_EXIT(logger);
-            return JK_FALSE;
+        /* Add a content-length = 0 header if needed.
+         * Ajp13 assumes an absent content-length header means an unknown,
+         * but non-zero length body.
+         */
+        if (need_content_length_header) {
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG, "Incoming request needs explicit Content-Length: 0 in AJP13");
+            }
+            s->headers_names[cnt] = "Content-Length";
+            s->headers_values[cnt] = "0";
+            cnt++;
         }
+        s->num_headers = cnt;
     }
     else {
         JK_TRACE_EXIT(logger);
@@ -3374,18 +3419,14 @@ static int init_ws_service(isapi_private_data_t * private_data,
     return JK_TRUE;
 }
 
-static int get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
-                            char *name, char *buf, DWORD bufsz)
+static BOOL get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
+                            char *name, char *buf, size_t bufsz)
 {
-    DWORD sz = bufsz;
-    buf[0]   = '\0';
-    if (!lpEcb->GetServerVariable(lpEcb->ConnID, name,
-                                  buf, &sz))
-        return JK_FALSE;
+    DWORD sz = (DWORD)bufsz;
 
-    if (sz <= bufsz)
-        buf[sz-1] = '\0';
-    return JK_TRUE;
+    buf[0]   = '\0';
+    return lpEcb->GetServerVariable(lpEcb->ConnID, name,
+                                    buf, &sz);
 }
 
 static const char begin_cert[] = "-----BEGIN CERTIFICATE-----\r\n";
