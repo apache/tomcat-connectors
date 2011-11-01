@@ -2525,7 +2525,7 @@ static int init_logger(int rotate, jk_logger_t **l)
     /* Close the current log file if required, and the effective log file name has changed */
     if (log_open && strncmp(log_file_name, log_file_effective, strlen(log_file_name)) != 0) {
         FILE* lf = ((jk_file_logger_t* )logger->logger_private)->logfile;
-        fprintf(lf, "Log rotated to %s\r\n", log_file_name);
+        fprintf(lf, "Log rotated to %s\n", log_file_name);
         fflush(lf);
         rc = jk_close_file_logger(&logger);
         log_open = JK_FALSE;
@@ -2595,19 +2595,21 @@ static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
         rc = JK_TRUE;
 
         if (p->logfile) {
+#if 0
             what[used++] = '\r';
+#endif
             what[used++] = '\n';
             what[used] = '\0';
 
             /* Perform logging within critical section to protect rotation */
-            JK_ENTER_CS(&(log_cs), rc);
-            if (rc && rotate_log_file(&l)) {
+            JK_ENTER_CS(&log_cs, rc);
+            if (rotate_log_file(&l)) {
                 /* The rotation process will reallocate the jk_logger_t structure, so refetch */
                 FILE *rotated = ((jk_file_logger_t *)l->logger_private)->logfile;
                 fputs(what, rotated);
                 fflush(rotated);
-                JK_LEAVE_CS(&(log_cs), rc);
             }
+            JK_LEAVE_CS(&log_cs, rc);
         }
     }
     return rc;
