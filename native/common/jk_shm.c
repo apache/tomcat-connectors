@@ -167,6 +167,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         JK_LEAVE_CS(&jk_shmem.cs, rc);
         return 0;
     }
+    jk_shmem.size = JK_SHM_ALIGN(sizeof(jk_shm_header_t) + sz);
 #if defined (WIN32)
     if (fname) {
         sprintf(lkname, "Global\\%s_MUTEX", fname);
@@ -198,7 +199,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                                            jk_get_sa_with_null_dacl(),
                                            PAGE_READWRITE,
                                            0,
-                                           (DWORD)(sizeof(jk_shm_header_t) + sz),
+                                           (DWORD)jk_shmem.size,
                                            fname);
         }
         if (jk_shm_map == NULL || jk_shm_map == INVALID_HANDLE_VALUE) {
