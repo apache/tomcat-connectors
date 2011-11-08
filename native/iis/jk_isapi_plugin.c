@@ -169,6 +169,7 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define BAD_PATH        -2
 #define MAX_SERVERNAME  1024
 #define MAX_INSTANCEID  32
+#define MAX_APP_POOLID  256
 #define MAX_PACKET_SIZE 65536
 
 char HTML_ERROR_HEAD[] =        "<!--\n"
@@ -499,6 +500,7 @@ static long log_rotationtime = 0;
 static time_t log_next_rotate_time = 0;
 static ULONGLONG log_filesize = 0;
 
+static char shm_loaded_name[MAX_PATH] = {0};
 static char worker_file[MAX_PATH * 2];
 static char worker_mount_file[MAX_PATH * 2] = {0};
 static int  worker_mount_reload = JK_URIMAP_DEF_RELOAD;
@@ -2120,16 +2122,31 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
     if (is_inited && !is_mapread) {
         char serverName[MAX_SERVERNAME] = "";
         char instanceId[MAX_INSTANCEID] = "";
-        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
+        char app_poolId[MAX_APP_POOLID] = "";
+        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - MAX_APP_POOLID - 1;
 
         if (pfc->GetServerVariable(pfc, "SERVER_NAME", serverName, &dwLen)) {
             if (dwLen > 1) {
+                DWORD i;
                 dwLen = MAX_INSTANCEID;
                 if (pfc->GetServerVariable(pfc, "INSTANCE_ID", instanceId, &dwLen)) {
                     if (dwLen > 1) {
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
                         StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                     }
+                }
+                dwLen = MAX_APP_POOLID;
+                if (pfc->GetServerVariable(pfc, "APP_POOL_ID", app_poolId, &dwLen)) {
+                    if (dwLen > 1) {
+                        StringCbCat(serverName, MAX_SERVERNAME, "_");
+                        StringCbCat(serverName, MAX_SERVERNAME, app_poolId);
+                    }
+                }                
+                for (i = 0; i < (DWORD)strlen(serverName); i++) {
+                    if (serverName[i] == ' ' || serverName[i] == '/' || serverName[i] == '\\')
+                        serverName[i] = '_';
+                    else
+                        serverName[i] = toupper((DWORD)serverName[i]);
                 }
             }
             EnterCriticalSection(&init_cs);
@@ -2196,11 +2213,13 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     if (is_inited && !is_mapread) {
         char serverName[MAX_SERVERNAME] = "";
         char instanceId[MAX_INSTANCEID] = "";
+        char app_poolId[MAX_APP_POOLID] = "";
+        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - MAX_APP_POOLID - 1;
 
-        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
         if (lpEcb->GetServerVariable(lpEcb->ConnID, "SERVER_NAME",
                                      serverName, &dwLen)) {
             if (dwLen > 1) {
+                DWORD i;
                 dwLen = MAX_INSTANCEID;
                 if (lpEcb->GetServerVariable(lpEcb->ConnID, "INSTANCE_ID",
                                              instanceId, &dwLen)) {
@@ -2208,6 +2227,20 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
                         StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                     }
+                }
+                dwLen = MAX_APP_POOLID;
+                if (lpEcb->GetServerVariable(lpEcb->ConnID, "APP_POOL_ID",
+                                             app_poolId, &dwLen)) {
+                    if (dwLen > 1) {
+                        StringCbCat(serverName, MAX_SERVERNAME, "_");
+                        StringCbCat(serverName, MAX_SERVERNAME, app_poolId);
+                    }
+                }
+                for (i = 0; i < (DWORD)strlen(serverName); i++) {
+                    if (serverName[i] == ' ' || serverName[i] == '/' || serverName[i] == '\\')
+                        serverName[i] = '_';
+                    else
+                        serverName[i] = toupper((DWORD)serverName[i]);
                 }
             }
             EnterCriticalSection(&init_cs);
@@ -2759,6 +2792,18 @@ static int init_jk(char *serverName)
                     jk_log(logger, JK_LOG_ERROR,
                            "Initializing shm:%s errno=%d. Load balancing workers will not function properly.",
                            jk_shm_name(), rv);
+                }
+                else {
+                    if (shm_loaded_name[0]) {
+                        if (strcmp(shm_loaded_name, shm_name)) {
+                            jk_log(logger, JK_LOG_WARNING,
+                                   "Loading different shared memory %s. Already loaded %s",
+                                   shm_name, shm_loaded_name);
+                        }
+                    }
+                    else {
+                        StringCbCopy(shm_loaded_name, MAX_PATH, shm_name);
+                    }
                 }
                 worker_env.uri_to_worker = uw_map;
                 worker_env.server_name = serverName;
