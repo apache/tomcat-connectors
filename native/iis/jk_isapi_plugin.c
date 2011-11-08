@@ -531,6 +531,7 @@ struct isapi_private_data_t
 
     unsigned int bytes_read_so_far;
     int chunk_content;          /* Whether we're responding with Transfer-Encoding: chunked content */
+    char *err_hdrs;
     LPEXTENSION_CONTROL_BLOCK lpEcb;
 };
 
@@ -903,7 +904,7 @@ static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
                      HSE_IO_SYNC);
 }
 
-static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
+static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err, const char *err_hdrs)
 {
     DWORD len;
     char status[1024];
@@ -927,13 +928,27 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err)
         }
     }
     lpEcb->dwHttpStatusCode = err;
-
     StringCbPrintf(status, sizeof(status), "%d %s", err, status_reason(err));
+    /* XXX: Should we allow something beside 401?
+     */
+    if (err_hdrs && err == 401) {
+        /* Include extra error headers */
+        HRESULT hr = StringCbCopy(body, sizeof(body), err_hdrs);
+        if (FAILED(hr) || strlen(body) > (8191 - strlen(CONTENT_TYPE))) {
+            /* Header is too long.
+             */
+            jk_log(logger, JK_LOG_WARNING,
+                   "error header too long (%d bytes requested).",
+                   strlen(err_hdrs));
+            body[0] = '\0';
+        }
+    }
+    StringCbCat(body, sizeof(body), CONTENT_TYPE);
     lpEcb->ServerSupportFunction(lpEcb->ConnID,
                                  HSE_REQ_SEND_RESPONSE_HEADER,
                                  status,
                                  0,
-                                 (LPDWORD)CONTENT_TYPE);
+                                 (LPDWORD)body);
     /* First write the HEAD */
     len = ISIZEOF(HTML_ERROR_HEAD) - 1;
     lpEcb->WriteClient(lpEcb->ConnID,
@@ -984,12 +999,9 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                 unsigned int h;
                 for (h = 0; h < num_of_headers; h++) {
                     if (!strcasecmp(header_names[h], "WWW-Authenticate")) {
-                        /*
-                         * TODO: we need to save a copy of header_values[h]
-                         * for later reuse in write_error_message()
-                         * which is called later on form HttpExtensionProc
-                         * because of use_server_error_pages.
-                         */
+                        p->err_hdrs = jk_pool_strcatv(&p->p,
+                                            "WWW-Authenticate:",
+                                            header_values[h], CRLF, NULL);
                         found = JK_TRUE;
                     }
                 }
@@ -2295,7 +2307,8 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                                        " for worker=%s",
                                        s.http_response_status, worker_name);
                             lpEcb->dwHttpStatusCode = s.http_response_status;
-                            write_error_message(lpEcb, s.http_response_status);
+                            write_error_message(lpEcb, s.http_response_status,
+                                                private_data.err_hdrs);
                         }
                         else {
                             rc = HSE_STATUS_SUCCESS;
@@ -2315,7 +2328,7 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                                    "service() failed with http error %d", is_error);
                         }
                         lpEcb->dwHttpStatusCode = is_error;
-                        write_error_message(lpEcb, is_error);
+                        write_error_message(lpEcb, is_error, private_data.err_hdrs);
                     }
                     e->done(&e, logger);
                 }

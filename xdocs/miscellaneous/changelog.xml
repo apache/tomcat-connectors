@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>51253</bug>: Forward WWW-Authenticate header when using
+        server generated error pages (rjung, mturk).
+      </fix>        
       <update>
         <bug>46406</bug>: IIS: Support relative paths in configuration.
         The paths are presumed to be relative from isapi_redirect.dll. (mturk)
