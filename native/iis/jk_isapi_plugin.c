@@ -605,6 +605,10 @@ static int get_iis_info(iis_info_t *info);
 
 static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned int write_length);
 
+static char *path_merge(const char *root, const char *path);
+
+static int is_path_relative(const char *path);
+
 static char x2c(const char *what)
 {
     register char digit;
@@ -2141,7 +2145,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
                         StringCbCat(serverName, MAX_SERVERNAME, app_poolId);
                     }
-                }                
+                }
                 for (i = 0; i < (DWORD)strlen(serverName); i++) {
                     if (serverName[i] == ' ' || serverName[i] == '/' || serverName[i] == '\\')
                         serverName[i] = '_';
@@ -2908,16 +2912,23 @@ static int read_registry_init_data(void)
         }
     }
     ok = ok && get_config_parameter(src, JK_LOG_FILE_TAG, log_file, sizeof(log_file));
-    if (get_config_parameter(src, JK_LOG_LEVEL_TAG, tmpbuf, sizeof(tmpbuf))) {
+    if (ok && is_path_relative(log_file)) {
+        char *fp = path_merge(dll_file_path, log_file);
+        if (fp) {
+            StringCbCopy(log_file, sizeof(log_file), fp);
+            free(fp);
+        }
+    }
+    if (ok && get_config_parameter(src, JK_LOG_LEVEL_TAG, tmpbuf, sizeof(tmpbuf))) {
         log_level = jk_parse_log_level(tmpbuf);
     }
-    if (get_config_parameter(src, LOG_ROTATION_TIME_TAG, tmpbuf, sizeof(tmpbuf))) {
+    if (ok && get_config_parameter(src, LOG_ROTATION_TIME_TAG, tmpbuf, sizeof(tmpbuf))) {
         log_rotationtime = atol(tmpbuf);
         if (log_rotationtime < 0) {
             log_rotationtime = 0;
         }
     }
-    if (get_config_parameter(src, LOG_FILESIZE_TAG, tmpbuf, sizeof(tmpbuf))) {
+    if (ok && get_config_parameter(src, LOG_FILESIZE_TAG, tmpbuf, sizeof(tmpbuf))) {
         size_t tl = strlen(tmpbuf);
         if (tl > 0) {
             /* rotatelogs has an 'M' suffix on filesize, which we optionally support for consistency */
@@ -2935,10 +2946,32 @@ static int read_registry_init_data(void)
 
     ok = ok && get_config_parameter(src, EXTENSION_URI_TAG, extension_uri, sizeof(extension_uri));
     ok = ok && get_config_parameter(src, JK_WORKER_FILE_TAG, worker_file, sizeof(worker_file));
+    if (ok && is_path_relative(worker_file)) {
+        char *fp = path_merge(dll_file_path, worker_file);
+        if (fp) {
+            StringCbCopy(worker_file, sizeof(worker_file), fp);
+            free(fp);
+        }
+    }
     ok = ok && get_config_parameter(src, JK_MOUNT_FILE_TAG, worker_mount_file, sizeof(worker_mount_file));
+    if (ok && is_path_relative(worker_mount_file)) {
+        char *fp = path_merge(dll_file_path, worker_mount_file);
+        if (fp) {
+            StringCbCopy(worker_mount_file, sizeof(worker_mount_file), fp);
+            free(fp);
+        }
+    }
     if (!ok)
         goto cleanup;
-    get_config_parameter(src, URI_REWRITE_TAG, rewrite_rule_file, sizeof(rewrite_rule_file));
+    if (get_config_parameter(src, URI_REWRITE_TAG, rewrite_rule_file, sizeof(rewrite_rule_file))) {
+        if (is_path_relative(rewrite_rule_file)) {
+            char *fp = path_merge(dll_file_path, rewrite_rule_file);
+            if (fp) {
+                StringCbCopy(rewrite_rule_file, sizeof(rewrite_rule_file), fp);
+                free(fp);
+            }
+        }
+    }
     if (get_config_parameter(src, URI_SELECT_TAG, tmpbuf, sizeof(tmpbuf))) {
         int opt = parse_uri_select(tmpbuf);
         if (opt >= 0) {
@@ -3554,4 +3587,202 @@ static int get_iis_info(iis_info_t* iis_info)
         CloseHandle(hkey);
     }
     return rv;
+}
+
+/*
+ * 1. Remove  //?/ prefix
+ * 2. Replace UNC/ with //
+ */
+static __inline char *NO2UNC(char *fname)
+{
+    if (fname[0] == '/' && fname[1] == '/' &&
+        fname[2] == '?' && fname[3] == '/') {
+        fname += 4;
+        if (fname[0] == 'U' && fname[1] == 'N' &&
+            fname[2] == 'C' && fname[3] == '/') {
+            fname += 2;
+            *fname = '/';
+        }
+        else if (fname[0] == 'U' && fname[1] == 'N' &&
+            fname[2] == '/' && fname[3] == '/') {
+            fname += 2;
+            /* Already modified in-place.
+             */
+            fname += 2;
+        }
+    }
+    return fname;
+}
+
+static __inline void FS2BSA(char *str)
+{
+    for (; *str != 0; str++) {
+        if (*str == '/')
+            *str = '\\';
+    }
+}
+
+static __inline void BS2FSA(char *str)
+{
+    for (; *str != 0; str++) {
+        if (*str == '\\')
+            *str = '/';
+    }
+}
+
+#define NON_UNC_PATH_LENGTH     248
+
+#define IS_PATH_SEP(C)   ((C) == '/' || (C) == '\0')
+#define IS_DRIVE_CHAR(C) (((C) >= 'A' && (C) <= 'Z') || \
+                          ((C) >= 'a' && (C) <= 'z'))
+#define _INS_TRAILING_PATH_SEP(s, l)  \
+    if (l > 0 && s[l - 1] != '/') s[l++] = '/', s[l] = '\0'
+#define _DEL_TRAILING_PATH_SEP(s, l)  \
+    do {                                                    \
+        if (l > 1 && s[l - 1] == '/') {                     \
+            if (s[l - 2] != '/' && s[l - 2] != ':')         \
+                s[--l] = '\0';                              \
+        }                                                   \
+    } while(0)
+
+static char *relative_path(char *path, size_t size)
+{
+    char *sp;
+    char *cp;
+    int   ch = '/';
+
+    /* Convert everything to foward slashes
+     */
+    BS2FSA(path);
+    /* Remove \\?\ and replace \\?\UNC\ with \\
+     */
+    path = NO2UNC(path);
+    size = strlen(path);
+    if (size < 2) {
+        if (path[0] == ' ') {
+            /* Single Trailing space is invalid path
+             */
+            SetLastError(ERROR_BAD_PATHNAME);
+            return 0;
+        }
+        return path;
+    }
+    else {
+        /* Remove any trailing slash unless this is
+         * a single slash path.
+         */
+        _DEL_TRAILING_PATH_SEP(path, size);
+        if (path[size - 1] == ' ' || path[size - 1] == '.') {
+            /* Trailing space and dot are invalid file or dir names
+             */
+            SetLastError(ERROR_BAD_PATHNAME);
+            return 0;
+        }
+    }
+    sp = path;
+    if (size > 1 && path[1] == ':' && IS_DRIVE_CHAR(path[0])) {
+        /* Never go above C: */
+        path += 2;
+    }
+    else if (path[0] == '/' && path[1] == '/') {
+        /* Never go above //share/
+         */
+        if (path[2] == '.' && path[3] == '/') {
+            /* This is probably //./pipe/ */
+            return path;
+        }
+        cp = strchr(path + 2, '/');
+        if (cp != 0)
+            path = cp;
+        else {
+            /* We only have //share
+             */
+            return path;
+        }
+    }
+    /* Remaining is the same as on unixes */
+    cp = path;
+    while (*path) {
+        if (IS_PATH_SEP(ch) && *path == '.') {
+            int nd = 0;
+            while (path[nd] == '.')
+                nd++;
+            if (nd > 2 && path[nd] == '/') {
+                SetLastError(ERROR_BAD_PATHNAME);
+                return 0;
+            }
+            if (IS_PATH_SEP(path[nd])) {
+                path += nd;
+                if (*path)
+                    path++;
+                while (nd > 1) {
+                    if (cp > sp + 1) {
+                        cp--;
+                        while (cp > sp) {
+                            if (IS_PATH_SEP(*(cp - 1)))
+                                break;
+                            cp--;
+                        }
+                    }
+                    else
+                        break;
+                    nd--;
+                }
+            }
+            else
+                ch = *cp++ = *path++;
+        }
+        else
+            ch = *cp++ = *path++;
+    }
+    *cp = '\0';
+    return sp;
+}
+
+static char *path_merge(const char *root, const char *path)
+{
+    char  merge[8192];
+    char *rel;
+    char *out = 0;
+    size_t sz;
+
+    if (root == NULL || path == NULL) {
+        SetLastError(ERROR_INVALID_PARAMETER );
+        return 0;
+    }
+    if (FAILED(StringCbCopy(merge, 8190, path))) {
+        /* TODO: Use dynamic buffer with larger size */
+        SetLastError(ERROR_FILENAME_EXCED_RANGE);
+        return 0;
+    }
+    sz = strlen(merge);
+    /* Normalize path */
+    if ((rel = relative_path(merge, sz))) {
+        size_t bl = strlen(root) + sz + 1;
+        out = malloc(bl);
+        if (out == 0)
+            return 0;
+        /* Prepend root */
+        StringCbCopy(out, bl, root);
+        sz = strlen(out);
+        BS2FSA(out);
+        _INS_TRAILING_PATH_SEP(out, sz);
+        if ((IS_DRIVE_CHAR(rel[0]) && rel[1] == ':'))
+            rel += 2;
+        if (rel[0] == '/')
+            ++rel;
+        if (*rel != '\0')
+            StringCbCopy(out + sz, bl - sz, rel);
+            FS2BSA(out);
+    }
+    return out;
+}
+
+static int is_path_relative(const char *path)
+{
+    if ((IS_DRIVE_CHAR(path[0]) && path[1] == ':') ||
+         path[0] == '/' || path[0] == '\\')
+        return 0;
+    else
+        return 1;
 }

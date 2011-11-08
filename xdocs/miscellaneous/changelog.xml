@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        <bug>46406</bug>: IIS: Support relative paths in configuration.
+        The paths are presumed to be relative from isapi_redirect.dll. (mturk)
+      </update>        
       <fix>
         <bug>50233</bug>: Do not use hard limit on uri size (mturk).
       </fix>        
