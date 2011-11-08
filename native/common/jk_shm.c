@@ -164,33 +164,41 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
 
 #if defined (WIN32)
     if (fname) {
-        jk_shm_map = CreateFileMapping(INVALID_HANDLE_VALUE,
-                                       jk_get_sa_with_null_dacl(),
-                                       PAGE_READWRITE,
-                                       0,
-                                       (DWORD)(sizeof(jk_shm_header_t) + sz),
-                                       fname);
-        if (GetLastError() == ERROR_ALREADY_EXISTS) {
-            attached = 1;
-            if (jk_shm_map == NULL || jk_shm_map == INVALID_HANDLE_VALUE) {
-                jk_shm_map = OpenFileMapping(PAGE_READWRITE, FALSE, fname);
+        sprintf(lkname, "Global\\%s_MUTEX", fname);
+        jk_shm_hlock = CreateMutex(jk_get_sa_with_null_dacl(), TRUE, lkname);
+        if (jk_shm_hlock == NULL) {
+            if (GetLastError() == ERROR_ALREADY_EXISTS) {
+                attached = 1;
+                jk_shm_hlock = OpenMutex(MUTEX_ALL_ACCESS, FALSE, lkname);
             }
         }
-        if (jk_shm_map == NULL || jk_shm_map == INVALID_HANDLE_VALUE) {
+        if (jk_shm_hlock == NULL) {
             JK_TRACE_EXIT(l);
             return -1;
         }
-        sprintf(lkname, "Global\\%s_MUTEX", fname);
         if (attached) {
-            jk_shm_hlock = OpenMutex(MUTEX_ALL_ACCESS, FALSE, lkname);
+            DWORD ws = WaitForSingleObject(jk_shm_hlock, INFINITE);
+            if (ws == WAIT_FAILED) {
+                CloseHandle(jk_shm_hlock);
+                jk_shm_hlock = NULL;
+                JK_TRACE_EXIT(l);
+                return -1;
+            }
+            jk_shm_map = OpenFileMapping(PAGE_READWRITE, FALSE, fname);
         }
         else {
-            jk_shm_hlock = CreateMutex(jk_get_sa_with_null_dacl(), FALSE, lkname);            
+            jk_shm_map = CreateFileMapping(INVALID_HANDLE_VALUE,
+                                           jk_get_sa_with_null_dacl(),
+                                           PAGE_READWRITE,
+                                           0,
+                                           (DWORD)(sizeof(jk_shm_header_t) + sz),
+                                           fname);
         }
-        if (jk_shm_hlock == NULL || jk_shm_hlock == INVALID_HANDLE_VALUE) {
-            CloseHandle(jk_shm_map);
-            jk_shm_map = NULL;
+        if (jk_shm_map == NULL || jk_shm_map == INVALID_HANDLE_VALUE) {
             JK_TRACE_EXIT(l);
+            CloseHandle(jk_shm_hlock);
+            jk_shm_hlock = NULL;
+            jk_shm_map   = NULL;
             return -1;
         }
         jk_shmem.hdr = (jk_shm_header_t *)MapViewOfFile(jk_shm_map,
@@ -250,6 +258,10 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         jk_shmem.hdr->h.data.workers = 0;
     }
     JK_INIT_CS(&(jk_shmem.cs), rc);
+    if (jk_shm_hlock) {
+        /* Unlock shared memory */
+        ReleaseMutex(jk_shm_hlock);
+    }
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "%s shared memory %s size=%u free=%u addr=%#lx",
@@ -736,9 +748,9 @@ int jk_shm_lock()
         if (rv == WAIT_OBJECT_0 || rv == WAIT_ABANDONED)
             rc = JK_TRUE;
         else
-            rc = JK_FALSE;         
+            rc = JK_FALSE;
     }
-#else    
+#else
     if (rc == JK_TRUE && jk_shmem.fd_lock != -1) {
         JK_ENTER_LOCK(jk_shmem.fd_lock, rc);
     }
@@ -753,9 +765,9 @@ int jk_shm_unlock()
 #if defined (WIN32)
     if (rc == JK_TRUE && jk_shm_hlock != NULL) {
         if (!ReleaseMutex(jk_shm_hlock))
-            rc = JK_FALSE;         
+            rc = JK_FALSE;
     }
-#else    
+#else
     if (rc == JK_TRUE && jk_shmem.fd_lock != -1) {
         JK_LEAVE_LOCK(jk_shmem.fd_lock, rc);
     }
