@@ -2891,6 +2891,8 @@ static int read_registry_init_data(void)
     ok = ok && get_config_parameter(src, EXTENSION_URI_TAG, extension_uri, sizeof(extension_uri));
     ok = ok && get_config_parameter(src, JK_WORKER_FILE_TAG, worker_file, sizeof(worker_file));
     ok = ok && get_config_parameter(src, JK_MOUNT_FILE_TAG, worker_mount_file, sizeof(worker_mount_file));
+    if (!ok)
+        goto cleanup;
     get_config_parameter(src, URI_REWRITE_TAG, rewrite_rule_file, sizeof(rewrite_rule_file));
     if (get_config_parameter(src, URI_SELECT_TAG, tmpbuf, sizeof(tmpbuf))) {
         int opt = parse_uri_select(tmpbuf);
@@ -2899,6 +2901,7 @@ static int read_registry_init_data(void)
         }
         else {
             ok = JK_FALSE;
+            goto cleanup;
         }
     }
     shm_config_size = (size_t) get_config_int(src, SHM_SIZE_TAG, 0);
@@ -2913,7 +2916,7 @@ static int read_registry_init_data(void)
     if (get_config_parameter(src, ERROR_PAGE_TAG, error_page_buf, sizeof(error_page_buf))) {
         error_page = error_page_buf;
     }
-
+cleanup:
     if (using_ini_file) {
         jk_map_free(&map);
     }
