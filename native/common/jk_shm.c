@@ -155,15 +155,17 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
     char lkname[MAX_PATH];
 
     JK_TRACE_ENTER(l);
+    if (!jk_shm_inited_cs) {
+        jk_shm_inited_cs = 1;
+        JK_INIT_CS(&jk_shmem.cs, rc);
+    }
+    JK_ENTER_CS(&jk_shmem.cs, rc);
     if (jk_shmem.hdr) {
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG, "Shared memory is already opened");
         JK_TRACE_EXIT(l);
+        JK_LEAVE_CS(&jk_shmem.cs, rc);
         return 0;
-    }
-    if (!jk_shm_inited_cs) {
-        jk_shm_inited_cs = 1;
-        JK_INIT_CS(&jk_shmem.cs, rc);
     }
 #if defined (WIN32)
     if (fname) {
@@ -176,6 +178,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             }
         }
         if (jk_shm_hlock == NULL) {
+            JK_LEAVE_CS(&jk_shmem.cs, rc);
             JK_TRACE_EXIT(l);
             return -1;
         }
@@ -184,6 +187,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             if (ws == WAIT_FAILED) {
                 CloseHandle(jk_shm_hlock);
                 jk_shm_hlock = NULL;
+                JK_LEAVE_CS(&jk_shmem.cs, rc);
                 JK_TRACE_EXIT(l);
                 return -1;
             }
@@ -198,10 +202,11 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                                            fname);
         }
         if (jk_shm_map == NULL || jk_shm_map == INVALID_HANDLE_VALUE) {
-            JK_TRACE_EXIT(l);
             CloseHandle(jk_shm_hlock);
             jk_shm_hlock = NULL;
             jk_shm_map   = NULL;
+            JK_LEAVE_CS(&jk_shmem.cs, rc);
+            JK_TRACE_EXIT(l);
             return -1;
         }
         jk_shmem.hdr = (jk_shm_header_t *)MapViewOfFile(jk_shm_map,
@@ -224,6 +229,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             jk_shm_hlock = NULL;
         }
 #endif
+        JK_LEAVE_CS(&jk_shmem.cs, rc);
         JK_TRACE_EXIT(l);
         return -1;
     }
@@ -264,6 +270,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         /* Unlock shared memory */
         ReleaseMutex(jk_shm_hlock);
     }
+    JK_LEAVE_CS(&jk_shmem.cs, rc);
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "%s shared memory %s size=%u free=%u addr=%#lx",
@@ -300,8 +307,11 @@ int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l)
 
 void jk_shm_close()
 {
-    if (jk_shmem.hdr) {
+    if (jk_shm_inited_cs) {
         int rc;
+        JK_ENTER_CS(&jk_shmem.cs, rc);
+    }
+    if (jk_shmem.hdr) {
 #if defined (WIN32)
         if (jk_shm_hlock) {
             CloseHandle(jk_shm_hlock);
@@ -316,13 +326,15 @@ void jk_shm_close()
         else
 #endif
         free(jk_shmem.hdr);
-        JK_DELETE_CS(&(jk_shmem.cs), rc);
-        jk_shm_inited_cs = 0;
     }
     jk_shmem.hdr = NULL;
     if (jk_shmem.filename) {
         free(jk_shmem.filename);
         jk_shmem.filename = NULL;
+    }
+    if (jk_shm_inited_cs) {
+        int rc;
+        JK_LEAVE_CS(&jk_shmem.cs, rc);
     }
 }
 
@@ -441,6 +453,10 @@ static int do_shm_open(const char *fname, int attached,
 #endif
 
     JK_TRACE_ENTER(l);
+    if (!jk_shm_inited_cs) {
+        jk_shm_inited_cs = 1;
+        JK_INIT_CS(&jk_shmem.cs, rc);
+    }            
     if (jk_shmem.hdr) {
         /* Probably a call from vhost */
         if (!attached)
@@ -584,7 +600,6 @@ static int do_shm_open(const char *fname, int attached,
         jk_shmem.hdr->h.data.pos     = 0;
         jk_shmem.hdr->h.data.workers = 0;
     }
-    JK_INIT_CS(&(jk_shmem.cs), rc);
     if ((rc = do_shm_open_lock(jk_shmem.filename, attached, l))) {
         if (!attached) {
             munmap((void *)jk_shmem.hdr, jk_shmem.size);
@@ -633,7 +648,6 @@ void jk_shm_close()
             jk_shmem.fd_lock = -1;
         }
 #endif
-        JK_DELETE_CS(&(jk_shmem.cs), rc);
         if (jk_shmem.attached) {
             int p = (int)getpid();
             if (p == jk_shmem.attached) {
