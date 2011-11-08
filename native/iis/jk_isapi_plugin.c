@@ -1472,7 +1472,6 @@ static int JK_METHOD iis_done(jk_ws_service_t *s)
 
 BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
 {
-    int rc;
     BOOL rv = TRUE;
     ULONG http_filter_revision = HTTP_FILTER_REVISION;
 
@@ -1481,11 +1480,11 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
     if (pVer->dwFilterVersion > http_filter_revision) {
         pVer->dwFilterVersion = http_filter_revision;
     }
-    JK_ENTER_CS(&(init_cs), rc);
+    EnterCriticalSection(&init_cs);
     if (!is_inited) {
         rv = initialize_extension();
     }
-    JK_LEAVE_CS(&(init_cs), rc);
+    LeaveCriticalSection(&init_cs);
     if (iis_info.major < 5 || (iis_info.major == 5 && iis_info.minor < 1)) {
         SetLastError(ERROR_OLD_WIN_VERSION);
         return FALSE;
@@ -1951,14 +1950,8 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         else
             host = szHB;
     }
-    if (host) {
-        worker = map_uri_to_worker_ext(uw_map, uri, host,
-                                       &extensions, &worker_index, logger);
-    }
-    else {
-        worker = map_uri_to_worker_ext(uw_map, uri, NULL,
-                                       &extensions, &worker_index, logger);
-    }
+    worker = map_uri_to_worker_ext(uw_map, uri, host,
+                                   &extensions, &worker_index, logger);
     /*
      * Check if somebody is feading us with his own TOMCAT data headers.
      * We reject such postings !
@@ -2123,8 +2116,6 @@ cleanup:
 DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                             DWORD dwNotificationType, LPVOID pvNotification)
 {
-    int rc;
-
     /* Initialise jk */
     if (is_inited && !is_mapread) {
         char serverName[MAX_SERVERNAME] = "";
@@ -2141,10 +2132,10 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                     }
                 }
             }
-            JK_ENTER_CS(&(init_cs), rc);
+            EnterCriticalSection(&init_cs);
             if (!is_mapread && init_jk(serverName))
                 is_mapread = JK_TRUE;
-            JK_LEAVE_CS(&(init_cs), rc);
+            LeaveCriticalSection(&init_cs);
         }
         /* If we can't read the map we become dormant */
         if (!is_mapread)
@@ -2177,7 +2168,6 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
 
 BOOL WINAPI GetExtensionVersion(HSE_VERSION_INFO * pVer)
 {
-    int rc;
     BOOL rv = TRUE;
 
     pVer->dwExtensionVersion = MAKELONG(HSE_VERSION_MINOR, HSE_VERSION_MAJOR);
@@ -2185,18 +2175,17 @@ BOOL WINAPI GetExtensionVersion(HSE_VERSION_INFO * pVer)
     StringCbCopy(pVer->lpszExtensionDesc, HSE_MAX_EXT_DLL_NAME_LEN, (VERSION_STRING));
 
 
-    JK_ENTER_CS(&(init_cs), rc);
+    EnterCriticalSection(&init_cs);
     if (!is_inited) {
         rv = initialize_extension();
     }
-    JK_LEAVE_CS(&(init_cs), rc);
+    LeaveCriticalSection(&init_cs);
 
     return rv;
 }
 
 DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
 {
-    int rv;
     DWORD rc = HSE_STATUS_ERROR;
 
     lpEcb->dwHttpStatusCode = HTTP_STATUS_SERVER_ERROR;
@@ -2221,10 +2210,10 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                     }
                 }
             }
-            JK_ENTER_CS(&(init_cs), rv);
+            EnterCriticalSection(&init_cs);
             if (!is_mapread && init_jk(serverName))
                 is_mapread = JK_TRUE;
-            JK_LEAVE_CS(&(init_cs), rv);
+            LeaveCriticalSection(&init_cs);
         }
         if (!is_mapread)
             is_inited = JK_FALSE;
@@ -2329,11 +2318,9 @@ BOOL WINAPI TerminateExtension(DWORD dwFlags)
 
 BOOL WINAPI TerminateFilter(DWORD dwFlags)
 {
-    int rc;
-
     UNREFERENCED_PARAMETER(dwFlags);
 
-    JK_ENTER_CS(&(init_cs), rc);
+    EnterCriticalSection(&init_cs);
     if (is_inited) {
         jk_log(logger, JK_LOG_INFO, "%s stopping", (FULL_VERSION_STRING));
         is_inited = JK_FALSE;
@@ -2366,13 +2353,13 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
         }
         wc_close(logger);
         jk_shm_close();
-        JK_ENTER_CS(&(log_cs), rc);
+        EnterCriticalSection(&log_cs);
         if (logger) {
             jk_close_file_logger(&logger);
         }
-        JK_LEAVE_CS(&(log_cs), rc);
+        LeaveCriticalSection(&log_cs);
     }
-    JK_LEAVE_CS(&(init_cs), rc);
+    LeaveCriticalSection(&init_cs);
 
     return TRUE;
 }
@@ -2382,9 +2369,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
                     ULONG ulReason,     /* Reason why NT called this DLL        */
                     LPVOID lpReserved)  /* Reserved parameter for future use    */
 {
-    int rc;
     char fname[MAX_PATH];
-
     UNREFERENCED_PARAMETER(lpReserved);
 
     switch (ulReason) {
@@ -2428,8 +2413,8 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         StringCbPrintf(HTTP_WORKER_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_WORKER_HEADER_INDEX, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
 
-        JK_INIT_CS(&init_cs, rc);
-        JK_INIT_CS(&log_cs, rc);
+        InitializeCriticalSection(&init_cs);
+        InitializeCriticalSection(&log_cs);
     break;
     case DLL_PROCESS_DETACH:
         __try {
@@ -2437,8 +2422,8 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         }
         __except(1) {
         }
-        JK_DELETE_CS(&init_cs, rc);
-        JK_DELETE_CS(&log_cs, rc);
+        DeleteCriticalSection(&init_cs);
+        DeleteCriticalSection(&log_cs);
         break;
 
     default:
@@ -2601,14 +2586,14 @@ static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
             what[used] = '\0';
 
             /* Perform logging within critical section to protect rotation */
-            JK_ENTER_CS(&log_cs, rc);
+            EnterCriticalSection(&log_cs);
             if (rotate_log_file(&l)) {
                 /* The rotation process will reallocate the jk_logger_t structure, so refetch */
                 FILE *rotated = ((jk_file_logger_t *)l->logger_private)->logfile;
                 fputs(what, rotated);
                 fflush(rotated);
             }
-            JK_LEAVE_CS(&log_cs, rc);
+            LeaveCriticalSection(&log_cs);
         }
     }
     return rc;

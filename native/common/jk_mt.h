@@ -47,10 +47,10 @@
 #include <windows.h>
 
 typedef CRITICAL_SECTION JK_CRIT_SEC;
-#define JK_INIT_CS(x, rc) InitializeCriticalSection(x); rc = JK_TRUE
-#define JK_DELETE_CS(x, rc) DeleteCriticalSection(x);   rc = JK_TRUE
-#define JK_ENTER_CS(x, rc) EnterCriticalSection(x);     rc = JK_TRUE
-#define JK_LEAVE_CS(x, rc) LeaveCriticalSection(x);     rc = JK_TRUE
+#define JK_INIT_CS(x, rc)   InitializeCriticalSection(x); rc = JK_TRUE
+#define JK_DELETE_CS(x, rc) DeleteCriticalSection(x);    rc = JK_TRUE
+#define JK_ENTER_CS(x, rc)  EnterCriticalSection(x);     rc = JK_TRUE
+#define JK_LEAVE_CS(x, rc)  LeaveCriticalSection(x);     rc = JK_TRUE
 
 #else /* !WIN32 */
 #define _MT_CODE_PTHREAD
@@ -60,16 +60,16 @@ typedef CRITICAL_SECTION JK_CRIT_SEC;
 
 typedef pthread_mutex_t JK_CRIT_SEC;
 #define JK_INIT_CS(x, rc)\
-            if(pthread_mutex_init(x, NULL)) rc = JK_FALSE; else rc = JK_TRUE
+            if (pthread_mutex_init(x, NULL)) rc = JK_FALSE; else rc = JK_TRUE
 
 #define JK_DELETE_CS(x, rc)\
-            if(pthread_mutex_destroy(x))    rc = JK_FALSE; else rc = JK_TRUE
+            if (pthread_mutex_destroy(x))    rc = JK_FALSE; else rc = JK_TRUE
 
 #define JK_ENTER_CS(x, rc)\
-            if(pthread_mutex_lock(x))       rc = JK_FALSE; else rc = JK_TRUE
+            if (pthread_mutex_lock(x))       rc = JK_FALSE; else rc = JK_TRUE
 
 #define JK_LEAVE_CS(x, rc)\
-            if(pthread_mutex_unlock(x))     rc = JK_FALSE; else rc = JK_TRUE
+            if (pthread_mutex_unlock(x))     rc = JK_FALSE; else rc = JK_TRUE
 
 #if defined(AS400) || defined(NETWARE)
 #define jk_pthread_t   jk_uint32_t
