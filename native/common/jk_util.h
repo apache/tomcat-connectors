@@ -262,7 +262,7 @@ void jk_ebcdic2ascii(char *src, char *dst);
 
 int jk_stat(const char *f, struct stat * statbuf);
 
-#if defined (WIN32) || defined(NETWARE)
+#if defined (WIN32)
 PSECURITY_ATTRIBUTES jk_get_sa_with_null_dacl(void);
 #endif
 

@@ -2256,7 +2256,7 @@ void jk_ebcdic2ascii(char *src, char *dst) {
 
 #endif
 
-#if defined (WIN32) || defined(NETWARE)
+#if defined (WIN32)
 
 static PSECURITY_ATTRIBUTES pNullSA;
 static SECURITY_ATTRIBUTES  stEmptySA;
