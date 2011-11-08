@@ -165,7 +165,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
 #if defined (WIN32)
     if (fname) {
         jk_shm_map = CreateFileMapping(INVALID_HANDLE_VALUE,
-                                       NULL,
+                                       jk_get_sa_with_null_dacl(),
                                        PAGE_READWRITE,
                                        0,
                                        (DWORD)(sizeof(jk_shm_header_t) + sz),
@@ -185,7 +185,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             jk_shm_hlock = OpenMutex(MUTEX_ALL_ACCESS, FALSE, lkname);
         }
         else {
-            jk_shm_hlock = CreateMutex(NULL, FALSE, lkname);            
+            jk_shm_hlock = CreateMutex(jk_get_sa_with_null_dacl(), FALSE, lkname);            
         }
         if (jk_shm_hlock == NULL || jk_shm_hlock == INVALID_HANDLE_VALUE) {
             CloseHandle(jk_shm_map);

@@ -2255,3 +2255,62 @@ void jk_ebcdic2ascii(char *src, char *dst) {
 }
 
 #endif
+
+#if defined (WIN32) || defined(NETWARE)
+
+static PSECURITY_ATTRIBUTES pNullSA;
+static SECURITY_ATTRIBUTES  stEmptySA;
+/* To share the objects with other processes, we need a 0 ACL
+ * Code from MS KB Q106387
+ */
+PSECURITY_ATTRIBUTES jk_get_sa_with_null_dacl()
+{
+    DWORD rc = 0;
+    PSECURITY_DESCRIPTOR pSD;
+
+    if (pNullSA != NULL) {
+        return pNullSA;
+    }
+    else {
+        stEmptySA.nLength = (DWORD)sizeof(SECURITY_ATTRIBUTES);
+        stEmptySA.lpSecurityDescriptor = 0;
+    }
+
+    if (!(pNullSA = LocalAlloc(LPTR, sizeof(SECURITY_ATTRIBUTES)))) {
+        rc = GetLastError();
+        goto cleanup;
+    }
+    pNullSA->nLength = (DWORD)sizeof(SECURITY_ATTRIBUTES);
+    pSD = LocalAlloc(LPTR, SECURITY_DESCRIPTOR_MIN_LENGTH);
+    if (pSD == 0) {
+        rc = GetLastError();
+        goto cleanup;
+    }
+    pNullSA->lpSecurityDescriptor = pSD;
+    if (!InitializeSecurityDescriptor(pSD, SECURITY_DESCRIPTOR_REVISION)) {
+        rc = GetLastError();
+        goto cleanup;
+    }
+    if (!SetSecurityDescriptorDacl(pSD, TRUE, (PACL)0, FALSE)) {
+        rc = GetLastError();
+        goto cleanup;
+    }
+    pNullSA->lpSecurityDescriptor = pSD;
+    pNullSA->bInheritHandle       = FALSE;
+
+    SetLastError(0);
+    return pNullSA;
+
+cleanup:
+    if (pSD)
+        LocalFree(pSD);
+    if (pNullSA)
+        LocalFree(pNullSA);
+
+    pNullSA = &stEmptySA;
+    pNullSA->bInheritHandle = FALSE;
+
+    SetLastError(rc);
+    return pNullSA;
+}
+#endif

@@ -33,6 +33,11 @@
 
 #define JK_SLEEP_DEF     (100)
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif                          /* __cplusplus */
+
 const char *jk_get_bool(int v);
 
 int jk_get_bool_code(const char *v, int def);
@@ -257,11 +262,9 @@ void jk_ebcdic2ascii(char *src, char *dst);
 
 int jk_stat(const char *f, struct stat * statbuf);
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif                          /* __cplusplus */
-
+#if defined (WIN32) || defined(NETWARE)
+PSECURITY_ATTRIBUTES jk_get_sa_with_null_dacl(void);
+#endif
 
 #ifdef __cplusplus
 }

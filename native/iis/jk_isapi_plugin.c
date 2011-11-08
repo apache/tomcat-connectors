@@ -2133,8 +2133,8 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                 }
             }
             EnterCriticalSection(&init_cs);
-            if (!is_mapread && init_jk(serverName))
-                is_mapread = JK_TRUE;
+            if (!is_mapread)
+                is_mapread = init_jk(serverName);
             LeaveCriticalSection(&init_cs);
         }
         /* If we can't read the map we become dormant */
@@ -2211,8 +2211,8 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                 }
             }
             EnterCriticalSection(&init_cs);
-            if (!is_mapread && init_jk(serverName))
-                is_mapread = JK_TRUE;
+            if (!is_mapread)
+                is_mapread = init_jk(serverName);
             LeaveCriticalSection(&init_cs);
         }
         if (!is_mapread)
