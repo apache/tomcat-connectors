@@ -381,7 +381,7 @@ struct ajp_endpoint
 
     jk_sock_t sd;
     int reuse;
-
+    int avail;  /* Set to non-zero if cache slot is available */
     /* Used with RECOVER_ABORT_IF_CLIENTERROR to hard abort
        write of AJP response on client write errors */
     int hard_close;
