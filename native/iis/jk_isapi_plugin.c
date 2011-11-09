@@ -2374,6 +2374,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             CloseHandle(watchdog_handle);
             watchdog_handle = NULL;
         }
+        wc_close(logger);
         if (is_mapread) {
             uri_worker_map_free(&uw_map, logger);
             is_mapread = JK_FALSE;
@@ -2395,7 +2396,6 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             }
             jk_map_free(&rregexp_map);
         }
-        wc_close(logger);
         jk_shm_close();
         EnterCriticalSection(&log_cs);
         if (logger) {
