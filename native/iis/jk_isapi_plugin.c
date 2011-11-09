@@ -441,9 +441,7 @@ static struct error_reasons {
 
 
 #define STRNULL_FOR_NULL(x) ((x) ? (x) : "(null)")
-#ifdef USE_CGI_HEADERS
 #define JK_TOLOWER(x)   ((char)tolower((BYTE)(x)))
-#endif
 
 #define ISIZEOF(X)      (int)sizeof(X)
 
@@ -835,11 +833,11 @@ static char *stristr(const char *s, const char *find)
     char c, sc;
     size_t len;
 
-    if ((c = tolower((unsigned char)(*find++))) != 0) {
+    if ((c = JK_TOLOWER(*find++)) != 0) {
         len = strlen(find);
         do {
             do {
-                if ((sc = tolower((unsigned char)(*s++))) == 0)
+                if ((sc = JK_TOLOWER(*s++)) == 0)
                     return (NULL);
             } while (sc != c);
         } while (strnicmp(s, find, len) != 0);
