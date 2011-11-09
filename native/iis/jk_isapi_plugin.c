@@ -2289,74 +2289,71 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     s.pool = &private_data.p;
 
     if (init_ws_service(&private_data, &s, &worker_name)) {
+        jk_endpoint_t *e = NULL;
         jk_worker_t *worker = wc_get_worker_for_name(worker_name, logger);
 
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG,
-                   "%s a worker for name %s",
-                   worker ? "got" : "could not get", worker_name);
-
-        if (worker) {
-            jk_endpoint_t *e = NULL;
-            if (worker->get_endpoint(worker, &e, logger)) {
-                int is_error = JK_HTTP_SERVER_ERROR;
-                int result;
-                if ((result = e->service(e, &s, logger, &is_error)) > 0) {
-                    if (s.extension.use_server_error_pages &&
-                        s.http_response_status >= s.extension.use_server_error_pages) {
-                        if (JK_IS_DEBUG_LEVEL(logger))
-                            jk_log(logger, JK_LOG_DEBUG, "Forwarding status=%d"
-                                   " for worker=%s",
-                                   s.http_response_status, worker_name);
-                        lpEcb->dwHttpStatusCode = s.http_response_status;
-                        write_error_message(lpEcb, s.http_response_status,
-                                            private_data.err_hdrs);
-                    }
-                    else {
-                        rc = HSE_STATUS_SUCCESS;
-                        lpEcb->dwHttpStatusCode = s.http_response_status;
-                        if (JK_IS_DEBUG_LEVEL(logger))
-                            jk_log(logger, JK_LOG_DEBUG,
-                                   "service() returned OK");
-                    }
-                }
-                else {
-                    if ((result == JK_CLIENT_ERROR) && (is_error == JK_HTTP_OK)) {
-                        jk_log(logger, JK_LOG_INFO,
-                               "service() failed because client aborted connection");
-                    }
-                    else {
-                        jk_log(logger, JK_LOG_ERROR,
-                               "service() failed with http error %d", is_error);
-                    }
-                    lpEcb->dwHttpStatusCode = is_error;
-                    write_error_message(lpEcb, is_error, private_data.err_hdrs);
-                }
-                e->done(&e, logger);
-            }
-            else {
-                jk_log(logger, JK_LOG_ERROR,
-                    "Failed to obtain an endpoint to service request - "
-                    "your connection_pool_size is probably less than the threads in your web server!");
-            }
-        }
-        else {
+        if (!worker) {
             jk_log(logger, JK_LOG_ERROR,
                    "could not get a worker for name %s",
                    worker_name);
+            jk_close_pool(&private_data.p);
+            JK_TRACE_EXIT(logger);
+            return rc;
+        }
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG,
+                   "got a worker for name %s", worker_name);
+        if (worker->get_endpoint(worker, &e, logger)) {
+            int is_error = JK_HTTP_SERVER_ERROR;
+            int result;
+            if ((result = e->service(e, &s, logger, &is_error)) > 0) {
+                if (s.extension.use_server_error_pages &&
+                    s.http_response_status >= s.extension.use_server_error_pages) {
+                    if (JK_IS_DEBUG_LEVEL(logger))
+                        jk_log(logger, JK_LOG_DEBUG, "Forwarding status=%d"
+                               " for worker=%s",
+                               s.http_response_status, worker_name);
+                    lpEcb->dwHttpStatusCode = s.http_response_status;
+                    write_error_message(lpEcb, s.http_response_status,
+                                        private_data.err_hdrs);
+                }
+                else {
+                    rc = HSE_STATUS_SUCCESS;
+                    lpEcb->dwHttpStatusCode = s.http_response_status;
+                    if (JK_IS_DEBUG_LEVEL(logger))
+                        jk_log(logger, JK_LOG_DEBUG,
+                               "service() returned OK");
+                }
+            }
+            else {
+                if ((result == JK_CLIENT_ERROR) && (is_error == JK_HTTP_OK)) {
+                    jk_log(logger, JK_LOG_INFO,
+                           "service() failed because client aborted connection");
+                }
+                else {
+                    jk_log(logger, JK_LOG_ERROR,
+                           "service() failed with http error %d", is_error);
+                }
+                lpEcb->dwHttpStatusCode = is_error;
+                write_error_message(lpEcb, is_error, private_data.err_hdrs);
+            }
+            e->done(&e, logger);
+        }
+        else {
+            jk_log(logger, JK_LOG_ERROR,
+                "Failed to obtain an endpoint to service request - "
+                "your connection_pool_size is probably less than the threads in your web server!");
         }
     }
     else {
         jk_log(logger, JK_LOG_ERROR,
             "failed to init service for request.");
-     }
+    }
     jk_close_pool(&private_data.p);
     JK_TRACE_EXIT(logger);
 
     return rc;
 }
-
-
 
 BOOL WINAPI TerminateExtension(DWORD dwFlags)
 {
