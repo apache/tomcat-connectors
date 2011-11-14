@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /Zi /O2 /Oy- /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MOD_JK_EXPORTS" /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O2 /Oy- /I "..\common" /I "$(APACHE1_HOME)\include" /I "$(APACHE1_HOME)\src\include" /I "$(APACHE1_HOME)\src\os\win32" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MOD_JK_EXPORTS" /Fd"Release\mod_jk_src" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O2 /Oy- /I "..\common" /I "$(APACHE1_HOME)\include" /I "$(APACHE1_HOME)\src\include" /I "$(APACHE1_HOME)\src\os\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MOD_JK_EXPORTS" /Fd"Release\mod_jk_src" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MOD_JK_EXPORTS" /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\common" /I "$(APACHE1_HOME)\include" /I "$(APACHE1_HOME)\src\include" /I "$(APACHE1_HOME)\src\os\win32" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MOD_JK_EXPORTS" /Fd"Debug\mod_jk_src" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\common" /I "$(APACHE1_HOME)\include" /I "$(APACHE1_HOME)\src\include" /I "$(APACHE1_HOME)\src\os\win32" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MOD_JK_EXPORTS" /Fd"Debug\mod_jk_src" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -121,10 +121,6 @@ SOURCE=..\common\jk_connect.c
 # Begin Source File
 
 SOURCE=..\common\jk_context.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\jk_jni_worker.c
 # End Source File
 # Begin Source File
 
@@ -217,10 +213,6 @@ SOURCE=..\common\jk_context.h
 # Begin Source File
 
 SOURCE=..\common\jk_global.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\jk_jni_worker.h
 # End Source File
 # Begin Source File
 

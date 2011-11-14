@@ -31,7 +31,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jk_ajp_common.obj"
 	-@erase "$(INTDIR)\jk_connect.obj"
 	-@erase "$(INTDIR)\jk_context.obj"
-	-@erase "$(INTDIR)\jk_jni_worker.obj"
 	-@erase "$(INTDIR)\jk_lb_worker.obj"
 	-@erase "$(INTDIR)\jk_map.obj"
 	-@erase "$(INTDIR)\jk_md5.obj"
@@ -70,7 +69,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk_ajp_common.obj" \
 	"$(INTDIR)\jk_connect.obj" \
 	"$(INTDIR)\jk_context.obj" \
-	"$(INTDIR)\jk_jni_worker.obj" \
 	"$(INTDIR)\jk_lb_worker.obj" \
 	"$(INTDIR)\jk_map.obj" \
 	"$(INTDIR)\jk_md5.obj" \
@@ -90,7 +88,7 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "$(APACHE1_HOME)\include" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" $(DEF_EAPI) /D "MOD_JK_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c 
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "$(APACHE1_HOME)\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" $(DEF_EAPI) /D "MOD_JK_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -170,12 +168,6 @@ SOURCE=..\common\jk_connect.c
 SOURCE=..\common\jk_context.c
 
 "$(INTDIR)\jk_context.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_jni_worker.c
-
-"$(INTDIR)\jk_jni_worker.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
