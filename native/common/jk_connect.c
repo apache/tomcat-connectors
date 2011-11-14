@@ -372,8 +372,9 @@ int jk_resolve(const char *host, int port, struct sockaddr_in *rc,
             temp_sa = temp_sa->next;
 
         /* if temp_sa is set, we have a valid address otherwise, just return */
-        if (NULL != temp_sa)
+        if (NULL != temp_sa) {
             remote_sa = temp_sa;
+        }
         else {
             JK_TRACE_EXIT(l);
             return JK_FALSE;

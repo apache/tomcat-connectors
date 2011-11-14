@@ -347,13 +347,13 @@ int jk_get_bool_code(const char *v, int def)
     if (!v) {
         return def;
     }
-    else if (!strcasecmp(v, "off") ||
+    if (!strcasecmp(v, "off") ||
              *v == 'F' || *v == 'f' ||
              *v == 'N' || *v == 'n' ||
             (*v == '0' && *(v + 1) == '\0')) {
         return 0;
     }
-    else if (!strcasecmp(v, "on") ||
+    if (!strcasecmp(v, "on") ||
              *v == 'T' || *v == 't' ||
              *v == 'Y' || *v == 'y' ||
             (*v == '1' && *(v + 1) == '\0')) {
@@ -565,30 +565,18 @@ static int JK_METHOD log_to_file(jk_logger_t *l, int level, int used, char *what
 
 int jk_parse_log_level(const char *level)
 {
-    if (0 == strcasecmp(level, JK_LOG_TRACE_VERB)) {
+    if (!strcasecmp(level, JK_LOG_TRACE_VERB))
         return JK_LOG_TRACE_LEVEL;
-    }
-
-    if (0 == strcasecmp(level, JK_LOG_DEBUG_VERB)) {
+    if (!strcasecmp(level, JK_LOG_DEBUG_VERB))
         return JK_LOG_DEBUG_LEVEL;
-    }
-
-    if (0 == strcasecmp(level, JK_LOG_INFO_VERB)) {
+    if (!strcasecmp(level, JK_LOG_INFO_VERB))
         return JK_LOG_INFO_LEVEL;
-    }
-
-    if (0 == strcasecmp(level, JK_LOG_WARN_VERB)) {
+    if (!strcasecmp(level, JK_LOG_WARN_VERB))
         return JK_LOG_WARNING_LEVEL;
-    }
-
-    if (0 == strcasecmp(level, JK_LOG_ERROR_VERB)) {
+    if (!strcasecmp(level, JK_LOG_ERROR_VERB))
         return JK_LOG_ERROR_LEVEL;
-    }
-
-    if (0 == strcasecmp(level, JK_LOG_EMERG_VERB)) {
+    if (!strcasecmp(level, JK_LOG_EMERG_VERB))
         return JK_LOG_EMERG_LEVEL;
-    }
-
     return JK_LOG_DEF_LEVEL;
 }
 
@@ -776,7 +764,8 @@ int jk_log(jk_logger_t *l,
         va_end(args);
         if ( rc <= usable_size - used ) {
             used += rc;
-        } else {
+        }
+        else {
             used = usable_size;
         }
         l->log(l, level, used, buf);
@@ -1242,6 +1231,7 @@ int jk_get_is_worker_disabled(jk_map_t *m, const char *wname)
 {
     int rc = JK_TRUE;
     char buf[1024];
+
     if (m && wname) {
         int value;
         MAKE_WORKER_PARAM(IS_WORKER_DISABLED_DEPRECATED);
@@ -1256,6 +1246,7 @@ int jk_get_is_worker_stopped(jk_map_t *m, const char *wname)
 {
     int rc = JK_TRUE;
     char buf[1024];
+
     if (m && wname) {
         int value;
         MAKE_WORKER_PARAM(IS_WORKER_STOPPED_DEPRECATED);
@@ -1270,21 +1261,20 @@ int jk_get_worker_activation(jk_map_t *m, const char *wname)
 {
     char buf[1024];
     const char *v;
+
     if (!m || !wname) {
         return JK_LB_ACTIVATION_ACTIVE;
     }
 
     MAKE_WORKER_PARAM(ACTIVATION_OF_WORKER);
     v = jk_map_get_string(m, buf, NULL);
-    if (v) {
+    if (v)
         return jk_lb_get_activation_code(v);
-    }
-    else if (jk_get_is_worker_stopped(m, wname))
+    if (jk_get_is_worker_stopped(m, wname))
         return JK_LB_ACTIVATION_STOPPED;
-    else if (jk_get_is_worker_disabled(m, wname))
+    if (jk_get_is_worker_disabled(m, wname))
         return JK_LB_ACTIVATION_DISABLED;
-    else
-        return JK_LB_ACTIVATION_DEF;
+    return JK_LB_ACTIVATION_DEF;
 }
 
 int jk_get_lb_factor(jk_map_t *m, const char *wname)
@@ -1317,6 +1307,7 @@ int jk_get_is_sticky_session(jk_map_t *m, const char *wname)
 {
     int rc = JK_TRUE;
     char buf[1024];
+
     if (m && wname) {
         int value;
         MAKE_WORKER_PARAM(STICKY_SESSION);
@@ -1331,6 +1322,7 @@ int jk_get_is_sticky_session_force(jk_map_t *m, const char *wname)
 {
     int rc = JK_FALSE;
     char buf[1024];
+
     if (m && wname) {
         int value;
         MAKE_WORKER_PARAM(STICKY_SESSION_FORCE);
@@ -1345,6 +1337,7 @@ int jk_get_lb_method(jk_map_t *m, const char *wname)
 {
     char buf[1024];
     const char *v;
+
     if (!m || !wname) {
         return JK_LB_METHOD_DEF;
     }
@@ -1358,6 +1351,7 @@ int jk_get_lb_lock(jk_map_t *m, const char *wname)
 {
     char buf[1024];
     const char *v;
+
     if (!m || !wname) {
         return JK_LB_LOCK_DEF;
     }
@@ -1391,6 +1385,7 @@ int jk_get_worker_fail_on_status(jk_map_t *m, const char *wname,
                                  int *list, unsigned int list_size)
 {
     char buf[1024];
+
     if (!m || !wname || !list) {
         return 0;
     }
@@ -1408,6 +1403,7 @@ int jk_get_worker_user_case_insensitive(jk_map_t *m, const char *wname)
 {
     int rc = JK_FALSE;
     char buf[1024];
+
     if (m && wname) {
         int value;
         MAKE_WORKER_PARAM(USER_CASE_OF_WORKER);
@@ -1436,6 +1432,7 @@ const char *jk_get_worker_name_space(jk_map_t *m, const char *wname, const char 
 {
     const char *rc;
     char buf[1024];
+
     if (!m || !wname) {
         return NULL;
     }
@@ -1451,6 +1448,7 @@ const char *jk_get_worker_xmlns(jk_map_t *m, const char *wname, const char *def)
 {
     const char *rc;
     char buf[1024];
+
     if (!m || !wname) {
         return NULL;
     }
@@ -1465,6 +1463,7 @@ const char *jk_get_worker_xmlns(jk_map_t *m, const char *wname, const char *def)
 const char *jk_get_worker_xml_doctype(jk_map_t *m, const char *wname, const char *def)
 {
     char buf[1024];
+
     if (!m || !wname) {
         return NULL;
     }
@@ -1475,6 +1474,7 @@ const char *jk_get_worker_xml_doctype(jk_map_t *m, const char *wname, const char
 const char *jk_get_worker_prop_prefix(jk_map_t *m, const char *wname, const char *def)
 {
     char buf[1024];
+
     if (!m || !wname) {
         return NULL;
     }
@@ -1486,6 +1486,7 @@ int jk_get_is_read_only(jk_map_t *m, const char *wname)
 {
     int rc = JK_FALSE;
     char buf[1024];
+
     if (m && wname) {
         int value;
         MAKE_WORKER_PARAM(READ_ONLY_OF_WORKER);
@@ -1777,7 +1778,7 @@ int jk_file_exists(const char *f)
         struct stat st;
 
         if ((0 == jk_stat(f, &st)) && (st.st_mode & S_IFREG))
-      return JK_TRUE;
+            return JK_TRUE;
     }
 
     return JK_FALSE;
@@ -1796,7 +1797,7 @@ static int jk_is_some_property(const char *prp_name, const char *suffix, const c
         suffix_len = strlen(buf);
         if (prp_name_len >= suffix_len) {
             const char *prp_suffix = prp_name + prp_name_len - suffix_len;
-            if (0 == strcmp(buf, prp_suffix)) {
+            if (!strcmp(buf, prp_suffix)) {
                 return JK_TRUE;
             }
         }
@@ -1818,6 +1819,7 @@ int jk_is_cmd_line_property(const char *prp_name)
 int jk_is_list_property(const char *prp_name)
 {
     const char **props = &list_properties[0];
+
     while (*props) {
         if (jk_is_some_property(prp_name, *props, "."))
             return JK_TRUE;
@@ -1829,6 +1831,7 @@ int jk_is_list_property(const char *prp_name)
 int jk_is_unique_property(const char *prp_name)
 {
     const char **props = &unique_properties[0];
+
     while (*props) {
         if (jk_is_some_property(prp_name, *props, "."))
             return JK_TRUE;
@@ -1840,6 +1843,7 @@ int jk_is_unique_property(const char *prp_name)
 int jk_is_deprecated_property(const char *prp_name)
 {
     const char **props = &deprecated_properties[0];
+
     while (*props) {
         if (jk_is_some_property(prp_name, *props, "."))
             return JK_TRUE;
@@ -1854,6 +1858,7 @@ int jk_is_deprecated_property(const char *prp_name)
 int jk_is_valid_property(const char *prp_name)
 {
     const char **props;
+
     if (memcmp(prp_name, "worker.", 7))
         return JK_TRUE;
 
@@ -1933,6 +1938,7 @@ int jk_get_worker_libpath(jk_map_t *m, const char *wname, const char **libpath)
 const char *jk_get_lb_session_cookie(jk_map_t *m, const char *wname, const char *def)
 {
     char buf[1024];
+
     if (!m || !wname) {
         return NULL;
     }
@@ -1943,6 +1949,7 @@ const char *jk_get_lb_session_cookie(jk_map_t *m, const char *wname, const char 
 const char *jk_get_lb_session_path(jk_map_t *m, const char *wname, const char *def)
 {
     char buf[1024];
+
     if (!m || !wname) {
         return NULL;
     }
@@ -1956,10 +1963,11 @@ int is_http_status_fail(unsigned int http_status_fail_num,
 {
     unsigned int i;
     int soft_status = -1 * status;
+
     for (i = 0; i < http_status_fail_num; i++) {
         if (http_status_fail[i] == status)
             return 1;
-        else if (http_status_fail[i] == soft_status)
+        if (http_status_fail[i] == soft_status)
             return -1;
     }
     return 0;

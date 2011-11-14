@@ -161,12 +161,11 @@ int jk_lb_get_lock_code(const char *v)
 {
     if (!v)
         return JK_LB_LOCK_DEF;
-    else if  (*v == 'o' || *v == 'O' || *v == '0')
+    if  (*v == 'o' || *v == 'O' || *v == '0')
         return JK_LB_LOCK_OPTIMISTIC;
-    else if  (*v == 'p' || *v == 'P' || *v == '1')
+    if  (*v == 'p' || *v == 'P' || *v == '1')
         return JK_LB_LOCK_PESSIMISTIC;
-    else
-        return JK_LB_LOCK_DEF;
+    return JK_LB_LOCK_DEF;
 }
 
 /* Return the string representation of the lb method type */
@@ -180,18 +179,17 @@ int jk_lb_get_method_code(const char *v)
 {
     if (!v)
         return JK_LB_METHOD_DEF;
-    else if  (*v == 'r' || *v == 'R' || *v == '0')
+    if  (*v == 'r' || *v == 'R' || *v == '0')
         return JK_LB_METHOD_REQUESTS;
-    else if  (*v == 't' || *v == 'T' || *v == '1')
+    if  (*v == 't' || *v == 'T' || *v == '1')
         return JK_LB_METHOD_TRAFFIC;
-    else if  (*v == 'b' || *v == 'B' || *v == '2')
+    if  (*v == 'b' || *v == 'B' || *v == '2')
         return JK_LB_METHOD_BUSYNESS;
-    else if  (*v == 's' || *v == 'S' || *v == '3')
+    if  (*v == 's' || *v == 'S' || *v == '3')
         return JK_LB_METHOD_SESSIONS;
-    else if  (*v == 'n' || *v == 'N' || *v == '4')
+    if  (*v == 'n' || *v == 'N' || *v == '4')
         return JK_LB_METHOD_NEXT;
-    else
-        return JK_LB_METHOD_DEF;
+    return JK_LB_METHOD_DEF;
 }
 
 /* Return the string representation of the balance worker state */
@@ -205,22 +203,21 @@ int jk_lb_get_state_code(const char *v)
 {
     if (!v)
         return JK_LB_STATE_DEF;
-    else if  (*v == 'i' || *v == 'I' || *v == 'n' || *v == 'N' || *v == '0')
+    if  (*v == 'i' || *v == 'I' || *v == 'n' || *v == 'N' || *v == '0')
         return JK_LB_STATE_IDLE;
-    else if  (*v == 'o' || *v == 'O' || *v == '1')
+    if  (*v == 'o' || *v == 'O' || *v == '1')
         return JK_LB_STATE_OK;
-    else if  (*v == 'r' || *v == 'R' || *v == '2')
+    if  (*v == 'r' || *v == 'R' || *v == '2')
         return JK_LB_STATE_RECOVER;
-    else if  (*v == 'f' || *v == 'F' || *v == '3')
+    if  (*v == 'f' || *v == 'F' || *v == '3')
         return JK_LB_STATE_FORCE;
-    else if  (*v == 'b' || *v == 'B' || *v == '4')
+    if  (*v == 'b' || *v == 'B' || *v == '4')
         return JK_LB_STATE_BUSY;
-    else if  (*v == 'e' || *v == 'E' || *v == '5')
+    if  (*v == 'e' || *v == 'E' || *v == '5')
         return JK_LB_STATE_ERROR;
-    else if  (*v == 'p' || *v == 'P' || *v == '6')
+    if  (*v == 'p' || *v == 'P' || *v == '6')
         return JK_LB_STATE_PROBE;
-    else
-        return JK_LB_STATE_DEF;
+    return JK_LB_STATE_DEF;
 }
 
 /* Return the string representation of the balance worker activation */
@@ -241,14 +238,13 @@ int jk_lb_get_activation_code(const char *v)
 {
     if (!v)
         return JK_LB_ACTIVATION_DEF;
-    else if (*v == 'a' || *v == 'A' || *v == '0')
+    if (*v == 'a' || *v == 'A' || *v == '0')
         return JK_LB_ACTIVATION_ACTIVE;
-    else if (*v == 'd' || *v == 'D' || *v == '1')
+    if (*v == 'd' || *v == 'D' || *v == '1')
         return JK_LB_ACTIVATION_DISABLED;
-    else if (*v == 's' || *v == 'S' || *v == '2')
+    if (*v == 's' || *v == 'S' || *v == '2')
         return JK_LB_ACTIVATION_STOPPED;
-    else
-        return JK_LB_ACTIVATION_DEF;
+    return JK_LB_ACTIVATION_DEF;
 }
 
 /* Update the load multipliers wrt. lb_factor */
@@ -981,8 +977,9 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
             return -1;
         }
     }
-    if (p->lblock == JK_LB_LOCK_PESSIMISTIC)
+    if (p->lblock == JK_LB_LOCK_PESSIMISTIC) {
         r = jk_shm_lock();
+    }
     else {
         JK_ENTER_CS(&(p->cs), r);
     }
@@ -1015,8 +1012,9 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                 rc = find_bysession_route(s, p, session_route, states, l);
                 if (rc >= 0) {
                     lb_sub_worker_t *wr = &(p->lb_workers[rc]);
-                    if (p->lblock == JK_LB_LOCK_PESSIMISTIC)
+                    if (p->lblock == JK_LB_LOCK_PESSIMISTIC) {
                         jk_shm_unlock();
+                    }
                     else {
                         JK_LEAVE_CS(&(p->cs), r);
                     }
@@ -1033,8 +1031,9 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
             rc = -1;
         }
         if (rc < 0 && p->sticky_session_force) {
-            if (p->lblock == JK_LB_LOCK_PESSIMISTIC)
+            if (p->lblock == JK_LB_LOCK_PESSIMISTIC) {
                 jk_shm_unlock();
+            }
             else {
                 JK_LEAVE_CS(&(p->cs), r);
             }
@@ -1046,8 +1045,9 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
         }
     }
     rc = find_best_worker(s, p, states, l);
-    if (p->lblock == JK_LB_LOCK_PESSIMISTIC)
+    if (p->lblock == JK_LB_LOCK_PESSIMISTIC) {
         jk_shm_unlock();
+    }
     else {
         JK_LEAVE_CS(&(p->cs), r);
     }
