@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O2 /I "..\common" /I "pcre" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" /Fd"Release/isapi_redirector_src" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O2 /I "..\common" /I "pcre" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" /Fd"Release/isapi_redirector_src" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\common" /I "pcre" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" /Fd"Debug/isapi_redirector_src" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\common" /I "pcre" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" /Fd"Debug/isapi_redirector_src" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -129,10 +129,6 @@ SOURCE=..\common\jk_context.c
 # Begin Source File
 
 SOURCE=.\jk_isapi_plugin.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\jk_jni_worker.c
 # End Source File
 # Begin Source File
 
@@ -229,10 +225,6 @@ SOURCE=..\common\jk_env.h
 # Begin Source File
 
 SOURCE=..\common\jk_global.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\jk_jni_worker.h
 # End Source File
 # Begin Source File
 

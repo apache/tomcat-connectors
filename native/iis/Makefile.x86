@@ -51,7 +51,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jk_connect.obj"
 	-@erase "$(INTDIR)\jk_context.obj"
 	-@erase "$(INTDIR)\jk_isapi_plugin.obj"
-	-@erase "$(INTDIR)\jk_jni_worker.obj"
 	-@erase "$(INTDIR)\jk_lb_worker.obj"
 	-@erase "$(INTDIR)\jk_map.obj"
 	-@erase "$(INTDIR)\jk_md5.obj"
@@ -91,7 +90,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk_connect.obj" \
 	"$(INTDIR)\jk_context.obj" \
 	"$(INTDIR)\jk_isapi_plugin.obj" \
-	"$(INTDIR)\jk_jni_worker.obj" \
 	"$(INTDIR)\jk_lb_worker.obj" \
 	"$(INTDIR)\jk_map.obj" \
 	"$(INTDIR)\jk_md5.obj" \
@@ -115,7 +113,7 @@ LINK32_OBJS= \
 	IF EXIST $(OUTDIR)\$(TARGET).manifest \
 		mt -nologo -manifest $(OUTDIR)\$(TARGET).manifest -outputresource:$(OUTDIR)\$(TARGET).dll;2
 
-CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "pcre" /I "$(JAVA_HOME)\include" /I "$(JAVA_HOME)\include\win32" $(CFLAGS) /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c 
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "pcre" $(CFLAGS) /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /D "HAS_PCRE" /D "PCRE_STATIC" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -207,12 +205,6 @@ SOURCE=..\common\jk_context.c
 SOURCE=.\jk_isapi_plugin.c
 
 "$(INTDIR)\jk_isapi_plugin.obj" : $(SOURCE) "$(INTDIR)"
-
-
-SOURCE=..\common\jk_jni_worker.c
-
-"$(INTDIR)\jk_jni_worker.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=..\common\jk_lb_worker.c
