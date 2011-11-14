@@ -173,13 +173,13 @@ char *jk_pool_strcatv(jk_pool_t *p, ...)
 #if defined (DEBUG) || defined(_DEBUG)
 static void jk_dump_pool(jk_pool_t *p, FILE * f)
 {
-    fprintf(f, "Dumping for pool [%p]\n",  p);
-    fprintf(f, "size             [%ld]\n", p->size);
-    fprintf(f, "pos              [%ld]\n", p->pos);
-    fprintf(f, "buf              [%p]\n",  p->buf);
-    fprintf(f, "dyn_size         [%ld]\n", p->dyn_size);
-    fprintf(f, "dyn_pos          [%ld]\n", p->dyn_pos);
-    fprintf(f, "dynamic          [%p]\n",  p->dynamic);
+    fprintf(f, "Dumping for pool [%p]\n", p);
+    fprintf(f, "size             [%u]\n", (unsigned int)p->size);
+    fprintf(f, "pos              [%u]\n", (unsigned int)p->pos);
+    fprintf(f, "buf              [%d]\n", p->buf ? 1 : 0);
+    fprintf(f, "dyn_size         [%d]\n", (unsigned int)p->dyn_size);
+    fprintf(f, "dyn_pos          [%d]\n", (unsigned int)p->dyn_pos);
+    fprintf(f, "dynamic          [%d]\n", p->dynamic ? 1 : 0);
 
     fflush(f);
 }

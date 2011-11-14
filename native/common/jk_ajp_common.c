@@ -90,11 +90,9 @@ static int sc_for_req_method(const char *method, size_t len)
        but I'm assuming (probably incorrectly) we want more speed here
        (based on the optimizations the previous code was doing). */
 
-    switch (len)
-    {
+    switch (len) {
     case 3:
-        switch (method[0])
-        {
+        switch (method[0]) {
         case 'A':
             return (method[1] == 'C'
                     && method[2] == 'L'
@@ -112,8 +110,7 @@ static int sc_for_req_method(const char *method, size_t len)
         }
 
     case 4:
-        switch (method[0])
-        {
+        switch (method[0]) {
         case 'H':
             return (method[1] == 'E'
                     && method[2] == 'A'
@@ -144,8 +141,7 @@ static int sc_for_req_method(const char *method, size_t len)
         }
 
     case 5:
-        switch (method[2])
-        {
+        switch (method[2]) {
         case 'R':
             return (memcmp(method, "MERGE", 5) == 0
                     ? SC_M_MERGE : UNKNOWN_METHOD);
@@ -163,11 +159,9 @@ static int sc_for_req_method(const char *method, size_t len)
         }
 
     case 6:
-        switch (method[0])
-        {
+        switch (method[0]) {
         case 'U':
-            switch (method[5])
-            {
+            switch (method[5]) {
             case 'K':
                 return (memcmp(method, "UNLOCK", 6) == 0
                         ? SC_M_UNLOCK : UNKNOWN_METHOD);
@@ -191,8 +185,7 @@ static int sc_for_req_method(const char *method, size_t len)
         }
 
     case 7:
-        switch (method[1])
-        {
+        switch (method[1]) {
         case 'P':
             return (memcmp(method, "OPTIONS", 7) == 0
                     ? SC_M_OPTIONS : UNKNOWN_METHOD);
@@ -204,8 +197,7 @@ static int sc_for_req_method(const char *method, size_t len)
         }
 
     case 8:
-        switch (method[0])
-        {
+        switch (method[0]) {
         case 'P':
             return (memcmp(method, "PROPFIND", 8) == 0
                     ? SC_M_PROPFIND : UNKNOWN_METHOD);
@@ -221,8 +213,7 @@ static int sc_for_req_method(const char *method, size_t len)
                 ? SC_M_PROPPATCH : UNKNOWN_METHOD);
 
     case 10:
-        switch (method[0])
-        {
+        switch (method[0]) {
         case 'U':
             return (memcmp(method, "UNCHECKOUT", 10) == 0
                     ? SC_M_UNCHECKOUT : UNKNOWN_METHOD);
@@ -280,67 +271,52 @@ static int sc_for_req_header(const char *header_name)
             if (memcmp(p, "CCEPT", 6) == 0) {
                 if (!header[6])
                     return SC_ACCEPT;
-                else if (header[6] == '-') {
+                if (header[6] == '-') {
                     p += 6;
                     if (memcmp(p, "CHARSET", 8) == 0)
                         return SC_ACCEPT_CHARSET;
-                    else if (memcmp(p,  "ENCODING", 9) == 0)
+                    if (memcmp(p,  "ENCODING", 9) == 0)
                         return SC_ACCEPT_ENCODING;
-                    else if (memcmp(p, "LANGUAGE", 9) == 0)
+                    if (memcmp(p, "LANGUAGE", 9) == 0)
                         return SC_ACCEPT_LANGUAGE;
-                    else
-                        return UNKNOWN_METHOD;
                 }
-                else
-                    return UNKNOWN_METHOD;
-            }
-            else if (memcmp(p, "UTHORIZATION", 13) == 0)
-                return SC_AUTHORIZATION;
-            else
                 return UNKNOWN_METHOD;
+            }
+            if (memcmp(p, "UTHORIZATION", 13) == 0)
+                return SC_AUTHORIZATION;
         break;
         case 'C':
             if(memcmp(p, "OOKIE2", 7) == 0)
                 return SC_COOKIE2;
-            else if (memcmp(p, "OOKIE", 6) == 0)
+            if (memcmp(p, "OOKIE", 6) == 0)
                 return SC_COOKIE;
-            else if(memcmp(p, "ONNECTION", 10) == 0)
+            if(memcmp(p, "ONNECTION", 10) == 0)
                 return SC_CONNECTION;
-            else if(memcmp(p, "ONTENT-TYPE", 12) == 0)
+            if(memcmp(p, "ONTENT-TYPE", 12) == 0)
                 return SC_CONTENT_TYPE;
-            else if(memcmp(p, "ONTENT-LENGTH", 14) == 0)
+            if(memcmp(p, "ONTENT-LENGTH", 14) == 0)
                 return SC_CONTENT_LENGTH;
-            else
-                return UNKNOWN_METHOD;
         break;
         case 'H':
             if(memcmp(p, "OST", 4) == 0)
                 return SC_HOST;
-            else
-                return UNKNOWN_METHOD;
         break;
         case 'P':
             if(memcmp(p, "RAGMA", 6) == 0)
                 return SC_PRAGMA;
-            else
-                return UNKNOWN_METHOD;
         break;
         case 'R':
             if(memcmp(p, "EFERER", 7) == 0)
                 return SC_REFERER;
-            else
-                return UNKNOWN_METHOD;
         break;
         case 'U':
             if(memcmp(p, "SER-AGENT", 10) == 0)
                 return SC_USER_AGENT;
-            else
-                return UNKNOWN_METHOD;
         break;
         default:
-            return UNKNOWN_METHOD;
+        break;;
     }
-    /* NOTREACHED */
+    return UNKNOWN_METHOD;
 }
 
 /* Return the string representation of the worker state */
@@ -354,16 +330,15 @@ int jk_ajp_get_state_code(const char *v)
 {
     if (!v)
         return JK_AJP_STATE_DEF;
-    else if  (*v == 'i' || *v == 'I' || *v == 'n' || *v == 'N' || *v == '0')
+    if  (*v == 'i' || *v == 'I' || *v == 'n' || *v == 'N' || *v == '0')
         return JK_AJP_STATE_IDLE;
-    else if  (*v == 'o' || *v == 'O' || *v == '1')
+    if  (*v == 'o' || *v == 'O' || *v == '1')
         return JK_AJP_STATE_OK;
-    else if  (*v == 'e' || *v == 'E' || *v == '4')
+    if  (*v == 'e' || *v == 'E' || *v == '4')
         return JK_AJP_STATE_ERROR;
-    else if  (*v == 'p' || *v == 'P' || *v == '6')
+    if  (*v == 'p' || *v == 'P' || *v == '6')
         return JK_AJP_STATE_PROBE;
-    else
-        return JK_AJP_STATE_DEF;
+    return JK_AJP_STATE_DEF;
 }
 
 int jk_ajp_get_cping_mode(const char *m, int def)
@@ -374,11 +349,11 @@ int jk_ajp_get_cping_mode(const char *m, int def)
     while (*m != '\0') {
         if (*m == 'C' || *m == 'c')
             mv |= AJP_CPING_CONNECT;
-        else if (*m == 'P' || *m == 'p')
+        if (*m == 'P' || *m == 'p')
             mv |= AJP_CPING_PREPOST;
-        else if (*m == 'I' || *m == 'i')
+        if (*m == 'I' || *m == 'i')
             mv |= AJP_CPING_INTERVAL;
-        else if (*m == 'A' || *m == 'a') {
+        if (*m == 'A' || *m == 'a') {
             mv = AJP_CPING_CONNECT | AJP_CPING_PREPOST | AJP_CPING_INTERVAL;
             break;
         }
@@ -1110,7 +1085,8 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
             memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
             if (rc) {
                 JK_LEAVE_CS(&aw->cs, rc);
-            } else {
+            }
+            else {
                 jk_log(l, JK_LOG_ERROR,
                        "locking thread (errno=%d)", errno);
             }
@@ -1169,7 +1145,8 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
                 }
             }
             JK_LEAVE_CS(&aw->cs, rc);
-        } else {
+        }
+        else {
             jk_log(l, JK_LOG_ERROR,
                    "locking thread (errno=%d)", errno);
         }
@@ -1865,7 +1842,7 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 JK_TRACE_EXIT(l);
                 return JK_STATUS_FATAL_ERROR;
             }
-            else if (rc < 0) {
+            if (rc < 0) {
                 JK_TRACE_EXIT(l);
                 return JK_STATUS_ERROR;
             }
@@ -2184,9 +2161,11 @@ static int ajp_get_reply(jk_endpoint_t *e,
             JK_TRACE_EXIT(l);
             return JK_TRUE;
         }
-        else if (JK_AJP13_SEND_HEADERS == rc) {
-            if (headeratclient == JK_FALSE)
+        if (JK_AJP13_SEND_HEADERS == rc) {
+            if (headeratclient == JK_FALSE) {
                 headeratclient = JK_TRUE;
+                continue;
+            }
             else {
                 /* Backend send headers twice?
                  * This is protocol violation
@@ -2199,7 +2178,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
                 return JK_FALSE;
             }
         }
-        else if (JK_STATUS_ERROR == rc || JK_STATUS_FATAL_ERROR == rc) {
+        if (JK_STATUS_ERROR == rc || JK_STATUS_FATAL_ERROR == rc) {
             jk_log(l, JK_LOG_INFO,
                    "(%s) request failed%s, "
                    "because of response status %d, ",
@@ -2209,7 +2188,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
             JK_TRACE_EXIT(l);
             return rc;
         }
-        else if (JK_AJP13_HAS_RESPONSE == rc) {
+        if (JK_AJP13_HAS_RESPONSE == rc) {
             /*
              * in upload-mode there is no second chance since
              * we may have already sent part of the uploaded data
@@ -2229,7 +2208,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
                 return JK_FALSE;
             }
         }
-        else if (JK_AJP13_ERROR == rc) {
+        if (JK_AJP13_ERROR == rc) {
             /*
              * Tomcat has send invalid AJP message.
              * Loadbalancer if present will decide if
@@ -2238,7 +2217,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
             JK_TRACE_EXIT(l);
             return JK_FATAL_ERROR;
         }
-        else if (JK_CLIENT_RD_ERROR == rc) {
+        if (JK_CLIENT_RD_ERROR == rc) {
             /*
              * Client has stop sending to us, so get out.
              * We assume this isn't our fault, so just a normal exit.
@@ -2246,7 +2225,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
             JK_TRACE_EXIT(l);
             return JK_CLIENT_RD_ERROR;
         }
-        else if (JK_CLIENT_WR_ERROR == rc) {
+        if (JK_CLIENT_WR_ERROR == rc) {
             /*
              * Client has stop receiving to us, so get out.
              * We assume this isn't our fault, so just a normal exit.
@@ -2254,20 +2233,20 @@ static int ajp_get_reply(jk_endpoint_t *e,
             JK_TRACE_EXIT(l);
             return JK_CLIENT_WR_ERROR;
         }
-        else if (JK_INTERNAL_ERROR == rc) {
+        if (JK_INTERNAL_ERROR == rc) {
             /*
              * Internal error, like memory allocation or invalid packet lengths.
              */
             JK_TRACE_EXIT(l);
             return JK_FATAL_ERROR;
         }
-        else if (JK_AJP13_NO_RESPONSE == rc) {
+        if (JK_AJP13_NO_RESPONSE == rc) {
             /*
              * This is fine, loop again, more data to send.
              */
             continue;
         }
-        else if (rc < 0) {
+        if (rc < 0) {
             op->recoverable = JK_FALSE;
             jk_log(l, JK_LOG_ERROR,
                    "(%s) Callback returns with unknown value %d",

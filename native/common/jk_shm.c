@@ -635,7 +635,6 @@ int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l)
 
 void jk_shm_close()
 {
-    int rc;
 #ifdef AS400_UTF8
     char *wptr;
 #endif
