@@ -1372,7 +1372,8 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
                         JK_TRACE_EXIT(logger);
                         return JK_FALSE;
                 }
-            } else {
+            }
+            else {
                 /* Write chunk header */
                 if (JK_IS_DEBUG_LEVEL(logger))
                     jk_log(logger, JK_LOG_DEBUG,
@@ -1576,10 +1577,11 @@ static size_t ap_regerror(int errcode, const ap_regex_t *preg,
                                         strlen(addmessage) + 6 : 0;
 
     if (errbuf_size > 0) {
-        if (addlength > 0 && errbuf_size >= length + addlength)
+        if (addlength > 0 && errbuf_size >= length + addlength) {
             StringCbPrintf(errbuf, sizeof(errbuf), "%s%s%-6d",
                           message, addmessage,
                           (int)preg->re_erroffset);
+        }
         else {
             strncpy(errbuf, message, errbuf_size - 1);
             errbuf[errbuf_size-1] = 0;
@@ -1621,13 +1623,16 @@ static int ap_regcomp(ap_regex_t *preg, const char *pattern, int cflags)
     int erroffset;
     int options = 0;
 
-    if ((cflags & AP_REG_ICASE) != 0) options |= PCRE_CASELESS;
-    if ((cflags & AP_REG_NEWLINE) != 0) options |= PCRE_MULTILINE;
+    if ((cflags & AP_REG_ICASE) != 0)
+        options |= PCRE_CASELESS;
+    if ((cflags & AP_REG_NEWLINE) != 0)
+        options |= PCRE_MULTILINE;
 
     preg->re_pcre = pcre_compile(pattern, options, &errorptr, &erroffset, NULL);
     preg->re_erroffset = erroffset;
 
-    if (preg->re_pcre == NULL) return AP_REG_INVARG;
+    if (preg->re_pcre == NULL)
+        return AP_REG_INVARG;
 
     preg->re_nsub = pcre_info((const pcre *)preg->re_pcre, NULL, NULL);
     return 0;
@@ -1693,24 +1698,35 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
         if (allocated_ovector)
             free(ovector);
         switch(rc) {
-            case PCRE_ERROR_NOMATCH: return AP_REG_NOMATCH;
-            case PCRE_ERROR_NULL: return AP_REG_INVARG;
-            case PCRE_ERROR_BADOPTION: return AP_REG_INVARG;
-            case PCRE_ERROR_BADMAGIC: return AP_REG_INVARG;
-            case PCRE_ERROR_UNKNOWN_NODE: return AP_REG_ASSERT;
-            case PCRE_ERROR_NOMEMORY: return AP_REG_ESPACE;
+            case PCRE_ERROR_NOMATCH:
+                return AP_REG_NOMATCH;
+            case PCRE_ERROR_NULL:
+                return AP_REG_INVARG;
+            case PCRE_ERROR_BADOPTION:
+                return AP_REG_INVARG;
+            case PCRE_ERROR_BADMAGIC:
+                return AP_REG_INVARG;
+            case PCRE_ERROR_UNKNOWN_NODE:
+                return AP_REG_ASSERT;
+            case PCRE_ERROR_NOMEMORY:
+                return AP_REG_ESPACE;
 #ifdef PCRE_ERROR_MATCHLIMIT
-            case PCRE_ERROR_MATCHLIMIT: return AP_REG_ESPACE;
+            case PCRE_ERROR_MATCHLIMIT:
+                return AP_REG_ESPACE;
 #endif
 #ifdef PCRE_ERROR_BADUTF8
-            case PCRE_ERROR_BADUTF8: return AP_REG_INVARG;
+            case PCRE_ERROR_BADUTF8:
+                return AP_REG_INVARG;
 #endif
 #ifdef PCRE_ERROR_BADUTF8_OFFSET
-            case PCRE_ERROR_BADUTF8_OFFSET: return AP_REG_INVARG;
+            case PCRE_ERROR_BADUTF8_OFFSET:
+                return AP_REG_INVARG;
 #endif
-            default: return AP_REG_ASSERT;
+            default:
+            break;
         }
     }
+    return AP_REG_ASSERT;
 }
 
 /* This function substitutes for $0-$9, filling in regular expression
@@ -1865,9 +1881,8 @@ static __inline LPSTR get_pheader(jk_pool_t *pool,
         if ((rv = jk_pool_alloc(pool, dwLen)) == NULL)
             return NULL;
         /* Try again with dynamic buffer */
-        if (!pfp->GetHeader(pfc, lpszName, rv, &dwLen)) {
+        if (!pfp->GetHeader(pfc, lpszName, rv, &dwLen))
             return NULL;
-        }
     }
     return rv;
 }
@@ -1946,7 +1961,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         rv = SF_STATUS_REQ_FINISHED;
         goto cleanup;
     }
-    else if (rc == BAD_PATH) {
+    if (rc == BAD_PATH) {
         jk_log(logger, JK_LOG_EMERG,
                "[%s] contains forbidden escape sequences.",
                uri);
@@ -2542,11 +2557,13 @@ static int init_logger(int rotate, jk_logger_t **l)
             /* If there are %s in the log file name, treat it as a sprintf format */
             tm_now = localtime(&t);
             strftime(log_file_name, sizeof(log_file_name_buf), log_file, tm_now);
-        } else {
+        }
+        else {
             /* Otherwise append the number of seconds to the base name */
             StringCbPrintf(log_file_name, sizeof(log_file_name_buf), "%s.%d", log_file, (long)t);
         }
-    } else {
+    }
+    else {
         log_file_name = log_file;
     }
 
@@ -2566,7 +2583,8 @@ static int init_logger(int rotate, jk_logger_t **l)
             /* Remember the current log file name for the next potential rotate */
             StringCbCopy(log_file_effective, sizeof(log_file_effective), log_file_name);
             rc = JK_TRUE;
-        } else {
+        }
+        else {
             logger = NULL;
             rc = JK_FALSE;
         }
@@ -2593,7 +2611,8 @@ static int JK_METHOD rotate_log_file(jk_logger_t **l)
         if (t >= log_next_rotate_time) {
             rotate = JK_TRUE;
         }
-    } else if (log_filesize > 0) {
+    }
+    else if (log_filesize > 0) {
         LARGE_INTEGER filesize;
         HANDLE h = (HANDLE)_get_osfhandle(fileno(((jk_file_logger_t *)(*l)->logger_private)->logfile));
         GetFileSizeEx(h, &filesize);
@@ -2788,8 +2807,9 @@ static int init_jk(char *serverName)
                 /*
                  * Create named shared memory for each server
                  */
-                if (shm_config_size == 0)
+                if (shm_config_size == 0) {
                     shm_config_size = jk_shm_calculate_size(workers_map, logger);
+                }
                 else {
                     jk_log(logger, JK_LOG_WARNING,
                            "The optimal shared memory size can now be determined automatically.");
@@ -2826,9 +2846,10 @@ static int init_jk(char *serverName)
                 uri_worker_map_ext(uw_map, logger);
                 uri_worker_map_switch(uw_map, logger);
             }
-            else
+            else {
                 jk_log(logger, JK_LOG_EMERG,
                        "Unable to read worker file %s.", worker_file);
+            }
             if (rc != JK_TRUE) {
                 jk_map_free(&workers_map);
                 workers_map = NULL;
@@ -2871,22 +2892,14 @@ static BOOL initialize_extension(void)
 
 int parse_uri_select(const char *uri_select)
 {
-    if (0 == strcasecmp(uri_select, URI_SELECT_PARSED_VERB)) {
+    if (!strcasecmp(uri_select, URI_SELECT_PARSED_VERB))
         return URI_SELECT_OPT_PARSED;
-    }
-
-    if (0 == strcasecmp(uri_select, URI_SELECT_UNPARSED_VERB)) {
+    if (!strcasecmp(uri_select, URI_SELECT_UNPARSED_VERB))
         return URI_SELECT_OPT_UNPARSED;
-    }
-
-    if (0 == strcasecmp(uri_select, URI_SELECT_ESCAPED_VERB)) {
+    if (!strcasecmp(uri_select, URI_SELECT_ESCAPED_VERB))
         return URI_SELECT_OPT_ESCAPED;
-    }
-
-    if (0 == strcasecmp(uri_select, URI_SELECT_PROXY_VERB)) {
+    if (!strcasecmp(uri_select, URI_SELECT_PROXY_VERB))
         return URI_SELECT_OPT_PROXY;
-    }
-
     return -1;
 }
 
@@ -3025,7 +3038,8 @@ static int get_config_parameter(LPVOID src, const char *tag,
         else {
             return JK_FALSE;
         }
-    } else {
+    }
+    else {
         return get_registry_config_parameter((HKEY)src, tag, val, sz);
     }
 }
@@ -3034,7 +3048,8 @@ static int get_config_int(LPVOID src, const char *tag, int def)
 {
     if (using_ini_file) {
         return jk_map_get_int((jk_map_t*)src, tag, def);
-    } else {
+    }
+    else {
         int val;
         if (get_registry_config_number(src, tag, &val) ) {
             return val;
@@ -3049,7 +3064,8 @@ static int get_config_bool(LPVOID src, const char *tag, int def)
 {
     if (using_ini_file) {
         return jk_map_get_bool((jk_map_t*)src, tag, def);
-    } else {
+    }
+    else {
         char tmpbuf[128];
         if (get_registry_config_parameter(src, tag,
                                           tmpbuf, sizeof(tmpbuf))) {
@@ -3736,11 +3752,13 @@ static char *relative_path(char *path, size_t size)
                     nd--;
                 }
             }
-            else
+            else {
                 ch = *cp++ = *path++;
+            }
         }
-        else
+        else {
             ch = *cp++ = *path++;
+        }
     }
     *cp = '\0';
     return sp;

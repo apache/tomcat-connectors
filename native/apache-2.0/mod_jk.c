@@ -361,7 +361,8 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
          */
         if (status != 500 && !strncmp(reason, "500 ", 4)) {
             reason = "Unknown Reason";
-        } else {
+        }
+        else {
             /* Apache httpd returns a full status line,
              * but we only want a reason phrase, so skip
              * the prepended status code.
@@ -598,8 +599,9 @@ static void JK_METHOD ws_vhost_to_text(void *d, char *buf, size_t len)
     server_rec *s = (server_rec *)d;
     size_t used = 0;
 
-    if (s->server_hostname)
+    if (s->server_hostname) {
         used += strlen(s->server_hostname);
+    }
     if (!s->is_virtual) {
         if (s->port)
             used += strlen(":XXXXX");
@@ -1721,23 +1723,21 @@ static struct log_item_list
     char ch;
     item_key_func func;
 } log_item_keys[] = {
-
-    {
-    'T', log_request_duration}, {
-    'r', log_request_line}, {
-    'U', log_request_uri}, {
-    's', log_status}, {
-    'b', clf_log_bytes_sent}, {
-    'B', log_bytes_sent}, {
-    'V', log_server_name}, {
-    'v', log_virtual_host}, {
-    'p', log_server_port}, {
-    'H', log_request_protocol}, {
-    'm', log_request_method}, {
-    'q', log_request_query}, {
-    'w', log_worker_name}, {
-    'R', log_worker_route}, {
-    '\0'}
+    { 'T', log_request_duration },
+    { 'r', log_request_line },
+    { 'U', log_request_uri },
+    { 's', log_status },
+    { 'b', clf_log_bytes_sent },
+    { 'B', log_bytes_sent },
+    { 'V', log_server_name },
+    { 'v', log_virtual_host },
+    { 'p', log_server_port },
+    { 'H', log_request_protocol },
+    { 'm', log_request_method },
+    { 'q', log_request_query },
+    { 'w', log_worker_name },
+    { 'R', log_worker_route},
+    { '\0', NULL }
 };
 
 static struct log_item_list *find_log_func(char k)
@@ -2852,7 +2852,8 @@ static void *create_jk_config(apr_pool_t * p, server_rec * s)
         c->log_level = JK_UNSET;
         c->ssl_enable = JK_UNSET;
         c->strip_session = JK_UNSET;
-    } else {
+    }
+    else {
         if (!jk_map_alloc(&(c->uri_to_context))) {
             ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL, "Memory error");
         }
@@ -3230,10 +3231,10 @@ static void jk_child_init(apr_pool_t * pconf, server_rec * s)
         apr_pool_cleanup_register(pconf, conf->log, jk_cleanup_shmem,
                                   apr_pool_cleanup_null);
     }
-    else
+    else {
         jk_log(conf->log, JK_LOG_ERROR, "Attaching shm:%s errno=%d",
                jk_shm_name(), rc);
-
+    }
     if (JK_IS_DEBUG_LEVEL(conf->log))
         jk_log(conf->log, JK_LOG_DEBUG, "Initialized %s", JK_FULL_EXPOSED_VERSION);
     JK_TRACE_EXIT(conf->log);
@@ -3320,8 +3321,9 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
                          "Using default %s", jk_shm_file);
     }
 #endif
-    if (jk_shm_size == 0)
+    if (jk_shm_size == 0) {
         jk_shm_size = jk_shm_calculate_size(jk_worker_properties, conf->log);
+    }
     else if (jk_shm_size_set) {
         jk_log(conf->log, JK_LOG_WARNING,
                "The optimal shared memory size can now be determined automatically.");
@@ -3333,11 +3335,11 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
                                   jk_cleanup_shmem,
                                   apr_pool_cleanup_null);
     }
-    else
+    else {
         jk_log(conf->log, JK_LOG_ERROR,
                "Initializing shm:%s errno=%d. Load balancing workers will not function properly.",
                jk_shm_name(), rc);
-
+    }
     /* we add the URI->WORKER MAP since workers using AJP14
        will feed it */
     worker_env.uri_to_worker = conf->uw_map;
@@ -3400,7 +3402,8 @@ static int jk_post_config(apr_pool_t * pconf,
 #endif
         apr_pool_userdata_set((const void *)jk_log_lock, JK_LOG_LOCK_KEY,
                               apr_pool_cleanup_null, s->process->pool);
-    } else {
+    }
+    else {
         jk_log_lock = (apr_global_mutex_t *)data;
     }
 
