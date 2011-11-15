@@ -954,7 +954,6 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                                     jk_logger_t *l)
 {
     int rc = -1;
-    int r;
 
     JK_TRACE_ENTER(l);
     if (p->num_of_workers == 1) {
@@ -978,15 +977,14 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
         }
     }
     if (p->lblock == JK_LB_LOCK_PESSIMISTIC) {
-        r = jk_shm_lock();
+        if (!jk_shm_lock()) {
+            jk_log(l, JK_LOG_ERROR, "locking failed (errno=%d)", errno);
+            JK_TRACE_EXIT(l);
+            return -1;            
+        }        
     }
     else {
-        JK_ENTER_CS(&(p->cs), r);
-    }
-    if (!r) {
-       jk_log(l, JK_LOG_ERROR,
-              "locking failed (errno=%d)",
-              errno);
+        JK_ENTER_CS(&p->cs);
     }
     if (sessionid) {
         char *session = sessionid;
@@ -1016,7 +1014,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                         jk_shm_unlock();
                     }
                     else {
-                        JK_LEAVE_CS(&(p->cs), r);
+                        JK_LEAVE_CS(&p->cs);
                     }
                     if (JK_IS_DEBUG_LEVEL(l))
                         jk_log(l, JK_LOG_DEBUG,
@@ -1035,7 +1033,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                 jk_shm_unlock();
             }
             else {
-                JK_LEAVE_CS(&(p->cs), r);
+                JK_LEAVE_CS(&p->cs);
             }
             jk_log(l, JK_LOG_INFO,
                    "all workers are in error state for session %s",
@@ -1049,7 +1047,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
         jk_shm_unlock();
     }
     else {
-        JK_LEAVE_CS(&(p->cs), r);
+        JK_LEAVE_CS(&p->cs);
     }
     if (rc >= 0) {
         lb_sub_worker_t *wr = &(p->lb_workers[rc]);
@@ -1824,11 +1822,10 @@ static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
     JK_TRACE_ENTER(l);
 
     if (pThis && *pThis && (*pThis)->worker_private) {
-        unsigned int i;
         lb_worker_t *private_data = (*pThis)->worker_private;
 
         close_workers(private_data, private_data->num_of_workers, l);
-        JK_DELETE_CS(&(private_data->cs), i);
+        JK_DELETE_CS(&private_data->cs);
         jk_close_pool(&private_data->p);
         free(private_data);
 

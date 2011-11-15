@@ -48,9 +48,9 @@
 
 typedef CRITICAL_SECTION JK_CRIT_SEC;
 #define JK_INIT_CS(x, rc)   InitializeCriticalSection(x); rc = JK_TRUE
-#define JK_DELETE_CS(x, rc) DeleteCriticalSection(x);    rc = JK_TRUE
-#define JK_ENTER_CS(x, rc)  EnterCriticalSection(x);     rc = JK_TRUE
-#define JK_LEAVE_CS(x, rc)  LeaveCriticalSection(x);     rc = JK_TRUE
+#define JK_DELETE_CS(x)     DeleteCriticalSection(x)
+#define JK_ENTER_CS(x)      EnterCriticalSection(x)
+#define JK_LEAVE_CS(x)      LeaveCriticalSection(x)
 
 #else /* !WIN32 */
 #define _MT_CODE_PTHREAD
@@ -59,17 +59,12 @@ typedef CRITICAL_SECTION JK_CRIT_SEC;
 #include <fcntl.h>
 
 typedef pthread_mutex_t JK_CRIT_SEC;
-#define JK_INIT_CS(x, rc)\
+#define JK_INIT_CS(x, rc)       \
             if (pthread_mutex_init(x, NULL)) rc = JK_FALSE; else rc = JK_TRUE
 
-#define JK_DELETE_CS(x, rc)\
-            if (pthread_mutex_destroy(x))    rc = JK_FALSE; else rc = JK_TRUE
-
-#define JK_ENTER_CS(x, rc)\
-            if (pthread_mutex_lock(x))       rc = JK_FALSE; else rc = JK_TRUE
-
-#define JK_LEAVE_CS(x, rc)\
-            if (pthread_mutex_unlock(x))     rc = JK_FALSE; else rc = JK_TRUE
+#define JK_DELETE_CS(x) pthread_mutex_destroy(x)
+#define JK_ENTER_CS(x)  pthread_mutex_lock(x)
+#define JK_LEAVE_CS(x)  pthread_mutex_unlock(x)
 
 #if defined(AS400) || defined(NETWARE)
 #define jk_pthread_t   jk_uint32_t
@@ -81,9 +76,9 @@ jk_pthread_t jk_gettid(void);
 
 typedef void *JK_CRIT_SEC;
 #define JK_INIT_CS(x, rc)   rc = JK_TRUE
-#define JK_DELETE_CS(x, rc) rc = JK_TRUE
-#define JK_ENTER_CS(x, rc)  rc = JK_TRUE
-#define JK_LEAVE_CS(x, rc)  rc = JK_TRUE
+#define JK_DELETE_CS(x)     (void)0
+#define JK_ENTER_CS(x)      (void)0
+#define JK_LEAVE_CS(x)      (void)0
 #define jk_gettid()         0
 #endif /* MT_CODE */
 

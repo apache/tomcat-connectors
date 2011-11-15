@@ -159,12 +159,12 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         jk_shm_inited_cs = 1;
         JK_INIT_CS(&jk_shmem.cs, rc);
     }
-    JK_ENTER_CS(&jk_shmem.cs, rc);
+    JK_ENTER_CS(&jk_shmem.cs);
     if (jk_shmem.hdr) {
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG, "Shared memory is already opened");
         JK_TRACE_EXIT(l);
-        JK_LEAVE_CS(&jk_shmem.cs, rc);
+        JK_LEAVE_CS(&jk_shmem.cs);
         return 0;
     }
     jk_shmem.size = JK_SHM_ALIGN(sizeof(jk_shm_header_t) + sz);
@@ -179,7 +179,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             }
         }
         if (jk_shm_hlock == NULL) {
-            JK_LEAVE_CS(&jk_shmem.cs, rc);
+            JK_LEAVE_CS(&jk_shmem.cs);
             JK_TRACE_EXIT(l);
             return -1;
         }
@@ -188,7 +188,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             if (ws == WAIT_FAILED) {
                 CloseHandle(jk_shm_hlock);
                 jk_shm_hlock = NULL;
-                JK_LEAVE_CS(&jk_shmem.cs, rc);
+                JK_LEAVE_CS(&jk_shmem.cs);
                 JK_TRACE_EXIT(l);
                 return -1;
             }
@@ -309,8 +309,7 @@ int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l)
 void jk_shm_close()
 {
     if (jk_shm_inited_cs) {
-        int rc;
-        JK_ENTER_CS(&jk_shmem.cs, rc);
+        JK_ENTER_CS(&jk_shmem.cs);
     }
     if (jk_shmem.hdr) {
 #if defined (WIN32)
@@ -334,8 +333,7 @@ void jk_shm_close()
         jk_shmem.filename = NULL;
     }
     if (jk_shm_inited_cs) {
-        int rc;
-        JK_LEAVE_CS(&jk_shmem.cs, rc);
+        JK_LEAVE_CS(&jk_shmem.cs);
     }
 }
 
@@ -761,20 +759,18 @@ void jk_shm_sync_access_time()
 
 int jk_shm_lock()
 {
-    int rc;
+    int rc = JK_TRUE;
 
     if (!jk_shm_inited_cs)
         return JK_FALSE;
-    JK_ENTER_CS(&jk_shmem.cs, rc);
+    JK_ENTER_CS(&jk_shmem.cs);
 #if defined (WIN32)
-    if (rc == JK_TRUE && jk_shm_hlock != NULL) {
-        if (WaitForSingleObject(jk_shm_hlock, INFINITE) != WAIT_FAILED)
-            rc = JK_TRUE;
-        else
+    if (jk_shm_hlock != NULL) {
+        if (WaitForSingleObject(jk_shm_hlock, INFINITE) == WAIT_FAILED)
             rc = JK_FALSE;
     }
 #else
-    if (rc == JK_TRUE && jk_shmem.fd_lock != -1) {
+    if (jk_shmem.fd_lock != -1) {
         JK_ENTER_LOCK(jk_shmem.fd_lock, rc);
     }
 #endif
@@ -783,7 +779,7 @@ int jk_shm_lock()
 
 int jk_shm_unlock()
 {
-    int rc;
+    int rc = JK_TRUE;
 
     if (!jk_shm_inited_cs)
         return JK_FALSE;
@@ -796,7 +792,7 @@ int jk_shm_unlock()
         JK_LEAVE_LOCK(jk_shmem.fd_lock, rc);
     }
 #endif
-    JK_LEAVE_CS(&jk_shmem.cs, rc);
+    JK_LEAVE_CS(&jk_shmem.cs);
     return rc;
 }
 

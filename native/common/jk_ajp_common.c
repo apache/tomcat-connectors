@@ -823,7 +823,7 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
  */
 static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
 {
-    int rc;
+    unsigned int i;
     int ret = JK_FALSE;
     ajp_worker_t *aw = ae->worker;
 
@@ -834,26 +834,23 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
         jk_shutdown_socket(ae->sd, l);
     /* Mark existing endpoint socket as closed */
     ae->sd = JK_INVALID_SOCKET;
-    JK_ENTER_CS(&aw->cs, rc);
-    if (rc) {
-        unsigned int i;
-        for (i = 0; i < aw->ep_cache_sz; i++) {
-            /* Find cache slot with usable socket */
-            if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
-                IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                ae->sd = aw->ep_cache[i]->sd;
-                aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
-                break;
-            }
+    JK_ENTER_CS(&aw->cs);
+    for (i = 0; i < aw->ep_cache_sz; i++) {
+        /* Find cache slot with usable socket */
+        if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
+            IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+            ae->sd = aw->ep_cache[i]->sd;
+            aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+            break;
         }
-        JK_LEAVE_CS(&aw->cs, rc);
-        if (IS_VALID_SOCKET(ae->sd)) {
-            ret = JK_TRUE;
-            if (JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG,
-                       "(%s) Will try pooled connection socket %d from slot %d",
-                        ae->worker->name, ae->sd, i);
-        }
+    }
+    JK_LEAVE_CS(&aw->cs);
+    if (IS_VALID_SOCKET(ae->sd)) {
+        ret = JK_TRUE;
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
+                    "(%s) Will try pooled connection socket %d from slot %d",
+                    ae->worker->name, ae->sd, i);
     }
     JK_TRACE_EXIT(l);
     return ret;
@@ -1063,33 +1060,24 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
                    host, port, aw->name);
         }
         else {
-            int rc;
-            JK_ENTER_CS(&aw->cs, rc);
-            if (rc) {
-                unsigned int i;
-                for (i = 0; i < aw->ep_cache_sz; i++) {
-                    /* Close all avail connections in the cache
-                     * Note that this won't change active connections.
-                     */
-                    if (IS_SLOT_AVAIL(aw->ep_cache[i]) && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                        int sd = aw->ep_cache[i]->sd;
-                        aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
-                        aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
-                        jk_shutdown_socket(sd, l);
-                        aw->s->connected--;
-                    }
+            unsigned int i;
+            JK_ENTER_CS(&aw->cs);
+            for (i = 0; i < aw->ep_cache_sz; i++) {
+                /* Close all avail connections in the cache
+                 * Note that this won't change active connections.
+                 */
+                if (IS_SLOT_AVAIL(aw->ep_cache[i]) && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                    int sd = aw->ep_cache[i]->sd;
+                    aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                    aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
+                    jk_shutdown_socket(sd, l);
+                    aw->s->connected--;
                 }
             }
             aw->port = port;
             strncpy(aw->host, host, JK_SHM_STR_SIZ);
             memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
-            if (rc) {
-                JK_LEAVE_CS(&aw->cs, rc);
-            }
-            else {
-                jk_log(l, JK_LOG_ERROR,
-                       "locking thread (errno=%d)", errno);
-            }
+            JK_LEAVE_CS(&aw->cs);
         }
     }
 
@@ -1130,26 +1118,20 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
         jk_shm_unlock();
 
     if (address_change == JK_TRUE) {
-        int rc;
-        JK_ENTER_CS(&aw->cs, rc);
-        if (rc) {
-            unsigned int i;
-            for (i = 0; i < aw->ep_cache_sz; i++) {
-                /* Close all connections in the cache */
-                if (IS_SLOT_AVAIL(aw->ep_cache[i]) && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                    int sd = aw->ep_cache[i]->sd;
-                    aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
-                    aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
-                    jk_shutdown_socket(sd, l);
-                    aw->s->connected--;
-                }
+        unsigned int i;
+
+        JK_ENTER_CS(&aw->cs);
+        for (i = 0; i < aw->ep_cache_sz; i++) {
+            /* Close all connections in the cache */
+            if (IS_SLOT_AVAIL(aw->ep_cache[i]) && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                int sd = aw->ep_cache[i]->sd;
+                aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
+                jk_shutdown_socket(sd, l);
+                aw->s->connected--;
             }
-            JK_LEAVE_CS(&aw->cs, rc);
         }
-        else {
-            jk_log(l, JK_LOG_ERROR,
-                   "locking thread (errno=%d)", errno);
-        }
+        JK_LEAVE_CS(&aw->cs);
     }
     JK_TRACE_EXIT(l);
 }
@@ -3008,7 +2990,7 @@ int ajp_destroy(jk_worker_t **pThis, jk_logger_t *l, int proto)
                 ajp_close_endpoint(aw->ep_cache[i], l);
         }
         free(aw->ep_cache);
-        JK_DELETE_CS(&(aw->cs), i);
+        JK_DELETE_CS(&aw->cs);
 
         if (aw->login) {
              /* take care of removing previously allocated data */
@@ -3036,7 +3018,6 @@ int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l)
 
     if (e && *e && (*e)->endpoint_private) {
         ajp_endpoint_t *p = (*e)->endpoint_private;
-        int rc;
         ajp_worker_t *w = p->worker;
 
         /* set last_access only if needed */
@@ -3048,22 +3029,16 @@ int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l)
         }
         ajp_reset_endpoint(p, l);
         *e = NULL;
-        JK_ENTER_CS(&w->cs, rc);
-        if (rc) {
-            p->avail = JK_TRUE;
-            JK_LEAVE_CS(&w->cs, rc);
+        JK_ENTER_CS(&w->cs);
+        p->avail = JK_TRUE;
+        JK_LEAVE_CS(&w->cs);
 
-            if (JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG,
-                        "recycling connection pool for worker %s and socket %d",
-                        p->worker->name, (int)p->sd);
-            JK_TRACE_EXIT(l);
-            return JK_TRUE;
-        }
-        jk_log(l, JK_LOG_ERROR,
-               "locking thread (errno=%d)", errno);
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
+                    "recycling connection pool for worker %s and socket %d",
+                    p->worker->name, (int)p->sd);
         JK_TRACE_EXIT(l);
-        return JK_FALSE;
+        return JK_TRUE;
     }
 
     JK_LOG_NULL_PARAMS(l);
@@ -3079,77 +3054,67 @@ int ajp_get_endpoint(jk_worker_t *pThis,
     if (pThis && pThis->worker_private && je) {
         ajp_worker_t *aw = pThis->worker_private;
         ajp_endpoint_t *ae = NULL;
-        int rc;
         int retry = 0;
 
         *je = NULL;
         /* Loop until cache_acquire_timeout interval elapses */
         while ((retry * JK_SLEEP_DEF) < aw->cache_acquire_timeout) {
+            unsigned int slot;
 
-            JK_ENTER_CS(&aw->cs, rc);
-            if (rc) {
-                unsigned int slot;
-                /* Try to find connected socket cache entry */
-                for (slot = 0; slot < aw->ep_cache_sz; slot++) {
-                    if (IS_SLOT_AVAIL(aw->ep_cache[slot]) &&
-                        IS_VALID_SOCKET(aw->ep_cache[slot]->sd)) {
-                        ae = aw->ep_cache[slot];
-                        if (ae->reuse) {
-                            aw->ep_cache[slot]->avail = JK_FALSE;
-                            break;
-                        }
-                        else {
-                            /* XXX: We shouldn't have non reusable
-                             * opened socket in the cache
-                             */
-                            ajp_reset_endpoint(ae, l);
-                            ae->avail = JK_TRUE;
-                            ae = NULL;
-                            jk_log(l, JK_LOG_WARNING,
-                                   "closing non reusable pool slot=%d", slot);
-                        }
+            JK_ENTER_CS(&aw->cs);
+            /* Try to find connected socket cache entry */
+            for (slot = 0; slot < aw->ep_cache_sz; slot++) {
+                if (IS_SLOT_AVAIL(aw->ep_cache[slot]) &&
+                    IS_VALID_SOCKET(aw->ep_cache[slot]->sd)) {
+                    ae = aw->ep_cache[slot];
+                    if (ae->reuse) {
+                        aw->ep_cache[slot]->avail = JK_FALSE;
+                        break;
                     }
-                }
-                if (!ae) {
-                    /* No connected cache entry found.
-                     * Use the first free one.
-                     */
-                    for (slot = 0; slot < aw->ep_cache_sz; slot++) {
-                        if (IS_SLOT_AVAIL(aw->ep_cache[slot])) {
-                            ae = aw->ep_cache[slot];
-                            aw->ep_cache[slot]->avail = JK_FALSE;
-                            break;
-                        }
+                    else {
+                        /* XXX: We shouldn't have non reusable
+                         * opened socket in the cache
+                         */
+                        ajp_reset_endpoint(ae, l);
+                        ae->avail = JK_TRUE;
+                        ae = NULL;
+                        jk_log(l, JK_LOG_WARNING,
+                               "closing non reusable pool slot=%d", slot);
                     }
-                }
-                JK_LEAVE_CS(&aw->cs, rc);
-                if (ae) {
-                    if (aw->cache_timeout > 0)
-                        ae->last_access = time(NULL);
-                    *je = &ae->endpoint;
-                    if (JK_IS_DEBUG_LEVEL(l))
-                        jk_log(l, JK_LOG_DEBUG,
-                               "acquired connection pool slot=%u after %d retries",
-                               slot, retry);
-                    JK_TRACE_EXIT(l);
-                    return JK_TRUE;
-                }
-                else {
-                    retry++;
-                    if (JK_IS_DEBUG_LEVEL(l))
-                        jk_log(l, JK_LOG_DEBUG,
-                               "could not get free endpoint for worker %s"
-                               " (retry %d, sleeping for %d ms)",
-                               aw->name, retry, JK_SLEEP_DEF);
-                    jk_sleep(JK_SLEEP_DEF);
                 }
             }
-            else {
-               jk_log(l, JK_LOG_ERROR,
-                      "locking thread (errno=%d)", errno);
+            if (!ae) {
+                /* No connected cache entry found.
+                 * Use the first free one.
+                 */
+                for (slot = 0; slot < aw->ep_cache_sz; slot++) {
+                    if (IS_SLOT_AVAIL(aw->ep_cache[slot])) {
+                        ae = aw->ep_cache[slot];
+                        aw->ep_cache[slot]->avail = JK_FALSE;
+                        break;
+                    }
+                }
+            }
+            JK_LEAVE_CS(&aw->cs);
+            if (ae) {
+                if (aw->cache_timeout > 0)
+                    ae->last_access = time(NULL);
+                *je = &ae->endpoint;
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
+                           "acquired connection pool slot=%u after %d retries",
+                           slot, retry);
                 JK_TRACE_EXIT(l);
-                return JK_FALSE;
-
+                return JK_TRUE;
+            }
+            else {
+                retry++;
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
+                            "could not get free endpoint for worker %s"
+                            " (retry %d, sleeping for %d ms)",
+                            aw->name, retry, JK_SLEEP_DEF);
+                jk_sleep(JK_SLEEP_DEF);
             }
         }
         jk_log(l, JK_LOG_WARNING,
@@ -3171,8 +3136,11 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
     if (pThis && pThis->worker_private) {
         ajp_worker_t *aw = pThis->worker_private;
         time_t now = mstarted;
-        int rc;
+        int i;
         long delta;
+        unsigned int n = 0, k = 0, cnt = 0;
+        unsigned int m, m_count = 0;
+        jk_sock_t   *m_sock;
 
         jk_shm_lock();
 
@@ -3201,114 +3169,100 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
             return JK_TRUE;
         }
 
-        JK_ENTER_CS(&aw->cs, rc);
-        if (rc) {
-            unsigned int n = 0, k = 0, cnt = 0;
-            int i;
-            unsigned int m, m_count = 0;
-            jk_sock_t   *m_sock;
-            /* Count open slots */
-            for (i = (int)aw->ep_cache_sz - 1; i >= 0; i--) {
-                if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd))
-                    cnt++;
+        JK_ENTER_CS(&aw->cs);
+        /* Count open slots */
+        for (i = (int)aw->ep_cache_sz - 1; i >= 0; i--) {
+            if (aw->ep_cache[i] && IS_VALID_SOCKET(aw->ep_cache[i]->sd))
+                cnt++;
+        }
+        m_sock = (jk_sock_t *)malloc((cnt + 1) * sizeof(jk_sock_t));
+        /* Handle worker cache timeouts */
+        if (aw->cache_timeout > 0) {
+            for (i = (int)aw->ep_cache_sz - 1;
+                    i >= 0; i--) {
+                /* Skip the closed sockets */
+                if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
+                    IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                    int elapsed = (int)difftime(mstarted, aw->ep_cache[i]->last_access);
+                    if (elapsed > aw->cache_timeout) {
+                        time_t rt = 0;
+                        n++;
+                        if (JK_IS_DEBUG_LEVEL(l))
+                            rt = time(NULL);
+                        aw->ep_cache[i]->reuse = JK_FALSE;
+                        m_sock[m_count++] = aw->ep_cache[i]->sd;
+                        aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                        ajp_reset_endpoint(aw->ep_cache[i], l);
+                        if (JK_IS_DEBUG_LEVEL(l))
+                            jk_log(l, JK_LOG_DEBUG,
+                                   "cleaning pool slot=%d elapsed %d in %d",
+                                   i, elapsed, (int)(difftime(time(NULL), rt)));
+                    }
+                }
+                if (cnt <= aw->ep_mincache_sz + n) {
+                    if (JK_IS_DEBUG_LEVEL(l)) {
+                        jk_log(l, JK_LOG_DEBUG,
+                        "reached pool min size %u from %u cache slots",
+                        aw->ep_mincache_sz, aw->ep_cache_sz);
+                    }
+                    break;
+                }
             }
-            m_sock = (jk_sock_t *)malloc((cnt + 1) * sizeof(jk_sock_t));
-            /* Handle worker cache timeouts */
-            if (aw->cache_timeout > 0) {
-                for (i = (int)aw->ep_cache_sz - 1;
-                     i >= 0; i--) {
-                    /* Skip the closed sockets */
-                    if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
-                        IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                        int elapsed = (int)difftime(mstarted, aw->ep_cache[i]->last_access);
-                        if (elapsed > aw->cache_timeout) {
-                            time_t rt = 0;
-                            n++;
-                            if (JK_IS_DEBUG_LEVEL(l))
-                                rt = time(NULL);
+        }
+        /* Handle worker connection keepalive */
+        if (aw->conn_ping_interval > 0 && aw->ping_timeout > 0) {
+            for (i = (int)aw->ep_cache_sz - 1; i >= 0; i--) {
+                /* Skip the closed sockets */
+                if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
+                    IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                    int elapsed = (int)difftime(now, aw->ep_cache[i]->last_access);
+                    if (elapsed > aw->conn_ping_interval) {
+                        k++;
+                        /* handle cping/cpong.
+                         */
+                        if (ajp_handle_cping_cpong(aw->ep_cache[i],
+                            aw->ping_timeout, l) == JK_FALSE) {
+                            jk_log(l, JK_LOG_INFO,
+                                   "(%s) failed sending request, "
+                                   "socket %d keepalive cping/cpong "
+                                   "failure (errno=%d)",
+                                   aw->name,
+                                   aw->ep_cache[i]->sd,
+                                   aw->ep_cache[i]->last_errno);
                             aw->ep_cache[i]->reuse = JK_FALSE;
                             m_sock[m_count++] = aw->ep_cache[i]->sd;
                             aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                             ajp_reset_endpoint(aw->ep_cache[i], l);
-                            if (JK_IS_DEBUG_LEVEL(l))
-                                jk_log(l, JK_LOG_DEBUG,
-                                        "cleaning pool slot=%d elapsed %d in %d",
-                                        i, elapsed, (int)(difftime(time(NULL), rt)));
                         }
-                    }
-                    if (cnt <= aw->ep_mincache_sz + n) {
-                        if (JK_IS_DEBUG_LEVEL(l)) {
-                            jk_log(l, JK_LOG_DEBUG,
-                            "reached pool min size %u from %u cache slots",
-                            aw->ep_mincache_sz, aw->ep_cache_sz);
-                        }
-                        break;
-                    }
-                }
-            }
-            /* Handle worker connection keepalive */
-            if (aw->conn_ping_interval > 0 && aw->ping_timeout > 0) {
-                for (i = (int)aw->ep_cache_sz - 1; i >= 0; i--) {
-                    /* Skip the closed sockets */
-                    if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
-                        IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                        int elapsed = (int)difftime(now, aw->ep_cache[i]->last_access);
-                        if (elapsed > aw->conn_ping_interval) {
-                            k++;
-                            /* handle cping/cpong.
-                             */
-                            if (ajp_handle_cping_cpong(aw->ep_cache[i],
-                                aw->ping_timeout, l) == JK_FALSE) {
-                                jk_log(l, JK_LOG_INFO,
-                                       "(%s) failed sending request, "
-                                       "socket %d keepalive cping/cpong "
-                                       "failure (errno=%d)",
-                                       aw->name,
-                                       aw->ep_cache[i]->sd,
-                                       aw->ep_cache[i]->last_errno);
-                                aw->ep_cache[i]->reuse = JK_FALSE;
-                                m_sock[m_count++] = aw->ep_cache[i]->sd;
-                                aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
-                                ajp_reset_endpoint(aw->ep_cache[i], l);
-                            }
-                            else {
-                                now = time(NULL);
-                                aw->ep_cache[i]->last_access = now;
-                            }
+                        else {
+                            now = time(NULL);
+                            aw->ep_cache[i]->last_access = now;
                         }
                     }
                 }
             }
-            JK_LEAVE_CS(&aw->cs, rc);
-            /* Shutdown sockets outside of the lock.
-             * This has benefits only if maintain was
-             * called from the watchdog thread.
-             */
-            for (m = 0; m < m_count; m++) {
-                jk_shutdown_socket(m_sock[m], l);
-            }
-            free(m_sock);
-            if (n && JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG,
-                        "recycled %u sockets in %d seconds from %u pool slots",
-                        n, (int)(difftime(time(NULL), mstarted)),
-                        aw->ep_cache_sz);
-            if (k && JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG,
-                        "pinged %u sockets in %d seconds from %u pool slots",
-                        k, (int)(difftime(time(NULL), mstarted)),
-                        aw->ep_cache_sz);
-            JK_TRACE_EXIT(l);
-            return JK_TRUE;
         }
-        else {
-           jk_log(l, JK_LOG_ERROR,
-                  "locking thread (errno=%d)",
-                  errno);
-            JK_TRACE_EXIT(l);
-            return JK_FALSE;
-
+        JK_LEAVE_CS(&aw->cs);
+        /* Shutdown sockets outside of the lock.
+         * This has benefits only if maintain was
+         * called from the watchdog thread.
+         */
+        for (m = 0; m < m_count; m++) {
+            jk_shutdown_socket(m_sock[m], l);
         }
+        free(m_sock);
+        if (n && JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
+                   "recycled %u sockets in %d seconds from %u pool slots",
+                   n, (int)(difftime(time(NULL), mstarted)),
+                   aw->ep_cache_sz);
+        if (k && JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
+                   "pinged %u sockets in %d seconds from %u pool slots",
+                   k, (int)(difftime(time(NULL), mstarted)),
+                   aw->ep_cache_sz);
+        JK_TRACE_EXIT(l);
+        return JK_TRUE;
     }
     else {
         JK_LOG_NULL_PARAMS(l);
@@ -3325,26 +3279,17 @@ int ajp_has_endpoint(jk_worker_t *pThis,
 
     if (pThis && pThis->worker_private) {
         ajp_worker_t *aw = pThis->worker_private;
-        int rc;
+        unsigned int slot;
 
-        JK_ENTER_CS(&aw->cs, rc);
-        if (rc) {
-            unsigned int slot;
-            /* Try to find connected socket cache entry */
-            for (slot = 0; slot < aw->ep_cache_sz; slot++) {
-                if (IS_SLOT_AVAIL(aw->ep_cache[slot])) {
-                    JK_LEAVE_CS(&aw->cs, rc);
-                    return JK_TRUE;
-                }
+        JK_ENTER_CS(&aw->cs);
+        /* Try to find connected socket cache entry */
+        for (slot = 0; slot < aw->ep_cache_sz; slot++) {
+            if (IS_SLOT_AVAIL(aw->ep_cache[slot])) {
+                JK_LEAVE_CS(&aw->cs);
+                return JK_TRUE;
             }
-            JK_LEAVE_CS(&aw->cs, rc);
         }
-        else {
-            jk_log(l, JK_LOG_ERROR,
-                    "locking thread (errno=%d)", errno);
-            JK_TRACE_EXIT(l);
-            return JK_FALSE;
-        }
+        JK_LEAVE_CS(&aw->cs);
     }
     else {
         JK_LOG_NULL_PARAMS(l);

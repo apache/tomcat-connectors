@@ -92,9 +92,8 @@ int wc_open(jk_map_t *init_data, jk_worker_env_t *we, jk_logger_t *l)
 
 void wc_close(jk_logger_t *l)
 {
-    int rc;
     JK_TRACE_ENTER(l);
-    JK_DELETE_CS(&worker_lock, rc);
+    JK_DELETE_CS(&worker_lock);
     close_workers(l);
     JK_TRACE_EXIT(l);
 }
@@ -318,11 +317,11 @@ void wc_maintain(jk_logger_t *l)
     if (sz > 0 && worker_maintain_time > 0 &&
         difftime(time(NULL), last_maintain) >= worker_maintain_time) {
         int i;
-        JK_ENTER_CS(&worker_lock, i);
+        JK_ENTER_CS(&worker_lock);
         if (running_maintain ||
             difftime(time(NULL), last_maintain) < worker_maintain_time) {
             /* Already in maintain */
-            JK_LEAVE_CS(&worker_lock, i);
+            JK_LEAVE_CS(&worker_lock);
             JK_TRACE_EXIT(l);
             return;
         }
@@ -330,7 +329,7 @@ void wc_maintain(jk_logger_t *l)
          * the maintain until we are finished.
          */
         running_maintain = 1;
-        JK_LEAVE_CS(&worker_lock, i);
+        JK_LEAVE_CS(&worker_lock);
 
         for (i = 0; i < sz; i++) {
             jk_worker_t *w = jk_map_value_at(worker_map, i);
@@ -342,10 +341,10 @@ void wc_maintain(jk_logger_t *l)
                 w->maintain(w, time(NULL), l);
             }
         }
-        JK_ENTER_CS(&worker_lock, i);
+        JK_ENTER_CS(&worker_lock);
         last_maintain = time(NULL);
         running_maintain = 0;
-        JK_LEAVE_CS(&worker_lock, i);
+        JK_LEAVE_CS(&worker_lock);
     }
     JK_TRACE_EXIT(l);
 }

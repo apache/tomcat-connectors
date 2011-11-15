@@ -256,8 +256,7 @@ static int uri_worker_map_close(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
     JK_TRACE_ENTER(l);
 
     if (uw_map) {
-        int i;
-        JK_DELETE_CS(&(uw_map->cs), i);
+        JK_DELETE_CS(&uw_map->cs);
         jk_close_pool(&uw_map->p_dyn[0]);
         jk_close_pool(&uw_map->p_dyn[1]);
         jk_close_pool(&uw_map->p);
@@ -1254,10 +1253,10 @@ int uri_worker_map_update(jk_uri_worker_map_t *uw_map,
                        uw_map->fname);
             return JK_TRUE;
         }
-        JK_ENTER_CS(&(uw_map->cs), rc);
+        JK_ENTER_CS(&uw_map->cs);
         /* Check if some other thread updated status */
         if (statbuf.st_mtime == uw_map->modified) {
-            JK_LEAVE_CS(&(uw_map->cs), rc);
+            JK_LEAVE_CS(&uw_map->cs);
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "File %s  is not modified",
@@ -1267,7 +1266,7 @@ int uri_worker_map_update(jk_uri_worker_map_t *uw_map,
         rc = uri_worker_map_load(uw_map, l);
         uri_worker_map_ext(uw_map, l);
         uri_worker_map_switch(uw_map, l);
-        JK_LEAVE_CS(&(uw_map->cs), rc);
+        JK_LEAVE_CS(&uw_map->cs);
         jk_log(l, JK_LOG_INFO,
                "Reloaded urimaps from %s", uw_map->fname);
     }
