@@ -31,99 +31,99 @@
 #include "jk_lb_worker.h"
 #include "jk_mt.h"
 
-#define SYSPROPS_OF_WORKER          ("sysprops")
-#define STDERR_OF_WORKER            ("stderr")
-#define STDOUT_OF_WORKER            ("stdout")
-#define SECRET_OF_WORKER            ("secret")
-#define MX_OF_WORKER                ("mx")
-#define MS_OF_WORKER                ("ms")
-#define CP_OF_WORKER                ("class_path")
-#define BRIDGE_OF_WORKER            ("bridge")
-#define JVM_OF_WORKER               ("jvm_lib")
-#define LIBPATH_OF_WORKER           ("ld_path")
-#define CMD_LINE_OF_WORKER          ("cmd_line")
-#define NATIVE_LIB_OF_WORKER        ("native_lib")
-#define REFERENCE_OF_WORKER         ("reference")
-#define HOST_OF_WORKER              ("host")
-#define PORT_OF_WORKER              ("port")
-#define TYPE_OF_WORKER              ("type")
-#define CACHE_OF_WORKER_DEPRECATED  ("cachesize")
-#define CACHE_OF_WORKER             ("connection_pool_size")
-#define CACHE_OF_WORKER_MIN         ("connection_pool_minsize")
-#define CACHE_TIMEOUT_DEPRECATED    ("cache_timeout")
-#define CACHE_TIMEOUT_OF_WORKER     ("connection_pool_timeout")
-#define CACHE_ACQUIRE_OF_WORKER     ("connection_acquire_timeout")
-#define RECOVERY_OPTS_OF_WORKER     ("recovery_options")
-#define CONNECT_TIMEOUT_OF_WORKER   ("connect_timeout")
-#define PREPOST_TIMEOUT_OF_WORKER   ("prepost_timeout")
-#define REPLY_TIMEOUT_OF_WORKER     ("reply_timeout")
-#define SOCKET_TIMEOUT_OF_WORKER    ("socket_timeout")
-#define SOCKET_CONNECT_TIMEOUT_OF_WORKER ("socket_connect_timeout")
-#define PING_TIMEOUT_OF_WORKER      ("ping_timeout")
-#define PING_MODE_OF_WORKER         ("ping_mode")
-#define SOCKET_BUFFER_OF_WORKER     ("socket_buffer")
-#define SOCKET_KEEPALIVE_OF_WORKER  ("socket_keepalive")
-#define CONN_PING_INTERVAL_OF_WORKER  ("connection_ping_interval")
-#define RECYCLE_TIMEOUT_DEPRECATED  ("recycle_timeout")
-#define LOAD_FACTOR_OF_WORKER       ("lbfactor")
-#define DISTANCE_OF_WORKER          ("distance")
-#define BALANCED_WORKERS_DEPRECATED ("balanced_workers")
-#define BALANCE_WORKERS             ("balance_workers")
-#define STICKY_SESSION              ("sticky_session")
-#define STICKY_SESSION_FORCE        ("sticky_session_force")
-#define SESSION_COOKIE_OF_WORKER    ("session_cookie")
-#define SESSION_PATH_OF_WORKER      ("session_path")
+#define SYSPROPS_OF_WORKER          "sysprops"
+#define STDERR_OF_WORKER            "stderr"
+#define STDOUT_OF_WORKER            "stdout"
+#define SECRET_OF_WORKER            "secret"
+#define MX_OF_WORKER                "mx"
+#define MS_OF_WORKER                "ms"
+#define CP_OF_WORKER                "class_path"
+#define BRIDGE_OF_WORKER            "bridge"
+#define JVM_OF_WORKER               "jvm_lib"
+#define LIBPATH_OF_WORKER           "ld_path"
+#define CMD_LINE_OF_WORKER          "cmd_line"
+#define NATIVE_LIB_OF_WORKER        "native_lib"
+#define REFERENCE_OF_WORKER         "reference"
+#define HOST_OF_WORKER              "host"
+#define PORT_OF_WORKER              "port"
+#define TYPE_OF_WORKER              "type"
+#define CACHE_OF_WORKER_DEPRECATED  "cachesize"
+#define CACHE_OF_WORKER             "connection_pool_size"
+#define CACHE_OF_WORKER_MIN         "connection_pool_minsize"
+#define CACHE_TIMEOUT_DEPRECATED    "cache_timeout"
+#define CACHE_TIMEOUT_OF_WORKER     "connection_pool_timeout"
+#define CACHE_ACQUIRE_OF_WORKER     "connection_acquire_timeout"
+#define RECOVERY_OPTS_OF_WORKER     "recovery_options"
+#define CONNECT_TIMEOUT_OF_WORKER   "connect_timeout"
+#define PREPOST_TIMEOUT_OF_WORKER   "prepost_timeout"
+#define REPLY_TIMEOUT_OF_WORKER     "reply_timeout"
+#define SOCKET_TIMEOUT_OF_WORKER    "socket_timeout"
+#define SOCKET_CONNECT_TIMEOUT_OF_WORKER "socket_connect_timeout"
+#define PING_TIMEOUT_OF_WORKER      "ping_timeout"
+#define PING_MODE_OF_WORKER         "ping_mode"
+#define SOCKET_BUFFER_OF_WORKER     "socket_buffer"
+#define SOCKET_KEEPALIVE_OF_WORKER  "socket_keepalive"
+#define CONN_PING_INTERVAL_OF_WORKER  "connection_ping_interval"
+#define RECYCLE_TIMEOUT_DEPRECATED  "recycle_timeout"
+#define LOAD_FACTOR_OF_WORKER       "lbfactor"
+#define DISTANCE_OF_WORKER          "distance"
+#define BALANCED_WORKERS_DEPRECATED "balanced_workers"
+#define BALANCE_WORKERS             "balance_workers"
+#define STICKY_SESSION              "sticky_session"
+#define STICKY_SESSION_FORCE        "sticky_session_force"
+#define SESSION_COOKIE_OF_WORKER    "session_cookie"
+#define SESSION_PATH_OF_WORKER      "session_path"
 
-#define LOCAL_WORKER_DEPRECATED     ("local_worker")
-#define LOCAL_WORKER_ONLY_DEPRECATED ("local_worker_only")
-#define JVM_ROUTE_OF_WORKER_DEPRECATED ("jvm_route")
-#define ROUTE_OF_WORKER             ("route")
-#define DOMAIN_OF_WORKER            ("domain")
-#define REDIRECT_OF_WORKER          ("redirect")
-#define MOUNT_OF_WORKER             ("mount")
-#define METHOD_OF_WORKER            ("method")
-#define LOCK_OF_WORKER              ("lock")
-#define IS_WORKER_DISABLED_DEPRECATED ("disabled")
-#define IS_WORKER_STOPPED_DEPRECATED  ("stopped")
-#define ACTIVATION_OF_WORKER        ("activation")
-#define WORKER_RECOVER_TIME         ("recover_time")
-#define WORKER_ERROR_ESCALATION_TIME ("error_escalation_time")
-#define MAX_REPLY_TIMEOUTS_OF_WORKER ("max_reply_timeouts")
-#define RETRY_INTERVAL_OF_WORKER    ("retry_interval")
-#define WORKER_MAX_PACKET_SIZE      ("max_packet_size")
-#define STYLE_SHEET_OF_WORKER       ("css")
-#define NAMESPACE_OF_WORKER         ("ns")
-#define XML_NAMESPACE_OF_WORKER     ("xmlns")
-#define XML_DOCTYPE_OF_WORKER       ("doctype")
-#define PROP_PREFIX_OF_WORKER       ("prefix")
+#define LOCAL_WORKER_DEPRECATED     "local_worker"
+#define LOCAL_WORKER_ONLY_DEPRECATED "local_worker_only"
+#define JVM_ROUTE_OF_WORKER_DEPRECATED "jvm_route"
+#define ROUTE_OF_WORKER             "route"
+#define DOMAIN_OF_WORKER            "domain"
+#define REDIRECT_OF_WORKER          "redirect"
+#define MOUNT_OF_WORKER             "mount"
+#define METHOD_OF_WORKER            "method"
+#define LOCK_OF_WORKER              "lock"
+#define IS_WORKER_DISABLED_DEPRECATED "disabled"
+#define IS_WORKER_STOPPED_DEPRECATED  "stopped"
+#define ACTIVATION_OF_WORKER        "activation"
+#define WORKER_RECOVER_TIME         "recover_time"
+#define WORKER_ERROR_ESCALATION_TIME "error_escalation_time"
+#define MAX_REPLY_TIMEOUTS_OF_WORKER "max_reply_timeouts"
+#define RETRY_INTERVAL_OF_WORKER    "retry_interval"
+#define WORKER_MAX_PACKET_SIZE      "max_packet_size"
+#define STYLE_SHEET_OF_WORKER       "css"
+#define NAMESPACE_OF_WORKER         "ns"
+#define XML_NAMESPACE_OF_WORKER     "xmlns"
+#define XML_DOCTYPE_OF_WORKER       "doctype"
+#define PROP_PREFIX_OF_WORKER       "prefix"
 
-#define READ_ONLY_OF_WORKER         ("read_only")
-#define USER_OF_WORKER              ("user")
-#define USER_CASE_OF_WORKER         ("user_case_insensitive")
-#define GOOD_RATING_OF_WORKER       ("good")
-#define BAD_RATING_OF_WORKER        ("bad")
+#define READ_ONLY_OF_WORKER         "read_only"
+#define USER_OF_WORKER              "user"
+#define USER_CASE_OF_WORKER         "user_case_insensitive"
+#define GOOD_RATING_OF_WORKER       "good"
+#define BAD_RATING_OF_WORKER        "bad"
 
 #define DEFAULT_WORKER_TYPE         JK_AJP13_WORKER_NAME
-#define SECRET_KEY_OF_WORKER        ("secretkey")
-#define RETRIES_OF_WORKER           ("retries")
-#define STATUS_FAIL_OF_WORKER       ("fail_on_status")
+#define SECRET_KEY_OF_WORKER        "secretkey"
+#define RETRIES_OF_WORKER           "retries"
+#define STATUS_FAIL_OF_WORKER       "fail_on_status"
 
 #define DEFAULT_WORKER              JK_AJP13_WORKER_NAME
-#define WORKER_LIST_PROPERTY_NAME     ("worker.list")
-#define LIST_PROPERTY_NAME            ("list")
-#define WORKER_MAINTAIN_PROPERTY_NAME ("worker.maintain")
-#define MAINTAIN_PROPERTY_NAME        ("maintain")
-#define DEFAULT_MAINTAIN_TIME       (60)
-#define DEFAULT_LB_FACTOR           (1)
-#define DEFAULT_DISTANCE            (0)
+#define WORKER_LIST_PROPERTY_NAME     "worker.list"
+#define LIST_PROPERTY_NAME            "list"
+#define WORKER_MAINTAIN_PROPERTY_NAME "worker.maintain"
+#define MAINTAIN_PROPERTY_NAME        "maintain"
+#define DEFAULT_MAINTAIN_TIME       60
+#define DEFAULT_LB_FACTOR           1
+#define DEFAULT_DISTANCE            0
 
-#define TOMCAT32_BRIDGE_NAME        ("tomcat32")
-#define TOMCAT33_BRIDGE_NAME        ("tomcat33")
-#define TOMCAT40_BRIDGE_NAME        ("tomcat40")
-#define TOMCAT41_BRIDGE_NAME        ("tomcat41")
-#define TOMCAT50_BRIDGE_NAME        ("tomcat5")
+#define TOMCAT32_BRIDGE_NAME        "tomcat32"
+#define TOMCAT33_BRIDGE_NAME        "tomcat33"
+#define TOMCAT40_BRIDGE_NAME        "tomcat40"
+#define TOMCAT41_BRIDGE_NAME        "tomcat41"
+#define TOMCAT50_BRIDGE_NAME        "tomcat5"
 
-#define HUGE_BUFFER_SIZE (8*1024)
+#define HUGE_BUFFER_SIZE 8192
 
 #define MAKE_WORKER_PARAM(P)     \
         strcpy(buf, "worker.");  \
@@ -144,9 +144,9 @@
 #define JK_TIME_FORMAT_NONE   "[%a %b %d %H:%M:%S %Y] "
 #define JK_TIME_FORMAT_MILLI  "[%a %b %d %H:%M:%S." JK_TIME_CONV_MILLI " %Y] "
 #define JK_TIME_FORMAT_MICRO  "[%a %b %d %H:%M:%S." JK_TIME_CONV_MICRO " %Y] "
-#define JK_TIME_SUBSEC_NONE   (0)
-#define JK_TIME_SUBSEC_MILLI  (1)
-#define JK_TIME_SUBSEC_MICRO  (2)
+#define JK_TIME_SUBSEC_NONE   0
+#define JK_TIME_SUBSEC_MILLI  1
+#define JK_TIME_SUBSEC_MICRO  2
 
 /* Visual C++ Toolkit 2003 support */
 #if defined (_MSC_VER) && (_MSC_VER == 1310)
@@ -408,15 +408,16 @@ void jk_set_time_fmt(jk_logger_t *l, const char *jk_log_fmt)
         l->log_fmt_size = 0;
         l->log_fmt = jk_log_fmt;
 
-/* Look for the first occurence of JK_TIME_CONV_MILLI */
+        /* Look for the first occurence of JK_TIME_CONV_MILLI */
         if ((s = strstr(jk_log_fmt, JK_TIME_CONV_MILLI))) {
             size_t offset = s - jk_log_fmt;
             size_t len = strlen(JK_TIME_PATTERN_MILLI);
 
-/* If we don't have enough space in our fixed-length char array,
- * we simply stick to the default format, ignoring JK_TIME_CONV_MILLI.
- * Otherwise we replace the first occurence of JK_TIME_CONV_MILLI by JK_TIME_PATTERN_MILLI.
- */
+            /* If we don't have enough space in our fixed-length char array,
+             * we simply stick to the default format, ignoring JK_TIME_CONV_MILLI.
+             * Otherwise we replace the first occurence of
+             * JK_TIME_CONV_MILLI by JK_TIME_PATTERN_MILLI.
+             */
             if (offset + len < JK_TIME_MAX_SIZE) {
                 l->log_fmt_type = JK_TIME_SUBSEC_MILLI;
                 l->log_fmt_offset = offset;
@@ -425,22 +426,23 @@ void jk_set_time_fmt(jk_logger_t *l, const char *jk_log_fmt)
                 strncpy(l->log_fmt_subsec + offset + len,
                         s + strlen(JK_TIME_CONV_MILLI),
                         JK_TIME_MAX_SIZE - offset - len - 1);
-/* Now we put a stop mark into the string to make it's length at most JK_TIME_MAX_SIZE-1
- * plus terminating '\0'.
- */
+                /* Now we put a stop mark into the string to make it's length
+                 * at most JK_TIME_MAX_SIZE-1 plus terminating '\0'.
+                 */
                 l->log_fmt_subsec[JK_TIME_MAX_SIZE-1] = '\0';
                 l->log_fmt_size = strlen(l->log_fmt_subsec);
             }
-/* Look for the first occurence of JK_TIME_CONV_MICRO */
+            /* Look for the first occurence of JK_TIME_CONV_MICRO */
         }
         else if ((s = strstr(jk_log_fmt, JK_TIME_CONV_MICRO))) {
             size_t offset = s - jk_log_fmt;
             size_t len = strlen(JK_TIME_PATTERN_MICRO);
 
-/* If we don't have enough space in our fixed-length char array,
- * we simply stick to the default format, ignoring JK_TIME_CONV_MICRO.
- * Otherwise we replace the first occurence of JK_TIME_CONV_MICRO by JK_TIME_PATTERN_MICRO.
- */
+            /* If we don't have enough space in our fixed-length char array,
+             * we simply stick to the default format, ignoring JK_TIME_CONV_MICRO.
+             * Otherwise we replace the first occurence of JK_TIME_CONV_MICRO
+             * by JK_TIME_PATTERN_MICRO.
+             */
             if (offset + len < JK_TIME_MAX_SIZE) {
                 l->log_fmt_type = JK_TIME_SUBSEC_MICRO;
                 l->log_fmt_offset = offset;
@@ -449,9 +451,9 @@ void jk_set_time_fmt(jk_logger_t *l, const char *jk_log_fmt)
                 strncpy(l->log_fmt_subsec + offset + len,
                         s + strlen(JK_TIME_CONV_MICRO),
                         JK_TIME_MAX_SIZE - offset - len - 1);
-/* Now we put a stop mark into the string to make it's length at most JK_TIME_MAX_SIZE-1
- * plus terminating '\0'.
- */
+                /* Now we put a stop mark into the string to make it's length
+                 * at most JK_TIME_MAX_SIZE-1 plus terminating '\0'.
+                 */
                 l->log_fmt_subsec[JK_TIME_MAX_SIZE-1] = '\0';
                 l->log_fmt_size = strlen(l->log_fmt_subsec);
             }
@@ -469,11 +471,11 @@ static int set_time_str(char *str, int len, jk_logger_t *l)
     struct tm res;
 #endif
     int done;
-/* We want to use a fixed maximum size buffer here.
- * If we would dynamically adjust it to the real format
- * string length, we could support longer format strings,
- * but we would have to allocate and free for each log line.
- */
+    /* We want to use a fixed maximum size buffer here.
+     * If we would dynamically adjust it to the real format
+     * string length, we could support longer format strings,
+     * but we would have to allocate and free for each log line.
+     */
     char log_fmt[JK_TIME_MAX_SIZE];
 
     if (!l || !l->log_fmt) {
@@ -493,11 +495,11 @@ static int set_time_str(char *str, int len, jk_logger_t *l)
         rc = gettimeofday(&tv, NULL);
 #endif
         if (rc == 0) {
-/* We need this subsec buffer, because we convert
- * the integer with sprintf(), but we don't
- * want to write the terminating '\0' into our
- * final log format string.
- */
+            /* We need this subsec buffer, because we convert
+             * the integer with sprintf(), but we don't
+             * want to write the terminating '\0' into our
+             * final log format string.
+             */
             char subsec[7];
             t = tv.tv_sec;
             strncpy(log_fmt, l->log_fmt_subsec, l->log_fmt_size + 1);
@@ -709,10 +711,11 @@ int jk_log(jk_logger_t *l,
         used = set_time_str(buf, usable_size, l);
 
         if (line) { /* line==0 only used for request log item */
-            /* Log [pid:threadid] for all levels except REQUEST. */
-            /* This information helps to correlate lines from different logs. */
-            /* Performance is no issue, because with production log levels */
-            /* we only call it often, if we have a lot of errors */
+            /* Log [pid:threadid] for all levels except REQUEST.
+             * This information helps to correlate lines from different logs.
+             * Performance is no issue, because with production log levels
+             * we only call it often, if we have a lot of errors
+             */
             rc = snprintf(buf + used, usable_size - used,
                           "[%" JK_PID_T_FMT ":%" JK_PTHREAD_T_FMT "] ", getpid(), jk_gettid());
             used += rc;
