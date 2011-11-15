@@ -970,6 +970,9 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                                     const char *const *header_values,
                                     unsigned int num_of_headers)
 {
+    int rv = JK_TRUE;
+    isapi_private_data_t *p;
+
     JK_TRACE_ENTER(logger);
     if (status < 100 || status > 1000) {
         jk_log(logger, JK_LOG_ERROR,
@@ -978,285 +981,289 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
         JK_TRACE_EXIT(logger);
         return JK_FALSE;
     }
-
-    if (s && s->ws_private) {
-        int rv = JK_TRUE;
-        isapi_private_data_t *p = s->ws_private;
-
-        /* If we use proxy error pages, still pass
-         * through context headers needed for special status codes.
-         */
-        if (s->extension.use_server_error_pages &&
-            status >= s->extension.use_server_error_pages) {
-            if (status == JK_HTTP_UNAUTHORIZED) {
-                int found = JK_FALSE;
-                unsigned int h;
-                for (h = 0; h < num_of_headers; h++) {
-                    if (!strcasecmp(header_names[h], "WWW-Authenticate")) {
-                        p->err_hdrs = jk_pool_strcatv(&p->p,
-                                            "WWW-Authenticate:",
-                                            header_values[h], CRLF, NULL);
-                        found = JK_TRUE;
-                    }
-                }
-                if (found == JK_FALSE) {
-                    jk_log(logger, JK_LOG_INFO,
-                           "origin server sent 401 without"
-                           " WWW-Authenticate header");
-                }
-            }
-            return JK_TRUE;
-        }
-
-        if (!s->response_started) {
-            char *status_str = NULL;
-            char *headers_str = NULL;
-            BOOL keep_alive = FALSE;     /* Whether the downstream or us can supply content length */
-            BOOL rc;
-            size_t i, len_of_headers = 0;
-
-            s->response_started = JK_TRUE;
-
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG, "Starting response for URI '%s' (protocol %s)",
-                       s->req_uri, s->protocol);
-            }
-
-            /*
-             * Create the status line
-             */
-            if (!reason) {
-                reason = status_reason(status);
-            }
-            status_str = (char *)malloc((6 + strlen(reason)));
-            StringCbPrintf(status_str, 6 + strlen(reason), "%d %s", status, reason);
-
-            if (chunked_encoding_enabled) {
-                /* Check if we've got an HTTP/1.1 response */
-                if (!strcasecmp(s->protocol, "HTTP/1.1")) {
-                    keep_alive = TRUE;
-                    /* Chunking only when HTTP/1.1 client and enabled */
-                    p->chunk_content = JK_TRUE;
-                }
-            }
-
-            /*
-             * Create response headers string
-             */
-
-            /* Calculate length of headers block */
-            for (i = 0; i < num_of_headers; i++) {
-                len_of_headers += strlen(header_names[i]);
-                len_of_headers += strlen(header_values[i]);
-                len_of_headers += 4;   /* extra for colon, space and crlf */
-            }
-
-            /*
-             * Exclude status codes that MUST NOT include message bodies
-             */
-            if ((status == 204) || (status == 205) || (status == 304)) {
-                p->chunk_content = JK_FALSE;
-                /* Keep alive is still possible */
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG, "Response status %d implies no message body", status );
-            }
-            if (p->chunk_content) {
-                for (i = 0; i < num_of_headers; i++) {
-                    /* Check the downstream response to see whether
-                     * it's appropriate to chunk the response content
-                     * and whether it supports keeping the connection open.
-
-                     * This implements the rules for HTTP/1.1 message length determination
-                     * with the exception of multipart/byteranges media types.
-                     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.4
-                     */
-                    if (!strcasecmp(CONTENT_LENGTH_HEADER_NAME, header_names[i])) {
-                        p->chunk_content = JK_FALSE;
-                        if (JK_IS_DEBUG_LEVEL(logger))
-                            jk_log(logger, JK_LOG_DEBUG, "Response specifies Content-Length" );
-                    }
-                    else if (!strcasecmp(CONNECTION_HEADER_NAME, header_names[i])
-                            && !strcasecmp(CONNECTION_CLOSE_VALUE, header_values[i])) {
-                        keep_alive = FALSE;
-                        p->chunk_content = JK_FALSE;
-                        if (JK_IS_DEBUG_LEVEL(logger))
-                            jk_log(logger, JK_LOG_DEBUG, "Response specifies Connection: Close" );
-                    }
-                    else if (!strcasecmp(TRANSFER_ENCODING_HEADER_NAME, header_names[i])
-                            && !strcasecmp(TRANSFER_ENCODING_IDENTITY_VALUE, header_values[i])) {
-                        /* HTTP states that this must include 'chunked' as the last value.
-                            * 'identity' is the same as absence of the header */
-                        p->chunk_content = JK_FALSE;
-                        if (JK_IS_DEBUG_LEVEL(logger))
-                            jk_log(logger, JK_LOG_DEBUG, "Response specifies Transfer-Encoding" );
-                    }
-                }
-
-                /* Provide room in the buffer for the Transfer-Encoding header if we use it. */
-                len_of_headers += TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE_LEN + 2;
-            }
-
-            /* Allocate and init the headers string */
-            len_of_headers += 3;       /* crlf and terminating null char */
-            headers_str = (char *)malloc(len_of_headers);
-            headers_str[0] = '\0';
-
-            /* Copy headers into headers block for sending */
-            for (i = 0; i < num_of_headers; i++) {
-                StringCbCat(headers_str, len_of_headers, header_names[i]);
-                StringCbCat(headers_str, len_of_headers, ": ");
-                StringCbCat(headers_str, len_of_headers, header_values[i]);
-                StringCbCat(headers_str, len_of_headers, CRLF);
-            }
-
-            if (p->chunk_content) {
-                /* Configure the response if chunked encoding is used */
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG, "Using Transfer-Encoding: chunked");
-
-                /** We will supply the transfer-encoding to allow IIS to keep the connection open */
-                keep_alive = TRUE;
-
-                /* Indicate to the client that the content will be chunked
-                - We've already reserved space for this */
-                StringCbCat(headers_str, len_of_headers, TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE);
-                StringCbCat(headers_str, len_of_headers, CRLF);
-            }
-
-            /* Terminate the headers */
-            StringCbCat(headers_str, len_of_headers, CRLF);
-
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG, "%ssing Keep-Alive", (keep_alive ? "U" : "Not u"));
-
-            if (keep_alive) {
-                HSE_SEND_HEADER_EX_INFO hi;
-
-                /* Fill in the response */
-                hi.pszStatus = status_str;
-                hi.pszHeader = headers_str;
-                hi.cchStatus = (DWORD)strlen(status_str);
-                hi.cchHeader = (DWORD)strlen(headers_str);
-
-                /*
-                 * Using the extended form of the API means we have to get this right,
-                 * i.e. IIS won't keep connections open if there's a Content-Length and close them if there isn't.
-                 */
-                hi.fKeepConn = keep_alive;
-
-                /* Send the response to the client */
-                rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
-                                                      HSE_REQ_SEND_RESPONSE_HEADER_EX,
-                                                      &hi,
-                                                      NULL, NULL);
-            }
-            else {
-                DWORD status_str_len = (DWORD)strlen(status_str);
-                /* Old style response - forces Connection: close if Tomcat response doesn't
-                   specify necessary details to allow keep alive */
-                rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
-                                                      HSE_REQ_SEND_RESPONSE_HEADER,
-                                                      status_str,
-                                                      &status_str_len,
-                                                      (LPDWORD)headers_str);
-            }
-
-            if (!rc) {
-                jk_log(logger, JK_LOG_ERROR,
-                       "HSE_REQ_SEND_RESPONSE_HEADER%s failed with error=%d (0x%08x)",
-                       (keep_alive ? "_EX" : ""), GetLastError(), GetLastError());
-                rv = JK_FALSE;
-            }
-            if (headers_str)
-                free(headers_str);
-            if (status_str)
-                free(status_str);
-        }
+    if (s == NULL || s->ws_private == NULL) {
+        JK_LOG_NULL_PARAMS(logger);
         JK_TRACE_EXIT(logger);
-        return rv;
+        return JK_FALSE;
     }
+    p = s->ws_private;
 
-    JK_LOG_NULL_PARAMS(logger);
-    JK_TRACE_EXIT(logger);
-    return JK_FALSE;
-}
-
-static int JK_METHOD iis_read(jk_ws_service_t *s,
-                          void *b, unsigned int l, unsigned int *a)
-{
-    JK_TRACE_ENTER(logger);
-
-    if (s && s->ws_private && b && a) {
-        isapi_private_data_t *p = s->ws_private;
-
-        if (JK_IS_DEBUG_LEVEL(logger)) {
-            jk_log(logger, JK_LOG_DEBUG,
-                   "Preparing to read %d bytes. "
-                   "ECB reports %d bytes total, with %d available.",
-                   l, p->lpEcb->cbTotalBytes, p->lpEcb->cbAvailable);
-        }
-
-        *a = 0;
-        if (l) {
-            char *buf = b;
-            DWORD already_read = p->lpEcb->cbAvailable - p->bytes_read_so_far;
-
-            if (already_read >= l) {
-                if (JK_IS_DEBUG_LEVEL(logger)) {
-                    jk_log(logger, JK_LOG_DEBUG,
-                           "Already read %d bytes - supplying %d bytes from buffer",
-                           already_read, l);
-                }
-                memcpy(buf, p->lpEcb->lpbData + p->bytes_read_so_far, l);
-                p->bytes_read_so_far += l;
-                *a = l;
-            }
-            else {
-                /*
-                 * Try to copy what we already have
-                 */
-                if (already_read > 0) {
-                    if (JK_IS_DEBUG_LEVEL(logger)) {
-                        jk_log(logger, JK_LOG_DEBUG,
-                               "Supplying %d bytes from buffer",
-                               already_read);
-                    }
-                    memcpy(buf, p->lpEcb->lpbData + p->bytes_read_so_far,
-                           already_read);
-                    buf += already_read;
-                    l -= already_read;
-                    p->bytes_read_so_far = p->lpEcb->cbAvailable;
-
-                    *a = already_read;
-                }
-
-                /*
-                 * Now try to read from the client ...
-                 */
-                if (JK_IS_DEBUG_LEVEL(logger)) {
-                    jk_log(logger, JK_LOG_DEBUG,
-                           "Attempting to read %d bytes from client", l);
-                }
-                if (p->lpEcb->ReadClient(p->lpEcb->ConnID, buf, &l)) {
-                    /* ReadClient will succeed with dwSize == 0 for last chunk
-                       if request chunk encoded */
-                    *a += l;
-                }
-                else {
-                    jk_log(logger, JK_LOG_ERROR,
-                           "ReadClient failed with %d (0x%08x)", GetLastError(), GetLastError());
-                    JK_TRACE_EXIT(logger);
-                    return JK_FALSE;
+    /* If we use proxy error pages, still pass
+     * through context headers needed for special status codes.
+     */
+    if (s->extension.use_server_error_pages &&
+        status >= s->extension.use_server_error_pages) {
+        if (status == JK_HTTP_UNAUTHORIZED) {
+            int found = JK_FALSE;
+            unsigned int h;
+            for (h = 0; h < num_of_headers; h++) {
+                if (!strcasecmp(header_names[h], "WWW-Authenticate")) {
+                    p->err_hdrs = jk_pool_strcatv(&p->p,
+                                        "WWW-Authenticate:",
+                                        header_values[h], CRLF, NULL);
+                    found = JK_TRUE;
                 }
             }
+            if (found == JK_FALSE) {
+                jk_log(logger, JK_LOG_INFO,
+                       "origin server sent 401 without"
+                       " WWW-Authenticate header");
+            }
         }
-        JK_TRACE_EXIT(logger);
         return JK_TRUE;
     }
 
-    JK_LOG_NULL_PARAMS(logger);
+    if (!s->response_started) {
+        char *status_str = NULL;
+        char *headers_str = NULL;
+        BOOL keep_alive = FALSE;     /* Whether the downstream or us can supply content length */
+        BOOL rc;
+        size_t i, len_of_headers = 0;
+
+        s->response_started = JK_TRUE;
+
+        if (JK_IS_DEBUG_LEVEL(logger)) {
+            jk_log(logger, JK_LOG_DEBUG, "Starting response for URI '%s' (protocol %s)",
+                   s->req_uri, s->protocol);
+        }
+
+        /*
+         * Create the status line
+         */
+        if (!reason) {
+            reason = status_reason(status);
+        }
+        status_str = (char *)malloc((6 + strlen(reason)));
+        StringCbPrintf(status_str, 6 + strlen(reason), "%d %s", status, reason);
+
+        if (chunked_encoding_enabled) {
+            /* Check if we've got an HTTP/1.1 response */
+            if (!strcasecmp(s->protocol, "HTTP/1.1")) {
+                keep_alive = TRUE;
+                /* Chunking only when HTTP/1.1 client and enabled */
+                p->chunk_content = JK_TRUE;
+            }
+        }
+
+        /*
+         * Create response headers string
+         */
+
+        /* Calculate length of headers block */
+        for (i = 0; i < num_of_headers; i++) {
+            len_of_headers += strlen(header_names[i]);
+            len_of_headers += strlen(header_values[i]);
+            len_of_headers += 4;   /* extra for colon, space and crlf */
+        }
+
+        /*
+         * Exclude status codes that MUST NOT include message bodies
+         */
+        if ((status == 204) || (status == 205) || (status == 304)) {
+            p->chunk_content = JK_FALSE;
+            /* Keep alive is still possible */
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG, "Response status %d implies no message body", status );
+        }
+        if (p->chunk_content) {
+            for (i = 0; i < num_of_headers; i++) {
+                /* Check the downstream response to see whether
+                 * it's appropriate to chunk the response content
+                 * and whether it supports keeping the connection open.
+
+                 * This implements the rules for HTTP/1.1 message length determination
+                 * with the exception of multipart/byteranges media types.
+                 * http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.4
+                 */
+                if (!strcasecmp(CONTENT_LENGTH_HEADER_NAME, header_names[i])) {
+                    p->chunk_content = JK_FALSE;
+                    if (JK_IS_DEBUG_LEVEL(logger))
+                        jk_log(logger, JK_LOG_DEBUG, "Response specifies Content-Length" );
+                }
+                else if (!strcasecmp(CONNECTION_HEADER_NAME, header_names[i])
+                        && !strcasecmp(CONNECTION_CLOSE_VALUE, header_values[i])) {
+                    keep_alive = FALSE;
+                    p->chunk_content = JK_FALSE;
+                    if (JK_IS_DEBUG_LEVEL(logger))
+                        jk_log(logger, JK_LOG_DEBUG, "Response specifies Connection: Close" );
+                }
+                else if (!strcasecmp(TRANSFER_ENCODING_HEADER_NAME, header_names[i])
+                        && !strcasecmp(TRANSFER_ENCODING_IDENTITY_VALUE, header_values[i])) {
+                    /* HTTP states that this must include 'chunked' as the last value.
+                        * 'identity' is the same as absence of the header */
+                    p->chunk_content = JK_FALSE;
+                    if (JK_IS_DEBUG_LEVEL(logger))
+                        jk_log(logger, JK_LOG_DEBUG, "Response specifies Transfer-Encoding" );
+                }
+            }
+
+            /* Provide room in the buffer for the Transfer-Encoding header if we use it. */
+            len_of_headers += TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE_LEN + 2;
+        }
+
+        /* Allocate and init the headers string */
+        len_of_headers += 3;       /* crlf and terminating null char */
+        headers_str = (char *)malloc(len_of_headers);
+        headers_str[0] = '\0';
+
+        /* Copy headers into headers block for sending */
+        for (i = 0; i < num_of_headers; i++) {
+            StringCbCat(headers_str, len_of_headers, header_names[i]);
+            StringCbCat(headers_str, len_of_headers, ": ");
+            StringCbCat(headers_str, len_of_headers, header_values[i]);
+            StringCbCat(headers_str, len_of_headers, CRLF);
+        }
+
+        if (p->chunk_content) {
+            /* Configure the response if chunked encoding is used */
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG, "Using Transfer-Encoding: chunked");
+
+            /** We will supply the transfer-encoding to allow IIS to keep the connection open */
+            keep_alive = TRUE;
+
+            /* Indicate to the client that the content will be chunked
+            - We've already reserved space for this */
+            StringCbCat(headers_str, len_of_headers, TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE);
+            StringCbCat(headers_str, len_of_headers, CRLF);
+        }
+
+        /* Terminate the headers */
+        StringCbCat(headers_str, len_of_headers, CRLF);
+
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG, "%ssing Keep-Alive", (keep_alive ? "U" : "Not u"));
+
+        if (keep_alive) {
+            HSE_SEND_HEADER_EX_INFO hi;
+
+            /* Fill in the response */
+            hi.pszStatus = status_str;
+            hi.pszHeader = headers_str;
+            hi.cchStatus = (DWORD)strlen(status_str);
+            hi.cchHeader = (DWORD)strlen(headers_str);
+
+            /*
+             * Using the extended form of the API means we have to get this right,
+             * i.e. IIS won't keep connections open if there's a Content-Length and close them if there isn't.
+             */
+            hi.fKeepConn = keep_alive;
+
+            /* Send the response to the client */
+            rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                                                  HSE_REQ_SEND_RESPONSE_HEADER_EX,
+                                                  &hi,
+                                                  NULL, NULL);
+        }
+        else {
+            DWORD status_str_len = (DWORD)strlen(status_str);
+            /* Old style response - forces Connection: close if Tomcat response doesn't
+               specify necessary details to allow keep alive */
+            rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                                                  HSE_REQ_SEND_RESPONSE_HEADER,
+                                                  status_str,
+                                                  &status_str_len,
+                                                  (LPDWORD)headers_str);
+        }
+
+        if (!rc) {
+            jk_log(logger, JK_LOG_ERROR,
+                   "HSE_REQ_SEND_RESPONSE_HEADER%s failed with error=%d (0x%08x)",
+                   (keep_alive ? "_EX" : ""), GetLastError(), GetLastError());
+            rv = JK_FALSE;
+        }
+        if (headers_str)
+            free(headers_str);
+        if (status_str)
+            free(status_str);
+    }
     JK_TRACE_EXIT(logger);
-    return JK_FALSE;
+    return rv;
+}
+
+static int JK_METHOD iis_read(jk_ws_service_t *s,
+                              void *b, unsigned int l, unsigned int *a)
+{
+    isapi_private_data_t *p;
+
+    JK_TRACE_ENTER(logger);
+    if (s == NULL || s->ws_private == NULL) {
+        JK_LOG_NULL_PARAMS(logger);
+        JK_TRACE_EXIT(logger);
+        return JK_FALSE;
+    }
+    if (a == NULL  || b == NULL) {
+        /* XXX: Do we really need those useless checks?
+         */
+        JK_LOG_NULL_PARAMS(logger);
+        JK_TRACE_EXIT(logger);
+        return JK_FALSE;
+
+    }
+    p = s->ws_private;
+    if (JK_IS_DEBUG_LEVEL(logger)) {
+        jk_log(logger, JK_LOG_DEBUG,
+               "Preparing to read %d bytes. "
+               "ECB reports %d bytes total, with %d available.",
+               l, p->lpEcb->cbTotalBytes, p->lpEcb->cbAvailable);
+    }
+
+    *a = 0;
+    if (l) {
+        char *buf = b;
+        DWORD already_read = p->lpEcb->cbAvailable - p->bytes_read_so_far;
+
+        if (already_read >= l) {
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG,
+                       "Already read %d bytes - supplying %d bytes from buffer",
+                       already_read, l);
+            }
+            memcpy(buf, p->lpEcb->lpbData + p->bytes_read_so_far, l);
+            p->bytes_read_so_far += l;
+            *a = l;
+        }
+        else {
+            /*
+             * Try to copy what we already have
+             */
+            if (already_read > 0) {
+                if (JK_IS_DEBUG_LEVEL(logger)) {
+                    jk_log(logger, JK_LOG_DEBUG,
+                           "Supplying %d bytes from buffer",
+                           already_read);
+                }
+                memcpy(buf, p->lpEcb->lpbData + p->bytes_read_so_far,
+                       already_read);
+                buf += already_read;
+                l -= already_read;
+                p->bytes_read_so_far = p->lpEcb->cbAvailable;
+
+                *a = already_read;
+            }
+
+            /*
+             * Now try to read from the client ...
+             */
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG,
+                       "Attempting to read %d bytes from client", l);
+            }
+            if (p->lpEcb->ReadClient(p->lpEcb->ConnID, buf, &l)) {
+                /* ReadClient will succeed with dwSize == 0 for last chunk
+                   if request chunk encoded */
+                *a += l;
+            }
+            else {
+                jk_log(logger, JK_LOG_ERROR,
+                       "ReadClient failed with %d (0x%08x)", GetLastError(), GetLastError());
+                JK_TRACE_EXIT(logger);
+                return JK_FALSE;
+            }
+        }
+    }
+    JK_TRACE_EXIT(logger);
+    return JK_TRUE;
 }
 
 /*
