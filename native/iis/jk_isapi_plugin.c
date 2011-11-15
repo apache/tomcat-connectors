@@ -82,8 +82,9 @@
 #define TOMCAT_TRANSLATE_HEADER_NAME_BASE ("TOMCATTRANSLATE")
 #ifndef USE_CGI_HEADERS
 #define CONTENT_LENGTH                    ("CONTENT-LENGTH:")
+#define ALL_HEADERS                       ("ALL_RAW")
 #else
-#define CONTENT_LENGTH                    ("CONTENT_LENGTH:")
+#define ALL_HEADERS                       ("ALL_HTTP")
 #endif
 
 /* The HTTP_ form of the header for use in ExtensionProc */
@@ -445,26 +446,21 @@ static struct error_reasons {
 
 #define ISIZEOF(X)      (int)sizeof(X)
 
-#define GET_SERVER_VARIABLE_VALUE(name, place)          \
-  do {                                                  \
-    (place) = NULL;                                     \
-    huge_buf_sz = MAX_PACKET_SIZE;                      \
-    if (get_server_value(private_data->lpEcb,           \
-                        (name),                         \
-                        huge_buf,                       \
-                        huge_buf_sz)) {                 \
-        (place) = jk_pool_strdup(&private_data->p,      \
-                                 huge_buf);             \
-  } } while(0)
+#define GET_SERVER_VARIABLE_VALUE(name, place)              \
+  do {                                                      \
+    (place) = dup_server_value(private_data->lpEcb,         \
+                               (name),                      \
+                               &private_data->p);           \
+  } while(0)
 
 #define GET_SERVER_VARIABLE_VALUE_INT(name, place, def)     \
   do {                                                      \
-    huge_buf_sz = MAX_PACKET_SIZE;                          \
+    char _tb[RES_BUFFER_SIZE];                              \
     if (get_server_value(private_data->lpEcb,               \
                         (name),                             \
-                        huge_buf,                           \
-                        huge_buf_sz)) {                     \
-        (place) = atoi(huge_buf);                           \
+                        _tb,                                \
+                        RES_BUFFER_SIZE)) {                 \
+        (place) = atoi(_tb);                                \
         if (((place) == 0) && (errno == EINVAL ||           \
                                errno == ERANGE)) {          \
             (place) = def;                                  \
@@ -594,6 +590,9 @@ static int get_registry_config_number(HKEY hkey, const char *tag,
 static BOOL get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
                              char *name,
                              char *buf, size_t bufsz);
+
+static char *dup_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
+                              const char *name, jk_pool_t *p);
 
 static int base64_encode_cert_len(int len);
 
@@ -3114,17 +3113,11 @@ static int get_registry_config_number(HKEY hkey,
 static int init_ws_service(isapi_private_data_t * private_data,
                            jk_ws_service_t *s, char **worker_name)
 {
-    char *huge_buf = NULL;   /* should be enough for all */
+    char *all_headers;
     int worker_index = -1;
     rule_extension_t *e;
     char  temp_buf[64];
-    DWORD huge_buf_sz;
     BOOL  unknown_content_length = FALSE;
-#ifndef USE_CGI_HEADERS
-    char *all_hdrs = "ALL_RAW";
-#else
-    char *all_hdrs = "ALL_HTTP";
-#endif
     unsigned int cnt = 0;
     char *tmp;
 
@@ -3136,11 +3129,6 @@ static int init_ws_service(isapi_private_data_t * private_data,
     s->write = iis_write;
     s->done  = iis_done;
 
-    if (!(huge_buf = jk_pool_alloc(&private_data->p, MAX_PACKET_SIZE))) {
-        JK_TRACE_EXIT(logger);
-        return JK_FALSE;
-    }
-    huge_buf_sz = MAX_PACKET_SIZE;
     GET_SERVER_VARIABLE_VALUE(HTTP_WORKER_HEADER_NAME, (*worker_name));
     GET_SERVER_VARIABLE_VALUE(HTTP_URI_HEADER_NAME, s->req_uri);
     GET_SERVER_VARIABLE_VALUE(HTTP_QUERY_HEADER_NAME, s->query_string);
@@ -3272,14 +3260,16 @@ static int init_ws_service(isapi_private_data_t * private_data,
         /* XXX: To make the isapi plugin more consistent with the other web servers */
         /* we should also set s->ssl_cipher, s->ssl_session, and s->ssl_key_size. */
         if (num_of_vars) {
-            unsigned int j;
+            unsigned int j = 0;
 
-            s->attributes_names =
-                jk_pool_alloc(&private_data->p, num_of_vars * sizeof(char *));
-            s->attributes_values =
-                jk_pool_alloc(&private_data->p, num_of_vars * sizeof(char *));
-
-            j = 0;
+            s->attributes_names  = jk_pool_alloc(&private_data->p,
+                                                 num_of_vars * sizeof(char *));
+            s->attributes_values = jk_pool_alloc(&private_data->p,
+                                                 num_of_vars * sizeof(char *));
+            if (!s->attributes_names || !s->attributes_values) {
+                JK_TRACE_EXIT(logger);
+                return JK_FALSE;
+            }
             for (i = 0; i < 9; i++) {
                 if (ssl_env_values[i]) {
                     s->attributes_names[j] = ssl_env_names[i];
@@ -3290,12 +3280,17 @@ static int init_ws_service(isapi_private_data_t * private_data,
             s->num_attributes = num_of_vars;
             if (ssl_env_values[4] && ssl_env_values[4][0] == '1') {
                 CERT_CONTEXT_EX cc;
+                BYTE *cb = jk_pool_alloc(&private_data->p, MAX_PACKET_SIZE);
+
+                if (!cb) {
+                    JK_TRACE_EXIT(logger);
+                    return JK_FALSE;                    
+                }
                 cc.cbAllocated = MAX_PACKET_SIZE;
-                cc.CertContext.pbCertEncoded = (BYTE *) huge_buf;
+                cc.CertContext.pbCertEncoded = cb;
                 cc.CertContext.cbCertEncoded = 0;
 
-                if (private_data->lpEcb->
-                    ServerSupportFunction(private_data->lpEcb->ConnID,
+                if (private_data->lpEcb->ServerSupportFunction(private_data->lpEcb->ConnID,
                                           HSE_REQ_GET_CERT_INFO_EX,
                                           &cc, NULL, NULL) != FALSE) {
                     jk_log(logger, JK_LOG_DEBUG,
@@ -3305,49 +3300,27 @@ static int init_ws_service(isapi_private_data_t * private_data,
                            cc.CertContext.cbCertEncoded,
                            cc.dwCertificateFlags);
                     s->ssl_cert = jk_pool_alloc(&private_data->p,
-                                      base64_encode_cert_len(cc.CertContext.
-                                                             cbCertEncoded));
-                    s->ssl_cert_len = base64_encode_cert(s->ssl_cert,
-                                                         huge_buf,
-                                                         cc.CertContext.
-                                                         cbCertEncoded) - 1;
+                                      base64_encode_cert_len(cc.CertContext.cbCertEncoded));
+                    s->ssl_cert_len = base64_encode_cert(s->ssl_cert, cb,
+                                                         cc.CertContext.cbCertEncoded) - 1;
                 }
             }
         }
     }
 
-    huge_buf_sz = MAX_PACKET_SIZE;
-    if (!private_data->lpEcb->GetServerVariable(private_data->lpEcb,
-                                                all_hdrs,
-                                                huge_buf,
-                                                &huge_buf_sz)) {
-        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
-            JK_TRACE_EXIT(logger);
-            return JK_FALSE;
-        }
-        /* User has more then 64K of headers.
-         * Resize initial buffer
-         */
-        if (!(huge_buf = jk_pool_alloc(&private_data->p, MAX_PACKET_SIZE))) {
-            JK_TRACE_EXIT(logger);
-            return JK_FALSE;
-        }
-        if (!private_data->lpEcb->GetServerVariable(private_data->lpEcb,
-                                                    all_hdrs,
-                                                    huge_buf,
-                                                    &huge_buf_sz)) {
-            JK_TRACE_EXIT(logger);
-            return JK_FALSE;
-        }
+    GET_SERVER_VARIABLE_VALUE(ALL_HEADERS, all_headers);
+    if (!all_headers) {
+        JK_TRACE_EXIT(logger);
+        return JK_FALSE;
     }
-    for (tmp = huge_buf; *tmp; tmp++) {
+    for (tmp = all_headers; *tmp; tmp++) {
         if (*tmp == '\n') {
             cnt++;
         }
     }
 
     if (cnt) {
-        char *headers_buf = huge_buf;
+        char *headers_buf = all_headers;
         unsigned int i;
         BOOL need_content_length_header = FALSE;
 
@@ -3358,12 +3331,11 @@ static int init_ws_service(isapi_private_data_t * private_data,
         }
 
         /* allocate an extra header slot in case we need to add a content-length header */
-        s->headers_names =
-            jk_pool_alloc(&private_data->p, (cnt + 1) * sizeof(char *));
-        s->headers_values =
-            jk_pool_alloc(&private_data->p, (cnt + 1) * sizeof(char *));
-
-        if (!s->headers_names || !s->headers_values || !headers_buf) {
+        s->headers_names  = jk_pool_alloc(&private_data->p,
+                                         (cnt + 1) * sizeof(char *));
+        s->headers_values = jk_pool_alloc(&private_data->p,
+                                         (cnt + 1) * sizeof(char *));
+        if (!s->headers_names || !s->headers_values) {
             JK_TRACE_EXIT(logger);
             return JK_FALSE;
         }
@@ -3429,8 +3401,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
 #endif
                 tmp++;
             }
-            *tmp = '\0';
-            tmp++;
+            *tmp++ = '\0';
 
             /* Skip all the WS chars after the ':' to the beginning of the header value */
             while (' ' == *tmp || '\t' == *tmp || '\v' == *tmp) {
@@ -3444,9 +3415,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
             while (*tmp && *tmp != '\n' && *tmp != '\r') {
                 tmp++;
             }
-            *tmp = '\0';
-            tmp++;
-
+            *tmp++ = '\0';
             /* skip CR LF */
             while (*tmp == '\n' || *tmp == '\r') {
                 tmp++;
@@ -3517,6 +3486,24 @@ static BOOL get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
     buf[0]   = '\0';
     return lpEcb->GetServerVariable(lpEcb->ConnID, name,
                                     buf, &sz);
+}
+
+static char *dup_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
+                              const char *name, jk_pool_t *p)
+{
+    DWORD sz = HDR_BUFFER_SIZE;    
+    char buf[HDR_BUFFER_SIZE];
+    char *dp;
+
+    if (lpEcb->GetServerVariable(lpEcb->ConnID, (LPSTR)name, buf, &sz))
+        return jk_pool_strdup(p, buf);    
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        return NULL;    
+    if ((dp = jk_pool_alloc(p, sz))) {
+        if (lpEcb->GetServerVariable(lpEcb->ConnID, (LPSTR)name, dp, &sz))
+            return dp;
+    }
+    return NULL;    
 }
 
 static const char begin_cert[] = "-----BEGIN CERTIFICATE-----\r\n";
