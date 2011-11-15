@@ -163,9 +163,6 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define CHUNKED_ENCODING_TRAILER     "0\r\n\r\n"
 #define CHUNKED_ENCODING_TRAILER_LEN 5
 
-/* Hex of chunk length (one char per byte) + CRLF + terminator. */
-#define CHUNK_HEADER_BUFFER_SIZE     (sizeof(unsigned int)*2+CRLF_LEN+1)
-
 #define BAD_REQUEST     -1
 #define BAD_PATH        -2
 #define MAX_SERVERNAME  1024
@@ -1327,10 +1324,10 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
             }
         }
         else {
-            char chunk_header[CHUNK_HEADER_BUFFER_SIZE];
+            char chunk_header[RES_BUFFER_SIZE];
 
             /* Construct chunk header : HEX CRLF*/
-            StringCbPrintf(chunk_header, CHUNK_HEADER_BUFFER_SIZE, "%X%s", l, CRLF);
+            StringCbPrintf(chunk_header, RES_BUFFER_SIZE, "%X%s", l, CRLF);
 
             if (iis_info.major >= 6) {
                 HSE_RESPONSE_VECTOR response_vector;
