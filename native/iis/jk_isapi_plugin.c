@@ -1297,121 +1297,113 @@ static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned
  */
 static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l)
 {
-    JK_TRACE_ENTER(logger);
+    isapi_private_data_t *p;
+    const char *buf = (const char *)b;
 
+    JK_TRACE_ENTER(logger);
     if (!l) {
         JK_TRACE_EXIT(logger);
         return JK_TRUE;
     }
+    if (s == NULL || s->ws_private == NULL || b == NULL) {
+        JK_LOG_NULL_PARAMS(logger);
+        JK_TRACE_EXIT(logger);
+        return JK_FALSE;
+    }
+    p = s->ws_private;
 
-    if (s && s->ws_private && b) {
-        isapi_private_data_t *p = s->ws_private;
-        const char *buf = (const char *)b;
+    if (!s->response_started) {
+        start_response(s, 200, NULL, NULL, NULL, 0);
+    }
 
-        if (!p) {
+    if (p->chunk_content == JK_FALSE) {
+        if (isapi_write_client(p, buf, l) == JK_FALSE) {
             JK_TRACE_EXIT(logger);
             return JK_FALSE;
         }
+    }
+    else {
+        char chunk_header[RES_BUFFER_SIZE];
 
-        if (!s->response_started) {
-            start_response(s, 200, NULL, NULL, NULL, 0);
+        /* Construct chunk header : HEX CRLF*/
+        StringCbPrintf(chunk_header, RES_BUFFER_SIZE, "%X%s", l, CRLF);
+
+        if (iis_info.major >= 6) {
+            HSE_RESPONSE_VECTOR response_vector;
+            HSE_VECTOR_ELEMENT response_elements[3];
+
+            response_elements[0].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+            response_elements[0].pvContext = chunk_header;
+            response_elements[0].cbOffset = 0;
+            response_elements[0].cbSize = strlen(chunk_header);
+
+            response_elements[1].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+            response_elements[1].pvContext = (PVOID)buf;
+            response_elements[1].cbOffset = 0;
+            response_elements[1].cbSize = l;
+
+            response_elements[2].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+            response_elements[2].pvContext = CRLF;
+            response_elements[2].cbOffset = 0;
+            response_elements[2].cbSize = CRLF_LEN;
+
+            response_vector.dwFlags = HSE_IO_SYNC;
+            response_vector.pszStatus = NULL;
+            response_vector.pszHeaders = NULL;
+            response_vector.nElementCount = 3;
+            response_vector.lpElementArray = response_elements;
+
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG,
+                       "Using vector write for chunk encoded %d byte chunk", l);
+
+            if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                HSE_REQ_VECTOR_SEND,
+                &response_vector,
+                NULL, NULL)) {
+                    jk_log(logger, JK_LOG_ERROR,
+                           "Vector write of chunk encoded response failed with %d (0x%08x)",
+                           GetLastError(), GetLastError());
+                    JK_TRACE_EXIT(logger);
+                    return JK_FALSE;
+            }
         }
+        else {
+            /* Write chunk header */
+            if (JK_IS_DEBUG_LEVEL(logger))
+                jk_log(logger, JK_LOG_DEBUG,
+                "Using chunked encoding - writing chunk header for %d byte chunk", l);
 
-        if (p->chunk_content == JK_FALSE) {
-            if (isapi_write_client(p, buf, l) == JK_FALSE) {
+            if (!isapi_write_client(p, chunk_header, (unsigned int)strlen(chunk_header))) {
+                jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk header failed");
+                JK_TRACE_EXIT(logger);
+                return JK_FALSE;
+            }
+
+            /* Write chunk body (or simple body block) */
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG, "Writing %s of size %d",
+                       (p->chunk_content ? "chunk body" : "simple response"), l);
+            }
+            if (!isapi_write_client(p, buf, l)) {
+                jk_log(logger, JK_LOG_ERROR, "WriteClient for response body chunk failed");
+                JK_TRACE_EXIT(logger);
+                return JK_FALSE;
+            }
+            /* Write chunk trailer */
+            if (JK_IS_DEBUG_LEVEL(logger)) {
+                jk_log(logger, JK_LOG_DEBUG, "Using chunked encoding - writing chunk trailer");
+            }
+
+            if (!isapi_write_client(p, CRLF, CRLF_LEN)) {
+                jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk trailer failed");
                 JK_TRACE_EXIT(logger);
                 return JK_FALSE;
             }
         }
-        else {
-            char chunk_header[RES_BUFFER_SIZE];
-
-            /* Construct chunk header : HEX CRLF*/
-            StringCbPrintf(chunk_header, RES_BUFFER_SIZE, "%X%s", l, CRLF);
-
-            if (iis_info.major >= 6) {
-                HSE_RESPONSE_VECTOR response_vector;
-                HSE_VECTOR_ELEMENT response_elements[3];
-
-                response_elements[0].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
-                response_elements[0].pvContext = chunk_header;
-                response_elements[0].cbOffset = 0;
-                response_elements[0].cbSize = strlen(chunk_header);
-
-                response_elements[1].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
-                response_elements[1].pvContext = (PVOID)buf;
-                response_elements[1].cbOffset = 0;
-                response_elements[1].cbSize = l;
-
-                response_elements[2].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
-                response_elements[2].pvContext = CRLF;
-                response_elements[2].cbOffset = 0;
-                response_elements[2].cbSize = CRLF_LEN;
-
-                response_vector.dwFlags = HSE_IO_SYNC;
-                response_vector.pszStatus = NULL;
-                response_vector.pszHeaders = NULL;
-                response_vector.nElementCount = 3;
-                response_vector.lpElementArray = response_elements;
-
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG,
-                           "Using vector write for chunk encoded %d byte chunk", l);
-
-                if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
-                    HSE_REQ_VECTOR_SEND,
-                    &response_vector,
-                    NULL, NULL)) {
-                        jk_log(logger, JK_LOG_ERROR,
-                               "Vector write of chunk encoded response failed with %d (0x%08x)",
-                               GetLastError(), GetLastError());
-                        JK_TRACE_EXIT(logger);
-                        return JK_FALSE;
-                }
-            }
-            else {
-                /* Write chunk header */
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG,
-                    "Using chunked encoding - writing chunk header for %d byte chunk", l);
-
-                if (!isapi_write_client(p, chunk_header, (unsigned int)strlen(chunk_header))) {
-                    jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk header failed");
-                    JK_TRACE_EXIT(logger);
-                    return JK_FALSE;
-                }
-
-                /* Write chunk body (or simple body block) */
-                if (JK_IS_DEBUG_LEVEL(logger)) {
-                    jk_log(logger, JK_LOG_DEBUG, "Writing %s of size %d",
-                           (p->chunk_content ? "chunk body" : "simple response"), l);
-                }
-                if (!isapi_write_client(p, buf, l)) {
-                    jk_log(logger, JK_LOG_ERROR, "WriteClient for response body chunk failed");
-                    JK_TRACE_EXIT(logger);
-                    return JK_FALSE;
-                }
-                /* Write chunk trailer */
-                if (JK_IS_DEBUG_LEVEL(logger)) {
-                    jk_log(logger, JK_LOG_DEBUG, "Using chunked encoding - writing chunk trailer");
-                }
-
-                if (!isapi_write_client(p, CRLF, CRLF_LEN)) {
-                    jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk trailer failed");
-                    JK_TRACE_EXIT(logger);
-                    return JK_FALSE;
-                }
-            }
-        }
-
-        JK_TRACE_EXIT(logger);
-        return JK_TRUE;
-
     }
-
-    JK_LOG_NULL_PARAMS(logger);
     JK_TRACE_EXIT(logger);
-    return JK_FALSE;
+    return JK_TRUE;
 }
 
 /**
@@ -1419,68 +1411,67 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
  */
 static int JK_METHOD iis_done(jk_ws_service_t *s)
 {
+    isapi_private_data_t *p;
+
     JK_TRACE_ENTER(logger);
-
-    if (s && s->ws_private) {
-        isapi_private_data_t *p = s->ws_private;
-
-        if (p->chunk_content == JK_FALSE) {
-            JK_TRACE_EXIT(logger);
-            return JK_TRUE;
-        }
-
-        /* Write last chunk + terminator */
-        if (iis_info.major >= 6) {
-            HSE_RESPONSE_VECTOR response_vector;
-            HSE_VECTOR_ELEMENT response_elements[1];
-
-            response_elements[0].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
-            response_elements[0].pvContext = CHUNKED_ENCODING_TRAILER;
-            response_elements[0].cbOffset = 0;
-            response_elements[0].cbSize = CHUNKED_ENCODING_TRAILER_LEN;
-
-            /* HSE_IO_FINAL_SEND lets IIS process the response to the client before we return */
-            response_vector.dwFlags = HSE_IO_SYNC | HSE_IO_FINAL_SEND;
-            response_vector.pszStatus = NULL;
-            response_vector.pszHeaders = NULL;
-            response_vector.nElementCount = 1;
-            response_vector.lpElementArray = response_elements;
-
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG,
-                       "Using vector write to terminate chunk encoded response.");
-
-            if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
-                                                 HSE_REQ_VECTOR_SEND,
-                                                 &response_vector,
-                                                 NULL, NULL)) {
-                    jk_log(logger, JK_LOG_ERROR,
-                           "Vector termination of chunk encoded response failed with %d (0x%08x)",
-                           GetLastError(), GetLastError());
-                    JK_TRACE_EXIT(logger);
-                    return JK_FALSE;
-            }
-        }
-        else {
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG, "Terminating chunk encoded response");
-
-            if (!isapi_write_client(p, CHUNKED_ENCODING_TRAILER, CHUNKED_ENCODING_TRAILER_LEN)) {
-                jk_log(logger, JK_LOG_ERROR,
-                       "WriteClient for chunked response terminator failed with %d (0x%08x)",
-                       GetLastError(), GetLastError());
-                JK_TRACE_EXIT(logger);
-                return JK_FALSE;
-            }
-        }
-
+    if (s == NULL || s->ws_private == NULL) {
+        JK_LOG_NULL_PARAMS(logger);
+        JK_TRACE_EXIT(logger);
+        return JK_FALSE;
+    }
+    p = s->ws_private;
+    if (p->chunk_content == JK_FALSE) {
         JK_TRACE_EXIT(logger);
         return JK_TRUE;
     }
 
-    JK_LOG_NULL_PARAMS(logger);
+    /* Write last chunk + terminator */
+    if (iis_info.major >= 6) {
+        HSE_RESPONSE_VECTOR response_vector;
+        HSE_VECTOR_ELEMENT response_elements[1];
+
+        response_elements[0].ElementType = HSE_VECTOR_ELEMENT_TYPE_MEMORY_BUFFER;
+        response_elements[0].pvContext = CHUNKED_ENCODING_TRAILER;
+        response_elements[0].cbOffset = 0;
+        response_elements[0].cbSize = CHUNKED_ENCODING_TRAILER_LEN;
+
+        /* HSE_IO_FINAL_SEND lets IIS process the response to the client before we return */
+        response_vector.dwFlags = HSE_IO_SYNC | HSE_IO_FINAL_SEND;
+        response_vector.pszStatus = NULL;
+        response_vector.pszHeaders = NULL;
+        response_vector.nElementCount = 1;
+        response_vector.lpElementArray = response_elements;
+
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG,
+                   "Using vector write to terminate chunk encoded response.");
+
+        if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
+                                             HSE_REQ_VECTOR_SEND,
+                                             &response_vector,
+                                             NULL, NULL)) {
+                jk_log(logger, JK_LOG_ERROR,
+                       "Vector termination of chunk encoded response failed with %d (0x%08x)",
+                       GetLastError(), GetLastError());
+                JK_TRACE_EXIT(logger);
+                return JK_FALSE;
+        }
+    }
+    else {
+        if (JK_IS_DEBUG_LEVEL(logger))
+            jk_log(logger, JK_LOG_DEBUG, "Terminating chunk encoded response");
+
+        if (!isapi_write_client(p, CHUNKED_ENCODING_TRAILER, CHUNKED_ENCODING_TRAILER_LEN)) {
+            jk_log(logger, JK_LOG_ERROR,
+                   "WriteClient for chunked response terminator failed with %d (0x%08x)",
+                   GetLastError(), GetLastError());
+            JK_TRACE_EXIT(logger);
+            return JK_FALSE;
+        }
+    }
+
     JK_TRACE_EXIT(logger);
-    return JK_FALSE;
+    return JK_TRUE;
 }
 
 BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
@@ -3281,7 +3272,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
                 if (!cb) {
                     JK_TRACE_EXIT(logger);
-                    return JK_FALSE;                    
+                    return JK_FALSE;
                 }
                 cc.cbAllocated = MAX_PACKET_SIZE;
                 cc.CertContext.pbCertEncoded = cb;
@@ -3488,19 +3479,19 @@ static BOOL get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
 static char *dup_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
                               const char *name, jk_pool_t *p)
 {
-    DWORD sz = HDR_BUFFER_SIZE;    
+    DWORD sz = HDR_BUFFER_SIZE;
     char buf[HDR_BUFFER_SIZE];
     char *dp;
 
     if (lpEcb->GetServerVariable(lpEcb->ConnID, (LPSTR)name, buf, &sz))
-        return jk_pool_strdup(p, buf);    
+        return jk_pool_strdup(p, buf);
     if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-        return NULL;    
+        return NULL;
     if ((dp = jk_pool_alloc(p, sz))) {
         if (lpEcb->GetServerVariable(lpEcb->ConnID, (LPSTR)name, dp, &sz))
             return dp;
     }
-    return NULL;    
+    return NULL;
 }
 
 static const char begin_cert[] = "-----BEGIN CERTIFICATE-----\r\n";
