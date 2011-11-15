@@ -48,7 +48,7 @@
 #include "pcre.h"
 
 #ifndef POSIX_MALLOC_THRESHOLD
-#define POSIX_MALLOC_THRESHOLD (10)
+#define POSIX_MALLOC_THRESHOLD 10
 #endif
 
 #include <strsafe.h>
@@ -56,7 +56,7 @@
 #define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION
 #define FULL_VERSION_STRING "Jakarta/ISAPI/" JK_FULL_EXPOSED_VERSION
 #define SHM_DEF_NAME   "JKISAPISHMEM"
-#define DEFAULT_WORKER_NAME ("ajp13")
+#define DEFAULT_WORKER_NAME "ajp13"
 
 /*
  * This is default value found inside httpd.conf
@@ -75,16 +75,16 @@
  * 3. The contents of the Translate header, if any
  *
  */
-#define URI_HEADER_NAME_BASE              ("TOMCATURI")
-#define QUERY_HEADER_NAME_BASE            ("TOMCATQUERY")
-#define WORKER_HEADER_NAME_BASE           ("TOMCATWORKER")
-#define WORKER_HEADER_INDEX_BASE          ("TOMCATWORKERIDX")
-#define TOMCAT_TRANSLATE_HEADER_NAME_BASE ("TOMCATTRANSLATE")
+#define URI_HEADER_NAME_BASE              "TOMCATURI"
+#define QUERY_HEADER_NAME_BASE            "TOMCATQUERY"
+#define WORKER_HEADER_NAME_BASE           "TOMCATWORKER"
+#define WORKER_HEADER_INDEX_BASE          "TOMCATWORKERIDX"
+#define TOMCAT_TRANSLATE_HEADER_NAME_BASE "TOMCATTRANSLATE"
 #ifndef USE_CGI_HEADERS
-#define CONTENT_LENGTH                    ("CONTENT-LENGTH:")
-#define ALL_HEADERS                       ("ALL_RAW")
+#define CONTENT_LENGTH                    "CONTENT-LENGTH:"
+#define ALL_HEADERS                       "ALL_RAW"
 #else
-#define ALL_HEADERS                       ("ALL_HTTP")
+#define ALL_HEADERS                       "ALL_HTTP"
 #endif
 
 /* The HTTP_ form of the header for use in ExtensionProc */
@@ -113,55 +113,55 @@ static char HTTP_QUERY_HEADER_NAME[RES_BUFFER_SIZE];
 static char HTTP_WORKER_HEADER_NAME[RES_BUFFER_SIZE];
 static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 
-#define REGISTRY_LOCATION       ("Software\\Apache Software Foundation\\Jakarta Isapi Redirector\\1.0")
-#define W3SVC_REGISTRY_KEY      ("SYSTEM\\CurrentControlSet\\Services\\W3SVC\\Parameters")
-#define EXTENSION_URI_TAG       ("extension_uri")
+#define REGISTRY_LOCATION       "Software\\Apache Software Foundation\\Jakarta Isapi Redirector\\1.0"
+#define W3SVC_REGISTRY_KEY      "SYSTEM\\CurrentControlSet\\Services\\W3SVC\\Parameters"
+#define EXTENSION_URI_TAG       "extension_uri"
 
-#define URI_SELECT_TAG              ("uri_select")
-#define URI_SELECT_PARSED_VERB      ("parsed")
-#define URI_SELECT_UNPARSED_VERB    ("unparsed")
-#define URI_SELECT_ESCAPED_VERB     ("escaped")
-#define URI_SELECT_PROXY_VERB       ("proxy")
-#define URI_REWRITE_TAG             ("rewrite_rule_file")
-#define SHM_SIZE_TAG                ("shm_size")
-#define WORKER_MOUNT_RELOAD_TAG     ("worker_mount_reload")
-#define STRIP_SESSION_TAG           ("strip_session")
-#define AUTH_COMPLETE_TAG           ("auth_complete")
-#define REJECT_UNSAFE_TAG           ("reject_unsafe")
-#define WATCHDOG_INTERVAL_TAG       ("watchdog_interval")
-#define ENABLE_CHUNKED_ENCODING_TAG ("enable_chunked_encoding")
-#define ERROR_PAGE_TAG              ("error_page")
+#define URI_SELECT_TAG              "uri_select"
+#define URI_SELECT_PARSED_VERB      "parsed"
+#define URI_SELECT_UNPARSED_VERB    "unparsed"
+#define URI_SELECT_ESCAPED_VERB     "escaped"
+#define URI_SELECT_PROXY_VERB       "proxy"
+#define URI_REWRITE_TAG             "rewrite_rule_file"
+#define SHM_SIZE_TAG                "shm_size"
+#define WORKER_MOUNT_RELOAD_TAG     "worker_mount_reload"
+#define STRIP_SESSION_TAG           "strip_session"
+#define AUTH_COMPLETE_TAG           "auth_complete"
+#define REJECT_UNSAFE_TAG           "reject_unsafe"
+#define WATCHDOG_INTERVAL_TAG       "watchdog_interval"
+#define ENABLE_CHUNKED_ENCODING_TAG "enable_chunked_encoding"
+#define ERROR_PAGE_TAG              "error_page"
 
-#define LOG_ROTATION_TIME_TAG       ("log_rotationtime")
-#define LOG_FILESIZE_TAG            ("log_filesize")
+#define LOG_ROTATION_TIME_TAG       "log_rotationtime"
+#define LOG_FILESIZE_TAG            "log_filesize"
 
 /* HTTP standard headers */
-#define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE     ("Transfer-Encoding: chunked")
-#define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE_LEN (26)
-#define TRANSFER_ENCODING_HEADER_NAME                 ("Transfer-Encoding")
-#define TRANSFER_ENCODING_HEADER_NAME_LEN             (17)
-#define TRANSFER_ENCODING_IDENTITY_VALUE              ("identity")
-#define TRANSFER_ENCODING_CHUNKED_VALUE               ("chunked")
-#define TRANSFER_ENCODING_CHUNKED_VALUE_LEN           (7)
+#define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE     "Transfer-Encoding: chunked"
+#define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE_LEN 26
+#define TRANSFER_ENCODING_HEADER_NAME                 "Transfer-Encoding"
+#define TRANSFER_ENCODING_HEADER_NAME_LEN             17
+#define TRANSFER_ENCODING_IDENTITY_VALUE              "identity"
+#define TRANSFER_ENCODING_CHUNKED_VALUE               "chunked"
+#define TRANSFER_ENCODING_CHUNKED_VALUE_LEN           7
 
-#define CONTENT_LENGTH_HEADER_NAME                    ("Content-Length")
-#define CONTENT_LENGTH_HEADER_NAME_LEN                (14)
+#define CONTENT_LENGTH_HEADER_NAME                    "Content-Length"
+#define CONTENT_LENGTH_HEADER_NAME_LEN                14
 
-#define CONNECTION_HEADER_NAME      ("Connection")
-#define CONNECTION_CLOSE_VALUE      ("Close")
+#define CONNECTION_HEADER_NAME      "Connection"
+#define CONNECTION_CLOSE_VALUE      "Close"
 
-#define TRANSLATE_HEADER            ("Translate:")
-#define TRANSLATE_HEADER_NAME       ("Translate")
-#define TRANSLATE_HEADER_NAME_LC    ("translate")
+#define TRANSLATE_HEADER            "Translate:"
+#define TRANSLATE_HEADER_NAME       "Translate"
+#define TRANSLATE_HEADER_NAME_LC    "translate"
 
 /* HTTP protocol CRLF */
-#define CRLF                        ("\r\n")
-#define CRLF_LEN                    (2)
-#define NIL                         ("")
+#define CRLF                        "\r\n"
+#define CRLF_LEN                    2
+#define NIL                         ""
 
 /* Transfer-Encoding: chunked content trailer */
-#define CHUNKED_ENCODING_TRAILER     ("0\r\n\r\n")
-#define CHUNKED_ENCODING_TRAILER_LEN (5)
+#define CHUNKED_ENCODING_TRAILER     "0\r\n\r\n"
+#define CHUNKED_ENCODING_TRAILER_LEN 5
 
 /* Hex of chunk length (one char per byte) + CRLF + terminator. */
 #define CHUNK_HEADER_BUFFER_SIZE     (sizeof(unsigned int)*2+CRLF_LEN+1)
