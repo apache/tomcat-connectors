@@ -103,7 +103,6 @@ Currently the following worker types that exists are (JK 1.2.5):
   <tr><th>Type</th><th>Description</th></tr>
   <tr><td>ajp12</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajpv12 protocol.</td></tr>
   <tr><td>ajp13</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajpv13 protocol.</td></tr>
-  <tr><td>jni</td><td>DEPRECATED: This worker knows how to forward requests to in-process Tomcat workers using JNI.</td></tr>
   <tr><td>lb</td><td>This is a load-balancing worker; it knows how to provide round-robin based sticky load balancing with a certain level of fault-tolerance.</td></tr>
   <tr><td>status</td><td>This is a status worker for managing load balancers.</td></tr>
 </table>

@@ -986,28 +986,7 @@ However those locks does not work on NFS mounted volumes, so you can use
 </tr>
 
 </table>
-<br/>
-<table>
-  <tr valign="top"><th>DEPRECATED: JNI related parameters</th><th></th></tr>
-  <tr valign="top"><td>--enable-jni</td>
-  <td>Build the JNI worker and so the build process will require
-some information about your Java Environment</td>
-  </tr>
-  <tr valign="top"><td>--with-java-home=DIR</td>
-  <td>DIR is the  patch to the JDK root directory. Something like: /opt/java/jdk12</td>
-  </tr>
-  <tr valign="top"><td>--with-os-type=SUBDIR</td><td>SUBDIR is the os-type subdirectory,
-  configure should guess it correctly.</td>
-  </tr>
-  <tr valign="top"><td>--with-arch-type=SUBDIR</td><td>SUBDIR is the arch subdirectory,
-  configure should guess it correctly.</td>
-  </tr>
-  <tr valign="top"><td>--with-java-platform=VAL</td><td>VAL is the Java platform 1 is 1.1.x and 2 is for 1.2 and higher,
-  configure should guess it correctly.</td>
-  </tr>
-</table>
 </p>
-<warn>The JNI option has been deprecated. It will likely not work. Do not use it.</warn>
 </subsection>
 
 <subsection name="Examples of configure use">
@@ -1023,13 +1002,6 @@ some information about your Java Environment</td>
 <type>cp ./apache-2.0/mod_jk.so /usr/lib/apache2</type><br/>
 </screen>
 
-<screen>
-<note>Apache 2.x build with JNI support</note>
-<type>./configure --with-apxs2=/opt/apache2/bin/apxs \</type>
-<typenext>--with-java-home=${JAVA_HOME} --with-java-platform=2 \</typenext>
-<typenext>--enable-jni</typenext><br/>
-</screen>
-<warn>The JNI option has been deprecated. It will likely not work. Do not use it.</warn>
 </subsection>
 
 </section>
