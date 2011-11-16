@@ -18,7 +18,7 @@
 /***************************************************************************
  * Description: Simple memory pool                                         *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
+ * Version:     $Revision$                                       *
  ***************************************************************************/
 
 #include "jk_pool.h"
@@ -170,21 +170,6 @@ char *jk_pool_strcatv(jk_pool_t *p, ...)
     return rc;
 }
 
-#if defined (DEBUG) || defined(_DEBUG)
-static void jk_dump_pool(jk_pool_t *p, FILE * f)
-{
-    fprintf(f, "Dumping for pool [%p]\n", p);
-    fprintf(f, "size             [%u]\n", (unsigned int)p->size);
-    fprintf(f, "pos              [%u]\n", (unsigned int)p->pos);
-    fprintf(f, "buf              [%d]\n", p->buf ? 1 : 0);
-    fprintf(f, "dyn_size         [%d]\n", (unsigned int)p->dyn_size);
-    fprintf(f, "dyn_pos          [%d]\n", (unsigned int)p->dyn_pos);
-    fprintf(f, "dynamic          [%d]\n", p->dynamic ? 1 : 0);
-
-    fflush(f);
-}
-#endif
-
 static void *jk_pool_dyn_alloc(jk_pool_t *p, size_t size)
 {
     void *rc;
@@ -196,7 +181,6 @@ static void *jk_pool_dyn_alloc(jk_pool_t *p, size_t size)
             if (p->dynamic) {
                 /* Copy old dynamic slots */
                 memcpy(new_dynamic, p->dynamic, p->dyn_size * sizeof(void *));
-
                 free(p->dynamic);
             }
 
@@ -204,9 +188,6 @@ static void *jk_pool_dyn_alloc(jk_pool_t *p, size_t size)
             p->dyn_size = new_dyn_size;
         }
         else {
-#if defined (DEBUG) || defined(_DEBUG)
-            jk_dump_pool(p, stderr);
-#endif
             return NULL;
         }
     }
