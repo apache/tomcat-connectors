@@ -45,11 +45,11 @@ INCLUDE_FLAGS=	-I$(JK_DIR) -I$(INCLUDEDIR) -I$(INCLUDEDIR)/base \
 all: nsapi_redirector.so
 
 
-nsapi_redirector.so: $(JK_OBJS) $(PLUGIN_OBJ)
-	$(LD_SHAREDCMD) $(JK_OBJS) $(PLUGIN_OBJ) -o nsapi_redirector.so $(EXTRA_LDDEFINES)
+nsapi_redirector.so: $(JK_OBJECTS) $(PLUGIN_OBJ)
+	$(LD_SHAREDCMD) $(JK_OBJECTS) $(PLUGIN_OBJ) -o nsapi_redirector.so $(EXTRA_LDDEFINES)
 
 clean:
-	rm -f *.o nsapi_redirector.so $(JK_OBJS)
+	rm -f *.o nsapi_redirector.so $(JK_OBJECTS)
 
 %.o : %.c
 	$(CC_CMD) $(INCLUDE_FLAGS) -c $<
