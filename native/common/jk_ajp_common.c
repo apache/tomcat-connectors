@@ -432,7 +432,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if ((sc = sc_for_req_header(s->headers_names[i])) != UNKNOWN_METHOD) {
             if (jk_b_append_int(msg, (unsigned short)sc)) {
                 jk_log(l, JK_LOG_ERROR,
-                       "failed appending the header code");
+                       "failed appending the header code for '%s'", s->headers_names[i]);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -544,7 +544,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_SSL_KEY_SIZE) ||
             jk_b_append_int(msg, (unsigned short)s->ssl_key_size)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the SSL key size");
+                   "failed appending the SSL key size of length %d",
+                  s->ssl_key_size);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
