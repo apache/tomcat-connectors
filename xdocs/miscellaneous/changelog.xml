@@ -44,6 +44,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Remove deprecated JNI worker and build dependency on Java SDK. (mturk)
+      </update>
       <fix>
         <bug>51253</bug>: Forward WWW-Authenticate header when using
         server generated error pages (rjung, mturk).

@@ -20,10 +20,6 @@
 # created by Guenter Knauf <fuankg@apache.org>
 #
 
-ifneq "$(wildcard $(JAVA_HOME)/include/netware/jni_md.h)" "$(JAVA_HOME)/include/netware/jni_md.h"
-$(error JAVA_HOME does not point to a valid NetWare Java SDK!) 
-endif
-
 #
 # Declare the sub-directories to be built here
 #
@@ -57,8 +53,6 @@ XINCDIRS	+= \
 			$(APRUTIL)/include \
 			$(AP_WORK)/include \
 			$(NWOS) \
-			$(JAVA_HOME)/include \
-			$(JAVA_HOME)/include/netware \
 			$(EOLIST)
 
 #
@@ -218,7 +212,6 @@ FILES_nlm_objs = \
 	$(OBJDIR)/jk_ajp_common.o \
 	$(OBJDIR)/jk_connect.o \
 	$(OBJDIR)/jk_context.o \
-	$(OBJDIR)/jk_jni_worker.o \
 	$(OBJDIR)/jk_lb_worker.o \
 	$(OBJDIR)/jk_map.o \
 	$(OBJDIR)/jk_md5.o \

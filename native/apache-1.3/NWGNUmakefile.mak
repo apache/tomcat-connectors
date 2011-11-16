@@ -24,10 +24,6 @@
 # Make sure all needed macro's are defined
 #
 
-ifneq "$(wildcard $(JAVA_HOME)/include/netware/jni_md.h)" "$(JAVA_HOME)/include/netware/jni_md.h"
-$(error JAVA_HOME does not point to a valid NetWare Java SDK!) 
-endif
-
 LDLIBS = -l"$(METROWERKS)/Novell Support/libraries/runtime/mwcrtl.lib"
 
 JKCOMMON = ../common
@@ -47,8 +43,6 @@ endif
 #
 XINCDIRS	+= \
 			$(JKCOMMON) \
-			$(JAVA_HOME)/include \
-			$(JAVA_HOME)/include/netware \
 			$(SRC)\include \
 			$(NWOS) \
 			$(EOLIST)
@@ -205,7 +199,6 @@ FILES_nlm_objs = \
 	$(OBJDIR)/jk_ajp_common.o \
 	$(OBJDIR)/jk_connect.o \
 	$(OBJDIR)/jk_context.o \
-	$(OBJDIR)/jk_jni_worker.o \
 	$(OBJDIR)/jk_lb_worker.o \
 	$(OBJDIR)/jk_map.o \
 	$(OBJDIR)/jk_md5.o \

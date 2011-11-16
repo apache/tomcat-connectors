@@ -43,9 +43,6 @@
 #include "jk_ajp12_worker.h"
 #include "jk_ajp13_worker.h"
 #include "jk_ajp14_worker.h"
-#ifdef HAVE_JNI
-#include "jk_jni_worker.h"
-#endif
 #include "jk_lb_worker.h"
 #include "jk_status.h"
 
@@ -70,13 +67,6 @@ static worker_factory_record_t worker_factories[] = {
      * AJPv14 worker, next generation fast bi-directional worker.
      */
     {JK_AJP14_WORKER_NAME, JK_AJP14_WORKER_TYPE, ajp14_worker_factory},
-    /*
-     * In process JNI based worker. Requires the server to be 
-     * multithreaded and to use native threads.
-     */
-#ifdef HAVE_JNI
-    {JK_JNI_WORKER_NAME, JK_JNI_WORKER_TYPE, jni_worker_factory},
-#endif
     /*
      * Load balancing worker. Performs round robin with sticky 
      * session load balancing.

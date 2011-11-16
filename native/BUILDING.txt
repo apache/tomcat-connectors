@@ -86,18 +86,7 @@
   ./configure --with-apxs=/usr/sbin/apxs 
 
   tomcat-connectors arguments
-  -----------------------------------
-  JVM related parameters:
-  --with-java-home=DIR
-  DIR is the  patch to the JDK root directory. Something like: /opt/java/jdk12
-  --with-os-type[=SUBDIR] 
-  SUBDIR is the os-type subdirectory, normaly configure should guess it
-  correctly.
-  --with-arch-type[=SUBDIR]
-  SUBDIR is the arch subdirectory, normaly configure should guess it correctly. 
-  --with-java-platform=VAL
-  VAL is the Java platform 1 is 1.1.x and 2 is 1.2.x. It is guessed correctly.
-  
+  -----------------------------------  
   Apache related parameters:
   --with-apxs[=FILE]
   FILE is the location of the apxs tool. Default is finding apxs in PATH.
@@ -112,11 +101,6 @@
   This parameter is needed when using Apache-1.3 and mod_ssl, otherwise you
   will get the error message: "this module might crash under EAPI!" when
   loading libjk.so in httpd.
-
-  JNI support:
-  --enable-jni
-  Build the jni_connect.so and the JNI worker.
-  Note that JNI support has been discontinued
 
 * Static build need more tests, and we strongly recommand dynamic build
   using DSO/APXS.

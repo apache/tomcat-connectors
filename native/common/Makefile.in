@@ -31,8 +31,7 @@ CC = @CC@
 OEXT=.lo
 include list.mk
 
-JAVA_INCL=-I @JAVA_HOME@/include -I @JAVA_HOME@/include/@OS@
-CFLAGS=@apache_include@ @CFLAGS@ ${APXSCFLAGS} ${APXSCPPFLAGS} ${JAVA_INCL}
+CFLAGS=@apache_include@ @CFLAGS@ ${APXSCFLAGS} ${APXSCPPFLAGS}
 
 include @top_srcdir@/scripts/build/rules.mk
 
