@@ -206,7 +206,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             CloseHandle(jk_shm_hlock);
             jk_shm_hlock = NULL;
             jk_shm_map   = NULL;
-            JK_LEAVE_CS(&jk_shmem.cs, rc);
+            JK_LEAVE_CS(&jk_shmem.cs);
             JK_TRACE_EXIT(l);
             return -1;
         }
@@ -230,7 +230,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             jk_shm_hlock = NULL;
         }
 #endif
-        JK_LEAVE_CS(&jk_shmem.cs, rc);
+        JK_LEAVE_CS(&jk_shmem.cs);
         JK_TRACE_EXIT(l);
         return -1;
     }
@@ -271,7 +271,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         /* Unlock shared memory */
         ReleaseMutex(jk_shm_hlock);
     }
-    JK_LEAVE_CS(&jk_shmem.cs, rc);
+    JK_LEAVE_CS(&jk_shmem.cs);
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "%s shared memory %s size=%u free=%u addr=%#lx",
