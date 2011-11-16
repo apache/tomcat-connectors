@@ -185,7 +185,7 @@ int ajp14_unmarshal_log_ok(jk_msg_buf_t *msg,
         return JK_FALSE;
     }
 
-    sname = (char *)jk_b_get_string(msg);
+    sname = jk_b_get_string(msg);
 
     if (!sname) {
         jk_log(l, JK_LOG_ERROR,
@@ -414,7 +414,7 @@ int ajp14_unmarshal_context_info(jk_msg_buf_t *msg,
     char *cname;
     char *uri;
 
-    vname = (char *)jk_b_get_string(msg);
+    vname = jk_b_get_string(msg);
 
     JK_TRACE_ENTER(l);
     jk_log(l, JK_LOG_DEBUG,
@@ -442,7 +442,7 @@ int ajp14_unmarshal_context_info(jk_msg_buf_t *msg,
 
     for (;;) {
 
-        cname = (char *)jk_b_get_string(msg);
+        cname = jk_b_get_string(msg);
 
         if (!cname) {
             jk_log(l, JK_LOG_ERROR,
@@ -471,7 +471,7 @@ int ajp14_unmarshal_context_info(jk_msg_buf_t *msg,
 
         for (;;) {
 
-            uri = (char *)jk_b_get_string(msg);
+            uri = jk_b_get_string(msg);
 
             if (!uri) {
                 jk_log(l, JK_LOG_ERROR,
@@ -620,7 +620,7 @@ int ajp14_unmarshal_context_state_reply(jk_msg_buf_t *msg,
 
     JK_TRACE_ENTER(l);
     /* get virtual name */
-    vname = (char *)jk_b_get_string(msg);
+    vname = jk_b_get_string(msg);
 
     if (!vname) {
         jk_log(l, JK_LOG_ERROR,
@@ -641,7 +641,7 @@ int ajp14_unmarshal_context_state_reply(jk_msg_buf_t *msg,
     for (;;) {
 
         /* get context name */
-        cname = (char *)jk_b_get_string(msg);
+        cname = jk_b_get_string(msg);
 
         if (!cname) {
             jk_log(l, JK_LOG_ERROR,

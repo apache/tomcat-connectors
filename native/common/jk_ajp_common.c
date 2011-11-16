@@ -670,7 +670,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
         return JK_FALSE;
     }
 
-    d->msg = (char *)jk_b_get_string(msg);
+    d->msg = jk_b_get_string(msg);
     if (d->msg) {
 #if (defined(AS400) && !defined(AS400_UTF8)) || defined(_OSD_POSIX)
         jk_xlate_from_ascii(d->msg, strlen(d->msg));
@@ -713,7 +713,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
                     }
                 }
                 else {
-                    d->header_names[i] = (char *)jk_b_get_string(msg);
+                    d->header_names[i] = jk_b_get_string(msg);
                     if (!d->header_names[i]) {
                         jk_log(l, JK_LOG_ERROR,
                                "NULL header name");
@@ -727,7 +727,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
 
                 }
 
-                d->header_values[i] = (char *)jk_b_get_string(msg);
+                d->header_values[i] = jk_b_get_string(msg);
                 if (!d->header_values[i]) {
                     jk_log(l, JK_LOG_ERROR,
                            "NULL header value");

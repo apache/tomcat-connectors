@@ -120,7 +120,7 @@ unsigned long jk_b_get_long(jk_msg_buf_t *msg);
 
 /** Get a String from the current position
  */
-unsigned char *jk_b_get_string(jk_msg_buf_t *msg);
+char *jk_b_get_string(jk_msg_buf_t *msg);
 
 /** Get Bytes from the current position
  */

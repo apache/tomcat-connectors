@@ -131,7 +131,7 @@ int jk_b_set_buffer(jk_msg_buf_t *msg, unsigned char *data, int buffSize)
 
 int jk_b_set_buffer_size(jk_msg_buf_t *msg, int buffSize)
 {
-    unsigned char *data = (unsigned char *)jk_pool_alloc(msg->pool, buffSize);
+    unsigned char *data = jk_pool_alloc(msg->pool, buffSize);
 
     if (!data) {
         return -1;
@@ -207,7 +207,7 @@ int jk_b_append_bytes(jk_msg_buf_t *msg, const unsigned char *param, int len)
     }
 
     /* We checked for space !!  */
-    memcpy((char *)msg->buf + msg->len, param, len);
+    memcpy(msg->buf + msg->len, param, len);
     msg->len += len;
 
     return 0;
@@ -272,8 +272,7 @@ unsigned char jk_b_pget_byte(jk_msg_buf_t *msg, int pos)
     return msg->buf[pos];
 }
 
-
-unsigned char *jk_b_get_string(jk_msg_buf_t *msg)
+char *jk_b_get_string(jk_msg_buf_t *msg)
 {
     unsigned short size = jk_b_get_int(msg);
     int start = msg->pos;
@@ -288,7 +287,7 @@ unsigned char *jk_b_get_string(jk_msg_buf_t *msg)
     msg->pos += size;
     msg->pos++;                 /* terminating NULL */
 
-    return (unsigned char *)(msg->buf + start);
+    return (char *)(msg->buf + start);
 }
 
 int jk_b_get_bytes(jk_msg_buf_t *msg, unsigned char *buf, int len)
