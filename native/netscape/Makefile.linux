@@ -32,19 +32,17 @@ LD_SHAREDCMD=$(CC) $(LDFLAGS) $(CFLAGS) $(EXTRA_CFLAGS)
 
 OS_TYPE=linux
 INCLUDEDIR=$(IPLANET_HOME)/include
-JAVA_INCLUDE=$(JAVA_HOME)/include
 JK_DIR=../common
 VPATH=.:$(JK_DIR)
 
 JK_SRCS = $(shell \ls $(JK_DIR)/*.c)
 JK_OBJECTS = $(patsubst $(JK_DIR)/%.c,%.o,$(JK_SRCS))
-JK_JNI_OBJECTS = jk_jni_worker.o jk_nwmain.o
 JK_OBJS = $(filter-out $(JK_JNI_OBJECTS),$(JK_OBJECTS))
 
 PLUGIN_OBJ = jk_nsapi_plugin.o
 
 INCLUDE_FLAGS=	-I$(JK_DIR) -I$(INCLUDEDIR) -I$(INCLUDEDIR)/base \
-		-I$(INCLUDEDIR)/frame -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/$(OS_TYPE)
+		-I$(INCLUDEDIR)/frame
 
 all: nsapi_redirector.so
 

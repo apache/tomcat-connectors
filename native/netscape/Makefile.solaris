@@ -52,24 +52,34 @@ JAVA_INCLUDE=$(JAVA_HOME)/include
 JK_DIR=../common
 VPATH=.:$(JK_DIR)
 
-JK_OBJS = ap_snprintf.o        jk_md5.o \
-jk_ajp12_worker.o    jk_msg_buff.o \
-jk_ajp13.o           jk_nwmain.o \
-jk_ajp13_worker.o    jk_pool.o \
-jk_ajp14.o           jk_shm.o \
-jk_ajp14_worker.o    jk_sockbuf.o \
-jk_ajp_common.o      jk_status.o \
-jk_connect.o         jk_uri_worker_map.o \
-jk_context.o         jk_url.o \
-jk_jni_worker.o      jk_util.o \
-jk_lb_worker.o       jk_worker.o \
-jk_map.o
+JK_OBJS = ap_snprintf.o \
+	jk_md5.o \
+	jk_ajp12_worker.o \
+	jk_msg_buff.o \
+	jk_ajp13.o \
+	jk_nwmain.o \
+	jk_ajp13_worker.o \
+	jk_pool.o \
+	jk_ajp14.o \
+	jk_shm.o \
+	jk_ajp14_worker.o \
+	jk_sockbuf.o \
+	jk_ajp_common.o \
+	jk_status.o \
+	jk_connect.o \
+	jk_uri_worker_map.o \
+	jk_context.o  \
+	jk_url.o \
+	jk_util.o \
+	jk_lb_worker.o \
+	jk_worker.o \
+	jk_map.o
 
 
 PLUGIN_OBJ = jk_nsapi_plugin.o
 
 INCLUDE_FLAGS=	-I$(JK_DIR) -I$(INCLUDEDIR) -I$(INCLUDEDIR)/base \
-		-I$(INCLUDEDIR)/frame -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/$(OS_TYPE)
+		-I$(INCLUDEDIR)/frame
 
 all: nsapi_redirector.so
 

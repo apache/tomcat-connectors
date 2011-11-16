@@ -24,10 +24,6 @@
 ifndef NS_HOME
 NS_HOME	= c:/projects/sdks/netscape
 endif
-# Edit the path below to point to the base of your NetWare Java SDK.
-ifndef NW_JDK
-NW_JDK	= c:/projects/sdks/java-nw
-endif
 # Edit the path below to point to the base of your Novell NDK.
 ifndef NDKBASE
 NDKBASE	= c:/novell
@@ -122,7 +118,7 @@ SDK_LIBC = $(NDK_ROOT)/libc
 JKCOMMON = ../common
 
 INCLUDES = -I$(NS_HOME)/include -I$(NS_HOME)/include/base
-INCLUDES += -I$(JKCOMMON) -I$(NW_JDK)/include -I$(NW_JDK)/include/netware 
+INCLUDES += -I$(JKCOMMON)
 
 ifeq ($(LIBARCH),LIBC)
 	INCLUDES += -I$(SDK_LIBC)/include
@@ -156,7 +152,6 @@ OBJS	= \
 	$(OBJDIR)/jk_ajp_common.o \
 	$(OBJDIR)/jk_connect.o \
 	$(OBJDIR)/jk_context.o \
-	$(OBJDIR)/jk_jni_worker.o \
 	$(OBJDIR)/jk_lb_worker.o \
 	$(OBJDIR)/jk_map.o \
 	$(OBJDIR)/jk_md5.o \
