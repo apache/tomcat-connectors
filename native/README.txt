@@ -31,9 +31,7 @@ force.
 From mod_jk we gain :
 
 * A connector (plugin) for many Web Server, including
-  Apache HTTP Server, Netscape/IPLanet NES and Microsoft IIS
-  It also support JNI (and seems to used at least by IBM under 
-  AS/400 for Apache/WebSphere connectivity).
+  Apache HTTP Server, Netscape/IPLanet NES and Microsoft IIS.
   
 * Fault-tolerance and load-balancing. mod_jk use the concept of 
   workers which handle a particular request, and a special worker

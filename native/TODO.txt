@@ -333,6 +333,7 @@ What about the other ifdef'd features?
 
 23) Remove JNI worker
 =====================
+Done
 
 24) Watchdog reload of uriworkermap.properties
 ==============================================

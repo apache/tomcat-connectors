@@ -49,7 +49,7 @@
 
   <!-- ==================== Targets ==================== -->
 
-  <target name="main" depends="init,apache20,apache13,iis,netscape,jni">
+  <target name="main" depends="init,apache20,apache13,iis,netscape">
   </target>
 
   <target name="init" >
@@ -86,78 +86,6 @@
     </condition>
     <echo message="linux=${linux} solaris=${solaris} win32=${win32} hpux=${hpux} netware=${netware}"/>
 
-  </target>
-
-  <target name="jni" depends="init">
-    <mkdir dir="${jk.build}/jk/jni" />
-    <so sofile="jni_connect" 
-	buildDir="${jk.build}/jk/jni" 
-	optimize="${so.optimize}"
-	debug="${so.debug}"
-	profile="${so.profile}"
-	>
-      <jniConfig />
-      <src dir="${native.dir}">
-	<include name="jni/*.c" />
-	<include name="common/jk_map.c" />
-	<include name="common/jk_util.c" />
-	<include name="common/jk_pool.c" />
-	<include name="common/jk_logger.c" />
-        <include name="common/jk_nwmain.c" if="netware" />
-        <include name="common/apr/*.c" unless="HAVE_APR" />
-      </src>
-      <includes>
-	<include name="${native.dir}/common" />
-	<include name="${native.dir}/jni" />
-	<include name="${java.home}/../include" />
-	<include name="${build.compiler.base}/include" />
-        
-        <!-- Platform specific includes -->
-	<include name="${novellndk.home}/include/nlm" if="netware" />
-	<include name="${novellndk.home}/include" if="netware" />
-        <include name="${java.home}/../include/netware" if="netware" />
-        <include name="${java.home}/../include/solaris" if="solaris" />
-        <include name="${java.home}/../include/hp-ux" if="hpux" />        
-        <include name="${java.home}/../include/linux"  if="linux"/>
-        <include name="${java.home}/../include/win32" if="win32" unless="netware" />
-      </includes>
-      <depends>
-	<fileset dir="${native.dir}/common" includes="*.h" />
-      </depends>
-      
-      <!-- Platform-specific tags -->
-      <altSoFile value="jni_conn" if="netware" />
-      
-      <def name="N_PLAT_NLM" if="netware"
-	   info="Building for NetWare platform" />
-      <def name="NETWARE" if="netware"
-	   info="Building for NetWare platform" />
-      <def name="XP_NETWARE" if="netware"
-	   info="Building for NetWare platform" />
-           
-      <import fileName="${novellndk.home}/imports/clib.imp" if="netware" />
-      <import fileName="${novellndk.home}/imports/lib0.imp" if="netware" />
-      <import fileName="${novellndk.home}/imports/nlmlib.imp" if="netware" />
-      <import fileName="${novellndk.home}/imports/threads.imp" if="netware" />
-      <import fileName="${novellndk.home}/imports/socklib.imp" if="netware" />
-      <export fileName="${native.dir}/jni/jk_jnicb.exp" if="netware" />
-      <linkOpt value="-desc &quot;JNI Natives for Tomcat&quot;" if="netware" />
-      <linkOpt value="-screenname &quot;System Console&quot;" if="netware" />
-      <linkOpt value="-nlmversion 1,2,6" if="netware" />
-      <linkOpt value="-threadname &quot;JK_JNI Thread&quot;" if="netware" />
-      <linkOpt value="-stacksize 64000" if="netware" />
-      
-      <def name="HPUX11" if="hpux" />
-
-      <def name="WIN32" if="win32" unless="netware" />
-      <def name="DEBUG" if="win32.debug" unless="netware"  />
-      <def name="NDEBUG" if="win32.release" unless="netware"  />
-      <def name="_WINDOWS" if="win32" unless="netware" />
-      <def name="_MBCS" if="win32" unless="netware" />
-      <def name="_USRDLL" if="win32" unless="netware" />
-      <def name="JNI_CONNECT_EXPORTS" if="win32" unless="netware" />
-      <linkOpt value="/libpath:&quot;${build.compiler.base}/lib&quot;" if="win32" unless="netware" />
-    </so>
   </target>
 
   <target name="apache20" depends="init" if="apache2.detect">
