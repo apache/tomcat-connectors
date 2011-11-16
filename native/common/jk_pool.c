@@ -25,10 +25,6 @@
 
 #define DEFAULT_DYNAMIC 10
 
-
-static void *jk_pool_dyn_alloc(jk_pool_t *p, size_t size);
-
-
 void jk_open_pool(jk_pool_t *p, jk_pool_atom_t *buf, size_t size)
 {
     p->pos = 0;
@@ -67,15 +63,32 @@ void *jk_pool_alloc(jk_pool_t *p, size_t size)
 {
     void *rc = NULL;
 
+    if (size == 0)
+        return NULL;
     size = JK_ALIGN_DEFAULT(size);
     if ((p->size - p->pos) >= size) {
         rc = &(p->buf[p->pos]);
         p->pos += size;
     }
     else {
-        rc = jk_pool_dyn_alloc(p, size);
-    }
+        if (p->dyn_size == p->dyn_pos) {
+            size_t new_dyn_size = p->dyn_size * 2 + DEFAULT_DYNAMIC;
+            void **new_dynamic = (void **)realloc(p->dynamic,
+                                                new_dyn_size * sizeof(void *));
+            if (new_dynamic) {
+                p->dynamic = new_dynamic;
+                p->dyn_size = new_dyn_size;
+            }
+            else {
+                return NULL;
+            }
+        }
 
+        rc = p->dynamic[p->dyn_pos] = malloc(size);
+        if (p->dynamic[p->dyn_pos]) {
+            p->dyn_pos++;
+        }
+    }
     return rc;
 }
 
@@ -165,36 +178,6 @@ char *jk_pool_strcatv(jk_pool_t *p, ...)
             va_end(ap);
             *cp = '\0';
         }
-    }
-
-    return rc;
-}
-
-static void *jk_pool_dyn_alloc(jk_pool_t *p, size_t size)
-{
-    void *rc;
-
-    if (p->dyn_size == p->dyn_pos) {
-        size_t new_dyn_size = p->dyn_size * 2 + DEFAULT_DYNAMIC;
-        void **new_dynamic = (void **)malloc(new_dyn_size * sizeof(void *));
-        if (new_dynamic) {
-            if (p->dynamic) {
-                /* Copy old dynamic slots */
-                memcpy(new_dynamic, p->dynamic, p->dyn_size * sizeof(void *));
-                free(p->dynamic);
-            }
-
-            p->dynamic = new_dynamic;
-            p->dyn_size = new_dyn_size;
-        }
-        else {
-            return NULL;
-        }
-    }
-
-    rc = p->dynamic[p->dyn_pos] = malloc(size);
-    if (p->dynamic[p->dyn_pos]) {
-        p->dyn_pos++;
     }
 
     return rc;
