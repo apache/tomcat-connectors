@@ -2842,7 +2842,7 @@ static int init_jk(char *serverName)
             }
             else {
                 jk_log(logger, JK_LOG_EMERG,
-                       "Unable to read worker file %s.", worker_file);
+                       "Unable to read worker file %s. (errno=%d, err=%s)", worker_file, errno, strerror(errno));
             }
             if (rc != JK_TRUE) {
                 jk_map_free(&workers_map);

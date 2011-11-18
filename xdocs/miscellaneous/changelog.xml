@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <update>
+        Log error if unable to load URI workermap file, and improve logging
+        of unreadable worker files on IIS. (timw)
+      </update>
+      <update>
         Remove deprecated JNI worker and build dependency on Java SDK. (mturk)
       </update>
       <fix>
