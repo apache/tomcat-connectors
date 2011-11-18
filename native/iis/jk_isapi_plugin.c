@@ -2651,9 +2651,8 @@ static int init_jk(char *serverName)
     /* TODO: Use System logging to notify the user that
      *       we cannot open the configured log file.
      */
-
+    StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME "_");
     jk_log(logger, JK_LOG_INFO, "Starting %s", (FULL_VERSION_STRING));
-    StringCbCat(shm_name, MAX_PATH, "_");
     StringCbCat(shm_name, MAX_PATH, serverName);
     StringCbCat(shm_name, MAX_PATH, "_");
     StringCbCat(shm_name, MAX_PATH, extension_uri);
