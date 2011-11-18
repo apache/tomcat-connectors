@@ -2510,13 +2510,14 @@ static DWORD WINAPI watchdog_thread(void *param)
  * Reinitializes the logger, formatting the log file name if rotation is enabled,
  * and calculating the next rotation time if applicable.
  */
-static int init_logger(int rotate, jk_logger_t **l)
+static int init_logger(int rotate)
 {
     int rc = JK_TRUE;
     int log_open = rotate;  /* log is assumed open if a rotate is requested */
     char *log_file_name;
     char log_file_name_buf[MAX_PATH*2];
-
+    jk_logger_t *org = NULL;
+    
     /* If log rotation is enabled, format the log filename */
     if ((log_rotationtime > 0) || (log_filesize > 0)) {
         time_t t;
@@ -2552,7 +2553,7 @@ static int init_logger(int rotate, jk_logger_t **l)
         FILE* lf = ((jk_file_logger_t* )logger->logger_private)->logfile;
         fprintf(lf, "Log rotated to %s\n", log_file_name);
         fflush(lf);
-        rc = jk_close_file_logger(&logger);
+        org = logger;
         log_open = JK_FALSE;
     }
 
@@ -2565,13 +2566,13 @@ static int init_logger(int rotate, jk_logger_t **l)
             rc = JK_TRUE;
         }
         else {
-            logger = NULL;
+            logger = org;
+            org = NULL;
             rc = JK_FALSE;
         }
     }
-
-    /* Update logger being used for this log call so it occurs on new file */
-    (*l) = logger;
+    if (org)
+        jk_close_file_logger(&org);
     return rc;
 }
 
@@ -2580,7 +2581,7 @@ static int init_logger(int rotate, jk_logger_t **l)
  * The behaviour here is based on the Apache rotatelogs program.
  * http://httpd.apache.org/docs/2.0/programs/rotatelogs.html
  */
-static int JK_METHOD rotate_log_file(jk_logger_t **l)
+static int JK_METHOD rotate_log_file(void)
 {
     int rc = JK_TRUE;
     int rotate = JK_FALSE;
@@ -2592,9 +2593,9 @@ static int JK_METHOD rotate_log_file(jk_logger_t **l)
             rotate = JK_TRUE;
         }
     }
-    else if (log_filesize > 0) {
+    else if (log_filesize > 0 && logger) {
         LARGE_INTEGER filesize;
-        HANDLE h = (HANDLE)_get_osfhandle(fileno(((jk_file_logger_t *)(*l)->logger_private)->logfile));
+        HANDLE h = (HANDLE)_get_osfhandle(fileno(((jk_file_logger_t *)(logger)->logger_private)->logfile));
         GetFileSizeEx(h, &filesize);
 
         if ((ULONGLONG)filesize.QuadPart >= log_filesize) {
@@ -2602,7 +2603,7 @@ static int JK_METHOD rotate_log_file(jk_logger_t **l)
         }
     }
     if (rotate) {
-        rc = init_logger(JK_TRUE, l);
+        rc = init_logger(JK_TRUE);
     }
     return rc;
 }
@@ -2630,9 +2631,9 @@ static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
 
             /* Perform logging within critical section to protect rotation */
             EnterCriticalSection(&log_cs);
-            if (rotate_log_file(&l)) {
+            if (rotate_log_file() && logger) {
                 /* The rotation process will reallocate the jk_logger_t structure, so refetch */
-                FILE *rotated = ((jk_file_logger_t *)l->logger_private)->logfile;
+                FILE *rotated = ((jk_file_logger_t *)logger->logger_private)->logfile;
                 fputs(what, rotated);
                 fflush(rotated);
             }
@@ -2647,7 +2648,7 @@ static int init_jk(char *serverName)
     char shm_name[MAX_PATH];
     int i, rc = JK_FALSE;
 
-    init_logger(JK_FALSE, &logger);
+    init_logger(JK_FALSE);
     /* TODO: Use System logging to notify the user that
      *       we cannot open the configured log file.
      */
