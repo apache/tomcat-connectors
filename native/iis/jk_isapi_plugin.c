@@ -2150,7 +2150,6 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
 
         if (pfc->GetServerVariable(pfc, "SERVER_NAME", serverName, &dwLen)) {
             if (dwLen > 1) {
-                DWORD i;
                 dwLen = MAX_INSTANCEID;
                 if (pfc->GetServerVariable(pfc, "INSTANCE_ID", instanceId, &dwLen)) {
                     if (dwLen > 1) {
@@ -2164,12 +2163,6 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
                         StringCbCat(serverName, MAX_SERVERNAME, app_poolId);
                     }
-                }
-                for (i = 0; i < (DWORD)strlen(serverName); i++) {
-                    if (serverName[i] == ' ' || serverName[i] == '/' || serverName[i] == '\\')
-                        serverName[i] = '_';
-                    else
-                        serverName[i] = toupper((DWORD)serverName[i]);
                 }
             }
             EnterCriticalSection(&init_cs);
@@ -2246,7 +2239,6 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
         if (lpEcb->GetServerVariable(lpEcb->ConnID, "SERVER_NAME",
                                      serverName, &dwLen)) {
             if (dwLen > 1) {
-                DWORD i;
                 dwLen = MAX_INSTANCEID;
                 if (lpEcb->GetServerVariable(lpEcb->ConnID, "INSTANCE_ID",
                                              instanceId, &dwLen)) {
@@ -2262,12 +2254,6 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                         StringCbCat(serverName, MAX_SERVERNAME, "_");
                         StringCbCat(serverName, MAX_SERVERNAME, app_poolId);
                     }
-                }
-                for (i = 0; i < (DWORD)strlen(serverName); i++) {
-                    if (serverName[i] == ' ' || serverName[i] == '/' || serverName[i] == '\\')
-                        serverName[i] = '_';
-                    else
-                        serverName[i] = toupper((DWORD)serverName[i]);
                 }
             }
             EnterCriticalSection(&init_cs);
@@ -2659,26 +2645,22 @@ static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
 static int init_jk(char *serverName)
 {
     char shm_name[MAX_PATH];
-    int rc = JK_FALSE;
+    int i, rc = JK_FALSE;
 
     init_logger(JK_FALSE, &logger);
     /* TODO: Use System logging to notify the user that
      *       we cannot open the configured log file.
      */
 
-    StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME);
-
     jk_log(logger, JK_LOG_INFO, "Starting %s", (FULL_VERSION_STRING));
-
-    if (*serverName) {
-        size_t i;
-        StringCbCat(shm_name, MAX_PATH, "_");
-        StringCbCat(shm_name, MAX_PATH, serverName);
-        for(i = 0; i < strlen(shm_name); i++) {
-            shm_name[i] = toupper(shm_name[i]);
-            if (!isalnum(shm_name[i]))
-                shm_name[i] = '_';
-        }
+    StringCbCat(shm_name, MAX_PATH, "_");
+    StringCbCat(shm_name, MAX_PATH, serverName);
+    StringCbCat(shm_name, MAX_PATH, "_");
+    StringCbCat(shm_name, MAX_PATH, extension_uri);
+    for(i = 0; i < strlen(shm_name); i++) {
+        shm_name[i] = toupper(shm_name[i]);
+        if (!isalnum((unsigned char)shm_name[i]))
+            shm_name[i] = '_';
     }
 
     jk_set_worker_def_cache_size(DEFAULT_WORKER_THREADS);
@@ -2736,7 +2718,6 @@ static int init_jk(char *serverName)
     if (rewrite_rule_file[0] && jk_map_alloc(&rewrite_map)) {
         if (jk_map_read_properties(rewrite_map, NULL, rewrite_rule_file,
                                    NULL, JK_MAP_HANDLE_RAW, logger)) {
-            int i;
             if (JK_IS_DEBUG_LEVEL(logger)) {
                 jk_log(logger, JK_LOG_DEBUG, "Loaded rewrite rule file %s.",
                        rewrite_rule_file);
