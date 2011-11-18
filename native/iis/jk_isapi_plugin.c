@@ -55,7 +55,7 @@
 
 #define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION
 #define FULL_VERSION_STRING "Jakarta/ISAPI/" JK_FULL_EXPOSED_VERSION
-#define SHM_DEF_PREFIX      "JKISAPISHMEM_"
+#define SHM_DEF_PREFIX      "JK_"
 #define DEFAULT_WORKER_NAME "ajp13"
 
 /*
@@ -167,7 +167,6 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define BAD_PATH        -2
 #define MAX_SERVERNAME  1024
 #define MAX_INSTANCEID  32
-#define MAX_APP_POOLID  256
 #define MAX_PACKET_SIZE 65536
 
 char HTML_ERROR_HEAD[] =        "<!--\n"
@@ -2083,7 +2082,6 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             rv = SF_STATUS_REQ_ERROR;
             goto cleanup;
         }
-
         translate = get_pheader(&pool, pfp, pfc, TRANSLATE_HEADER,
                                 szTB, sizeof(szTB));
         /* Move Translate: header to a temporary header so
@@ -2116,6 +2114,19 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         if (query)
             StringCbCopy(ld->query, sizeof(ld->query), query);
         ld->request_matched = JK_TRUE;
+        if (JK_IS_DEBUG_LEVEL(logger)) {
+            jk_log(logger, JK_LOG_DEBUG,
+                   "forwarding to : %s", extension_uri);
+            jk_log(logger, JK_LOG_DEBUG,
+                   "forward URI   : %s%s", URI_HEADER_NAME, forwardURI);
+            if (query)
+                jk_log(logger, JK_LOG_DEBUG,
+                       "forward query : %s%s", QUERY_HEADER_NAME, query);
+            jk_log(logger, JK_LOG_DEBUG,
+                   "forward worker: %s%s", WORKER_HEADER_NAME, worker);
+            jk_log(logger, JK_LOG_DEBUG,
+                   "worker index  : %s%s", WORKER_HEADER_INDEX, swindex);
+        }
     }
     else {
         if (JK_IS_DEBUG_LEVEL(logger))
@@ -2145,24 +2156,14 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
     if (is_inited && !is_mapread) {
         char serverName[MAX_SERVERNAME] = "";
         char instanceId[MAX_INSTANCEID] = "";
-        char app_poolId[MAX_APP_POOLID] = "";
-        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - MAX_APP_POOLID - 1;
+        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
 
         if (pfc->GetServerVariable(pfc, "SERVER_NAME", serverName, &dwLen)) {
-            if (dwLen > 1) {
-                dwLen = MAX_INSTANCEID;
-                if (pfc->GetServerVariable(pfc, "INSTANCE_ID", instanceId, &dwLen)) {
-                    if (dwLen > 1) {
-                        StringCbCat(serverName, MAX_SERVERNAME, "_");
-                        StringCbCat(serverName, MAX_SERVERNAME, instanceId);
-                    }
-                }
-                dwLen = MAX_APP_POOLID;
-                if (pfc->GetServerVariable(pfc, "APP_POOL_ID", app_poolId, &dwLen)) {
-                    if (dwLen > 1) {
-                        StringCbCat(serverName, MAX_SERVERNAME, "_");
-                        StringCbCat(serverName, MAX_SERVERNAME, app_poolId);
-                    }
+            dwLen = MAX_INSTANCEID;
+            if (pfc->GetServerVariable(pfc, "INSTANCE_ID", instanceId, &dwLen)) {
+                if (dwLen > 1) {
+                    StringCbCat(serverName, MAX_SERVERNAME, "_");
+                    StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                 }
             }
             EnterCriticalSection(&init_cs);
@@ -2233,27 +2234,16 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     if (is_inited && !is_mapread) {
         char serverName[MAX_SERVERNAME] = "";
         char instanceId[MAX_INSTANCEID] = "";
-        char app_poolId[MAX_APP_POOLID] = "";
-        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - MAX_APP_POOLID - 1;
+        DWORD dwLen = MAX_SERVERNAME - MAX_INSTANCEID - 1;
 
         if (lpEcb->GetServerVariable(lpEcb->ConnID, "SERVER_NAME",
                                      serverName, &dwLen)) {
-            if (dwLen > 1) {
-                dwLen = MAX_INSTANCEID;
-                if (lpEcb->GetServerVariable(lpEcb->ConnID, "INSTANCE_ID",
-                                             instanceId, &dwLen)) {
-                    if (dwLen > 1) {
-                        StringCbCat(serverName, MAX_SERVERNAME, "_");
-                        StringCbCat(serverName, MAX_SERVERNAME, instanceId);
-                    }
-                }
-                dwLen = MAX_APP_POOLID;
-                if (lpEcb->GetServerVariable(lpEcb->ConnID, "APP_POOL_ID",
-                                             app_poolId, &dwLen)) {
-                    if (dwLen > 1) {
-                        StringCbCat(serverName, MAX_SERVERNAME, "_");
-                        StringCbCat(serverName, MAX_SERVERNAME, app_poolId);
-                    }
+            dwLen = MAX_INSTANCEID;
+            if (lpEcb->GetServerVariable(lpEcb->ConnID, "INSTANCE_ID",
+                                         instanceId, &dwLen)) {
+                if (dwLen > 1) {
+                    StringCbCat(serverName, MAX_SERVERNAME, "_");
+                    StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                 }
             }
             EnterCriticalSection(&init_cs);
@@ -2425,7 +2415,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
                 return FALSE;
             }
             if ((p = strrchr(fname, '\\'))) {
-                *(p++) = '\0';
+                *p++ = '\0';
                 StringCbCopy(dll_file_path, MAX_PATH, fname);
                 jk_map_alloc(&jk_environment_map);
                 jk_map_add(jk_environment_map, "JKISAPI_PATH", dll_file_path);
@@ -2645,7 +2635,7 @@ static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
 
 static int init_jk(char *serverName)
 {
-    char shm_name[MAX_PATH];
+    char *p, shm_name[MAX_PATH];
     int i, rc = JK_FALSE;
 
     init_logger(JK_FALSE);
@@ -2656,7 +2646,9 @@ static int init_jk(char *serverName)
     jk_log(logger, JK_LOG_INFO, "Starting " FULL_VERSION_STRING);
     StringCbCat(shm_name, MAX_PATH, serverName);
     StringCbCat(shm_name, MAX_PATH, "_");
-    StringCbCat(shm_name, MAX_PATH, extension_uri);
+    StringCbCat(shm_name, MAX_PATH, extension_uri + 1);
+    if ((p = strrchr(shm_name, '.')))
+        *p = '\0';
     for(i = 0; i < strlen(shm_name); i++) {
         if (!isalnum((unsigned char)shm_name[i]))
             shm_name[i] = '_';
