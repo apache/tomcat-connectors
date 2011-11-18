@@ -1225,6 +1225,8 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
         if (JK_IS_DEBUG_LEVEL(l))
             uri_worker_map_dump(uw_map, "after file load", l);
         rc = JK_TRUE;
+    } else {
+        jk_log(l, JK_LOG_ERROR, "Failed to load uri_worker_map file %s (errno=%d, err=%s).", uw_map->fname, errno, strerror(errno));
     }
     jk_map_free(&map);
     return rc;
