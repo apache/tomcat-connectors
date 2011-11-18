@@ -1079,7 +1079,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
                  * Note that this won't change active connections.
                  */
                 if (IS_SLOT_AVAIL(aw->ep_cache[i]) && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                    int sd = aw->ep_cache[i]->sd;
+                    jk_sock_t sd = aw->ep_cache[i]->sd;
                     aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                     aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
                     jk_shutdown_socket(sd, l);
@@ -1138,7 +1138,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
             /* Close all connections in the cache
              */
             if (IS_SLOT_AVAIL(aw->ep_cache[i]) && IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                int sd = aw->ep_cache[i]->sd;
+                jk_sock_t sd = aw->ep_cache[i]->sd;
                 aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                 aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
                 jk_shutdown_socket(sd, l);
