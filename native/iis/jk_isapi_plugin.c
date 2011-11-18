@@ -2652,7 +2652,7 @@ static int init_jk(char *serverName)
      *       we cannot open the configured log file.
      */
     StringCbCopy(shm_name, MAX_PATH, SHM_DEF_PREFIX);
-    jk_log(logger, JK_LOG_INFO, "Starting %s", (FULL_VERSION_STRING));
+    jk_log(logger, JK_LOG_INFO, "Starting " FULL_VERSION_STRING);
     StringCbCat(shm_name, MAX_PATH, serverName);
     StringCbCat(shm_name, MAX_PATH, "_");
     StringCbCat(shm_name, MAX_PATH, extension_uri);
@@ -2881,7 +2881,7 @@ int parse_uri_select(const char *uri_select)
 static int read_registry_init_data(void)
 {
     char tmpbuf[MAX_PATH];
-    int ok = JK_TRUE;
+    int ok = JK_FALSE;
     LPVOID src;
     HKEY hkey;
     jk_map_t *map = NULL;
@@ -2906,24 +2906,25 @@ static int read_registry_init_data(void)
             src = hkey;
         }
     }
-    ok = ok && get_config_parameter(src, JK_LOG_FILE_TAG, log_file, sizeof(log_file));
-    if (ok && is_path_relative(log_file)) {
+    if (!get_config_parameter(src, JK_LOG_FILE_TAG, log_file, sizeof(log_file)))
+        goto cleanup;    
+    if (is_path_relative(log_file)) {
         char *fp = path_merge(dll_file_path, log_file);
         if (fp) {
             StringCbCopy(log_file, sizeof(log_file), fp);
             free(fp);
         }
     }
-    if (ok && get_config_parameter(src, JK_LOG_LEVEL_TAG, tmpbuf, sizeof(tmpbuf))) {
+    if (get_config_parameter(src, JK_LOG_LEVEL_TAG, tmpbuf, sizeof(tmpbuf))) {
         log_level = jk_parse_log_level(tmpbuf);
     }
-    if (ok && get_config_parameter(src, LOG_ROTATION_TIME_TAG, tmpbuf, sizeof(tmpbuf))) {
+    if (get_config_parameter(src, LOG_ROTATION_TIME_TAG, tmpbuf, sizeof(tmpbuf))) {
         log_rotationtime = atol(tmpbuf);
         if (log_rotationtime < 0) {
             log_rotationtime = 0;
         }
     }
-    if (ok && get_config_parameter(src, LOG_FILESIZE_TAG, tmpbuf, sizeof(tmpbuf))) {
+    if (get_config_parameter(src, LOG_FILESIZE_TAG, tmpbuf, sizeof(tmpbuf))) {
         size_t tl = strlen(tmpbuf);
         if (tl > 0) {
             /* rotatelogs has an 'M' suffix on filesize, which we optionally support for consistency */
@@ -2939,25 +2940,26 @@ static int read_registry_init_data(void)
         }
     }
 
-    ok = ok && get_config_parameter(src, EXTENSION_URI_TAG, extension_uri, sizeof(extension_uri));
-    ok = ok && get_config_parameter(src, JK_WORKER_FILE_TAG, worker_file, sizeof(worker_file));
-    if (ok && is_path_relative(worker_file)) {
+    if (!get_config_parameter(src, EXTENSION_URI_TAG, extension_uri, sizeof(extension_uri)))
+        goto cleanup;
+    if (!get_config_parameter(src, JK_WORKER_FILE_TAG, worker_file, sizeof(worker_file)))
+        goto cleanup;
+    if (is_path_relative(worker_file)) {
         char *fp = path_merge(dll_file_path, worker_file);
         if (fp) {
             StringCbCopy(worker_file, sizeof(worker_file), fp);
             free(fp);
         }
     }
-    ok = ok && get_config_parameter(src, JK_MOUNT_FILE_TAG, worker_mount_file, sizeof(worker_mount_file));
-    if (ok && is_path_relative(worker_mount_file)) {
+    if (!get_config_parameter(src, JK_MOUNT_FILE_TAG, worker_mount_file, sizeof(worker_mount_file)))
+        goto cleanup;
+    if (is_path_relative(worker_mount_file)) {
         char *fp = path_merge(dll_file_path, worker_mount_file);
         if (fp) {
             StringCbCopy(worker_mount_file, sizeof(worker_mount_file), fp);
             free(fp);
         }
     }
-    if (!ok)
-        goto cleanup;
     if (get_config_parameter(src, URI_REWRITE_TAG, rewrite_rule_file, sizeof(rewrite_rule_file))) {
         if (is_path_relative(rewrite_rule_file)) {
             char *fp = path_merge(dll_file_path, rewrite_rule_file);
@@ -2973,11 +2975,10 @@ static int read_registry_init_data(void)
             uri_select_option = opt;
         }
         else {
-            ok = JK_FALSE;
             goto cleanup;
         }
     }
-    shm_config_size = (size_t) get_config_int(src, SHM_SIZE_TAG, 0);
+    shm_config_size = get_config_int(src, SHM_SIZE_TAG, 0);
     worker_mount_reload = get_config_int(src, WORKER_MOUNT_RELOAD_TAG, JK_URIMAP_DEF_RELOAD);
     strip_session = get_config_bool(src, STRIP_SESSION_TAG, JK_FALSE);
     use_auth_notification_flags = get_config_int(src, AUTH_COMPLETE_TAG, 1);
@@ -2989,6 +2990,7 @@ static int read_registry_init_data(void)
     if (get_config_parameter(src, ERROR_PAGE_TAG, error_page_buf, sizeof(error_page_buf))) {
         error_page = error_page_buf;
     }
+    ok = JK_TRUE;
 cleanup:
     if (using_ini_file) {
         jk_map_free(&map);
