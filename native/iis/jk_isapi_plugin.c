@@ -2658,9 +2658,10 @@ static int init_jk(char *serverName)
     StringCbCat(shm_name, MAX_PATH, "_");
     StringCbCat(shm_name, MAX_PATH, extension_uri);
     for(i = 0; i < strlen(shm_name); i++) {
-        shm_name[i] = toupper(shm_name[i]);
         if (!isalnum((unsigned char)shm_name[i]))
             shm_name[i] = '_';
+        else
+            shm_name[i] = toupper(shm_name[i]);
     }
 
     jk_set_worker_def_cache_size(DEFAULT_WORKER_THREADS);
