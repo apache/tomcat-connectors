@@ -55,7 +55,7 @@
 
 #define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION
 #define FULL_VERSION_STRING "Jakarta/ISAPI/" JK_FULL_EXPOSED_VERSION
-#define SHM_DEF_NAME   "JKISAPISHMEM"
+#define SHM_DEF_PREFIX      "JKISAPISHMEM_"
 #define DEFAULT_WORKER_NAME "ajp13"
 
 /*
@@ -2651,7 +2651,7 @@ static int init_jk(char *serverName)
     /* TODO: Use System logging to notify the user that
      *       we cannot open the configured log file.
      */
-    StringCbCopy(shm_name, MAX_PATH, SHM_DEF_NAME "_");
+    StringCbCopy(shm_name, MAX_PATH, SHM_DEF_PREFIX);
     jk_log(logger, JK_LOG_INFO, "Starting %s", (FULL_VERSION_STRING));
     StringCbCat(shm_name, MAX_PATH, serverName);
     StringCbCat(shm_name, MAX_PATH, "_");
