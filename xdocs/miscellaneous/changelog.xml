@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>52567</bug>: Balancer member in recovery state can switch
+        back into error state if it is idle. (rjung)
+      </fix>
       <update>
         Log error if unable to load URI workermap file, and improve logging
         of unreadable worker files on IIS. (timw)
@@ -54,18 +58,18 @@
       <fix>
         <bug>51253</bug>: Forward WWW-Authenticate header when using
         server generated error pages (rjung, mturk).
-      </fix>        
+      </fix>
       <update>
         <bug>46406</bug>: IIS: Support relative paths in configuration.
         The paths are presumed to be relative from isapi_redirect.dll. (mturk)
-      </update>        
+      </update>
       <fix>
         <bug>50233</bug>: Do not use hard limit on uri size (mturk).
-      </fix>        
+      </fix>
       <update>
         IIS: Use Windows Server 2003 SP1, Windows XP SP2 as minimal
         version supported. (mturk)
-      </update>        
+      </update>
       <fix>
         <bug>47038</bug>: Fix compiler warning when using --enable-flock
          for configure. (rjung)

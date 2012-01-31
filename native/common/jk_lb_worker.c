@@ -583,7 +583,8 @@ static int recover_workers(lb_worker_t *p,
             }
         }
         else if (w->s->error_time > 0 &&
-                 (int)difftime(now, w->s->error_time) >= p->error_escalation_time) {
+                 (int)difftime(now, w->s->error_time) >= p->error_escalation_time &&
+                 w->s->state != JK_LB_STATE_RECOVER) {
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "worker %s escalating local error to global error",
