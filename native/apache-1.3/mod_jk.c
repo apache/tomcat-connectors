@@ -620,9 +620,9 @@ static void jk_error_exit(const char *file,
         ch++;
     }
 
-    ap_log_error(file, line, level, s, res);
+    ap_log_error(file, line, level, s, "%s", res);
     if ( s ) {
-        ap_log_error(file, line, level, NULL, res);
+        ap_log_error(file, line, level, NULL, "%s", res);
     }
 
     /* Exit process */

@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>52564</bug>: Fix building with format checking gcc security
+        hardening cflags. Contributed by Tony Mancill. (rjung)
+      </fix>
+      <fix>
         <bug>52567</bug>: Balancer member in recovery state can switch
         back into error state if it is idle. (rjung)
       </fix>

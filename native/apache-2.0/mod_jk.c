@@ -689,15 +689,15 @@ static void jk_error_exit(const char *file,
     }
 
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20100606)
-    ap_log_error(file, line, APLOG_MODULE_INDEX, level, 0, s, res);
+    ap_log_error(file, line, APLOG_MODULE_INDEX, level, 0, s, "%s", res);
 #else
-    ap_log_error(file, line, level, 0, s, res);
+    ap_log_error(file, line, level, 0, s, "%s", res);
 #endif
     if ( s ) {
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20100606)
-        ap_log_error(file, line, APLOG_MODULE_INDEX, level, 0, NULL, res);
+        ap_log_error(file, line, APLOG_MODULE_INDEX, level, 0, NULL, "%s", res);
 #else
-        ap_log_error(file, line, level, 0, NULL, res);
+        ap_log_error(file, line, level, 0, NULL, "%s", res);
 #endif
     }
 
