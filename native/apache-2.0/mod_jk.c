@@ -784,8 +784,13 @@ static int init_ws_service(apache_private_data_t * private_data,
         s->remote_port = "0";
     }
     else {
+#if (MODULE_MAGIC_NUMBER_MAJOR >= 20111130)
+        s->remote_addr = r->connection->client_ip;
+        s->remote_port = apr_itoa(r->pool, r->connection->client_addr->port);
+#else
         s->remote_addr = r->connection->remote_ip;
         s->remote_port = apr_itoa(r->pool, r->connection->remote_addr->port);
+#endif
     }
     s->remote_addr = get_env_string(r, s->remote_addr,
                                     conf->remote_addr_indicator, 1);
@@ -1101,7 +1106,11 @@ static int init_ws_service(apache_private_data_t * private_data,
                STRNULL_FOR_NULL(s->auth_type),
                STRNULL_FOR_NULL(s->remote_user),
                STRNULL_FOR_NULL(r->connection->local_ip),
+#if (MODULE_MAGIC_NUMBER_MAJOR >= 20111130)
+               STRNULL_FOR_NULL(r->connection->client_ip),
+#else
                STRNULL_FOR_NULL(r->connection->remote_ip),
+#endif
                STRNULL_FOR_NULL(s->req_uri));
     }
 

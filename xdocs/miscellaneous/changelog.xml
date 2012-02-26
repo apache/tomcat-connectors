@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        HTTPD: Improve support for HTTPD 2.4 by using client_* instead
+        of remote_* variables. (rjung)
+      </fix>
+      <fix>
         <bug>52564</bug>: Fix building with format checking gcc security
         hardening cflags. Contributed by Tony Mancill. (rjung)
       </fix>
