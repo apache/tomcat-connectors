@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>52793</bug>: AJP: Fix default value of forwarded worker
+        activation state. Contributed by Yoshihito Fukuyama. (rjung)
+      </fix>
+      <fix>
         HTTPD: Improve support for HTTPD 2.4 by using client_* instead
         of remote_* variables. (rjung)
       </fix>
