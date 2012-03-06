@@ -392,6 +392,10 @@ typedef int jk_sock_t;
 #endif
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#define stat    _stat
+#endif
+
 #ifdef AS400_UTF8
 #define strcasecmp(a,b) apr_strnatcasecmp(a,b)
 #endif
