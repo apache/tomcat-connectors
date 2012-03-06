@@ -468,7 +468,7 @@ static struct error_reasons {
 static char dll_file_path[MAX_PATH];
 static char ini_file_name[MAX_PATH];
 static int using_ini_file = JK_FALSE;
-static JK_CRIT_SEC init_cs;
+static HANDLE init_cs = NULL;
 static int is_inited = JK_FALSE;
 static int is_mapread = JK_FALSE;
 
@@ -504,6 +504,8 @@ static int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
 static char error_page_buf[INTERNET_MAX_URL_LENGTH] = {0};
 static char *error_page = NULL;
+
+static const char *JK_MUTEX_NAME = "Global\\ISAPI_REDIRECT_MUTEX";
 
 #define URI_SELECT_OPT_PARSED       0
 #define URI_SELECT_OPT_UNPARSED     1
@@ -1490,11 +1492,11 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
     if (pVer->dwFilterVersion > http_filter_revision) {
         pVer->dwFilterVersion = http_filter_revision;
     }
-    EnterCriticalSection(&init_cs);
+    WaitForSingleObject(init_cs, INFINITE);
     if (!is_inited) {
         rv = initialize_extension();
     }
-    LeaveCriticalSection(&init_cs);
+    ReleaseMutex(init_cs);
     if (iis_info.major < 5 || (iis_info.major == 5 && iis_info.minor < 1)) {
         SetLastError(ERROR_OLD_WIN_VERSION);
         return FALSE;
@@ -2166,10 +2168,10 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                     StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                 }
             }
-            EnterCriticalSection(&init_cs);
+            WaitForSingleObject(init_cs, INFINITE);
             if (!is_mapread)
                 is_mapread = init_jk(serverName);
-            LeaveCriticalSection(&init_cs);
+            ReleaseMutex(init_cs);
         }
         /* If we can't read the map we become dormant */
         if (!is_mapread)
@@ -2209,11 +2211,11 @@ BOOL WINAPI GetExtensionVersion(HSE_VERSION_INFO * pVer)
     StringCbCopy(pVer->lpszExtensionDesc, HSE_MAX_EXT_DLL_NAME_LEN, (VERSION_STRING));
 
 
-    EnterCriticalSection(&init_cs);
+    WaitForSingleObject(init_cs, INFINITE);
     if (!is_inited) {
         rv = initialize_extension();
     }
-    LeaveCriticalSection(&init_cs);
+    ReleaseMutex(init_cs);
 
     return rv;
 }
@@ -2246,10 +2248,10 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                     StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                 }
             }
-            EnterCriticalSection(&init_cs);
+            WaitForSingleObject(init_cs, INFINITE);
             if (!is_mapread)
                 is_mapread = init_jk(serverName);
-            LeaveCriticalSection(&init_cs);
+            ReleaseMutex(init_cs);
         }
         if (!is_mapread)
             is_inited = JK_FALSE;
@@ -2349,7 +2351,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
 {
     UNREFERENCED_PARAMETER(dwFlags);
 
-    EnterCriticalSection(&init_cs);
+    WaitForSingleObject(init_cs, INFINITE);
     if (is_inited) {
         jk_log(logger, JK_LOG_INFO, "%s stopping", (FULL_VERSION_STRING));
         is_inited = JK_FALSE;
@@ -2388,7 +2390,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
         }
         LeaveCriticalSection(&log_cs);
     }
-    LeaveCriticalSection(&init_cs);
+    ReleaseMutex(&init_cs);
 
     return TRUE;
 }
@@ -2442,8 +2444,12 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         StringCbPrintf(HTTP_WORKER_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_WORKER_HEADER_INDEX, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
 
-        InitializeCriticalSection(&init_cs);
         InitializeCriticalSection(&log_cs);
+        init_cs = CreateMutex(jk_get_sa_with_null_dacl(), FALSE, JK_MUTEX_NAME);
+        if (init_cs == NULL && GetLastError() == ERROR_ALREADY_EXISTS)
+            init_cs = OpenMutex(MUTEX_ALL_ACCESS, FALSE, JK_MUTEX_NAME);
+        if (init_cs == NULL)
+            return JK_FALSE;
     break;
     case DLL_PROCESS_DETACH:
         __try {
@@ -2451,7 +2457,8 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         }
         __except(1) {
         }
-        DeleteCriticalSection(&init_cs);
+        if (init_cs != NULL)
+            CloseHandle(init_cs);
         DeleteCriticalSection(&log_cs);
         break;
 

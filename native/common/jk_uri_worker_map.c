@@ -1075,7 +1075,7 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
             off = 1;
         }
         /* Size including leading slash. */
-        vhost_len = strlen(vhost);
+        vhost_len = (unsigned int)strlen(vhost);
         if (vhost_len + off >= JK_MAX_URI_LEN) {
             vhost_len = 0;
             jk_log(l, JK_LOG_WARNING,
