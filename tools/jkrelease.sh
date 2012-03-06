@@ -244,8 +244,9 @@ cd ${JK_DIST}/native
 W3MOPTS="-dump -cols 80 -t 4 -S -O iso-8859-1 -T text/html"
 ELNKOPTS="-dump -dump-width 80 -dump-charset iso-8859-1 -no-numbering -no-home"
 LNKOPTS="-dump -width 80 -codepage iso-8859-1 -no-g -html-numbered-links 0"
+LYXOPTS="-dump -width=80 -nolist -nostatus -noprint -assume_local_charset=iso-8859-1"
 failed=true
-for tool in `echo "w3m elinks links"`
+for tool in `echo "w3m elinks links lynx"`
 do
   found=false
   for dir in `echo ${PATH} | sed 's!^:!.:!;s!:$!:.!;s!::!:.:!g;s!:! !g'`
@@ -269,6 +270,9 @@ do
         ;;
       elinks)
         TOOL="elinks $ELNKOPTS"
+        ;;
+      lynx)
+        TOOL="lynx $LYXKOPTS"
         ;;
     esac
     rm -f CHANGES

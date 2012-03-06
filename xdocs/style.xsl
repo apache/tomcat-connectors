@@ -106,7 +106,7 @@
           <xsl:comment>APACHE LOGO</xsl:comment>
           <a href="http://www.apache.org/">
             <img src="http://www.apache.org/images/asf-logo.gif"
-                 align="right" alt="Apache Logo" border="0"/>
+                 align="right" alt=":: Apache Software Foundation" border="0"/>
           </a>
 
         </xsl:if>
@@ -158,7 +158,7 @@
                   <xsl:variable name="void">
                     <xsl:value-of select="$relative-path"/><xsl:value-of select="$void-image"/>
                     </xsl:variable>
-                  <img src="{$void}" width="1" height="1" vspace="0" hspace="0" border="0"/>
+                  <img src="{$void}" width="1" height="1" vspace="0" hspace="0" border="0" alt=" "/>
                 </xsl:if>
               </td>
             </tr>
