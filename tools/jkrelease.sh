@@ -33,7 +33,6 @@ JK_OWNER="root"
 JK_GROUP="bin"
 JK_TOOLS="`pwd`"
 
-COPY_TOP="KEYS"
 COPY_JK="BUILD.txt native jkstatus support tools xdocs"
 COPY_NATIVE="LICENSE NOTICE"
 COPY_BUILD="docs"
@@ -210,11 +209,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-for item in ${COPY_TOP}
-do
-    svn export $revision "${JK_SVN_URL}/${item}" ${JK_DIST}.tmp/${item}
-done
-
 # Build documentation.
 cd ${JK_DIST}.tmp/jk/xdocs
 ant
@@ -228,7 +222,6 @@ sed -e 's/^#define JK_REVISION .*/#define JK_REVISION "'"$JK_SUFFIX"'"/' \
 rm $file.orig
 
 # Copying things into the source distribution
-copy_files ${JK_DIST}.tmp $JK_DIST "$COPY_TOP"
 copy_files ${JK_DIST}.tmp/jk $JK_DIST "$COPY_JK"
 copy_files ${JK_DIST}.tmp/jk/native $JK_DIST "$COPY_NATIVE"
 copy_files ${JK_DIST}.tmp/jk/build $JK_DIST "$COPY_BUILD"
