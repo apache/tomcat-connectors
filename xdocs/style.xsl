@@ -106,7 +106,7 @@
           <xsl:comment>APACHE LOGO</xsl:comment>
           <a href="http://www.apache.org/">
             <img src="http://www.apache.org/images/asf-logo.gif"
-                 align="right" alt=":: Apache Software Foundation" border="0"/>
+                 align="right" alt=" :: Apache Software Foundation" border="0"/>
           </a>
 
         </xsl:if>
