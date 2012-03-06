@@ -242,7 +242,7 @@ cd ${JK_DIST}/native
 
 # Check for links, elinks or w3m
 W3MOPTS="-dump -cols 80 -t 4 -S -O iso-8859-1 -T text/html"
-ELNKOPTS="-dump -dump-width 80 -dump-charset iso-8859-1 -no-numbering -no-home"
+ELNKOPTS="-dump -dump-width 80 -dump-charset iso-8859-1 -no-numbering -no-home -no-references"
 LNKOPTS="-dump -width 80 -codepage iso-8859-1 -no-g -html-numbered-links 0"
 LYXOPTS="-dump -width=80 -nolist -nostatus -noprint -assume_local_charset=iso-8859-1"
 failed=true
