@@ -505,7 +505,7 @@ static HANDLE watchdog_handle = NULL;
 static char error_page_buf[INTERNET_MAX_URL_LENGTH] = {0};
 static char *error_page = NULL;
 
-static const char *JK_MUTEX_NAME = "Global\\ISAPI_REDIRECT_MUTEX";
+static const char *JK_MUTEX_NAME = "Global\\JK_ISAPI_REDIRECT_MUTEX";
 
 #define URI_SELECT_OPT_PARSED       0
 #define URI_SELECT_OPT_UNPARSED     1
