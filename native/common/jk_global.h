@@ -384,9 +384,6 @@ typedef int jk_sock_t;
 #define IS_VALID_SOCKET(s) ((s) > 0)
 #define JK_INVALID_SOCKET  (-1)
 #endif
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-#define stat  _stat
-#endif
 #ifdef NETWARE
 #ifdef __NOVELL_LIBC__
 #define MAX_PATH 511
