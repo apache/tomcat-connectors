@@ -15,22 +15,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+scripts/build/unix/buildcheck.sh || exit 1
 
-echo "rm autom4te.cache"
-rm -rf autom4te.cache
+rm -rf autom4te.cache 2>/dev/null || true
+mv scripts/build/unix/config.sub scripts/
+mv scripts/build/unix/config.guess scripts/
 
-echo "libtoolize --force --automake --copy"
+echo "buildconf: libtoolize --force --automake --copy"
 libtoolize --force --automake --copy
-echo "aclocal"
+echo "buildconf: aclocal"
 #aclocal --acdir=`aclocal --print-ac-dir`
 #aclocal --acdir=/usr/local/share/aclocal
 aclocal
-echo "autoheader"
+echo "buildconf: autoheader"
 autoheader
-echo "automake -a --foreign --copy"
+echo "buildconf: automake -a --foreign --copy"
 automake -a --foreign --copy --force-missing
-echo "autoconf"
+echo "buildconf: autoconf"
 autoconf
-
-echo "rm autom4te.cache"
 rm -rf autom4te.cache
+mv scripts/config.sub scripts/build/unix/
+mv scripts/config.guess scripts/build/unix/
