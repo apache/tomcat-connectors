@@ -272,7 +272,7 @@ do
         TOOL="elinks $ELNKOPTS"
         ;;
       lynx)
-        TOOL="lynx $LYXKOPTS"
+        TOOL="lynx $LYXOPTS"
         ;;
     esac
     rm -f CHANGES
