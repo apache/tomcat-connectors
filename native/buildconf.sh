@@ -18,9 +18,6 @@
 scripts/build/unix/buildcheck.sh || exit 1
 
 rm -rf autom4te.cache 2>/dev/null || true
-mv scripts/build/unix/config.sub scripts/
-mv scripts/build/unix/config.guess scripts/
-
 echo "buildconf: libtoolize --force --automake --copy"
 libtoolize --force --automake --copy
 echo "buildconf: aclocal"
@@ -30,9 +27,7 @@ aclocal
 echo "buildconf: autoheader"
 autoheader
 echo "buildconf: automake -a --foreign --copy"
-automake -a --foreign --copy --force-missing
+automake -a --foreign --copy
 echo "buildconf: autoconf"
 autoconf
 rm -rf autom4te.cache
-mv scripts/config.sub scripts/build/unix/
-mv scripts/config.guess scripts/build/unix/
