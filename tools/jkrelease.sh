@@ -76,7 +76,7 @@ copy_files() {
 
 txtgen=n
 conflict=0
-while getopts :v:t:r:b:d:p:k:o:gTfh c
+while getopts :v:t:r:b:d:p:k:o:g:Tfh c
 do
     case $c in
     v)         version=$OPTARG;;
