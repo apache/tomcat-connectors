@@ -35,7 +35,7 @@ else
 echo "buildconf: autoconf version $ac_version (ok)"
 fi
 
-ac_version=`${LIBTOOL:-libtool} --version 2>/dev/null|sed -e 's/^[^0-9]*//;s/[a-z]* *$//;q'`
+ac_version=`${LIBTOOL:-libtool} --version 2>/dev/null|sed -e 's/^[^0-9]*//;s/[a-z]* *$//;s/(.*//;q'`
 if test -z "$ac_version"; then
 echo "buildconf: libtool not found."
 echo "           You need libtool version 1.4 or newer installed"
@@ -43,7 +43,7 @@ echo "           to build mod_jk from SVN."
 exit 1
 fi
 IFS=.; set $ac_version; IFS=' '
-if test "$1" = "1" -a "$2" -lt "4" || test "$1" -lt "2"; then
+if test "$1" = "1" -a "$2" -lt "4" || test "$1" -lt "1"; then
 echo "buildconf: libtool version $ac_version found."
 echo "           You need libtool version 1.4 or newer installed"
 echo "           to build mod_jk from SVN."
