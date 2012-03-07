@@ -47,6 +47,7 @@ usage() {
     echo "Usage:: $0 -v VERSION [-f] [-r revision] [-t tag | -b BRANCH | -T | -d DIR]"
     echo "        -v: version to package"
     echo "        -f: force, do not validate tag against version"
+    echo "        -d: create text documentation for html"
     echo "        -t: tag to use if different from version"
     echo "        -r: revision to package"
     echo "        -b: package from branch BRANCH"
@@ -71,6 +72,7 @@ copy_files() {
 
 #################### MAIN ##############
 
+txtgen=n
 conflict=0
 while getopts :v:t:r:b:d:p:k:Tf c
 do
@@ -88,6 +90,7 @@ do
     d)         local_dir=$OPTARG
                conflict=$(($conflict+1));;
     f)         force='y';;
+    d)         txtgen='y';;
     \:)        usage
                exit 2;;
     \?)        usage
@@ -240,6 +243,8 @@ find ${JK_DIST} -name .svn -exec rm -rf \{\} \;
 
 cd ${JK_DIST}/native
 
+if [ $txtgen = y ]
+then
 # Check for links, elinks or w3m
 W3MOPTS="-dump -cols 80 -t 4 -S -O iso-8859-1 -T text/html"
 ELNKOPTS="-dump -dump-width 80 -dump-charset iso-8859-1 -no-numbering -no-home -no-references"
@@ -305,6 +310,7 @@ if [ ! -s NEWS ]
 then
   echo "Can't convert html to text (NEWS)"
   exit 1
+fi
 fi
 
 # Generate configure et. al.
