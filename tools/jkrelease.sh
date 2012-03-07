@@ -47,12 +47,14 @@ usage() {
     echo "Usage:: $0 -v VERSION [-f] [-r revision] [-t tag | -b BRANCH | -T | -d DIR]"
     echo "        -v: version to package"
     echo "        -f: force, do not validate tag against version"
-    echo "        -d: create text documentation for html"
+    echo "        -h: create text documentation for html"
     echo "        -t: tag to use if different from version"
     echo "        -r: revision to package"
     echo "        -b: package from branch BRANCH"
     echo "        -T: package from trunk"
     echo "        -d: package from local directory"
+    echo "        -o: owner used for creating tar archive"
+    echo "        -g: group used for creating tar archive"
     echo "        -p: GNU PG passphrrase used for signing"
     echo "        -k: ID of GNU PG key to use for signing"
 }
@@ -74,7 +76,7 @@ copy_files() {
 
 txtgen=n
 conflict=0
-while getopts :v:t:r:b:d:p:k:T:o:gfd c
+while getopts :v:t:r:b:d:p:k:o:gTfh c
 do
     case $c in
     v)         version=$OPTARG;;
@@ -92,7 +94,7 @@ do
     d)         local_dir=$OPTARG
                conflict=$(($conflict+1));;
     f)         force='y';;
-    d)         txtgen='y';;
+    h)         txtgen='y';;
     \:)        usage
                exit 2;;
     \?)        usage
@@ -205,7 +207,7 @@ sleep 2
 umask 022
 
 rm -rf ${JK_DIST} 2>/dev/null || true
-rm -rf ${JK_DIST}.tmp 2>/dev/null || true
+rm -rf ${JK_DIST}.* 2>/dev/null || true
 
 mkdir -p ${JK_DIST}.tmp
 svn export $revision "${JK_SVN_URL}" ${JK_DIST}.tmp/jk
