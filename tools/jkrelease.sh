@@ -74,7 +74,7 @@ copy_files() {
 
 txtgen=n
 conflict=0
-while getopts :v:t:r:b:d:p:k:Tf c
+while getopts :v:t:r:b:d:p:k:T:o:gfd c
 do
     case $c in
     v)         version=$OPTARG;;
@@ -83,6 +83,8 @@ do
     r)         revision=$OPTARG;;
     k)         SIGN_OPTS="--default-key=$OPTARG $SIGN_OPTS";;
     p)         SIGN_OPTS="--passphrase=$OPTARG $SIGN_OPTS";;
+    o)         JK_OWNER=$OPTARG;;
+    g)         JK_GROUP=$OPTARG;;
     b)         branch=$OPTARG
                conflict=$(($conflict+1));;
     T)         trunk=trunk
@@ -202,8 +204,8 @@ sleep 2
 
 umask 022
 
-rm -rf ${JK_DIST}
-rm -rf ${JK_DIST}.tmp
+rm -rf ${JK_DIST} 2>/dev/null || true
+rm -rf ${JK_DIST}.tmp 2>/dev/null || true
 
 mkdir -p ${JK_DIST}.tmp
 svn export $revision "${JK_SVN_URL}" ${JK_DIST}.tmp/jk
@@ -233,10 +235,10 @@ copy_files ${JK_DIST}.tmp/jk/conf $JK_DIST/conf "$COPY_CONF"
 # Remove extra directories and files
 targetdir=${JK_DIST}
 rm -rf ${targetdir}/xdocs/jk2
-rm -rf ${targetdir}/native/CHANGES.txt
-rm -rf ${targetdir}/native/build.xml
-rm -rf ${targetdir}/native/NOTICE
-rm -rf ${targetdir}/native/LICENSE
+rm -f ${targetdir}/native/CHANGES.txt
+rm -f ${targetdir}/native/build.xml
+rm -f ${targetdir}/native/NOTICE
+rm -f ${targetdir}/native/LICENSE
 find ${JK_DIST} -name .cvsignore -exec rm -rf \{\} \; 
 find ${JK_DIST} -name CVS -exec rm -rf \{\} \; 
 find ${JK_DIST} -name .svn -exec rm -rf \{\} \; 
@@ -327,4 +329,6 @@ archive=${JK_DIST}.tar.gz
 . ${JK_TOOLS}/signfile.sh ${SIGN_OPTS} $archive
 archive=${JK_DIST}.zip
 . ${JK_TOOLS}/signfile.sh ${SIGN_OPTS} $archive
-
+# Cleanup working dirs
+rm -rf ${JK_DIST}.tmp
+rm -rf ${JK_DIST}
