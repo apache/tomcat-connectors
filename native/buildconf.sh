@@ -18,8 +18,8 @@
 scripts/build/unix/buildcheck.sh || exit 1
 
 rm -rf autom4te.cache 2>/dev/null || true
-echo "buildconf: libtoolize --force --automake --copy"
-libtoolize --force --automake --copy
+echo "buildconf: libtoolize --automake --copy"
+libtoolize --automake --copy
 echo "buildconf: aclocal"
 #aclocal --acdir=`aclocal --print-ac-dir`
 #aclocal --acdir=/usr/local/share/aclocal
