@@ -30,15 +30,7 @@ INTDIR=.\Release_ia64
 OutDir=.\Release_ia64
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
-ALL : "$(OUTDIR)\$(TARGET).dll"
-
-!ELSE 
-
 ALL : "pcre_ia64" "$(OUTDIR)\$(TARGET).dll"
-
-!ENDIF 
 
 !IF "$(RECURSE)" == "1" 
 CLEAN :"pcre_ia64CLEAN" 
@@ -298,5 +290,5 @@ SOURCE=..\common\jk_worker.c
 
 "pcre_ia64CLEAN" : 
    cd ".\pcre"
-   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.ia64" RECURSE=1 CLEAN 
+   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.ia64" CLEAN 
    cd ".."

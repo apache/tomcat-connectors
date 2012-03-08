@@ -30,15 +30,7 @@ INTDIR=.\Release_amd64
 OutDir=.\Release_amd64
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0"
-
-ALL : "$(OUTDIR)\$(TARGET).dll"
-
-!ELSE
-
 ALL : "pcre_amd64" "$(OUTDIR)\$(TARGET).dll"
-
-!ENDIF
 
 !IF "$(RECURSE)" == "1"
 CLEAN :"pcre_amd64CLEAN"
@@ -298,5 +290,5 @@ SOURCE=..\common\jk_worker.c
 
 "pcre_amd64CLEAN" :
    cd ".\pcre"
-   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.amd64" RECURSE=1 CLEAN
+   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.amd64" CLEAN
    cd ".."

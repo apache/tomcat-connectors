@@ -287,10 +287,10 @@ SOURCE=..\common\jk_worker.c
 
 "pcre_x86" : 
    cd ".\pcre"
-   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.x86" CFG="pcre_x86" 
+   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.x86"
    cd ".."
 
 "pcre_x86CLEAN" : 
    cd ".\pcre"
-   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.x86" CFG="pcre_x86" RECURSE=1 CLEAN 
+   $(MAKE) /$(MAKEFLAGS) /F ".\pcre.x86" CLEAN 
    cd ".."

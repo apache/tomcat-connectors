@@ -27,15 +27,7 @@ INTDIR=.\Release_amd64
 OutDir=.\Release_amd64
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0"
-
 ALL : "$(OUTDIR)\pcre.lib"
-
-!ELSE
-
-ALL : "$(OUTDIR)\pcre.lib"
-
-!ENDIF
 
 CLEAN :
 	-@erase "$(INTDIR)\get.obj"
@@ -98,14 +90,15 @@ CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /D "_WIN32" /D "NDEBUG" /D "_WI
    $(CPP_PROJ) $<
 <<
 
-SOURCE=.\dftables.exe
-InputPath=.\dftables.exe
+SOURCE=.\chartables.hw
+InputPath=.\chartables.hw
 
 ".\chartables.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	<<tempfile.bat
 	@echo off
-	.\dftables.exe chartables.c
+	type .\chartables.hw > .\chartables.c
 <<
+
 
 SOURCE=.\get.c
 
@@ -136,6 +129,7 @@ InputPath=.\config.hw
 	type .\config.hw > .\config.h
 <<
 
+
 SOURCE=.\pcre.hw
 InputPath=.\pcre.hw
 
@@ -144,3 +138,4 @@ InputPath=.\pcre.hw
 	@echo off
 	type .\pcre.hw > .\pcre.h
 <<
+

@@ -21,21 +21,9 @@ INTDIR=.\Release_x86
 OutDir=.\Release_x86
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0"
-
 ALL : "$(OUTDIR)\pcre.lib"
 
-!ELSE
-
-ALL : "dftables_x86" "$(OUTDIR)\pcre.lib"
-
-!ENDIF
-
-!IF "$(RECURSE)" == "1"
-CLEAN :"dftables_x86CLEAN"
-!ELSE
 CLEAN :
-!ENDIF
 	-@erase "$(INTDIR)\get.obj"
 	-@erase "$(INTDIR)\maketables.obj"
 	-@erase "$(INTDIR)\pcre.obj"
@@ -96,14 +84,15 @@ CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /D "_WIN32" /D "NDEBUG" /D "_WI
    $(CPP_PROJ) $<
 <<
 
-SOURCE=.\dftables.exe
-InputPath=.\dftables.exe
+SOURCE=.\chartables.hw
+InputPath=.\chartables.hw
 
 ".\chartables.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	<<tempfile.bat
 	@echo off
-	.\dftables.exe chartables.c
+	type .\chartables.hw > .\chartables.c
 <<
+
 
 SOURCE=.\get.c
 
@@ -134,6 +123,7 @@ InputPath=.\config.hw
 	type .\config.hw > .\config.h
 <<
 
+
 SOURCE=.\pcre.hw
 InputPath=.\pcre.hw
 
@@ -143,12 +133,3 @@ InputPath=.\pcre.hw
 	type .\pcre.hw > .\pcre.h
 <<
 
-"dftables_x86" :
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F ".\dftables.x86" CFG="dftables_x86"
-   cd "."
-
-"dftables_x86CLEAN" :
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F ".\dftables.x86" CFG="dftables_x86" RECURSE=1 CLEAN
-   cd "."
