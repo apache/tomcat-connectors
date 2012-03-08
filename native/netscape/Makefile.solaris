@@ -57,7 +57,6 @@ JK_OBJS = ap_snprintf.o \
 	jk_ajp12_worker.o \
 	jk_msg_buff.o \
 	jk_ajp13.o \
-	jk_nwmain.o \
 	jk_ajp13_worker.o \
 	jk_pool.o \
 	jk_ajp14.o \
