@@ -127,9 +127,15 @@
   cd netscape
   make -f Makefile.solaris
 
-  This assumes that SUITSPOT_HOME is defined and points to
-  your SunONE install path (eg: /opt/SUNWwbsvr/plugins)
+  This assumes that IPLANET_HOME is defined and points to
+  your iPlanet install path (eg: /opt/SUNWwbsvr)
   and that JAVA_HOME is defined (eg: /opt/SUNWwbsvr/bin/https/jdk).
+
+  By default GCC will be used. You can use SunCC by providing
+  CC=cc on the make command line:
+
+  make -f Makefile.solaris CC=cc IPLANET_HOME=/opt/SUNWwbsrv70 EXTRA_CFLAGS=-m64
+
 
   Misc notes 
   ----------

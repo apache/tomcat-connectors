@@ -23,22 +23,22 @@
 #   2. statically linking with libgcc
 #   3. Adjusting LD_LIBRARY_PATH to grab libgcc_s
 CC=gcc
+ifeq (gcc,$(CC))
 # For 64 Bit builds, add "-m64" to EXTRA_CFLAGS
-EXTRA_CFLAGS=-fPIC -pthread
+CFLAGS+=-fPIC -pthread
 LDFLAGS=-shared
-
-# Sun Studio cc compiler
-#CC=cc
+else
 # For 64 Bit builds, add "-xtarget=generic64" to EXTRA_CFLAGS
-#EXTRA_CFLAGS=-xcode=pic32 -mt
-#LDFLAGS=-G
+CFLAGS+=-xcode=pic32 -mt
+LDFLAGS=-G
+endif
 
 # Change this according to location where on installed the server.
 # Don't forget to do the ./configure --enable-netscape=/opt/SUNWwbsvr/plugins
 # before doing gmake -f Makefile.solaris
 
 CC_CMD=$(CC) $(CFLAGS) $(EXTRA_CFLAGS) \
-	-DNET_SSL -DSOLARIS -D_REENTRANT -DXP_UNIX -DMCC_HTTPD -DSPAPI20 -DJK_NSAPI
+	-DNET_SSL -DSOLARIS -D_REENTRANT -DXP_UNIX -DMCC_HTTPD -DSPAPI20 -DJK_NSAPI -DHAVE_CONFIG_H
 
 LD_SHAREDCMD=$(CC) $(LDFLAGS) $(CFLAGS) $(EXTRA_CFLAGS)
 
