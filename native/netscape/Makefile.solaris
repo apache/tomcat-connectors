@@ -28,9 +28,9 @@ ifeq (gcc,$(CC))
 CFLAGS+=-fPIC -pthread
 LDFLAGS=-shared
 else
-# For 64 Bit builds, add "-xtarget=generic64" to EXTRA_CFLAGS
-CFLAGS+=-xcode=pic32 -mt
-LDFLAGS=-G
+# For 64 Bit builds, add "-m64" to EXTRA_CFLAGS
+CFLAGS+=-O -Xa -KPIC -mt
+LDFLAGS=-G -KPIC -dy
 endif
 
 # Change this according to location where on installed the server.
