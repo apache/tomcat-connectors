@@ -282,4 +282,5 @@ SOURCE=..\common\jk_worker.c
 SOURCE=.\mod_jk.c
 
 "$(INTDIR)\mod_jk.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
 
