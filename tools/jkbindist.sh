@@ -15,11 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# Make sure to set your path so that we can find
-# the following binaries:
-# cd, mkdir, cp, rm, find, zip
-
+#
+# Create windows binary distribution archive
+#
 prefix="tomcat-connectors"
 tools="`pwd`"
 sign=""
@@ -140,7 +138,9 @@ do
     else
         cp ${dtop}/native/$i .
     fi
+    unix2dos $i
 done
+unix2dos README
 
 # Pack
 zip -9 -j ${dist}.zip $1 README ${copy}
