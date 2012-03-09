@@ -104,4 +104,9 @@ Makefile (use --disable-stack-for-recursion). */
 
 /* #define NO_RECURSE */
 
+#if defined(_MSC_VER) && _MSC_VER >= 1200
+#pragma warning(disable: 4244)
+#pragma warning(disable: 4267)
+#endif
+
 /* End */
