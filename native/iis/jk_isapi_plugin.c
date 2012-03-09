@@ -891,7 +891,7 @@ static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
     StringCbPrintf(body, sizeof(body), HTML_ERROR_BODY_FMT,
                    status_reason(err), status_title(err),
                    status_description(err));
-    len = (DWORD)(strlen(body));
+    len = lstrlenA(body);
     pfc->WriteClient(pfc, body, &len,
                      HSE_IO_SYNC);
     len = ISIZEOF(HTML_ERROR_TAIL) - 1;
@@ -910,7 +910,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err, const 
         DWORD len_of_error_page;
         StringCbPrintf(error_page_url, INTERNET_MAX_URL_LENGTH,
                        error_page, err);
-        len_of_error_page = (DWORD)strlen(error_page_url);
+        len_of_error_page = lstrlenA(error_page_url);
         if (!lpEcb->ServerSupportFunction(lpEcb->ConnID,
                                           HSE_REQ_SEND_URL_REDIRECT_RESP,
                                           error_page_url,
@@ -934,7 +934,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err, const 
              */
             jk_log(logger, JK_LOG_WARNING,
                    "error header too long (%d bytes requested).",
-                   strlen(err_hdrs));
+                   lstrlenA(err_hdrs));
             body[0] = '\0';
         }
     }
@@ -952,7 +952,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err, const 
     StringCbPrintf(body, sizeof(body), HTML_ERROR_BODY_FMT,
                    status_reason(err), status_title(err),
                    status_description(err));
-    len = (DWORD)(strlen(body));
+    len = lstrlenA(body);
     lpEcb->WriteClient(lpEcb->ConnID,
                        body, &len,
                        HSE_IO_SYNC);
@@ -1141,8 +1141,8 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
             /* Fill in the response */
             hi.pszStatus = status_str;
             hi.pszHeader = headers_str;
-            hi.cchStatus = (DWORD)strlen(status_str);
-            hi.cchHeader = (DWORD)strlen(headers_str);
+            hi.cchStatus = lstrlenA(status_str);
+            hi.cchHeader = lstrlenA(headers_str);
 
             /*
              * Using the extended form of the API means we have to get this right,
@@ -1157,7 +1157,7 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                                                   NULL, NULL);
         }
         else {
-            DWORD status_str_len = (DWORD)strlen(status_str);
+            DWORD status_str_len = lstrlenA(status_str);
             /* Old style response - forces Connection: close if Tomcat response doesn't
                specify necessary details to allow keep alive */
             rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
@@ -1382,7 +1382,7 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
                 jk_log(logger, JK_LOG_DEBUG,
                 "Using chunked encoding - writing chunk header for %d byte chunk", l);
 
-            if (!isapi_write_client(p, chunk_header, (unsigned int)strlen(chunk_header))) {
+            if (!isapi_write_client(p, chunk_header, lstrlenA(chunk_header))) {
                 jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk header failed");
                 JK_TRACE_EXIT(logger);
                 return JK_FALSE;
@@ -1672,7 +1672,7 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
     }
 
     rc = pcre_exec((const pcre *)preg->re_pcre, NULL, string,
-                   (int)strlen(string),
+                   lstrlenA(string),
                     0, options, ovector, nmatch * 3);
 
     if (rc == 0)
@@ -2656,7 +2656,7 @@ static int init_jk(char *serverName)
     StringCbCat(shm_name, MAX_PATH, extension_uri + 1);
     if ((p = strrchr(shm_name, '.')))
         *p = '\0';
-    for(i = 0; i < strlen(shm_name); i++) {
+    for(i = 0; i < lstrlenA(shm_name); i++) {
         if (!isalnum((unsigned char)shm_name[i]))
             shm_name[i] = '_';
         else
@@ -2925,7 +2925,7 @@ static int read_registry_init_data(void)
         }
     }
     if (get_config_parameter(src, LOG_FILESIZE_TAG, tmpbuf, sizeof(tmpbuf))) {
-        size_t tl = strlen(tmpbuf);
+        int tl = lstrlenA(tmpbuf);
         if (tl > 0) {
             /* rotatelogs has an 'M' suffix on filesize, which we optionally support for consistency */
             if (tmpbuf[tl - 1] == 'M') {
