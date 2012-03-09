@@ -124,7 +124,7 @@ do
     unix2dos $i
 done
 unix2dos README
-
+chmod 755 $1
 # Pack
 zip -9 -j ${dist}.zip $1 README ${copy}
 
