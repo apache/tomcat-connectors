@@ -79,7 +79,7 @@ then
     usage
     exit 2
 fi
-    
+
 case "$websrv" in
     httpd*)
         webdesc="Apache HTTP Server"
@@ -98,7 +98,7 @@ esac
 
 dist=${prefix}-${version}-${opsys}-${arch}-${websrv}
 dtop=${tools}/..
-copy="KEYS LICENSE NOTICE"
+copy="LICENSE NOTICE"
 
 rm -f ${copy} 2>/dev/null
 rm -f ${dist} 2>/dev/null
