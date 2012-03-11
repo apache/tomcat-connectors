@@ -43,5 +43,5 @@ An alternative will be to open the isapi workspace file (isapi.dsw) in msdev and
 build it using the build menu.
 
 * USE_CGI_HEADERS
-  If provided at compile time the isapi_redirect will use alternete
+  If provided at compile time the isapi_redirect will use alternate
   header names. TODO: Needs a proper documentation.
