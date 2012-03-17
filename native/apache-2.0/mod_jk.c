@@ -3736,7 +3736,7 @@ static int jk_map_to_storage(request_rec * r)
 
     jk_request_conf_t *rconf = ap_get_module_config(r->request_config, &jk_module);
     if (rconf == NULL) {
-        jk_request_conf_t *rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
+        rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
         rconf->jk_handled = JK_FALSE;
         rconf->rule_extensions = NULL;
         ap_set_module_config(r->request_config, &jk_module, rconf);
