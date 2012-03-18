@@ -48,7 +48,6 @@ prepare:
 
 OS_TYPE=solaris
 INCLUDEDIR=$(IPLANET_HOME)/include
-JAVA_INCLUDE=$(JAVA_HOME)/include
 JK_DIR=../common
 VPATH=.:$(JK_DIR)
 
