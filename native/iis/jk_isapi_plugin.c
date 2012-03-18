@@ -2679,13 +2679,6 @@ static int init_jk(char *serverName)
     StringCbCat(shm_name, MAX_PATH, extension_uri + 1);
     if ((p = strrchr(shm_name, '.')))
         *p = '\0';
-    for(i = 0; i < lstrlenA(shm_name); i++) {
-        if (!isalnum((unsigned char)shm_name[i]))
-            shm_name[i] = '_';
-        else
-            shm_name[i] = toupper(shm_name[i]);
-    }
-
     jk_set_worker_def_cache_size(DEFAULT_WORKER_THREADS);
 
     /* Logging the initialization type: registry or properties file in virtual dir
