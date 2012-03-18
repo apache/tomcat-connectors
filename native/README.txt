@@ -15,8 +15,8 @@
 
 $Id$
 
-README for tomcat-connectors
-============================
+README for tomcat-connectors (mod_jk)
+=====================================
 
 What is tomcat-connector?
 -------------------------
