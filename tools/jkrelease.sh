@@ -33,7 +33,7 @@ JK_OWNER="root"
 JK_GROUP="bin"
 JK_TOOLS="`pwd`"
 
-COPY_JK="BUILD.txt native jkstatus support tools xdocs"
+COPY_JK="README.txt HOWTO-RELEASE.txt native jkstatus support tools xdocs"
 COPY_NATIVE="LICENSE NOTICE"
 COPY_BUILD="docs"
 COPY_CONF="httpd-jk.conf uriworkermap.properties workers.properties workers.properties.minimal"
@@ -237,7 +237,6 @@ copy_files ${JK_DIST}.tmp/jk/conf $JK_DIST/conf "$COPY_CONF"
 # Remove extra directories and files
 targetdir=${JK_DIST}
 rm -rf ${targetdir}/xdocs/jk2
-rm -f ${targetdir}/native/CHANGES.txt
 rm -f ${targetdir}/native/build.xml
 rm -f ${targetdir}/native/NOTICE
 rm -f ${targetdir}/native/LICENSE
