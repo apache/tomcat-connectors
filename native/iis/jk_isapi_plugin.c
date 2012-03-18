@@ -55,7 +55,7 @@
 
 #define VERSION_STRING "Jakarta/ISAPI/" JK_EXPOSED_VERSION
 #define FULL_VERSION_STRING "Jakarta/ISAPI/" JK_FULL_EXPOSED_VERSION
-#define SHM_DEF_PREFIX      "JK_"
+#define SHM_DEF_PREFIX      "Global\\JK_"
 #define DEFAULT_WORKER_NAME "ajp13"
 
 /*

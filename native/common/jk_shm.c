@@ -210,7 +210,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             shmsz = jk_shmem.size;
             jk_shm_map = CreateFileMapping(INVALID_HANDLE_VALUE,
                                            jk_get_sa_with_null_dacl(),
-                                           FILE_MAP_READ | FILE_MAP_WRITE,
+                                           PAGE_READWRITE,
                                            0,
                                            (DWORD)shmsz,
                                            fname);
