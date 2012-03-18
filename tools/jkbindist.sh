@@ -104,7 +104,7 @@ rm -f ${dist}.* 2>/dev/null
 cat << EOF > README
 Apache Tomcat Connectors - $version
 
-Here your'll find module binaries for $webdesc.
+Here you'll find module binaries for $webdesc.
 Check the online documentation at http://tomcat.apache.org/connectors-doc/
 for installation instructions.
 
