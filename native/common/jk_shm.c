@@ -175,7 +175,8 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
     if (fname) {
         int i;
         SIZE_T shmsz = 0;
-        snprintf(shname, MAX_PATH - 8, "Global\\%s", fname);
+        strcpy(shname, "Global\\");
+        strncat(shname, fname, MAX_PATH - 8);
         for(i = 7; i < (int)strlen(shname); i++) {
             if (!isalnum((unsigned char)shname[i]))
                 shname[i] = '_';
@@ -183,7 +184,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                 shname[i] = toupper(shname[i]);
         }
         strcpy(lkname, shname);
-        strcat(lkname, "_MUTEX");
+        strncat(lkname, "_MUTEX", MAX_PATH - 1);
         jk_shm_hlock = CreateMutex(jk_get_sa_with_null_dacl(), TRUE, lkname);
         if (jk_shm_hlock == NULL) {
             if (GetLastError() == ERROR_ALREADY_EXISTS) {
