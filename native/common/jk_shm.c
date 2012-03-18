@@ -150,7 +150,7 @@ size_t jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
 /* Use plain memory */
 int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
 {
-    int rc;
+    int rc = -1;
     int attached = 0;
     char lkname[MAX_PATH];
 
@@ -169,7 +169,10 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
     }
     jk_shmem.size = JK_SHM_ALIGN(sizeof(jk_shm_header_t) + sz);
 #if defined (WIN32)
+    jk_shm_map   = NULL;
+    jk_shm_hlock = NULL;
     if (fname) {
+        SIZE_T shmsz = 0;
         sprintf(lkname, "Global\\%s_MUTEX", fname);
         jk_shm_hlock = CreateMutex(jk_get_sa_with_null_dacl(), TRUE, lkname);
         if (jk_shm_hlock == NULL) {
@@ -179,48 +182,62 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             }
         }
         if (jk_shm_hlock == NULL) {
+            rc = GetLastError();
+            jk_log(l, JK_LOG_ERROR, "Failed to open shared memory mutex %s with errno=%d",
+                   lkname, rc);
             JK_LEAVE_CS(&jk_shmem.cs);
             JK_TRACE_EXIT(l);
-            return -1;
+            return rc;
         }
         if (attached) {
             DWORD ws = WaitForSingleObject(jk_shm_hlock, INFINITE);
             if (ws == WAIT_FAILED) {
+                rc = GetLastError();
                 CloseHandle(jk_shm_hlock);
                 jk_shm_hlock = NULL;
                 JK_LEAVE_CS(&jk_shmem.cs);
                 JK_TRACE_EXIT(l);
-                return -1;
+                return rc;
             }
-            jk_shm_map = OpenFileMapping(PAGE_READWRITE, FALSE, fname);
+            jk_shm_map = OpenFileMapping(FILE_MAP_READ | FILE_MAP_WRITE, FALSE, fname);
+            if (jk_shm_map == NULL) {
+                rc = GetLastError();
+                jk_log(l, JK_LOG_ERROR, "Failed to open shared memory %s with errno=%d",
+                       fname, rc);
+            }
         }
-        else {
+        if (jk_shm_map == NULL) {
+            shmsz = jk_shmem.size;
             jk_shm_map = CreateFileMapping(INVALID_HANDLE_VALUE,
                                            jk_get_sa_with_null_dacl(),
-                                           PAGE_READWRITE,
+                                           FILE_MAP_READ | FILE_MAP_WRITE,
                                            0,
-                                           (DWORD)jk_shmem.size,
+                                           (DWORD)shmsz,
                                            fname);
         }
         if (jk_shm_map == NULL || jk_shm_map == INVALID_HANDLE_VALUE) {
+            rc = GetLastError();
+            jk_log(l, JK_LOG_ERROR, "Failed to map shared memory %s with errno=%d",
+                   fname, rc);
             CloseHandle(jk_shm_hlock);
             jk_shm_hlock = NULL;
             jk_shm_map   = NULL;
             JK_LEAVE_CS(&jk_shmem.cs);
             JK_TRACE_EXIT(l);
-            return -1;
+            return rc;
         }
         jk_shmem.hdr = (jk_shm_header_t *)MapViewOfFile(jk_shm_map,
-                                                        FILE_MAP_ALL_ACCESS,
+                                                        FILE_MAP_READ | FILE_MAP_WRITE,
                                                         0,
                                                         0,
-                                                        0);
+                                                        shmsz);
     }
     else
 #endif
     jk_shmem.hdr = (jk_shm_header_t *)calloc(1, jk_shmem.size);
     if (!jk_shmem.hdr) {
 #if defined (WIN32)
+        rc = GetLastError();
         if (jk_shm_map) {
             CloseHandle(jk_shm_map);
             jk_shm_map = NULL;
@@ -232,7 +249,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
 #endif
         JK_LEAVE_CS(&jk_shmem.cs);
         JK_TRACE_EXIT(l);
-        return -1;
+        return rc;
     }
     if (!jk_shmem.filename) {
         if (fname)
@@ -267,10 +284,12 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         jk_shmem.hdr->h.data.pos     = 0;
         jk_shmem.hdr->h.data.workers = 0;
     }
-    if (jk_shm_hlock) {
+#if defined (WIN32)
+    if (jk_shm_hlock != NULL) {
         /* Unlock shared memory */
         ReleaseMutex(jk_shm_hlock);
     }
+#endif
     JK_LEAVE_CS(&jk_shmem.cs);
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
@@ -314,6 +333,7 @@ void jk_shm_close()
     if (jk_shmem.hdr) {
 #if defined (WIN32)
         if (jk_shm_hlock) {
+            WaitForSingleObject(jk_shm_hlock, 60000);
             CloseHandle(jk_shm_hlock);
             jk_shm_hlock = NULL;
         }

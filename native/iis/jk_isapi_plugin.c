@@ -469,8 +469,8 @@ static char dll_file_path[MAX_PATH];
 static char ini_file_name[MAX_PATH];
 static int using_ini_file = JK_FALSE;
 static HANDLE init_cs = NULL;
-static int is_inited = JK_FALSE;
-static int is_mapread = JK_FALSE;
+static volatile int is_inited = JK_FALSE;
+static volatile int is_mapread = JK_FALSE;
 
 static jk_uri_worker_map_t *uw_map = NULL;
 static jk_map_t *workers_map = NULL;
@@ -2168,10 +2168,12 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                     StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                 }
             }
-            WaitForSingleObject(init_cs, INFINITE);
-            if (!is_mapread)
-                is_mapread = init_jk(serverName);
-            ReleaseMutex(init_cs);
+            if (!is_mapread) {
+                WaitForSingleObject(init_cs, INFINITE);
+                if (!is_mapread)
+                    is_mapread = init_jk(serverName);
+                ReleaseMutex(init_cs);
+            }
         }
         /* If we can't read the map we become dormant */
         if (!is_mapread)
@@ -2248,10 +2250,12 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
                     StringCbCat(serverName, MAX_SERVERNAME, instanceId);
                 }
             }
-            WaitForSingleObject(init_cs, INFINITE);
-            if (!is_mapread)
-                is_mapread = init_jk(serverName);
-            ReleaseMutex(init_cs);
+            if (!is_mapread) {
+                WaitForSingleObject(init_cs, INFINITE);
+                if (!is_mapread)
+                    is_mapread = init_jk(serverName);
+                ReleaseMutex(init_cs);
+            }
         }
         if (!is_mapread)
             is_inited = JK_FALSE;
@@ -2351,10 +2355,12 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
 {
     UNREFERENCED_PARAMETER(dwFlags);
 
+    if (!is_inited)
+        return TRUE;
     WaitForSingleObject(init_cs, INFINITE);
     if (is_inited) {
-        jk_log(logger, JK_LOG_INFO, "%s stopping", (FULL_VERSION_STRING));
         is_inited = JK_FALSE;
+        jk_log(logger, JK_LOG_INFO, "%s stopping", (FULL_VERSION_STRING));
         watchdog_interval = 0;
         if (watchdog_handle) {
             WaitForSingleObject(watchdog_handle, INFINITE);
@@ -2792,12 +2798,20 @@ static int init_jk(char *serverName)
                            "You can remove the shm_size attribute if you want to use the optimal size.");
                 }
                 if ((rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0) {
-                    /* TODO: Do not try to open the worker if we cannot create
-                     *       the shared memory segment.
-                     */
                     jk_log(logger, JK_LOG_ERROR,
-                           "Initializing shm:%s errno=%d. Load balancing workers will not function properly.",
+                           "Initializing shm:%s errno=%d. Load balancer will not work properly!",
                            jk_shm_name(), rv);
+                }
+                else if ((rv = jk_shm_open(NULL, shm_config_size, logger)) != 0) {
+                    /* Do not try to open the worker if we cannot create
+                     * the shared memory segment or simple memory.
+                     */
+                    jk_log(logger, JK_LOG_EMERG,
+                           "Initializing shm:%s errno=%d. Cannot continue",
+                           jk_shm_name(), rv);
+                    jk_map_free(&workers_map);
+                    workers_map = NULL;
+                    return JK_FALSE;
                 }
                 else {
                     if (shm_loaded_name[0]) {
