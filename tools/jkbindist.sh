@@ -126,7 +126,7 @@ done
 unix2dos README
 chmod 755 $1
 # Pack
-zip -9 -j ${dist}.zip $1 README ${copy}
+zip -9 -j ${dist}.zip $@ LICENSE README NOTICE ${copy}
 
 # Sign
 archive=${dist}.zip

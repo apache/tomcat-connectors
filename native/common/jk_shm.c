@@ -182,7 +182,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
             else
                 shname[i] = toupper(shname[i]);
         }
-        strcpy(lkname, shame);
+        strcpy(lkname, shname);
         strcat(lkname, "_MUTEX");
         jk_shm_hlock = CreateMutex(jk_get_sa_with_null_dacl(), TRUE, lkname);
         if (jk_shm_hlock == NULL) {
