@@ -71,7 +71,7 @@
   will get the error message: "this module might crash under EAPI!" when
   loading libjk.so in httpd.
 
-  Static build need more tests, and we strongly recommend dynamic build
+  Static build needs more tests, and we strongly recommend dynamic build
   using DSO/APXS.
 
 
@@ -109,7 +109,7 @@
   have -DHPUX11GCC defined (usually by setting CLAGS before configure)
 
   Reports are that the stripped down cc version that ships with
-  HP-UX won't be able to works, you should habe the HP add-on ANSI C
+  HP-UX won't be able to work, you should have the HP add-on ANSI C
   Compiler package.
 
   A good repository for HP-UX gnu tools is:
@@ -122,13 +122,13 @@
   The build should work with the GNU gcc compiler, on both
   SPARC and x86 architecture systems.
 
-  A good repository for Solaris gnu tools is :
+  A good repository for Solaris gnu tools is:
 
   http://www.sunfreeware.com/
 
   Be carefull when mixing native compiler and gnu compiler, and
   ensure that apache and mod_jk will be compiled and linked with
-  the same tools (ie full Solaris or full GNU)
+  the same tools (i.e. full Solaris or full GNU)
 
 
   Building from the subversion tree
@@ -152,6 +152,6 @@
 
   ./buildconf.sh
 
-  If you see error message from automake, don't care about them.
+  If you see error messages from automake, don't care about them.
   After running buildconf you can build as usual using configure
   and make.
