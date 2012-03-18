@@ -13,31 +13,35 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-README for tomcat-connector
-
 $Id$
 
-Please see doc/mod_jk-howto.html for more verbose instructions
+README for tomcat-connectors
+============================
 
-* What is tomcat-connector ?
+What is tomcat-connector?
+-------------------------
 
-tomcat-connector is a new project to release web-servers connector
-for the Tomcat servlet engine.
+tomcat-connectors is a project that provides web server connectors
+for the Tomcat servlet engine. The supported web servers are the
+Apache HTTP Server 1.3 and 2.x, Microsoft IIS and the Netscape/IPlanet
+web server. The AJP protocol used by the connector is supported in
+all Tomcat versions starting with Tomcat 3.2. Some other back end servers
+also support the AJP protocol.
 
-This project didn't start from null since it reuse the latest code from
-mod_jk for the native parts and tomcat 3.3 for the java side of the 
-force.
+Main features of the tomcat-connectors are fault tolerance, load balancing,
+dynamic configuration, flexibility and robustness.
 
-From mod_jk we gain :
+The project was based on the original mod_jk code and keeps maintaining it.
+Originally the project also provided the Java parts of the connectors
+used inside Tomcat. These parts have since then been moved directly
+into the Tomcat source.
 
-* A connector (plugin) for many Web Server, including
-  Apache HTTP Server, Netscape/IPLanet NES and Microsoft IIS.
-  
-* Fault-tolerance and load-balancing. mod_jk use the concept of 
-  workers which handle a particular request, and a special worker
-  , the lb worker, is a group (cluster ?) of physical workers.
+How do i build it?
+------------------
 
-* Direct access to Tomcat 3.2/3.3/4.0/4.1 servlet engine via ajp13
-  protocol. 
+Just take a look at BUILDING.txt
 
-* OK, then how do I build web-connector ? Just take a look at BUILDING.txt
+Where are the docs?
+-------------------
+
+In the docs directory.
