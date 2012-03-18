@@ -153,6 +153,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
     int rc = -1;
     int attached = 0;
     char lkname[MAX_PATH];
+    char shname[MAX_PATH] = "";
 
     JK_TRACE_ENTER(l);
     if (!jk_shm_inited_cs) {
@@ -172,8 +173,17 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
     jk_shm_map   = NULL;
     jk_shm_hlock = NULL;
     if (fname) {
+        int i;
         SIZE_T shmsz = 0;
-        sprintf(lkname, "Global\\%s_MUTEX", fname);
+        snprintf(shname, MAX_PATH - 8, "Global\\%s", fname);
+        for(i = 7; i < (int)strlen(shname); i++) {
+            if (!isalnum((unsigned char)shname[i]))
+                shname[i] = '_';
+            else
+                shname[i] = toupper(shname[i]);
+        }
+        strcpy(lkname, shame);
+        strcat(lkname, "_MUTEX");
         jk_shm_hlock = CreateMutex(jk_get_sa_with_null_dacl(), TRUE, lkname);
         if (jk_shm_hlock == NULL) {
             if (GetLastError() == ERROR_ALREADY_EXISTS) {
@@ -199,11 +209,11 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                 JK_TRACE_EXIT(l);
                 return rc;
             }
-            jk_shm_map = OpenFileMapping(FILE_MAP_READ | FILE_MAP_WRITE, FALSE, fname);
+            jk_shm_map = OpenFileMapping(FILE_MAP_READ | FILE_MAP_WRITE, FALSE, shname);
             if (jk_shm_map == NULL) {
                 rc = GetLastError();
                 jk_log(l, JK_LOG_ERROR, "Failed to open shared memory %s with errno=%d",
-                       fname, rc);
+                       shname, rc);
             }
         }
         if (jk_shm_map == NULL) {
@@ -213,7 +223,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                                            PAGE_READWRITE,
                                            0,
                                            (DWORD)shmsz,
-                                           fname);
+                                           shname);
         }
         if (jk_shm_map == NULL || jk_shm_map == INVALID_HANDLE_VALUE) {
             rc = GetLastError();
@@ -252,8 +262,8 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         return rc;
     }
     if (!jk_shmem.filename) {
-        if (fname)
-            jk_shmem.filename = strdup(fname);
+        if (shname[0])
+            jk_shmem.filename = strdup(shname);
         else
             jk_shmem.filename = strdup("memory");
     }
