@@ -471,7 +471,7 @@ static int using_ini_file = JK_FALSE;
 static HANDLE init_cs = NULL;
 static volatile int is_inited = JK_FALSE;
 static volatile int is_mapread = JK_FALSE;
-
+static BOOL  dll_process_detach = FALSE;
 static jk_uri_worker_map_t *uw_map = NULL;
 static jk_map_t *workers_map = NULL;
 static jk_map_t *rewrite_map = NULL;
@@ -500,7 +500,7 @@ static int  strip_session = 0;
 static int  use_auth_notification_flags = 1;
 static int  chunked_encoding_enabled = JK_FALSE;
 static int  reject_unsafe = 0;
-static int  watchdog_interval = 0;
+static volatile int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
 static char error_page_buf[INTERNET_MAX_URL_LENGTH] = {0};
 static char *error_page = NULL;
@@ -2355,8 +2355,26 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
 {
     UNREFERENCED_PARAMETER(dwFlags);
 
-    if (!is_inited)
+    if (dll_process_detach) {
+        /* Simple case */
+        if (!is_inited)
+            return TRUE;
+        watchdog_interval = 0;
+        if (watchdog_handle) {
+            WaitForSingleObject(watchdog_handle, INFINITE);
+            CloseHandle(watchdog_handle);
+            watchdog_handle = NULL;
+        }
+        jk_shm_close();
+        if (logger)
+            jk_close_file_logger(&logger);
         return TRUE;
+    }
+    EnterCriticalSection(&log_cs);
+    if (!is_inited) {
+        LeaveCriticalSection(&log_cs);
+        return TRUE;
+    }
     WaitForSingleObject(init_cs, INFINITE);
     if (is_inited) {
         is_inited = JK_FALSE;
@@ -2390,14 +2408,12 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             jk_map_free(&rregexp_map);
         }
         jk_shm_close();
-        EnterCriticalSection(&log_cs);
         if (logger) {
             jk_close_file_logger(&logger);
         }
-        LeaveCriticalSection(&log_cs);
     }
     ReleaseMutex(&init_cs);
-
+    LeaveCriticalSection(&log_cs);
     return TRUE;
 }
 
@@ -2458,6 +2474,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
             return JK_FALSE;
     break;
     case DLL_PROCESS_DETACH:
+        dll_process_detach = TRUE;
         __try {
             TerminateFilter(HSE_TERM_MUST_UNLOAD);
         }
@@ -2799,12 +2816,12 @@ static int init_jk(char *serverName)
                 }
                 if ((rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0) {
                     jk_log(logger, JK_LOG_ERROR,
-                           "Initializing shm:%s errno=%d. Load balancer will not work properly!",
+                           "Initializing shm:%s errno=%d. Load balancing workers will not function properly",
                            jk_shm_name(), rv);
                 }
                 else if ((rv = jk_shm_open(NULL, shm_config_size, logger)) != 0) {
                     /* Do not try to open the worker if we cannot create
-                     * the shared memory segment or simple memory.
+                     * the shared memory segment or heap memory.
                      */
                     jk_log(logger, JK_LOG_EMERG,
                            "Initializing shm:%s errno=%d. Cannot continue",
