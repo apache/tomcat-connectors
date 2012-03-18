@@ -2063,10 +2063,13 @@
       <update>
         Add --enable-prefork to the documentation (pero)
       </update>
+      <update>Update tomcat_trend.pl for new error log string formatting.
+      (glenn)
+      </update>
     </changelog>
   </subsection>
 </section>
-<section name="Changes between 1.2.9 and 1.2.10">
+<section name="Changes between 1.2.8 and 1.2.10">
   <br />
   <subsection name="Native">
     <changelog>
@@ -2076,7 +2079,7 @@
       larger then AJP13 limit. (mturk)
       </fix>
       <update>
-      On Series you should use the latest PTF for Apache 2.0
+      On iSeries you should use the latest PTF for Apache 2.0
       (which is now 2.0.52) and ad minima SI17402/SI17061 or cumulative
       including them. (hgomez)
       </update>
@@ -2246,6 +2249,183 @@
         lbstatus does not change.(*)
         If some workers are disabled, the others will
         still be scheduled correctly. (mturk)
+      </fix>
+      <fix>
+        Fix iis redirector that was figuring .properties file on each request. (mturk)
+      </fix>
+      <fix>
+        Start fixing 64/32 bit compatibility issues. (mturk)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+<section name="Changes between 1.2.5 and 1.2.6">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        Fix POST Recovery problems in LB mode. (hgomez)
+      </fix>
+      <add>
+        Add CPING/CPONG support to avoid problems with hang tomcats. (hgomez)
+      </add>
+      <update>
+        Make POST recovery in LB configurable. (hgomez)
+      </update>
+      <update>
+        Update to Apache License 2.0. (hgomez)
+      </update>
+      <add>
+        For Apache 2.0, when the env var no-jk is present, mod_jk didn't handle request (declined)
+        and as such dont forward requests to tomcats even if URL match.
+        To be used with SetEnvIf or BrowserMatch directives for example to exclude some URL/URI or
+        Browser (hgomez).
+      </add>
+      <fix>
+        Add a fix for iSeries (AS/400) which use XOPEN/Unix98 APIs and need sa_len to be set when
+        calling connect(), it will resolve the error EINVAL in jk_connect. (hgomez)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+<section name="Changes between 1.2.4 and 1.2.5">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        Fix a thread safe bug when mapping URI's. (billbarker)
+      </fix>
+      <fix>
+        Fix a thread safe bug when resolving worker host name
+        when using mod_jk with Apache 2 and the worker MPM. (hgomez)
+      </fix>
+      <fix>
+        Remove an unnecessary error message when connections to
+        all load balanced workers fail. (glenn)
+      </fix>
+      <fix>
+        When mod_jk cannot connect to a worker include the name of
+        the worker in the error message.  This is especially helpful
+        when you are using load balanced workers. (glenn)
+      </fix>
+      <fix>
+        Fix problem with mod_jk.log getting opened multiple times for
+        Apache 2. Only one mod_jk.log can be configured. (glenn)
+      </fix>
+      <fix>
+        Fix Apache 2 connector so that DirectoryIndex works for an
+        index.jsp page if JkOptions ForwardDirectories was configured. (hgomez)
+      </fix>
+      <fix>
+        Fix exposure of JSP source if a //path/to.jsp URL was requested
+        in Apache 1.3 and Apache 2.0 connector. (billbarker)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+<section name="Changes between 1.2.3 and 1.2.4">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <add>
+        Fix use of libtool for Apache mod_jk builds with more recent
+        versions of Apache 2. (jfclere)
+      </add>
+      <fix>
+        Use reentrant version of strtok() for web server's which use
+        threads. This fixes a thread safe bug under Apache 2 and the
+        worker MPM. (glenn)
+      </fix>
+      <fix>
+        Fix the Apache 2 mod_jk hook priority so that mod_jk works
+        well with both mod_alias and mod_dir. (glenn)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+<section name="Changes between 1.2.2 and 1.2.3">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <add>
+        Add the ability to configure JkLog to pipe its log output to an
+        executable such as Apache rotatelogs or cronolog.
+        Apache 2.0 only. (glenn)
+      </add>
+      <add>
+        Add JkAutoAlias to Apache 2.0. (glenn)
+      </add>
+      <update>
+        Apache 2/1.3, if Tomcat returns an error but not content,
+        let Apache handle processing the error returned by Tomcat. (glenn)
+      </update>
+      <add>
+        Added the load balancer sticky_session property. If set to 0
+        requests with servlet SESSION ID's can be routed to any Tomcat
+        worker. Default is 1, sessions are sticky. (glenn)
+      </add>
+      <fix>
+        Cleaned up detection and reporting of aborted client connections.
+        This cleanup also makes sure that mod_jk does not pass any requests
+        on to Tomcat if the remote client aborted its connection. (glenn)
+      </fix>
+      <fix>
+        Fixed a bug in Apache 2.0 which caused a POST request forwarded to
+        Tomcat to fail if it generated SSI directives which were post
+        processed by mod_include. (glenn)
+      </fix>
+      <fix>
+        Fixed a bug in JkRequestLogFormat when printing the request URI that
+        could cause a URI with hex escapes sequences to be formatted wrong. (glenn)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+<section name="Changes between 1.2.1 and 1.2.2">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <update>
+        tomcat_trend.pl updated script to support changed logging of
+        aborted requests. (glenn)
+      </update>
+      <fix>
+        jk set correctly the content-type in Apache 2.0,
+        making it ready to works with mod_deflate and AddOutputFilterByType. (hgomez)
+      </fix>
+      <fix>
+        jk will check result of get_endpoint and handle a failure.
+        This call can fail if the allocation for the endpoint fails because
+        of low memory conditions causing a dereference of NULL when we try and
+        access the endpoint. (mmanders)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+<section name="Changes between 1.2.0 and 1.2.1">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        <bug>14282</bug>: Don't send initial chunk for chunked encoding. (costin)
+      </fix>
+      <add>
+        Add perl scripts for analyzing mod_jk logs and generating graphs/reports. (glenn)
+      </add>
+      <fix>
+        Make JK honor the CanonicalHost directive. (hgomez)
+      </fix>
+      <fix>
+        Log cleanup. (costin)
+      </fix>
+      <fix>
+        Fix typos in jk xdocs/docs. (hgomez)
+      </fix>
+      <fix>
+        Add JkRequestLogFormat to Apache 2.0. (hgomez)
+      </fix>
+      <fix>
+        Final patches to make JK iSeries compliant. (hgomez)
       </fix>
     </changelog>
   </subsection>
