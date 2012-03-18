@@ -13,23 +13,30 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-This directory contains both the native and java-side code for
-ajp connectors.
+Building the Web Server Connectors
+==================================
 
-Building
-========
+1) Install the web server
 
-* The java part is included in each tomcat build.
+2) Go to the "native" subdirectory
 
-Building native part:
+   cd native
 
-* You need to install the web server and go the native subdirectory
-  and process the instructions in its BUILDING.txt.
+3) Proceed with the instructions in BUILDING.txt.
 
-* Read the BUILD.txt 
 
-Building the doc:
+Building the Docs
+=================
 
-* Go to the subdirection xdocs and use ant
-  ant
-  The documentation will be in build/docs.
+1) Make sure you have Java and "ant" installed
+   and "ant" is found in your PATH
+
+2) Go to the "xdocs" subdirectory
+
+   cd xdocs
+
+3) Call "ant"
+
+   ant
+
+4) The resulting documentation can be in the directory build/docs.
