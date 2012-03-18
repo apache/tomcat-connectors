@@ -291,9 +291,9 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                        jk_shmem.hdr->h.data.childs);
             }
         }
-        jk_shmem.hdr->h.data.pos     = 0;
-        jk_shmem.hdr->h.data.workers = 0;
     }
+    jk_shmem.hdr->h.data.pos     = 0;
+    jk_shmem.hdr->h.data.workers = 0;
 #if defined (WIN32)
     if (jk_shm_hlock != NULL) {
         /* Unlock shared memory */
@@ -485,7 +485,7 @@ static int do_shm_open(const char *fname, int attached,
     if (!jk_shm_inited_cs) {
         jk_shm_inited_cs = 1;
         JK_INIT_CS(&jk_shmem.cs, rc);
-    }            
+    }
     if (jk_shmem.hdr) {
         /* Probably a call from vhost */
         if (!attached)
