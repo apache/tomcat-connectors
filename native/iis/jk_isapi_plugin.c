@@ -495,7 +495,7 @@ static char worker_file[MAX_PATH * 2];
 static char worker_mount_file[MAX_PATH * 2] = {0};
 static int  worker_mount_reload = JK_URIMAP_DEF_RELOAD;
 static char rewrite_rule_file[MAX_PATH * 2] = {0};
-static size_t shm_config_size = 0;
+static size_t shm_config_size = -1;
 static int  strip_session = 0;
 static int  use_auth_notification_flags = 1;
 static int  chunked_encoding_enabled = JK_FALSE;
@@ -2155,6 +2155,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
                             DWORD dwNotificationType, LPVOID pvNotification)
 {
     /* Initialise jk */
+    EnterCriticalSection(&log_cs);
     if (is_inited && !is_mapread) {
         char serverName[MAX_SERVERNAME] = "";
         char instanceId[MAX_INSTANCEID] = "";
@@ -2179,6 +2180,7 @@ DWORD WINAPI HttpFilterProc(PHTTP_FILTER_CONTEXT pfc,
         if (!is_mapread)
             is_inited = JK_FALSE;
     }
+    LeaveCriticalSection(&log_cs);
     if (!is_inited) {
         /* In case the initialization failed
          * return error. This will make entire IIS
@@ -2235,6 +2237,7 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     JK_TRACE_ENTER(logger);
 
     /* Initialise jk */
+    EnterCriticalSection(&log_cs);
     if (is_inited && !is_mapread) {
         char serverName[MAX_SERVERNAME] = "";
         char instanceId[MAX_INSTANCEID] = "";
@@ -2260,6 +2263,7 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
         if (!is_mapread)
             is_inited = JK_FALSE;
     }
+    LeaveCriticalSection(&log_cs);
 
     if (!is_inited) {
         jk_log(logger, JK_LOG_ERROR, "not initialized");
@@ -2798,16 +2802,17 @@ static int init_jk(char *serverName)
                 /*
                  * Create named shared memory for each server
                  */
-                if (shm_config_size == 0) {
+                if (shm_config_size == -1) {
                     shm_config_size = jk_shm_calculate_size(workers_map, logger);
                 }
-                else {
+                else if (shm_config_size > 0) {
                     jk_log(logger, JK_LOG_WARNING,
                            "The optimal shared memory size can now be determined automatically.");
                     jk_log(logger, JK_LOG_WARNING,
                            "You can remove the shm_size attribute if you want to use the optimal size.");
                 }
-                if ((rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0) {
+                if ((shm_config_size > 0) &&
+                    (rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0) {
                     jk_log(logger, JK_LOG_ERROR,
                            "Initializing shm:%s errno=%d. Load balancing workers will not function properly",
                            jk_shm_name(), rv);
@@ -2841,9 +2846,12 @@ static int init_jk(char *serverName)
 
                 if (wc_open(workers_map, &worker_env, logger)) {
                     rc = JK_TRUE;
+                    uri_worker_map_ext(uw_map, logger);
+                    uri_worker_map_switch(uw_map, logger);
                 }
-                uri_worker_map_ext(uw_map, logger);
-                uri_worker_map_switch(uw_map, logger);
+                else {
+                    jk_shm_close();
+                }
             }
             else {
                 jk_log(logger, JK_LOG_EMERG,

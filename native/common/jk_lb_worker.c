@@ -1170,7 +1170,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     if (jk_b_set_buffer_size(s->reco_buf, p->worker->max_packet_size)) {
         *is_error = JK_HTTP_SERVER_ERROR;
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message buffer");
+               "Failed allocating AJP message buffer of %d bytes.", p->worker->max_packet_size);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
