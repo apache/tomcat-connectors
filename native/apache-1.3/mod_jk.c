@@ -3336,7 +3336,7 @@ static void child_exit_handler(server_rec * s, ap_pool * p)
 {
     /* srevilak - refactor cleanup body to jk_generic_cleanup() */
     jk_generic_cleanup(s);
-    jk_shm_close();
+    jk_shm_close(main_log);
 }
 
 static void child_init_handler(server_rec * s, ap_pool * p)

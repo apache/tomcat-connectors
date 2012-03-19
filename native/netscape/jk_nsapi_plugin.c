@@ -378,7 +378,7 @@ NSAPI_PUBLIC void jk_term(void *p)
     }
 
     wc_close(logger);
-    jk_shm_close();
+    jk_shm_close(logger);
     if (logger) {
         jk_close_file_logger(&logger);
     }

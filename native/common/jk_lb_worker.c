@@ -295,6 +295,11 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
                p->name, p->sequence, p->s->h.sequence);
     if (locked == JK_FALSE)
         jk_shm_lock();
+    if (p->sequence > p->s->h.sequence) {
+        if (locked == JK_FALSE)
+            jk_shm_unlock();
+        return;
+    }
     p->sticky_session = p->s->sticky_session;
     p->sticky_session_force = p->s->sticky_session_force;
     p->recover_wait_time = p->s->recover_wait_time;
@@ -305,7 +310,6 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
     p->lbmethod = p->s->lbmethod;
     p->lblock = p->s->lblock;
     p->max_packet_size = p->s->max_packet_size;
-    p->sequence = p->s->h.sequence;
     strncpy(p->session_cookie, p->s->session_cookie, JK_SHM_STR_SIZ);
     strncpy(p->session_path, p->s->session_path, JK_SHM_STR_SIZ);
 
@@ -331,6 +335,7 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
             w->sequence = w->s->h.sequence;
         }
     }
+    p->sequence = p->s->h.sequence;
     if (locked == JK_FALSE)
         jk_shm_unlock();
 
@@ -981,8 +986,8 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
         if (!jk_shm_lock()) {
             jk_log(l, JK_LOG_ERROR, "locking failed (errno=%d)", errno);
             JK_TRACE_EXIT(l);
-            return -1;            
-        }        
+            return -1;
+        }
     }
     else {
         JK_ENTER_CS(&p->cs);

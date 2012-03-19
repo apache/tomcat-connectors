@@ -192,6 +192,8 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                 jk_shm_hlock = OpenMutex(MUTEX_ALL_ACCESS, FALSE, lkname);
             }
         }
+        else if (GetLastError() == ERROR_ALREADY_EXISTS)
+            attached = 1;
         if (jk_shm_hlock == NULL) {
             rc = GetLastError();
             jk_log(l, JK_LOG_ERROR, "Failed to open shared memory mutex %s with errno=%d",
@@ -292,9 +294,9 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
                        jk_shmem.hdr->h.data.childs);
             }
         }
+        jk_shmem.hdr->h.data.pos     = 0;
+        jk_shmem.hdr->h.data.workers = 0;
     }
-    jk_shmem.hdr->h.data.pos     = 0;
-    jk_shmem.hdr->h.data.workers = 0;
 #if defined (WIN32)
     if (jk_shm_hlock != NULL) {
         /* Unlock shared memory */
@@ -336,12 +338,17 @@ int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l)
     }
 }
 
-void jk_shm_close()
+void jk_shm_close(jk_logger_t *l)
 {
     if (jk_shm_inited_cs) {
         JK_ENTER_CS(&jk_shmem.cs);
     }
     if (jk_shmem.hdr) {
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "Closed shared memory %s childs=%u",
+                   jk_shm_name(), jk_shmem.hdr->h.data.childs);
+        }
 #if defined (WIN32)
         if (jk_shm_hlock) {
             WaitForSingleObject(jk_shm_hlock, 60000);
@@ -662,13 +669,18 @@ int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l)
     return do_shm_open(fname, 1, sz, l);
 }
 
-void jk_shm_close()
+void jk_shm_close(jk_logger_t *l)
 {
 #ifdef AS400_UTF8
     char *wptr;
 #endif
 
     if (jk_shmem.hdr) {
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
+                   "Closed shared memory %s childs=%u",
+                   jk_shm_name(), jk_shmem.hdr->h.data.childs);
+        }
         --jk_shmem.hdr->h.data.childs;
 
 #ifdef JK_SHM_LOCK_REOPEN

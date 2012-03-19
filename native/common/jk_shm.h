@@ -199,7 +199,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l);
 
 /* Close the shared memory
  */
-void jk_shm_close(void);
+void jk_shm_close(jk_logger_t *l);
 
 /* Attach the shared memory in child process.
  * File has to be opened in parent.

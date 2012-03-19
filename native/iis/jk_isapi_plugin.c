@@ -2369,7 +2369,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             CloseHandle(watchdog_handle);
             watchdog_handle = NULL;
         }
-        jk_shm_close();
+        jk_shm_close(logger);
         if (logger)
             jk_close_file_logger(&logger);
         return TRUE;
@@ -2411,7 +2411,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             }
             jk_map_free(&rregexp_map);
         }
-        jk_shm_close();
+        jk_shm_close(logger);
         if (logger) {
             jk_close_file_logger(&logger);
         }
@@ -2541,7 +2541,7 @@ static int init_logger(int rotate)
     char *log_file_name;
     char log_file_name_buf[MAX_PATH*2];
     jk_logger_t *org = NULL;
-    
+
     /* If log rotation is enabled, format the log filename */
     if ((log_rotationtime > 0) || (log_filesize > 0)) {
         time_t t;
@@ -2792,7 +2792,7 @@ static int init_jk(char *serverName)
         if (jk_map_alloc(&workers_map)) {
             if (jk_map_read_properties(workers_map, NULL, worker_file, NULL,
                                        JK_MAP_HANDLE_DUPLICATES, logger)) {
-                int rv;
+                int rv = -1;
 
                 /* we add the URI->WORKER MAP since workers using AJP14 will feed it */
 
@@ -2817,7 +2817,7 @@ static int init_jk(char *serverName)
                            "Initializing shm:%s errno=%d. Load balancing workers will not function properly",
                            jk_shm_name(), rv);
                 }
-                else if ((rv = jk_shm_open(NULL, shm_config_size, logger)) != 0) {
+                if (rv != 0 && (rv = jk_shm_open(NULL, shm_config_size, logger)) != 0) {
                     /* Do not try to open the worker if we cannot create
                      * the shared memory segment or heap memory.
                      */
@@ -2850,7 +2850,7 @@ static int init_jk(char *serverName)
                     uri_worker_map_switch(uw_map, logger);
                 }
                 else {
-                    jk_shm_close();
+                    jk_shm_close(logger);
                 }
             }
             else {
@@ -2939,7 +2939,7 @@ static int read_registry_init_data(void)
         }
     }
     if (!get_config_parameter(src, JK_LOG_FILE_TAG, log_file, sizeof(log_file)))
-        goto cleanup;    
+        goto cleanup;
     if (is_path_relative(log_file)) {
         char *fp = path_merge(dll_file_path, log_file);
         if (fp) {

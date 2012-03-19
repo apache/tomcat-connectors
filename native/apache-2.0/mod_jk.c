@@ -2507,7 +2507,7 @@ static apr_status_t jk_cleanup_shmem(void *data)
         while (jk_watchdog_running)
             apr_sleep(apr_time_from_sec(1));
     }
-    jk_shm_close();
+    jk_shm_close(main_log);
     return APR_SUCCESS;
 }
 
