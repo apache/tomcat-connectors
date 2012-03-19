@@ -21,25 +21,25 @@
 # The workers that jk should create and work with
 #
 
-worker.list=wlb,jkstatus
+worker.list=lb,jk-status
 
 #
-# Defining a worker named ajp13w and of type ajp13
+# Defining a worker named node1 and of type ajp13
 # Note that the name and the type do not have to match.
 #
-worker.ajp13w.type=ajp13
-worker.ajp13w.host=localhost
-worker.ajp13w.port=8009
+worker.node1.type=ajp13
+worker.node1.host=localhost
+worker.node1.port=8009
 
 #
 # Defining a load balancer
 # 
 
-worker.wlb.type=lb
-worker.wlb.balance_workers=ajp13w
+worker.lb.type=lb
+worker.lb.balance_workers=node1
 
 #
 # Define status worker
 #
 
-worker.jkstatus.type=status
+worker.jk-status.type=status
