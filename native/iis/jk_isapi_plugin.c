@@ -3010,7 +3010,7 @@ static int read_registry_init_data(void)
             goto cleanup;
         }
     }
-    shm_config_size = get_config_int(src, SHM_SIZE_TAG, 0);
+    shm_config_size = get_config_int(src, SHM_SIZE_TAG, -1);
     worker_mount_reload = get_config_int(src, WORKER_MOUNT_RELOAD_TAG, JK_URIMAP_DEF_RELOAD);
     strip_session = get_config_bool(src, STRIP_SESSION_TAG, JK_FALSE);
     use_auth_notification_flags = get_config_int(src, AUTH_COMPLETE_TAG, 1);
