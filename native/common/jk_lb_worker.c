@@ -295,7 +295,7 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
                p->name, p->sequence, p->s->h.sequence);
     if (locked == JK_FALSE)
         jk_shm_lock();
-    if (p->sequence > p->s->h.sequence) {
+    if (p->sequence == p->s->h.sequence) {
         if (locked == JK_FALSE)
             jk_shm_unlock();
         return;
@@ -315,7 +315,7 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
 
     for (i = 0; i < p->num_of_workers; i++) {
         lb_sub_worker_t *w = &p->lb_workers[i];
-        if (w->sequence != w->s->h.sequence) {
+        if (w->sequence < w->s->h.sequence) {
             jk_worker_t *jw = w->worker;
             ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
 
@@ -365,13 +365,12 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
     p->s->lbmethod = p->lbmethod;
     p->s->lblock = p->lblock;
     p->s->max_packet_size = p->max_packet_size;
-    p->s->h.sequence = p->sequence;
     strncpy(p->s->session_cookie, p->session_cookie, JK_SHM_STR_SIZ);
     strncpy(p->s->session_path, p->session_path, JK_SHM_STR_SIZ);
 
     for (i = 0; i < p->num_of_workers; i++) {
         lb_sub_worker_t *w = &p->lb_workers[i];
-        if (w->sequence != w->s->h.sequence) {
+        if (w->sequence < w->s->h.sequence) {
             jk_worker_t *jw = w->worker;
             ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
 
@@ -391,6 +390,7 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
             w->s->h.sequence = w->sequence;
         }
     }
+    p->s->h.sequence = p->sequence;
     if (locked == JK_FALSE)
         jk_shm_unlock();
 
@@ -562,7 +562,7 @@ static int recover_workers(lb_worker_t *p,
     ajp_worker_t *aw = NULL;
     JK_TRACE_ENTER(l);
 
-    if (p->sequence != p->s->h.sequence)
+    if (p->sequence < p->s->h.sequence)
         jk_lb_pull(p, JK_TRUE, l);
     for (i = 0; i < p->num_of_workers; i++) {
         w = &p->lb_workers[i];
@@ -1146,7 +1146,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     /* Set returned error to OK */
     *is_error = JK_HTTP_OK;
 
-    if (p->worker->sequence != p->worker->s->h.sequence)
+    if (p->worker->sequence < p->worker->s->h.sequence)
         jk_lb_pull(p->worker, JK_FALSE, l);
     for (i = 0; i < num_of_workers; i++) {
         lb_sub_worker_t *rec = &(p->worker->lb_workers[i]);
@@ -1206,7 +1206,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                        retry, p->worker->retry_interval);
             jk_sleep(p->worker->retry_interval);
             /* Pull shared memory if something changed during sleep */
-            if (p->worker->sequence != p->worker->s->h.sequence)
+            if (p->worker->sequence < p->worker->s->h.sequence)
                 jk_lb_pull(p->worker, JK_FALSE, l);
             for (i = 0; i < num_of_workers; i++) {
                 /* Copy the shared state info */
@@ -1631,7 +1631,6 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                 strncpy(p->lb_workers[i].s->h.name, worker_names[i],
                         JK_SHM_STR_SIZ);
                 p->lb_workers[i].sequence = 0;
-                p->lb_workers[i].s->h.sequence = 0;
                 p->lb_workers[i].lb_factor =
                     jk_get_lb_factor(props, worker_names[i]);
                 if (p->lb_workers[i].lb_factor < 1) {
@@ -1786,7 +1785,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
     }
 
     p->sequence++;
-    jk_lb_push(p, JK_FALSE, log);
+    jk_lb_push(p, JK_TRUE, log);
 
     JK_TRACE_EXIT(log);
     return JK_TRUE;
@@ -1878,7 +1877,6 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
         private_data->error_escalation_time = private_data->recover_wait_time / 2;
         private_data->max_reply_timeouts = 0;
         private_data->sequence = 0;
-        private_data->s->h.sequence = 0;
         private_data->next_offset = 0;
         *w = &private_data->worker;
         JK_TRACE_EXIT(l);
