@@ -2439,7 +2439,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
                 StringCbCopy(ini_mutex_name, MAX_PATH, "Global\\JK_");
                 StringCbCat(ini_mutex_name, MAX_PATH, fname);
                 StringCbCat(ini_mutex_name, MAX_PATH, "_mutex");
-                p = &fname[10];
+                p = &ini_mutex_name[10];
                 while (*p) {
                     if (!isalnum((unsigned char)*p))
                         *p = '_';
