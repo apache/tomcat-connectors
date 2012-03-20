@@ -467,6 +467,7 @@ static struct error_reasons {
 
 static char dll_file_path[MAX_PATH];
 static char ini_file_name[MAX_PATH];
+static char ini_mutex_name[MAX_PATH];
 static int using_ini_file = JK_FALSE;
 static HANDLE init_cs = NULL;
 static volatile int is_inited = JK_FALSE;
@@ -504,8 +505,6 @@ static volatile int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
 static char error_page_buf[INTERNET_MAX_URL_LENGTH] = {0};
 static char *error_page = NULL;
-
-static const char *JK_MUTEX_NAME = "Global\\JK_ISAPI_REDIRECT_MUTEX";
 
 #define URI_SELECT_OPT_PARSED       0
 #define URI_SELECT_OPT_UNPARSED     1
@@ -2437,6 +2436,17 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
                 *p = '\0';
                 StringCbCopy(ini_file_name, MAX_PATH, fname);
                 StringCbCat(ini_file_name, MAX_PATH, ".properties");
+                StringCbCopy(ini_mutex_name, MAX_PATH, "Global\\JK_");
+                StringCbCat(ini_mutex_name, MAX_PATH, fname);
+                StringCbCat(ini_mutex_name, MAX_PATH, "_mutex");
+                p = &fname[10];
+                while (*p) {
+                    if (!isalnum((unsigned char)*p))
+                        *p = '_';
+                    else
+                        *p = toupper(*p);
+                    p++;
+                }
             }
             else {
                 /* Cannot obtain file name ? */
@@ -2471,9 +2481,9 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         StringCbPrintf(HTTP_WORKER_HEADER_INDEX, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
 
         InitializeCriticalSection(&log_cs);
-        init_cs = CreateMutex(jk_get_sa_with_null_dacl(), FALSE, JK_MUTEX_NAME);
+        init_cs = CreateMutex(jk_get_sa_with_null_dacl(), FALSE, ini_mutex_name);
         if (init_cs == NULL && GetLastError() == ERROR_ALREADY_EXISTS)
-            init_cs = OpenMutex(MUTEX_ALL_ACCESS, FALSE, JK_MUTEX_NAME);
+            init_cs = OpenMutex(MUTEX_ALL_ACCESS, FALSE, ini_mutex_name);
         if (init_cs == NULL)
             return JK_FALSE;
     break;
