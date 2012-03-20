@@ -48,6 +48,9 @@
         IIS: Fix crash on worker process recycle. (mturk)
       </fix>
       <fix>
+        <bug>52659</bug>: IIS: Fix shared memory corruption. (mturk)
+      </fix>
+      <fix>
         <bug>52921</bug>: HTTPD: Fix crash in uri mapping. (mturk)
       </fix>
     </changelog>
