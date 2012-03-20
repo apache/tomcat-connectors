@@ -2430,7 +2430,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
 
     switch (ulReason) {
     case DLL_PROCESS_ATTACH:
-        if (GetModuleFileName(hInst, fname, sizeof(fname))) {
+        if (GetModuleFileName(hInst, fname, sizeof(fname) - 12)) {
             char *p = strrchr(fname, '.');
             if (p) {
                 *p = '\0';
