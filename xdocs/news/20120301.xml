@@ -31,6 +31,19 @@
 
 <section name="2012 News &amp; Status">
 <br />
+<subsection name="19 March - JK-1.2.33 stability issue">
+    <a name="20120301.2"></a>
+    <br />
+    <p>The Apache Tomcat team wishes to draw your attention to stability issues
+       that have been identified with the recent mod_jk 1.2.33 release. If you
+       have not yet upgraded to mod_jk 1.2.33 we recommend that you wait for
+       the mod_jk 1.2.34 release which is currently in progress. If you have
+       upgraded and are experienced issues we recommend that you downgrade to
+       mod_jk 1.2.32 until mod_jk 1.2.34 is available.
+    </p><p>
+        We apologise for any inconvenience.
+    </p>
+</subsection>
 <subsection name="13 March - JK-1.2.33 released">
     <a name="20120301.1"></a>
     <br />
