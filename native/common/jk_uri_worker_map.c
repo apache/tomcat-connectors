@@ -554,6 +554,7 @@ void extension_fix(jk_pool_t *p, const char *name,
         jk_log(l, JK_LOG_ERROR,
                "Could not find worker with name '%s' in uri map post processing.",
                name);
+        return;
     }
     extension_fix_activation(p, name, jw, extensions, l);
     if (extensions->fail_on_status_str) {
