@@ -36,8 +36,6 @@
 /* Release candidate */
 #define JK_VERRC        0
 #define JK_RCSTRING     "0"
-/* Source Control Revision as a suffix, e.g. "-r12345" */
-#define JK_REVISION ""
 
 /************** END OF AREA TO MODIFY BEFORE RELEASING *************/
 
@@ -70,7 +68,7 @@
 #define JK_EXPOSED_VERSION JK_EXPOSED_VERSION_INT "-dev"
 #endif
 #endif
-#define JK_FULL_EXPOSED_VERSION JK_EXPOSED_VERSION JK_REVISION
+#define JK_FULL_EXPOSED_VERSION JK_EXPOSED_VERSION
 
 #define JK_MAKEVERSION(major, minor, fix, beta) \
             (((major) << 24) + ((minor) << 16) + ((fix) << 8) + (beta))

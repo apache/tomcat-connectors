@@ -221,13 +221,6 @@ cd ${JK_DIST}.tmp/jk/xdocs
 ant
 cd ../../..
 
-# Update version information
-file=${JK_DIST}.tmp/jk/native/common/jk_version.h
-cp -p $file $file.orig
-sed -e 's/^#define JK_REVISION .*/#define JK_REVISION "'"$JK_SUFFIX"'"/' \
-  $file.orig > $file
-rm $file.orig
-
 # Copying things into the source distribution
 copy_files ${JK_DIST}.tmp/jk $JK_DIST "$COPY_JK"
 copy_files ${JK_DIST}.tmp/jk/native $JK_DIST "$COPY_NATIVE"
