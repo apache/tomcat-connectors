@@ -18,7 +18,8 @@ Last modified at [$Date$]
 
 Release:
 
-    1.2.34  : current version
+    1.2.35  : current version
+    1.2.34  : not released
     1.2.33  : released March 13, 2012
     1.2.32  : released July 8, 2011
     1.2.31  : released November 1, 2010

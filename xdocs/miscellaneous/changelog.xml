@@ -40,10 +40,13 @@
   new documentation project for JK was started.
   </p>
 </section>
-<section name="Changes between 1.2.33 and 1.2.34">
+<section name="Changes between 1.2.33 and 1.2.35">
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        HTTPD: Fix crash on unknown worker names. (mturk)
+      </fix>
       <fix>
         IIS: Fix crash on worker process recycle. (mturk)
       </fix>
