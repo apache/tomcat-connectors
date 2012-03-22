@@ -464,8 +464,8 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
 
 }
 
-static void extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t *jw,
-                                      rule_extension_t *extensions, jk_logger_t *l)
+static int extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t *jw,
+                                    rule_extension_t *extensions, jk_logger_t *l)
 {
 
     JK_TRACE_ENTER(l);
@@ -487,8 +487,9 @@ static void extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t
                 jk_log(l, JK_LOG_ERROR,
                        "can't alloc extensions activation list");
                 JK_TRACE_EXIT(l);
-                return;
-            } else if (JK_IS_DEBUG_LEVEL(l))
+                return JK_FALSE;
+            }
+            else if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "Allocated activations array of size %d for lb worker %s",
                        extensions->activation_size, name);
@@ -526,24 +527,24 @@ static void extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t
     }
 
     JK_TRACE_EXIT(l);
-
+    return JK_TRUE;
 }
 
 static void extension_fix_session(jk_pool_t *p, const char *name, jk_worker_t *jw,
                                   rule_extension_t *extensions, jk_logger_t *l)
 {
-        if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie) {
-            jk_log(l, JK_LOG_WARNING,
-                   "Worker %s is not of type lb, extension "
-                   JK_UWMAP_EXTENSION_SESSION_COOKIE " for %s ignored",
-                   name, extensions->session_cookie);
-        }
-        if (jw->type != JK_LB_WORKER_TYPE && extensions->session_path) {
-            jk_log(l, JK_LOG_WARNING,
-                   "Worker %s is not of type lb, extension "
-                   JK_UWMAP_EXTENSION_SESSION_PATH " for %s ignored",
-                   name, extensions->session_path);
-        }
+    if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie) {
+        jk_log(l, JK_LOG_WARNING,
+                "Worker %s is not of type lb, extension "
+                JK_UWMAP_EXTENSION_SESSION_COOKIE " for %s ignored",
+                name, extensions->session_cookie);
+    }
+    if (jw->type != JK_LB_WORKER_TYPE && extensions->session_path) {
+        jk_log(l, JK_LOG_WARNING,
+                "Worker %s is not of type lb, extension "
+                JK_UWMAP_EXTENSION_SESSION_PATH " for %s ignored",
+                name, extensions->session_path);
+    }
 }
 
 void extension_fix(jk_pool_t *p, const char *name,
@@ -556,7 +557,8 @@ void extension_fix(jk_pool_t *p, const char *name,
                name);
         return;
     }
-    extension_fix_activation(p, name, jw, extensions, l);
+    if (!extension_fix_activation(p, name, jw, extensions, l))
+        return;
     if (extensions->fail_on_status_str) {
         extension_fix_fail_on_status(p, name, extensions, l);
     }
