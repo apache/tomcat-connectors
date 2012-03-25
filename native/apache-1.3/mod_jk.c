@@ -533,8 +533,9 @@ static void JK_METHOD ws_vhost_to_text(void *d, char *buf, size_t len)
     server_rec *s = (server_rec *)d;
     size_t used = 0;
 
-    if (s->server_hostname)
+    if (s->server_hostname) {
         used += strlen(s->server_hostname);
+    }
     if (!s->is_virtual) {
         if (s->port)
             used += strlen(":XXXXX");
@@ -1627,23 +1628,21 @@ static struct log_item_list
     char ch;
     item_key_func func;
 } log_item_keys[] = {
-
-    {
-    'T', log_request_duration}, {
-    'r', log_request_line}, {
-    'U', log_request_uri}, {
-    's', log_status}, {
-    'b', clf_log_bytes_sent}, {
-    'B', log_bytes_sent}, {
-    'V', log_server_name}, {
-    'v', log_virtual_host}, {
-    'p', log_server_port}, {
-    'H', log_request_protocol}, {
-    'm', log_request_method}, {
-    'q', log_request_query}, {
-    'w', log_worker_name}, {
-    'R', log_worker_route}, {
-    '\0'}
+    { 'T', log_request_duration },
+    { 'r', log_request_line },
+    { 'U', log_request_uri },
+    { 's', log_status },
+    { 'b', clf_log_bytes_sent },
+    { 'B', log_bytes_sent },
+    { 'V', log_server_name },
+    { 'v', log_virtual_host },
+    { 'p', log_server_port },
+    { 'H', log_request_protocol },
+    { 'm', log_request_method },
+    { 'q', log_request_query },
+    { 'w', log_worker_name },
+    { 'R', log_worker_route},
+    { '\0', NULL }
 };
 
 static struct log_item_list *find_log_func(char k)
@@ -2620,7 +2619,8 @@ static void *create_jk_config(ap_pool * p, server_rec * s)
         c->log_level = JK_UNSET;
         c->ssl_enable = JK_UNSET;
         c->strip_session = JK_UNSET;
-    } else {
+    }
+    else {
         if (!jk_map_alloc(&(c->uri_to_context))) {
             ap_log_error(APLOG_MARK, APLOG_ERR | APLOG_NOERRNO, NULL, "Memory error");
         }
@@ -3034,18 +3034,20 @@ static void jk_init(server_rec * s, ap_pool * p)
     }
 #endif
 
-    if (jk_shm_size == 0)
+    if (jk_shm_size == 0) {
         jk_shm_size = jk_shm_calculate_size(jk_worker_properties, conf->log);
+    }
     else {
         jk_log(conf->log, JK_LOG_WARNING,
                "The optimal shared memory size can now be determined automatically.");
         jk_log(conf->log, JK_LOG_WARNING,
                "You can remove the JkShmSize directive if you want to use the optimal size.");
     }
-    if ((rc = jk_shm_open(jk_shm_file, jk_shm_size, conf->log)) != 0)
+    if ((rc = jk_shm_open(jk_shm_file, jk_shm_size, conf->log)) != 0) {
         jk_log(conf->log, JK_LOG_ERROR,
                "Initializing shm:%s errno=%d. Load balancing workers will not function properly.",
                jk_shm_name(), rc);
+    }
 
     /* SREVILAK -- register cleanup handler to clear resources on restart,
      * to make sure log file gets closed in the parent process  */
@@ -3348,9 +3350,10 @@ static void child_init_handler(server_rec * s, ap_pool * p)
 
     JK_TRACE_ENTER(conf->log);
 
-    if ((rc = jk_shm_attach(jk_shm_file, jk_shm_size, conf->log)) != 0)
+    if ((rc = jk_shm_attach(jk_shm_file, jk_shm_size, conf->log)) != 0) {
         jk_log(conf->log, JK_LOG_ERROR, "Attaching shm:%s errno=%d",
                jk_shm_name(), rc);
+    }
 
     JK_TRACE_EXIT(conf->log);
 
