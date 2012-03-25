@@ -3361,7 +3361,7 @@ static void child_init_handler(server_rec * s, ap_pool * p)
 static void jk_server_cleanup(void *data)
 {
     jk_generic_cleanup((server_rec *) data);
-    jk_shm_close();
+    jk_shm_close(main_log);
 }
 
 
