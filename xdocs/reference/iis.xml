@@ -243,11 +243,10 @@ A true value can be represented by the string "1" or any string starting
 with the letters "T" or "t". A false value will be assumed for "0"
 or any string starting with "F" or "f". The default value is false.
 </p>
-<warn>This option is considered experimental and its support
-must be compile time enabled. Use <code>isapi_redirect.dll</code>
-with chunked support enabled.
-</warn>
-<p>This directive has been added in version 1.2.27</p>
+<p>This directive has been added in version 1.2.27. Until version 1.2.30 it
+was considered experimental and only available when a special build containing
+chunking support was used. Starting with 1.2.30 it is no longer considered
+experimental.</p>
 </attribute>
 </attributes>
 </section> 
