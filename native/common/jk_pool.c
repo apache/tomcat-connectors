@@ -104,15 +104,15 @@ void *jk_pool_realloc(jk_pool_t *p, size_t sz, const void *old, size_t old_sz)
 {
     char *rc;
 
-    if (!p || (!old && old_sz)) {
+    if (!p || (sz < old_sz)) {
         return NULL;
     }
-
+    if (!old)
+        return jk_pool_calloc(p, sz);
     rc = (char *)jk_pool_alloc(p, sz);
     if (rc) {
         memcpy(rc, old, old_sz);
-        if (sz > old_sz)
-            memset(rc + old_sz, 0, sz - old_sz);
+        memset(rc + old_sz, 0, sz - old_sz);
     }
 
     return rc;

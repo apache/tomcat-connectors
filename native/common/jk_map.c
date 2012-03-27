@@ -657,28 +657,22 @@ static size_t trim(char *s)
 static int map_realloc(jk_map_t *m)
 {
     if (m->size == m->capacity) {
-        char **names;
-        void **values;
+        const char **names;
+        const void **values;
         unsigned int *keys;
-        int capacity = m->capacity + CAPACITY_INC_SIZE;
+        int capacity  = m->capacity + CAPACITY_INC_SIZE;
+        size_t old_sz = m->capacity * sizeof(void *);
+        size_t new_sz = capacity * sizeof(void *);
 
-        names = (char **)jk_pool_alloc(&m->p, sizeof(char *) * capacity);
-        values = (void **)jk_pool_alloc(&m->p, sizeof(void *) * capacity);
-        keys = (unsigned int *)jk_pool_alloc(&m->p, sizeof(unsigned int) * capacity);
+        names  = (const char  **)jk_pool_realloc(&m->p, new_sz, m->names, old_sz);
+        values = (const void  **)jk_pool_realloc(&m->p, new_sz, m->values, old_sz);
+        keys   = (unsigned int *)jk_pool_realloc(&m->p, new_sz, m->keys, old_sz);
 
-        if (values && names) {
-            if (m->capacity && m->names)
-                memcpy(names, m->names, sizeof(char *) * m->capacity);
+        if (values && names && keys) {
 
-            if (m->capacity && m->values)
-                memcpy(values, m->values, sizeof(void *) * m->capacity);
-
-            if (m->capacity && m->keys)
-                memcpy(keys, m->keys, sizeof(unsigned int) * m->capacity);
-
-            m->names = (const char **)names;
-            m->values = (const void **)values;
-            m->keys = keys;
+            m->names  = names;
+            m->values = values;
+            m->keys   = keys;
             m->capacity = capacity;
 
             return JK_TRUE;
