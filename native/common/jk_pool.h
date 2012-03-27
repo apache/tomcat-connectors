@@ -115,6 +115,8 @@ void jk_reset_pool(jk_pool_t *p);
 
 void *jk_pool_alloc(jk_pool_t *p, size_t sz);
 
+void *jk_pool_calloc(jk_pool_t *p, size_t sz);
+
 void *jk_pool_realloc(jk_pool_t *p,
                       size_t sz, const void *old, size_t old_sz);
 

@@ -92,17 +92,27 @@ void *jk_pool_alloc(jk_pool_t *p, size_t size)
     return rc;
 }
 
+void *jk_pool_calloc(jk_pool_t *p, size_t size)
+{
+    void *rc = jk_pool_alloc(p, size);
+    if (rc)
+        memset(rc, 0, size);
+    return rc;
+}
+
 void *jk_pool_realloc(jk_pool_t *p, size_t sz, const void *old, size_t old_sz)
 {
-    void *rc;
+    char *rc;
 
     if (!p || (!old && old_sz)) {
         return NULL;
     }
 
-    rc = jk_pool_alloc(p, sz);
+    rc = (char *)jk_pool_alloc(p, sz);
     if (rc) {
         memcpy(rc, old, old_sz);
+        if (sz > old_sz)
+            memset(rc + old_sz, 0, sz - old_sz);
     }
 
     return rc;
