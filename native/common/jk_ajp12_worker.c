@@ -560,7 +560,7 @@ static int ajpv12_handle_response(ajp12_endpoint_t * p,
         }
 
         name = line;
-        while (isspace((int)(*name)) && *name) {
+        while (jk_isspace(*name) && *name) {
             name++;             /* Skip leading white chars */
         }
         if (!*name) {           /* Empty header name */
@@ -575,7 +575,7 @@ static int ajpv12_handle_response(ajp12_endpoint_t * p,
         }
         *value = '\0';
         value++;
-        while (isspace((int)(*value)) && *value) {
+        while (jk_isspace(*value) && *value) {
             value++;            /* Skip leading white chars */
         }
         if (!*value) {          /* Empty header value */

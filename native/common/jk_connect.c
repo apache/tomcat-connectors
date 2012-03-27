@@ -339,7 +339,7 @@ int jk_resolve(const char *host, int port, struct sockaddr_in *rc,
 
     /* Check if we only have digits in the string */
     for (x = 0; host[x] != '\0'; x++) {
-        if (!isdigit((int)(host[x])) && host[x] != '.') {
+        if (!jk_isdigit(host[x]) && host[x] != '.') {
             break;
         }
     }

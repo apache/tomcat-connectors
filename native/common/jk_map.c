@@ -636,8 +636,8 @@ static size_t trim(char *s)
     if (!(len = strlen(s)))
         return 0;
     for (len = len - 1; (len > 0) &&
-        isspace((int)((unsigned char)s[len])); len--);
-    if ((len > 0) || !isspace((int)((unsigned char)s[len]))) {
+        jk_isspace(s[len]); len--);
+    if ((len > 0) || !jk_isspace(s[len])) {
         len++;
     }
 
@@ -645,7 +645,7 @@ static size_t trim(char *s)
     len++;
 
     for (first = 0; (s[first] != '\0') &&
-        isspace((int)((unsigned char)s[first])); first++);
+        jk_isspace(s[first]); first++);
 
     if (first > 0) {
         memmove(s, s + first, len - first);

@@ -178,7 +178,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         strcpy(shname, "Global\\");
         strncat(shname, fname, MAX_PATH - 8);
         for(i = 7; i < (int)strlen(shname); i++) {
-            if (!isalnum((unsigned char)shname[i]))
+            if (!jk_isalnum(shname[i]))
                 shname[i] = '_';
             else
                 shname[i] = toupper(shname[i]);

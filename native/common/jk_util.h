@@ -266,6 +266,12 @@ int jk_stat(const char *f, struct stat * statbuf);
 PSECURITY_ATTRIBUTES jk_get_sa_with_null_dacl(void);
 #endif
 
+#define jk_isspace(c)  (isspace(((unsigned char)(c))))
+#define jk_isalnum(c)  (isalnum(((unsigned char)(c))))
+#define jk_isdigit(c)  (isdigit(((unsigned char)(c))))
+#define jk_isalpha(c)  (isalpha(((unsigned char)(c))))
+#define jk_islower(c)  (islower(((unsigned char)(c))))
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

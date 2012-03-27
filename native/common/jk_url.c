@@ -23,18 +23,6 @@
 #include "jk_global.h"
 #include "jk_url.h"
 
-#ifdef HAVE_APR
-#define JK_ISXDIGIT(x) apr_isxdigit((x))
-#define JK_ISDIGIT(x)  apr_isdigit((x))
-#define JK_ISUPPER(x)  apr_isupper((x))
-#define JK_ISALNUM(x)  apr_isalnum((x))
-#else
-#define JK_ISXDIGIT(x) isxdigit((int)(unsigned char)((x)))
-#define JK_ISDIGIT(x)  isdigit((int)(unsigned char)((x)))
-#define JK_ISUPPER(x)  isupper((int)(unsigned char)((x)))
-#define JK_ISALNUM(x)  isalnum((int)(unsigned char)((x)))
-#endif
-
 static void jk_c2hex(int ch, char *x)
 {
 #if !CHARSET_EBCDIC
@@ -101,7 +89,7 @@ int jk_canonenc(const char *x, char *y, int maxlen)
             continue;
         }
 /* recode it, if necessary */
-        if (!JK_ISALNUM(ch) && !strchr(allowed, ch)) {
+        if (!jk_isalnum(ch) && !strchr(allowed, ch)) {
             if (j+2<maxlen) {
                 jk_c2hex(ch, &y[j]);
                 j += 2;
