@@ -24,6 +24,7 @@
 #ifndef JK_MAP_H
 #define JK_MAP_H
 
+#include "jk_pool.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -34,7 +35,20 @@ extern "C"
 #define JK_MAP_HANDLE_DUPLICATES 1
 #define JK_MAP_HANDLE_RAW        2
 
-struct jk_map;
+struct jk_map
+{
+    jk_pool_t p;
+    jk_pool_atom_t buf[SMALL_POOL_SIZE];
+
+    const char **names;
+    const void **values;
+    unsigned int *keys;
+
+    unsigned int capacity;
+    unsigned int size;
+    int          id;
+};
+
 typedef struct jk_map jk_map_t;
 
 int jk_map_alloc(jk_map_t **m);

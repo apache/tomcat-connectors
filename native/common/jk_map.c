@@ -64,19 +64,7 @@
     }                                          \
 }
 
-struct jk_map
-{
-    jk_pool_t p;
-    jk_pool_atom_t buf[SMALL_POOL_SIZE];
-
-    const char **names;
-    const void **values;
-    unsigned int *keys;
-
-    unsigned int capacity;
-    unsigned int size;
-};
-
+static volatile int global_map_id = 0;
 static void trim_prp_comment(char *prp);
 static size_t trim(char *s);
 static int map_realloc(jk_map_t *m);
@@ -85,7 +73,9 @@ static char *jk_map_replace_properties(jk_map_t *m, jk_map_t *env, char *value);
 int jk_map_alloc(jk_map_t **m)
 {
     if (m) {
-        return jk_map_open(*m = (jk_map_t *)malloc(sizeof(jk_map_t)));
+        *m = (jk_map_t *)calloc(1, sizeof(jk_map_t));
+        if (*m)
+            return jk_map_open(*m);
     }
 
     return JK_FALSE;
@@ -110,6 +100,7 @@ int jk_map_open(jk_map_t *m)
 
     if (m) {
         jk_open_pool(&m->p, m->buf, sizeof(jk_pool_atom_t) * SMALL_POOL_SIZE);
+        m->id = ++global_map_id;
         m->capacity = 0;
         m->size = 0;
         m->keys  = NULL;
@@ -587,7 +578,7 @@ void jk_map_dump(jk_map_t *m, jk_logger_t *l)
             }
             if (JK_IS_DEBUG_LEVEL(l)) {
                 jk_log(l, JK_LOG_DEBUG,
-                       "Dump of map: '%s' -> '%s'",
+                       "Dump of map %d: '%s' -> '%s'", m->id,
                        jk_map_name_at(m, i) ? jk_map_name_at(m, i) : "(null)",
                        jk_map_value_at(m, i) ? jk_map_value_at(m, i) : "(null)");
             }
