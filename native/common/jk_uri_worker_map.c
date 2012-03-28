@@ -56,6 +56,8 @@
 
 #define STRNULL_FOR_NULL(x) ((x) ? (x) : "(null)")
 
+static volatile int map_id_counter = 0;
+
 static const char *uri_worker_map_source_type[] = {
     "unknown",
     SOURCE_TYPE_TEXT_WORKERDEF,
@@ -169,30 +171,34 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
 {
     JK_TRACE_ENTER(l);
     if (uw_map) {
-        int i, off, k;
-        uri_worker_record_t *uwr = NULL;
-        char buf[32];
-        jk_log(l, JK_LOG_DEBUG, "uri map dump %s: index=%d file='%s' reject_unsafe=%d "
-               "reload=%d modified=%d checked=%d",
-               reason, uw_map->index, STRNULL_FOR_NULL(uw_map->fname), uw_map->reject_unsafe,
-               uw_map->reload, uw_map->modified, uw_map->checked);
-        for(i=0;i<=1;i++) {
+        int i, off;
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG, "uri map dump %s: id=%d, index=%d file='%s' reject_unsafe=%d "
+                  "reload=%d modified=%d checked=%d",
+                   reason, uw_map->id, uw_map->index, STRNULL_FOR_NULL(uw_map->fname),
+                   uw_map->reject_unsafe, uw_map->reload, uw_map->modified, uw_map->checked);
+        }
+        for (i = 0; i <= 1; i++) {
             jk_log(l, JK_LOG_DEBUG, "generation %d: size=%d nosize=%d capacity=%d",
                    i, uw_map->size[i], uw_map->nosize[i], uw_map->capacity[i], uw_map->maps[i]);
         }
 
         off = uw_map->index;
-        for(i=0;i<=1;i++) {
+        for (i = 0; i <= 1; i++) {
+            char buf[32];
+            int k;
             unsigned int j;
             k = (i + off) % 2;
             for (j = 0; j < uw_map->size[k]; j++) {
-                uwr = uw_map->maps[k][j];
-                jk_log(l, JK_LOG_DEBUG, "%s (%d) map #%d: uri=%s worker=%s context=%s "
-                       "source=%s type=%s len=%d",
-                       i ? "NEXT" : "THIS", i, j,
-                       STRNULL_FOR_NULL(uwr->uri), STRNULL_FOR_NULL(uwr->worker_name),
-                       STRNULL_FOR_NULL(uwr->context), STRNULL_FOR_NULL(uri_worker_map_get_source(uwr,l)),
-                       STRNULL_FOR_NULL(uri_worker_map_get_match(uwr,buf,l)), uwr->context_len);
+                uri_worker_record_t *uwr = uw_map->maps[k][j];
+                if (uwr && JK_IS_DEBUG_LEVEL(l)) {
+                    jk_log(l, JK_LOG_DEBUG, "%s (%d) map #%d: uri=%s worker=%s context=%s "
+                           "source=%s type=%s len=%d",
+                           i ? "NEXT" : "THIS", i, j,
+                           STRNULL_FOR_NULL(uwr->uri), STRNULL_FOR_NULL(uwr->worker_name),
+                           STRNULL_FOR_NULL(uwr->context), STRNULL_FOR_NULL(uri_worker_map_get_source(uwr,l)),
+                           STRNULL_FOR_NULL(uri_worker_map_get_match(uwr,buf,l)), uwr->context_len);
+                }
             }
         }
     }
@@ -224,7 +230,7 @@ int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
 
         jk_open_pool(&(uw_map->p),
                      uw_map->buf, sizeof(jk_pool_atom_t) * BIG_POOL_SIZE);
-        for(i=0;i<=1;i++) {
+        for (i = 0; i <= 1; i++) {
             jk_open_pool(&(uw_map->p_dyn[i]),
                          uw_map->buf_dyn[i], sizeof(jk_pool_atom_t) * BIG_POOL_SIZE);
             uw_map->size[i] = 0;
@@ -232,6 +238,7 @@ int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
             uw_map->capacity[i] = 0;
             uw_map->maps[i] = NULL;
         }
+        uw_map->id = 0;
         uw_map->index = 0;
         uw_map->fname = NULL;
         uw_map->reject_unsafe = 0;
@@ -241,6 +248,8 @@ int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
 
         if (init_data)
             rc = uri_worker_map_open(uw_map, init_data, l);
+        if (rc == JK_TRUE)
+            uw_map->id = ++map_id_counter;
         JK_TRACE_EXIT(l);
         return rc;
     }

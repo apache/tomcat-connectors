@@ -138,6 +138,11 @@ struct jk_uri_worker_map
     /* Needed to make map reload more atomically */
     int index;
 
+    /* map Id.
+     * Unique value which gets incremented each time we
+     * call uri_worker_map_alloc
+     */
+    int id;
     /* Memory Pool - cleared when doing reload */
     /* Use this pool to allocate objects, that are deleted */
     /* when the map gets dynamically reloaded from uriworkermap.properties. */
@@ -146,7 +151,7 @@ struct jk_uri_worker_map
 
     /* map URI->WORKER */
     uri_worker_record_t **maps[2];
-    
+
     /* Map Number */
     unsigned int size[2];
 
