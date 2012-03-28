@@ -2566,7 +2566,7 @@ static int jk_handler(request_rec * r)
                 jk_log(xconf->log, JK_LOG_DEBUG,
                        "Retrieved worker (%s) from env %s for %s",
                        worker_name, xconf->worker_indicator, r->uri);
-            if (strchr(worker_name, ';')) {
+            if (ap_strchr_c(worker_name, ';')) {
                 rule_extension_t *e = apr_palloc(r->pool, sizeof(rule_extension_t));
                 char *w = apr_pstrdup(r->pool, worker_name);
                 worker_name_extension = JK_TRUE;
