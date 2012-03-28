@@ -65,7 +65,7 @@ static jk_logger_t *logger = NULL;
 static jk_worker_env_t worker_env;
 static jk_map_t *init_map = NULL;
 static jk_uri_worker_map_t *uw_map = NULL;
-static size_t jk_shm_size = 0;
+static int jk_shm_size = 0;
 
 #ifdef NETWARE
 int (*PR_IsSocketSecure) (SYS_NETFD * csd);     /* pointer to PR_IsSocketSecure function */

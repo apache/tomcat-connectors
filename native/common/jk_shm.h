@@ -48,27 +48,29 @@ extern "C"
 #define JK_SHM_MAGIC    '!', 'J', 'K', 'S', 'H', 'M', JK_SHM_MAJOR, JK_SHM_MINOR
 #define JK_SHM_MAGIC_SIZ  8
 
+/* XXX: Check if adding struct members for overflow */
+#define JK_SHM_SLOT_SIZE          384
 /* Really huge numbers, but 64 workers should be enough */
 #define JK_SHM_MAX_WORKERS        64
-#define JK_SHM_ALIGNMENT          64
+#define JK_SHM_ALIGNMENT          JK_SHM_SLOT_SIZE
 #define JK_SHM_ALIGN(x)           JK_ALIGN((x), JK_SHM_ALIGNMENT)
-#define JK_SHM_AJP_WORKER_SIZE    JK_SHM_ALIGN(sizeof(jk_shm_ajp_worker_t))
-#define JK_SHM_LB_SUB_WORKER_SIZE JK_SHM_ALIGN(sizeof(jk_shm_lb_sub_worker_t))
-#define JK_SHM_LB_WORKER_SIZE     JK_SHM_ALIGN(sizeof(jk_shm_lb_worker_t))
-#define JK_SHM_AJP_SIZE(x)        ((x) * JK_SHM_AJP_WORKER_SIZE)
-#define JK_SHM_LB_SUB_SIZE(x)     ((x) * JK_SHM_LB_SUB_WORKER_SIZE)
-#define JK_SHM_LB_SIZE(x)         ((x) * JK_SHM_LB_WORKER_SIZE)
-#define JK_SHM_DEF_SIZE           JK_SHM_AJP_SIZE(JK_SHM_MAX_WORKERS) + JK_SHM_LB_SUB_SIZE(JK_SHM_MAX_WORKERS) + JK_SHM_LB_SIZE(JK_SHM_MAX_WORKERS)
+#define JK_SHM_DEF_SIZE           ((JK_SHM_SLOT_SIZE * JK_SHM_MAX_WORKERS * 3) + JK_SHM_ALIGNMENT)
 
 /** jk shm generic worker record structure */
 struct jk_shm_worker_header
 {
+    /* Shared memory slot id */
     int     id;
+    /* JK_XXX_WORKER_TYPE */
     int     type;
     /* worker name */
     char    name[JK_SHM_STR_SIZ+1];
+    /* parent slot id.
+     * Zero in case worker does not belong to balancer.
+     */
+    int     parent_id;
     /* Sequence counter starting at 0 and increasing
-     * every time we change the config
+     * every time we change the config.
      */
     volatile unsigned int sequence;
 };
@@ -191,11 +193,11 @@ typedef struct jk_shm_lb_worker jk_shm_lb_worker_t;
 const char *jk_shm_name(void);
 
 /* Calculate needed shm size */
-size_t jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l);
+int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l);
 
 /* Open the shared memory creating file if needed
  */
-int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l);
+int jk_shm_open(const char *fname, int sz, jk_logger_t *l);
 
 /* Close the shared memory
  */
@@ -204,12 +206,12 @@ void jk_shm_close(jk_logger_t *l);
 /* Attach the shared memory in child process.
  * File has to be opened in parent.
  */
-int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l);
+int jk_shm_attach(const char *fname, int sz, jk_logger_t *l);
 
 /* allocate shm memory
  * If there is no shm present the pool will be used instead
  */
-void *jk_shm_alloc(jk_pool_t *p, size_t size);
+void *jk_shm_alloc(jk_pool_t *p);
 
 /* allocate shm ajp worker record
  * If there is no shm present the pool will be used instead

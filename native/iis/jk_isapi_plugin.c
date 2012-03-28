@@ -496,7 +496,7 @@ static char worker_file[MAX_PATH * 2];
 static char worker_mount_file[MAX_PATH * 2] = {0};
 static int  worker_mount_reload = JK_URIMAP_DEF_RELOAD;
 static char rewrite_rule_file[MAX_PATH * 2] = {0};
-static size_t shm_config_size = -1;
+static int  shm_config_size = -1;
 static int  strip_session = 0;
 static int  use_auth_notification_flags = 1;
 static int  chunked_encoding_enabled = JK_FALSE;

@@ -31,44 +31,48 @@
 #include "jk_ajp14_worker.h"
 #include "jk_shm.h"
 
-/** jk shm header core data structure */
+/** jk shm header core data structure
+ * This is always the first slot in shared memory.
+ */
 struct jk_shm_header_data
 {
     /* Shared memory magic JK_SHM_MAGIC */
-    char   magic[JK_SHM_MAGIC_SIZ];
-    size_t size;
-    size_t pos;
+    char         magic[JK_SHM_MAGIC_SIZ];
+    unsigned int size;
+    unsigned int pos;
     unsigned int childs;
     unsigned int workers;
-    time_t modified;
+    time_t       modified;
 };
 
 typedef struct jk_shm_header_data jk_shm_header_data_t;
 
-/** jk shm header record structure */
+/** jk shm header record structure
+ */
 struct jk_shm_header
 {
     union {
         jk_shm_header_data_t data;
-        char alignbuf[JK_SHM_ALIGN(sizeof(jk_shm_header_data_t))];
+        char alignbuf[JK_SHM_SLOT_SIZE];
     } h;
     char   buf[1];
 };
 
 typedef struct jk_shm_header jk_shm_header_t;
 
-/** jk shm structure */
+/** jk shm in memory structure.
+ */
 struct jk_shm
 {
-    size_t     size;
-    unsigned   ajp_workers;
-    unsigned   lb_sub_workers;
-    unsigned   lb_workers;
-    char       *filename;
-    char       *lockname;
-    int        fd;
-    int        fd_lock;
-    int        attached;
+    unsigned int size;
+    unsigned int ajp_workers;
+    unsigned int lb_sub_workers;
+    unsigned int lb_workers;
+    char        *filename;
+    char        *lockname;
+    int          fd;
+    int          fd_lock;
+    int          attached;
     jk_shm_header_t  *hdr;
     JK_CRIT_SEC       cs;
 };
@@ -86,11 +90,11 @@ static HANDLE jk_shm_hlock = NULL;
 static int jk_shm_inited_cs = 0;
 
 /* Calculate needed shm size */
-size_t jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
+int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
 {
     char **worker_list;
-    unsigned i;
-    unsigned num_of_workers;
+    unsigned int i;
+    unsigned int num_of_workers;
     int num_of_ajp_workers = 0;
     int num_of_lb_sub_workers = 0;
     int num_of_lb_workers = 0;
@@ -104,7 +108,6 @@ size_t jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
         JK_TRACE_EXIT(l);
         return 0;
     }
-
     for (i = 0; i < num_of_workers; i++) {
         const char *type = jk_get_worker_type(init_data, worker_list[i]);
 
@@ -114,7 +117,7 @@ size_t jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
         }
         else if (!strcmp(type, JK_LB_WORKER_NAME)) {
             char **member_list;
-            unsigned num_of_members;
+            unsigned int num_of_members;
             num_of_lb_workers++;
             if (jk_get_lb_worker_list(init_data, worker_list[i],
                                       &member_list, &num_of_members) == JK_FALSE) {
@@ -130,25 +133,24 @@ size_t jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
         }
     }
     if (JK_IS_DEBUG_LEVEL(l))
-        jk_log(l, JK_LOG_DEBUG, "shared memory will contain %d ajp workers of size %d and %d lb workers of size %d with %d members of size %d+%d",
-               num_of_ajp_workers, JK_SHM_AJP_SIZE(1),
-               num_of_lb_workers, JK_SHM_LB_SIZE(1),
-               num_of_lb_sub_workers, JK_SHM_LB_SUB_SIZE(1), JK_SHM_AJP_SIZE(1));
+        jk_log(l, JK_LOG_DEBUG, "shared memory will contain %d ajp workers and %d lb workers with %d members",
+               num_of_ajp_workers,
+               num_of_lb_workers,
+               num_of_lb_sub_workers);
     jk_shmem.ajp_workers = num_of_ajp_workers;
     jk_shmem.lb_sub_workers = num_of_lb_sub_workers;
     jk_shmem.lb_workers = num_of_lb_workers;
     JK_TRACE_EXIT(l);
-    return JK_SHM_AJP_SIZE(jk_shmem.ajp_workers) +
-           JK_SHM_LB_SUB_SIZE(jk_shmem.lb_sub_workers) +
-           JK_SHM_AJP_SIZE(jk_shmem.lb_sub_workers) +
-           JK_SHM_LB_SIZE(jk_shmem.lb_workers);
+    return (JK_SHM_SLOT_SIZE * (jk_shmem.ajp_workers +
+            jk_shmem.lb_sub_workers * 2 +
+            jk_shmem.lb_workers));
 }
 
 
 #if defined (WIN32) || defined(NETWARE)
 
 /* Use plain memory */
-int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
+int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
 {
     int rc = -1;
     int attached = 0;
@@ -168,7 +170,12 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
         JK_LEAVE_CS(&jk_shmem.cs);
         return 0;
     }
-    jk_shmem.size = JK_SHM_ALIGN(sizeof(jk_shm_header_t) + sz);
+    if (sz < 0) {
+        jk_log(l, JK_LOG_ERROR, "Invalid shared memory size (%d)", sz);
+        JK_TRACE_EXIT(l);
+        return EINVAL;
+    }
+    jk_shmem.size = JK_SHM_ALIGN(JK_SHM_SLOT_SIZE + sz);
 #if defined (WIN32)
     jk_shm_map   = NULL;
     jk_shm_hlock = NULL;
@@ -315,7 +322,7 @@ int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
     return 0;
 }
 
-int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l)
+int jk_shm_attach(const char *fname, int sz, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
     if (!jk_shm_open(fname, sz, l)) {
@@ -480,7 +487,7 @@ static int do_shm_open_lock(const char *fname, int attached, jk_logger_t *l)
 }
 
 static int do_shm_open(const char *fname, int attached,
-                       size_t sz, jk_logger_t *l)
+                       int sz, jk_logger_t *l)
 {
     int rc;
     int fd;
@@ -506,7 +513,12 @@ static int do_shm_open(const char *fname, int attached,
         JK_TRACE_EXIT(l);
         return 0;
     }
-    jk_shmem.size = JK_SHM_ALIGN(sizeof(jk_shm_header_t) + sz);
+    if (sz < 0) {
+        jk_log(l, JK_LOG_ERROR, "Invalid shared memory size (%d)", sz);
+        JK_TRACE_EXIT(l);
+        return EINVAL;
+    }
+    jk_shmem.size = JK_SHM_ALIGN(JK_SHM_SLOT_SIZE + sz);
 
     if (!fname) {
         /* Use plain memory in case there is no file name */
@@ -659,12 +671,12 @@ static int do_shm_open(const char *fname, int attached,
     return 0;
 }
 
-int jk_shm_open(const char *fname, size_t sz, jk_logger_t *l)
+int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
 {
     return do_shm_open(fname, 0, sz, l);
 }
 
-int jk_shm_attach(const char *fname, size_t sz, jk_logger_t *l)
+int jk_shm_attach(const char *fname, int sz, jk_logger_t *l)
 {
     return do_shm_open(fname, 1, sz, l);
 }
@@ -742,21 +754,20 @@ void jk_shm_close(jk_logger_t *l)
 
 #endif
 
-void *jk_shm_alloc(jk_pool_t *p, size_t size)
+void *jk_shm_alloc(jk_pool_t *p)
 {
     void *rc = NULL;
 
     if (jk_shmem.hdr) {
-        size = JK_SHM_ALIGN(size);
         jk_shm_lock();
-        if ((jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos) >= size) {
+        if ((jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos) >= JK_SHM_SLOT_SIZE) {
             rc = &(jk_shmem.hdr->buf[jk_shmem.hdr->h.data.pos]);
-            jk_shmem.hdr->h.data.pos += size;
+            jk_shmem.hdr->h.data.pos += JK_SHM_SLOT_SIZE;
         }
         jk_shm_unlock();
     }
     else if (p)
-        rc = jk_pool_alloc(p, size);
+        rc = jk_pool_alloc(p, JK_SHM_SLOT_SIZE);
 
     return rc;
 }
@@ -841,9 +852,9 @@ int jk_shm_unlock()
 
 jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p)
 {
-    jk_shm_ajp_worker_t *w = (jk_shm_ajp_worker_t *)jk_shm_alloc(p, JK_SHM_AJP_WORKER_SIZE);
+    jk_shm_ajp_worker_t *w = (jk_shm_ajp_worker_t *)jk_shm_alloc(p);
     if (w) {
-        memset(w, 0, JK_SHM_AJP_WORKER_SIZE);
+        memset(w, 0, JK_SHM_SLOT_SIZE);
         if (jk_shmem.hdr) {
             jk_shmem.hdr->h.data.workers++;
             w->h.id = jk_shmem.hdr->h.data.workers;
@@ -857,9 +868,9 @@ jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p)
 
 jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p)
 {
-    jk_shm_lb_sub_worker_t *w = (jk_shm_lb_sub_worker_t *)jk_shm_alloc(p, JK_SHM_LB_SUB_WORKER_SIZE);
+    jk_shm_lb_sub_worker_t *w = (jk_shm_lb_sub_worker_t *)jk_shm_alloc(p);
     if (w) {
-        memset(w, 0, JK_SHM_LB_SUB_WORKER_SIZE);
+        memset(w, 0, JK_SHM_SLOT_SIZE);
         if (jk_shmem.hdr) {
             jk_shmem.hdr->h.data.workers++;
             w->h.id = jk_shmem.hdr->h.data.workers;
@@ -873,9 +884,9 @@ jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p)
 
 jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p)
 {
-    jk_shm_lb_worker_t *w = (jk_shm_lb_worker_t *)jk_shm_alloc(p, JK_SHM_LB_WORKER_SIZE);
+    jk_shm_lb_worker_t *w = (jk_shm_lb_worker_t *)jk_shm_alloc(p);
     if (w) {
-        memset(w, 0, JK_SHM_LB_WORKER_SIZE);
+        memset(w, 0, JK_SHM_SLOT_SIZE);
         if (jk_shmem.hdr) {
             jk_shmem.hdr->h.data.workers++;
             w->h.id = jk_shmem.hdr->h.data.workers;

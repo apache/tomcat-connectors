@@ -269,7 +269,7 @@ static apr_hash_t *jk_log_fps = NULL;
 static jk_worker_env_t worker_env;
 static apr_global_mutex_t *jk_log_lock = NULL;
 static char *jk_shm_file = NULL;
-static size_t jk_shm_size = 0;
+static int jk_shm_size = 0;
 static int jk_shm_size_set = 0;
 static volatile int jk_watchdog_interval = 0;
 static volatile int jk_watchdog_running  = 0;
@@ -1438,7 +1438,7 @@ static const char *jk_set_shm_size(cmd_parms * cmd,
         sz = JK_SHM_DEF_SIZE;
     else
         sz = JK_SHM_ALIGN(sz);
-    jk_shm_size = (size_t)sz;
+    jk_shm_size = sz;
     if (jk_shm_size)
         jk_shm_size_set = 1;
     return NULL;
