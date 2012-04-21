@@ -251,13 +251,10 @@ From the point of view of JK and of the web server, the other side
 simply doesn't answer any traffic. Since TCP is a reliable protocol
 it detects the missing TCP ACKs and tries to resend the packets for
 a relatively long time, typically several minutes.
-</p>
-<p>
-Many firewalls will allow connection closing, even if they dropped
-the connection for normal traffic. Therefore you should always use
+Therefore you should always use
 <a href="#Connection Pools and Idle Timeouts">connection_pool_timeout and
-connection_pool_minsize</a> on the JK side
-and connectionTimeout on the Tomcat side.
+connection_pool_minsize</a> on the JK side and <b>connectionTimeout</b>
+on the Tomcat side to prevent idle connection drop.
 </p>
 <p>
 Furthermore using the boolean attribute <b>socket_keepalive</b> you can
@@ -280,7 +277,8 @@ In case none of our recommendations help and you are definitively having
 problems with idle connection drops, you can disable the use of persistent
 connections when using JK together with Apache httpd. For this you set
 "JkOptions +DisableReuse" in your Apache httpd configuration.
-This will have a huge negative performance impact!
+The amount of performance impact this will have depends on the details of
+your network and your firewall.
 </p>
 </subsection>
 
