@@ -359,6 +359,7 @@ void jk_shm_close(jk_logger_t *l)
 #if defined (WIN32)
         if (jk_shm_hlock) {
             WaitForSingleObject(jk_shm_hlock, 60000);
+            ReleaseMutex(jk_shm_hlock);
             CloseHandle(jk_shm_hlock);
             jk_shm_hlock = NULL;
         }

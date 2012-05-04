@@ -45,6 +45,9 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        Fix dead-lock caused by not releasing mutex on close. (mturk)
+      </fix>
+      <fix>
         Fix compilation of mod_jk for HTTPD 1.3. (rjung)
       </fix>
       <fix>
