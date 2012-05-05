@@ -806,6 +806,7 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
                ae->worker->name, ae->sd, ae->reuse ? "" : " (socket shutdown)");
     if (IS_VALID_SOCKET(ae->sd)) {
         jk_shutdown_socket(ae->sd, l);
+        ae->worker->s->connected--;
     }
     ae->sd = JK_INVALID_SOCKET;
     jk_close_pool(&(ae->pool));
@@ -831,8 +832,10 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
 
     /* Close previous socket
      */
-    if (IS_VALID_SOCKET(ae->sd))
+    if (IS_VALID_SOCKET(ae->sd)) {
         jk_shutdown_socket(ae->sd, l);
+        ae->worker->s->connected--;
+    }
     /* Mark existing endpoint socket as closed
      */
     ae->sd = JK_INVALID_SOCKET;
@@ -3302,7 +3305,10 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
          * called from the watchdog thread.
          */
         for (m = 0; m < m_count; m++) {
-            jk_shutdown_socket(m_sock[m], l);
+            if (m_sock[m] != JK_INVALID_SOCKET) {
+                jk_shutdown_socket(m_sock[m], l);
+                aw->s->connected--;
+            }
         }
         free(m_sock);
         if (n && JK_IS_DEBUG_LEVEL(l))
