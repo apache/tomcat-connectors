@@ -1065,11 +1065,15 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
         jk_shm_unlock();
 
     if (address_change == JK_TRUE && port != 0) {
+        aw->port = port;
+        strncpy(aw->host, host, JK_SHM_STR_SIZ);
         if (!jk_resolve(host, port, &inet_addr,
                         aw->worker.we->pool, l)) {
             jk_log(l, JK_LOG_ERROR,
                    "Failed resolving address '%s:%d' for worker '%s'.",
                    host, port, aw->name);
+            /* Disable contact */
+            aw->port = 0;
         }
         else {
             unsigned int i;
@@ -1086,8 +1090,6 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
                     aw->s->connected--;
                 }
             }
-            aw->port = port;
-            strncpy(aw->host, host, JK_SHM_STR_SIZ);
             memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
             JK_LEAVE_CS(&aw->cs);
         }
@@ -2684,9 +2686,8 @@ int ajp_validate(jk_worker_t *pThis,
                    p->name, p->host, p->port);
         /* Copy the contact to shm
          */
-        if (p->sequence == 0) {
+        if (p->s->h.sequence == 0) {
             /* Initial setup.
-             * Invalidate addr_sequence so that the address in resolved.
              */
             if (p->port > 0) {
                 if (!jk_resolve(p->host, p->port, &p->worker_inet_addr, we->pool, l)) {
@@ -2699,15 +2700,8 @@ int ajp_validate(jk_worker_t *pThis,
                                "worker %s contact is disabled",
                                p->name);
                 }
-                else {
-                    p->s->port = p->port = 0;
-                    if (JK_IS_DEBUG_LEVEL(l))
-                        jk_log(l, JK_LOG_DEBUG,
-                               "worker %s contact is disabled",
-                                p->name);
-                }
             }
-            p->addr_sequence = p->s->addr_sequence;
+            p->s->addr_sequence = 1;
             p->s->last_maintain_time = time(NULL);
             p->s->last_reset = p->s->last_maintain_time;
             jk_ajp_push(p, JK_TRUE, l);
@@ -2719,8 +2713,8 @@ int ajp_validate(jk_worker_t *pThis,
                 jk_log(l, JK_LOG_DEBUG,
                        "worker %s contact already configured (%u->%u",
                         p->name, p->s->addr_sequence, p->addr_sequence);
-            jk_ajp_pull(p, JK_TRUE, l);        
-        }            
+            jk_ajp_pull(p, JK_TRUE, l);
+        }
         JK_TRACE_EXIT(l);
         return JK_TRUE;
     }

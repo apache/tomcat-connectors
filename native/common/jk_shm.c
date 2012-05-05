@@ -295,6 +295,7 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
          * if the number of workers change between
          * open and attach or between two attach operations.
          */
+#if 0
         if (jk_shmem.hdr->h.data.childs > 1) {
             if (JK_IS_DEBUG_LEVEL(l)) {
                 jk_log(l, JK_LOG_DEBUG,
@@ -302,7 +303,6 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
                        jk_shmem.hdr->h.data.childs);
             }
         }
-#if 0
         jk_shmem.hdr->h.data.pos     = 0;
         jk_shmem.hdr->h.data.workers = 0;
 #endif
@@ -316,9 +316,11 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
     JK_LEAVE_CS(&jk_shmem.cs);
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "%s shared memory %s size=%u workers=%d free=%u addr=%#lx",
+               "%s shared memory %s [%d] size=%u workers=%d free=%u addr=%#lx",
                attached ? "Attached" : "Initialized",
-               jk_shm_name(), jk_shmem.size, jk_shmem.hdr->h.data.workers,
+               jk_shm_name(),
+               jk_shmem.hdr->h.data.childs,
+               jk_shmem.size, jk_shmem.hdr->h.data.workers - 1,
                jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos,
                jk_shmem.hdr);
     JK_TRACE_EXIT(l);
@@ -626,16 +628,17 @@ static int do_shm_open(const char *fname, int attached,
                    jk_shmem.hdr);
     }
     else {
-        unsigned int nchild;
         jk_shmem.hdr->h.data.childs++;
         jk_shmem.attached = (int)getpid();
-        nchild = jk_shmem.hdr->h.data.childs;
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                   "Attached shared memory %s [%d] size=%u free=%u addr=%#lx",
-                   jk_shm_name(), nchild, jk_shmem.size,
+                   "Attached shared memory %s [%d] size=%u workers=%u free=%u addr=%#lx",
+                   jk_shm_name(),
+                   jk_shmem.hdr->h.data.childs,
+                   jk_shmem.size, jk_shmem.hdr->h.data.workers - 1,
                    jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos,
                    jk_shmem.hdr);
+#if 0
         /*
          * Reset the shared memory so that
          * alloc works even for attached memory.
@@ -652,6 +655,7 @@ static int do_shm_open(const char *fname, int attached,
         }
         jk_shmem.hdr->h.data.pos     = 0;
         jk_shmem.hdr->h.data.workers = 0;
+#endif
     }
     if ((rc = do_shm_open_lock(jk_shmem.filename, attached, l))) {
         if (!attached) {
