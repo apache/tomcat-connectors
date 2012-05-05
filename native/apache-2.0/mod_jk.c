@@ -937,7 +937,7 @@ static int init_ws_service(apache_private_data_t * private_data,
         break;
 
     case JK_OPT_FWDURIPROXY:
-        size = 3 * strlen(r->uri) + 1;
+        size = 3 * (int)strlen(r->uri) + 1;
         s->req_uri = apr_palloc(r->pool, size);
         jk_canonenc(r->uri, s->req_uri, size);
         break;
@@ -982,7 +982,7 @@ static int init_ws_service(apache_private_data_t * private_data,
                 }
 
                 if (s->ssl_cert) {
-                    s->ssl_cert_len = strlen(s->ssl_cert);
+                    s->ssl_cert_len = (unsigned int)strlen(s->ssl_cert);
                     if (JK_IS_DEBUG_LEVEL(conf->log)) {
                         jk_log(conf->log, JK_LOG_DEBUG,
                                "SSL client certificate (%d bytes): %s",
@@ -1588,7 +1588,7 @@ static int request_log_transaction(request_rec * r)
         strs[i] = process_item(r, &items[i]);
     }
     for (i = 0; i < format->nelts; ++i) {
-        len += strl[i] = strlen(strs[i]);
+        len += strl[i] = (int)strlen(strs[i]);
     }
     str = apr_palloc(r->pool, len + 1);
     for (i = 0, s = str; i < format->nelts; ++i) {
@@ -3645,7 +3645,7 @@ static int jk_translate(request_rec * r)
                     char *index = clean_uri;
                     char *suffix = strchr(index + 1, '/');
                     if (suffix != NULL) {
-                        int size = suffix - index;
+                        int size = (int)(suffix - index);
                         context_dir = apr_pstrndup(r->pool, index, size);
                         /* Get the context child directory name */
                         index = index + size + 1;
@@ -3704,7 +3704,7 @@ static int jk_translate(request_rec * r)
                         }
                         else {
                             /* Deny access to war files in web app directory */
-                            int size = strlen(context_dir);
+                            int size = (int)strlen(context_dir);
                             if (size > 4
                                 && !strcasecmp(context_dir + (size - 4),
                                                ".war")) {
