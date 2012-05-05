@@ -2937,16 +2937,6 @@ int ajp_init(jk_worker_t *pThis,
          *  of the following loop
          */
         p->secret = jk_get_worker_secret(props, p->name);
-        /* Initialize cache slots
-         */
-        JK_INIT_CS(&(p->cs), rc);
-        if (!rc) {
-            jk_log(l, JK_LOG_ERROR,
-                   "creating thread lock (errno=%d)",
-                   errno);
-            JK_TRACE_EXIT(l);
-            return JK_FALSE;
-        }
         if (!ajp_create_endpoint_cache(p, proto, l)) {
             jk_log(l, JK_LOG_ERROR,
                    "allocating connection pool of size %u",
@@ -2967,6 +2957,7 @@ int ajp_init(jk_worker_t *pThis,
 int JK_METHOD ajp_worker_factory(jk_worker_t **w,
                                  const char *name, jk_logger_t *l)
 {
+    int rc;
     ajp_worker_t *aw;
 
     JK_TRACE_ENTER(l);
@@ -3011,6 +3002,17 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
+    JK_INIT_CS(&aw->cs, rc);
+    if (!rc) {
+        jk_log(l, JK_LOG_ERROR,
+               "creating thread lock (errno=%d)",
+               errno);
+        jk_close_pool(&aw->p);
+        free(aw);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+    
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
