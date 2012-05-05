@@ -1064,7 +1064,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
     if (locked == JK_FALSE)
         jk_shm_unlock();
 
-    if (address_change == JK_TRUE) {
+    if (address_change == JK_TRUE && port != 0) {
         if (!jk_resolve(host, port, &inet_addr,
                         aw->worker.we->pool, l)) {
             jk_log(l, JK_LOG_ERROR,
@@ -1120,7 +1120,10 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
     aw->s->retries = aw->retries;
     aw->s->retry_interval = aw->retry_interval;
     aw->s->max_packet_size = aw->max_packet_size;
-    aw->s->h.sequence = aw->sequence;
+    /* Force squence update on push
+     */
+     ++aw->s->h.sequence;
+    aw->sequence = aw->s->h.sequence;
     if (aw->s->addr_sequence != aw->addr_sequence) {
         address_change = JK_TRUE;
         strncpy(aw->s->host, aw->host, JK_SHM_STR_SIZ);
@@ -2681,36 +2684,45 @@ int ajp_validate(jk_worker_t *pThis,
                    p->name, p->host, p->port);
         /* Copy the contact to shm
          */
-        strncpy(p->s->host, p->host, JK_SHM_STR_SIZ);
-        p->s->port = p->port;
-        p->s->addr_sequence = p->addr_sequence = 0;
-        /* Resolve if port > 0.
-         */
-        if (p->port > 0) {
-            if (jk_resolve(p->host, p->port, &p->worker_inet_addr, we->pool, l)) {
-                JK_TRACE_EXIT(l);
-                return JK_TRUE;
+        if (p->sequence == 0) {
+            /* Initial setup.
+             * Invalidate addr_sequence so that the address in resolved.
+             */
+            if (p->port > 0) {
+                if (!jk_resolve(p->host, p->port, &p->worker_inet_addr, we->pool, l)) {
+                    jk_log(l, JK_LOG_ERROR,
+                           "worker %s can't resolve tomcat address %s",
+                           p->name, p->host);
+                    p->s->port = p->port = 0;
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG,
+                               "worker %s contact is disabled",
+                               p->name);
+                }
+                else {
+                    p->s->port = p->port = 0;
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG,
+                               "worker %s contact is disabled",
+                                p->name);
+                }
             }
-            jk_log(l, JK_LOG_ERROR,
-                   "worker %s can't resolve tomcat address %s",
-                   p->name, p->host);
-            p->s->port = p->port = 0;
-            if (JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG,
-                       "worker %s contact is disabled",
-                       p->name);
-            JK_TRACE_EXIT(l);
-            return JK_TRUE;
+            p->addr_sequence = p->s->addr_sequence;
+            p->s->last_maintain_time = time(NULL);
+            p->s->last_reset = p->s->last_maintain_time;
+            jk_ajp_push(p, JK_TRUE, l);
         }
         else {
-            p->s->port = p->port = 0;
+            /* Somebody already setup this worker.
+             */
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "worker %s contact is disabled",
-                       p->name);
-            JK_TRACE_EXIT(l);
-            return JK_TRUE;
-        }
+                       "worker %s contact already configured (%u->%u",
+                        p->name, p->s->addr_sequence, p->addr_sequence);
+            jk_ajp_pull(p, JK_TRUE, l);        
+        }            
+        JK_TRACE_EXIT(l);
+        return JK_TRUE;
     }
     else {
         JK_LOG_NULL_PARAMS(l);
@@ -2869,9 +2881,6 @@ int ajp_init(jk_worker_t *pThis,
         p->maintain_time = jk_get_worker_maintain_time(props);
         if(p->maintain_time < 0)
             p->maintain_time = 0;
-        p->s->last_maintain_time = time(NULL);
-        p->s->last_reset = p->s->last_maintain_time;
-
         if (JK_IS_DEBUG_LEVEL(l)) {
 
             jk_log(l, JK_LOG_DEBUG,
@@ -2999,7 +3008,7 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
 
     *w = &aw->worker;
 
-    aw->s = jk_shm_alloc_ajp_worker(&aw->p);
+    aw->s = jk_shm_alloc_ajp_worker(&aw->p, name);
     if (!aw->s) {
         jk_close_pool(&aw->p);
         free(aw);

@@ -280,6 +280,7 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
     jk_shmem.fd       = 0;
     jk_shmem.attached = attached;
     if (!attached) {
+        memset(jk_shmem.hdr, 0, jk_shmem.size);
         memcpy(jk_shmem.hdr->h.data.magic, shm_signature,
                JK_SHM_MAGIC_SIZ);
         jk_shmem.hdr->h.data.size = sz;
@@ -301,8 +302,10 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
                        jk_shmem.hdr->h.data.childs);
             }
         }
+#if 0
         jk_shmem.hdr->h.data.pos     = 0;
         jk_shmem.hdr->h.data.workers = 0;
+#endif
     }
 #if defined (WIN32)
     if (jk_shm_hlock != NULL) {
@@ -313,9 +316,9 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
     JK_LEAVE_CS(&jk_shmem.cs);
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "%s shared memory %s size=%u free=%u addr=%#lx",
+               "%s shared memory %s size=%u workers=%d free=%u addr=%#lx",
                attached ? "Attached" : "Initialized",
-               jk_shm_name(), jk_shmem.size,
+               jk_shm_name(), jk_shmem.size, jk_shmem.hdr->h.data.workers,
                jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos,
                jk_shmem.hdr);
     JK_TRACE_EXIT(l);
@@ -773,6 +776,55 @@ void *jk_shm_alloc(jk_pool_t *p)
     return rc;
 }
 
+jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
+                                            int parent_id, const char *name)
+{
+    unsigned int i;
+    jk_shm_worker_header_t *w = 0;
+
+    if (jk_shmem.hdr) {
+        jk_shm_lock();
+        for (i = 0; i < jk_shmem.hdr->h.data.pos; i += JK_SHM_SLOT_SIZE) {
+            w = (jk_shm_worker_header_t *)(jk_shmem.hdr->buf + i);
+            if (w->type == type && w-> parent_id == parent_id &&
+                strcmp(w->name, name) == 0) {
+                /* We have found already created worker */
+                jk_shm_unlock();
+                return w;
+            }
+        }
+        /* Allocate new worker */
+        if ((jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos) >= JK_SHM_SLOT_SIZE) {
+            w = (jk_shm_worker_header_t *)(jk_shmem.hdr->buf + jk_shmem.hdr->h.data.pos);
+            memset(w, 0, JK_SHM_SLOT_SIZE);
+            strncpy(w->name, name, JK_SHM_STR_SIZ);
+            jk_shmem.hdr->h.data.workers++;
+            w->id = jk_shmem.hdr->h.data.workers;
+            w->type = type;
+            w->parent_id = parent_id;
+            jk_shmem.hdr->h.data.pos += JK_SHM_SLOT_SIZE;
+        }
+        else {
+            /* No more free memory left.
+             */
+            w = NULL;
+        }
+        jk_shm_unlock();
+    }
+    else if (p) {
+        w = (jk_shm_worker_header_t *)jk_pool_alloc(p, JK_SHM_SLOT_SIZE);
+        if (w) {
+            memset(w, 0, JK_SHM_SLOT_SIZE);
+            strncpy(w->name, name, JK_SHM_STR_SIZ);
+            w->id = 0;
+            w->type = type;
+            w->parent_id = parent_id;
+        }
+    }
+
+    return w;
+}
+
 const char *jk_shm_name()
 {
     return jk_shmem.filename;
@@ -851,50 +903,20 @@ int jk_shm_unlock()
     return rc;
 }
 
-jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p)
+jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p, const char *name)
 {
-    jk_shm_ajp_worker_t *w = (jk_shm_ajp_worker_t *)jk_shm_alloc(p);
-    if (w) {
-        memset(w, 0, JK_SHM_SLOT_SIZE);
-        if (jk_shmem.hdr) {
-            jk_shmem.hdr->h.data.workers++;
-            w->h.id = jk_shmem.hdr->h.data.workers;
-            w->h.type = JK_AJP13_WORKER_TYPE;
-        }
-        else
-            w->h.id = -1;
-    }
-    return w;
+    return (jk_shm_ajp_worker_t *)jk_shm_alloc_worker(p,
+                                    JK_AJP13_WORKER_TYPE, 0, name);
 }
 
-jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p)
+jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p, int lb_id, const char *name)
 {
-    jk_shm_lb_sub_worker_t *w = (jk_shm_lb_sub_worker_t *)jk_shm_alloc(p);
-    if (w) {
-        memset(w, 0, JK_SHM_SLOT_SIZE);
-        if (jk_shmem.hdr) {
-            jk_shmem.hdr->h.data.workers++;
-            w->h.id = jk_shmem.hdr->h.data.workers;
-            w->h.type = JK_LB_SUB_WORKER_TYPE;
-        }
-        else
-            w->h.id = -1;
-    }
-    return w;
+    return (jk_shm_lb_sub_worker_t *)jk_shm_alloc_worker(p,
+                                    JK_LB_SUB_WORKER_TYPE, lb_id, name);
 }
 
-jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p)
+jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name)
 {
-    jk_shm_lb_worker_t *w = (jk_shm_lb_worker_t *)jk_shm_alloc(p);
-    if (w) {
-        memset(w, 0, JK_SHM_SLOT_SIZE);
-        if (jk_shmem.hdr) {
-            jk_shmem.hdr->h.data.workers++;
-            w->h.id = jk_shmem.hdr->h.data.workers;
-            w->h.type = JK_LB_WORKER_TYPE;
-        }
-        else
-            w->h.id = -1;
-    }
-    return w;
+    return (jk_shm_lb_worker_t *)jk_shm_alloc_worker(p,
+                                    JK_LB_WORKER_TYPE, 0, name);
 }

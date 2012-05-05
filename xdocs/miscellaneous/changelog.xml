@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        Use named shared memory objects so that we preserve runtime configured
+		data instead reseting on each child ceation. (mturk)
+      </fix>
+      <fix>
         Fix dead-lock caused by not releasing mutex on close. (mturk)
       </fix>
       <fix>

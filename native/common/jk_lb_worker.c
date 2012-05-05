@@ -282,6 +282,30 @@ void reset_lb_values(lb_worker_t *p, jk_logger_t *l)
     JK_TRACE_EXIT(l);
 }
 
+static void jk_lb_pull_worker(lb_worker_t *p, int i, jk_logger_t *l)
+{
+    lb_sub_worker_t *w = &p->lb_workers[i];
+    if (w->sequence < w->s->h.sequence) {
+        jk_worker_t *jw = w->worker;
+        ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
+
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
+                   "syncing mem for member '%s' of lb '%s' from shm",
+                   w->name, p->name);
+
+        jk_ajp_pull(aw, JK_TRUE, l);
+        strncpy(w->route, w->s->route, JK_SHM_STR_SIZ);
+        strncpy(w->domain, w->s->domain, JK_SHM_STR_SIZ);
+        strncpy(w->redirect, w->s->redirect, JK_SHM_STR_SIZ);
+        w->distance = w->s->distance;
+        w->activation = w->s->activation;
+        w->lb_factor = w->s->lb_factor;
+        w->lb_mult = w->s->lb_mult;
+        w->sequence = w->s->h.sequence;
+    }
+}
+
 /* Syncing config values from shm */
 void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
 {
@@ -314,26 +338,7 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
     strncpy(p->session_path, p->s->session_path, JK_SHM_STR_SIZ);
 
     for (i = 0; i < p->num_of_workers; i++) {
-        lb_sub_worker_t *w = &p->lb_workers[i];
-        if (w->sequence < w->s->h.sequence) {
-            jk_worker_t *jw = w->worker;
-            ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
-
-            if (JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG,
-                       "syncing mem for member '%s' of lb '%s' from shm",
-                       w->name, p->name);
-
-            jk_ajp_pull(aw, JK_TRUE, l);
-            strncpy(w->route, w->s->route, JK_SHM_STR_SIZ);
-            strncpy(w->domain, w->s->domain, JK_SHM_STR_SIZ);
-            strncpy(w->redirect, w->s->redirect, JK_SHM_STR_SIZ);
-            w->distance = w->s->distance;
-            w->activation = w->s->activation;
-            w->lb_factor = w->s->lb_factor;
-            w->lb_mult = w->s->lb_mult;
-            w->sequence = w->s->h.sequence;
-        }
+        jk_lb_pull_worker(p, i, l);
     }
     p->sequence = p->s->h.sequence;
     if (locked == JK_FALSE)
@@ -370,7 +375,7 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
 
     for (i = 0; i < p->num_of_workers; i++) {
         lb_sub_worker_t *w = &p->lb_workers[i];
-        if (w->sequence < w->s->h.sequence) {
+        if (w->sequence > w->s->h.sequence) {
             jk_worker_t *jw = w->worker;
             ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
 
@@ -390,7 +395,12 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
             w->s->h.sequence = w->sequence;
         }
     }
-    p->s->h.sequence = p->sequence;
+    /* Increment the shared memory sequence number.
+     * Our number can be behind the actual value in
+     * shared memory.
+     */
+    ++p->s->h.sequence;
+    p->sequence = p->s->h.sequence;
     if (locked == JK_FALSE)
         jk_shm_unlock();
 
@@ -1602,7 +1612,6 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                                   &num_of_workers) && num_of_workers) {
             unsigned int i = 0;
             unsigned int j = 0;
-            p->max_packet_size = DEF_BUFFER_SZ;
             p->lb_workers = jk_pool_alloc(&p->p,
                                           num_of_workers *
                                           sizeof(lb_sub_worker_t));
@@ -1612,25 +1621,39 @@ static int JK_METHOD validate(jk_worker_t *pThis,
             }
             memset(p->lb_workers, 0, num_of_workers * sizeof(lb_sub_worker_t));
             for (i = 0; i < num_of_workers; i++) {
-                p->lb_workers[i].s = jk_shm_alloc_lb_sub_worker(&p->p);
+                p->lb_workers[i].s = jk_shm_alloc_lb_sub_worker(&p->p, p->s->h.id, worker_names[i]);
                 if (p->lb_workers[i].s == NULL) {
                     jk_log(l, JK_LOG_ERROR,
                            "allocating lb sub worker record from shared memory");
                     JK_TRACE_EXIT(l);
                     return JK_FALSE;
                 }
+                p->lb_workers[i].i = i;
+                strncpy(p->lb_workers[i].name, worker_names[i], JK_SHM_STR_SIZ);
             }
 
             for (i = 0; i < num_of_workers; i++) {
                 const char *s;
                 unsigned int ms;
 
-                p->lb_workers[i].i = i;
-                strncpy(p->lb_workers[i].name, worker_names[i],
-                        JK_SHM_STR_SIZ);
-                strncpy(p->lb_workers[i].s->h.name, worker_names[i],
-                        JK_SHM_STR_SIZ);
-                p->lb_workers[i].sequence = 0;
+                if (p->lb_workers[i].s->h.sequence != 0) {
+                    /* Somebody already setup this worker.
+                     * Just pull the data.
+                     */
+                    if (JK_IS_DEBUG_LEVEL(l)) {
+                        jk_log(l, JK_LOG_DEBUG,
+                               "Balanced worker %s already configured (sequence=%d)",
+                               p->lb_workers[i].name, p->lb_workers[i].s->h.sequence);
+                    }           
+                    if (!wc_create_worker(p->lb_workers[i].name, 0,
+                                          props,
+                                          &(p->lb_workers[i].worker),
+                                          we, l) || !p->lb_workers[i].worker) {
+                        break;
+                    }
+                    jk_lb_pull_worker(p, i, l);
+                    continue;
+                }
                 p->lb_workers[i].lb_factor =
                     jk_get_lb_factor(props, worker_names[i]);
                 if (p->lb_workers[i].lb_factor < 1) {
@@ -1783,10 +1806,17 @@ static int JK_METHOD init(jk_worker_t *pThis,
         JK_TRACE_EXIT(log);
         return JK_FALSE;
     }
-
-    p->sequence++;
-    jk_lb_push(p, JK_TRUE, log);
-
+    if (p->s->h.sequence == 0) {
+        /* Set configuration data to shared memory
+         */
+        jk_lb_push(p, JK_TRUE, log);
+    }
+    else {
+        /* Shared memory for this worker is already configured.
+         * Update with runtime data
+         */
+        jk_lb_pull(p, JK_TRUE, log);
+    }
     JK_TRACE_EXIT(log);
     return JK_TRUE;
 }
@@ -1857,14 +1887,13 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
                         private_data->buf,
                         sizeof(jk_pool_atom_t) * TINY_POOL_SIZE);
 
-        private_data->s = jk_shm_alloc_lb_worker(&private_data->p);
+        private_data->s = jk_shm_alloc_lb_worker(&private_data->p, name);
         if (!private_data->s) {
             free(private_data);
             JK_TRACE_EXIT(l);
             return 0;
         }
         strncpy(private_data->name, name, JK_SHM_STR_SIZ);
-        strncpy(private_data->s->h.name, name, JK_SHM_STR_SIZ);
         private_data->lb_workers = NULL;
         private_data->num_of_workers = 0;
         private_data->worker.worker_private = private_data;
@@ -1876,6 +1905,7 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
         private_data->recover_wait_time = WAIT_BEFORE_RECOVER;
         private_data->error_escalation_time = private_data->recover_wait_time / 2;
         private_data->max_reply_timeouts = 0;
+        private_data->max_packet_size = DEF_BUFFER_SZ;
         private_data->sequence = 0;
         private_data->next_offset = 0;
         *w = &private_data->worker;
