@@ -394,7 +394,7 @@ static void extract_activation(jk_pool_t *p,
 #else
     for (worker = strtok(worker, ", "); worker; worker = strtok(NULL, ", ")) {
 #endif
-        for (i=0; i<lb->num_of_workers; i++) {
+        for (i = 0; i < lb->num_of_workers; i++) {
             if (!strcmp(worker, lb->lb_workers[i].name)) {
                 if (activations[i] != JK_LB_ACTIVATION_UNSET)
                     jk_log(l, JK_LOG_WARNING,
@@ -432,7 +432,7 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
 
     JK_TRACE_ENTER(l);
 
-    for (i=0; i<strlen(extensions->fail_on_status_str); i++) {
+    for (i = 0; i < (unsigned int)strlen(extensions->fail_on_status_str); i++) {
         if (extensions->fail_on_status_str[i] == ',' ||
             extensions->fail_on_status_str[i] == ' ')
             cnt++;
