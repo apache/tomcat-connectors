@@ -375,7 +375,7 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
 
     for (i = 0; i < p->num_of_workers; i++) {
         lb_sub_worker_t *w = &p->lb_workers[i];
-        if (w->sequence > w->s->h.sequence) {
+        if (w->sequence != w->s->h.sequence) {
             jk_worker_t *jw = w->worker;
             ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
 
@@ -392,14 +392,15 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
             w->s->activation = w->activation;
             w->s->lb_factor = w->lb_factor;
             w->s->lb_mult = w->lb_mult;
-            w->s->h.sequence = w->sequence;
+            w->s->h.sequence++;
+            w->sequence = w->s->h.sequence;
         }
     }
     /* Increment the shared memory sequence number.
      * Our number can be behind the actual value in
      * shared memory.
      */
-    ++p->s->h.sequence;
+    p->s->h.sequence++;
     p->sequence = p->s->h.sequence;
     if (locked == JK_FALSE)
         jk_shm_unlock();
