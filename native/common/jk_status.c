@@ -3188,7 +3188,7 @@ static void commit_worker(jk_ws_service_t *s,
         }
     }
     if (sync_needed == JK_TRUE) {
-        lb->sequence++;
+        lb->sequence = 0;
         jk_lb_push(lb, JK_TRUE, l);
     }
 }
@@ -3647,7 +3647,7 @@ static void commit_all_members(jk_ws_service_t *s,
                 }
             }
             if (sync_needed == JK_TRUE) {
-                wr->sequence++;
+                wr->sequence = 0;
                 if (!rc)
                     rc = 3;
             }
@@ -3658,7 +3658,7 @@ static void commit_all_members(jk_ws_service_t *s,
             /* Recalculate the load multiplicators wrt. lb_factor */
             update_mult(lb, l);
         if (rc) {
-            lb->sequence++;
+            lb->sequence = 0;
             jk_lb_push(lb, JK_TRUE, l);
         }
     }
@@ -4162,8 +4162,8 @@ static int update_worker(jk_ws_service_t *s,
                     aw->addr_sequence++;
                 }
                 if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
-                    wr->sequence++;
-                    lb->sequence++;
+                    wr->sequence = 0;
+                    lb->sequence = 0;
                     jk_lb_push(lb, JK_TRUE, l);
                 }
                 if (rv & JK_STATUS_NEEDS_RESET_LB_VALUES)
@@ -4212,7 +4212,7 @@ static int update_worker(jk_ws_service_t *s,
                 aw->addr_sequence++;
             }
             if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
-                aw->sequence++;
+                aw->sequence = 0;
                 jk_ajp_push(aw, JK_TRUE, l);
             }
             if (rc == JK_FALSE) {

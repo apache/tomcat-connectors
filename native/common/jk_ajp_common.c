@@ -2704,7 +2704,7 @@ int ajp_validate(jk_worker_t *pThis,
                                p->name);
                 }
             }
-            p->s->addr_sequence = 1;
+            p->s->addr_sequence = 0;
             p->s->last_maintain_time = time(NULL);
             p->s->last_reset = p->s->last_maintain_time;
             jk_ajp_push(p, JK_TRUE, l);
