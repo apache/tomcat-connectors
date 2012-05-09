@@ -89,6 +89,8 @@ clean:
 
 maintainer-clean: clean
 
+distclean: clean
+
 #
 # Compile part.
 #

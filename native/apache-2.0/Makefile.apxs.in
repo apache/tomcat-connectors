@@ -39,3 +39,5 @@ clean:
 	rm -rf .libs
 
 maintainer-clean: clean
+
+distclean: clean
