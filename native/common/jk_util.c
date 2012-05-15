@@ -2048,66 +2048,14 @@ void jk_append_libpath(jk_pool_t *p, const char *libpath)
 
 void jk_init_ws_service(jk_ws_service_t *s)
 {
-    s->ws_private = NULL;
-    s->pool = NULL;
-    s->method = NULL;
-    s->protocol = NULL;
-    s->req_uri = NULL;
-    s->remote_addr = NULL;
-    s->remote_port = NULL;
-    s->remote_host = NULL;
-    s->remote_user = NULL;
-    s->auth_type = NULL;
-    s->query_string = NULL;
-    s->server_name = NULL;
-    s->server_port = 80;
-    s->server_software = NULL;
-    s->content_length = 0;
-    s->is_chunked = 0;
-    s->no_more_chunks = 0;
-    s->content_read = 0;
-    s->is_ssl = JK_FALSE;
-    s->ssl_cert = NULL;
-    s->ssl_cert_len = 0;
-    s->ssl_cipher = NULL;
-    s->ssl_session = NULL;
+    memset(s, 0, sizeof(jk_ws_service_t));
+
+    s->server_port  = 80;
     s->ssl_key_size = -1;
-    s->headers_names = NULL;
-    s->headers_values = NULL;
-    s->num_headers = 0;
-    s->attributes_names = NULL;
-    s->attributes_values = NULL;
-    s->num_attributes = 0;
-    s->route = NULL;
-    s->activation = JK_LB_ACTIVATION_TEXT_ACTIVE;
-    s->secret = NULL;
-    s->reco_buf = NULL;
-    s->reco_status = RECO_NONE;
-    s->flush_packets = JK_FALSE;
-    s->flush_header = JK_FALSE;
-    s->extension.reply_timeout = -1;
-    s->extension.sticky_ignore = JK_FALSE;
-    s->extension.stateless = JK_FALSE;
-    s->extension.use_server_error_pages = 0;
-    s->extension.activation = NULL;
-    s->extension.fail_on_status_size = 0;
-    s->extension.fail_on_status = NULL;
-    s->extension.session_cookie = NULL;
-    s->extension.session_path = NULL;
-    s->response_started = JK_FALSE;
-    s->response_blocked = JK_FALSE;
-    s->http_response_status = JK_HTTP_OK;
-    s->uw_map = NULL;
-    s->start_response = NULL;
-    s->read = NULL;
-    s->write = NULL;
-    s->flush = NULL;
-    s->done = NULL;
-    s->disable_reuse = JK_FALSE;
-    s->add_log_items = NULL;
-    s->next_vhost = NULL;
-    s->vhost_to_text = NULL;
-    s->vhost_to_uw_map = NULL;
+    s->activation   = JK_LB_ACTIVATION_TEXT_ACTIVE;
+    s->reco_status  = RECO_NONE;
+    s->extension.reply_timeout  = -1;
+    s->http_response_status     = JK_HTTP_OK;
 }
 
 /* Match = 0, NoMatch = 1, Abort = -1
