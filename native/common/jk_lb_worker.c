@@ -538,8 +538,6 @@ static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
                "Detected empty session identifier.");
         return NULL;
     }
-    if (JK_IS_DEBUG_LEVEL(l))
-        jk_log(l, JK_LOG_DEBUG, "Detected session identifier [%s].", val);
     return val;
 }
 
