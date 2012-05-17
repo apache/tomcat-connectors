@@ -983,7 +983,7 @@ More complex patterns in JkUnMount worker names are not allowed.
 the Apache document space. It enables Apache to serve a static context while Tomcat
 serving dynamic context. This directive is used for convenience so that you don't
 have to put an apache Alias directive for each application directory inside Tomcat's
-webapp directory. For security reasons is is strongly recommended that JkMount
+webapp directory. For security reasons it is strongly recommended that JkMount
 is used to pass all requests to Tomcat by default and JkUnMount is used to
 explicitly exclude static content to be served by httpd. It should also be noted
 that content served by httpd will bypass any security constraints defined in the

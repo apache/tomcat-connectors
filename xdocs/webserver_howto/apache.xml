@@ -215,7 +215,7 @@ mod_jk requires two entities:
 
 <ul>
 <li>
-<b>mod_jk.xxx</b> - The Apache HTTP Server module, depending on your operating system, it will be mod_jk.so, mod_jk.nlm or
+<b>mod_jk.xxx</b> - The Apache HTTP Server module, depending on your operating system, it will be mod_jk.so, mod_jk.nlm
 or MOD_JK.SRVPGM (see the build section).
 </li>
 <li>
@@ -763,7 +763,7 @@ of passing the request to Tomcat.
 </p>
 
 <p>
-Caution: For security reasons is is strongly recommended that JkMount is used to
+Caution: For security reasons it is strongly recommended that JkMount is used to
 pass all requests to Tomcat by default and JkUnMount is used to explicitly
 exclude static content to be served by httpd. It should also be noted that
 content served by httpd will bypass any security constraints defined in the
