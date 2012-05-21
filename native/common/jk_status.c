@@ -4162,8 +4162,8 @@ static int update_worker(jk_ws_service_t *s,
                     aw->addr_sequence++;
                 }
                 if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
-                    wr->sequence = 0;
-                    lb->sequence = 0;
+                    wr->sequence = -1;
+                    lb->sequence = -1;
                     jk_lb_push(lb, JK_TRUE, l);
                 }
                 if (rv & JK_STATUS_NEEDS_RESET_LB_VALUES)
