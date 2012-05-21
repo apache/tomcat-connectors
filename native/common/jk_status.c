@@ -3188,7 +3188,7 @@ static void commit_worker(jk_ws_service_t *s,
         }
     }
     if (sync_needed == JK_TRUE) {
-        lb->sequence = 0;
+        lb->sequence = -1;
         jk_lb_push(lb, JK_TRUE, l);
     }
 }
@@ -3658,7 +3658,7 @@ static void commit_all_members(jk_ws_service_t *s,
             /* Recalculate the load multiplicators wrt. lb_factor */
             update_mult(lb, l);
         if (rc) {
-            lb->sequence = 0;
+            lb->sequence = -1;
             jk_lb_push(lb, JK_TRUE, l);
         }
     }
