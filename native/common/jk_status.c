@@ -4159,7 +4159,7 @@ static int update_worker(jk_ws_service_t *s,
                 rv = 0;
                 rc = commit_member(s, p, lb, wr, aw, &rv, l);
                 if (rv & JK_STATUS_NEEDS_ADDR_PUSH) {
-                    aw->addr_sequence++;
+                    aw->addr_sequence = -1;
                 }
                 if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
                     wr->sequence = -1;
@@ -4209,10 +4209,10 @@ static int update_worker(jk_ws_service_t *s,
             rv = 0;
             rc = commit_member(s, p, NULL, NULL, aw, &rv, l);
             if (rv & JK_STATUS_NEEDS_ADDR_PUSH) {
-                aw->addr_sequence++;
+                aw->addr_sequence = -1;
             }
             if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
-                aw->sequence = 0;
+                aw->sequence = -1;
                 jk_ajp_push(aw, JK_TRUE, l);
             }
             if (rc == JK_FALSE) {

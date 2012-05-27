@@ -1130,10 +1130,11 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
      ++aw->s->h.sequence;
     aw->sequence = aw->s->h.sequence;
     if (aw->s->addr_sequence != aw->addr_sequence) {
+        ++aw->s->addr_sequence;
         address_change = JK_TRUE;
         strncpy(aw->s->host, aw->host, JK_SHM_STR_SIZ);
         aw->s->port = aw->port;
-        aw->s->addr_sequence = aw->addr_sequence;
+        aw->addr_sequence = aw->s->h.sequence;
     }
     if (locked == JK_FALSE)
         jk_shm_unlock();
@@ -2682,16 +2683,13 @@ int ajp_validate(jk_worker_t *pThis,
             host = "undefined";
         }
         strncpy(p->host, jk_get_worker_host(props, p->name, host), JK_SHM_STR_SIZ);
-
-        if (JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG,
-                   "worker %s contact is '%s:%d'",
-                   p->name, p->host, p->port);
-        /* Copy the contact to shm
-         */
         if (p->s->h.sequence == 0) {
             /* Initial setup.
              */
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
+                       "worker %s contact is '%s:%d'",
+                       p->name, p->host, p->port);
             if (p->port > 0) {
                 if (!jk_resolve(p->host, p->port, &p->worker_inet_addr, we->pool, l)) {
                     jk_log(l, JK_LOG_ERROR,
@@ -2704,9 +2702,12 @@ int ajp_validate(jk_worker_t *pThis,
                                p->name);
                 }
             }
+            p->addr_sequence    = 0;
             p->s->addr_sequence = 0;
             p->s->last_maintain_time = time(NULL);
             p->s->last_reset = p->s->last_maintain_time;
+            p->s->port = p->port;
+            strncpy(p->s->host, p->host, JK_SHM_STR_SIZ);
             jk_ajp_push(p, JK_TRUE, l);
         }
         else {
@@ -2714,8 +2715,10 @@ int ajp_validate(jk_worker_t *pThis,
              */
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "worker %s contact already configured (%u->%u",
-                        p->name, p->s->addr_sequence, p->addr_sequence);
+                       "worker %s contact '%s:%d' already configured (%u->%u)",
+                        p->name, p->host, p->port, p->s->addr_sequence, p->addr_sequence);
+            /* Force resolve */
+            p->addr_sequence = -1;
             jk_ajp_pull(p, JK_TRUE, l);
         }
         JK_TRACE_EXIT(l);
