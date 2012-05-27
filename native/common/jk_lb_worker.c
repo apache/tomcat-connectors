@@ -1601,6 +1601,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
         unsigned int num_of_workers;
         const char *secret;
 
+        p->worker.we = we;
         p->sticky_session = jk_get_is_sticky_session(props, p->name);
         p->sticky_session_force = jk_get_is_sticky_session_force(props, p->name);
         secret = jk_get_worker_secret(props, p->name);
