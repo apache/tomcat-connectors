@@ -1043,7 +1043,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "syncing mem for ajp worker '%s' from shm (%u -> %u) [%u->%u]",
+               "syncing mem for ajp worker '%s' from shm (%d->%d) [%d->%d]",
                aw->name, aw->sequence, aw->s->h.sequence, aw->addr_sequence, aw->s->addr_sequence);
     if (locked == JK_FALSE)
         jk_shm_lock();
@@ -1111,7 +1111,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "syncing shm for ajp worker '%s' from mem (%u -> %u) [%u->%u]",
+               "syncing shm for ajp worker '%s' from mem (%d->%d) [%d->%d]",
                aw->name, aw->s->h.sequence, aw->sequence, aw->s->addr_sequence, aw->addr_sequence);
     if (locked == JK_FALSE)
         jk_shm_lock();
@@ -2678,6 +2678,7 @@ int ajp_validate(jk_worker_t *pThis,
 
     if (pThis && pThis->worker_private) {
         ajp_worker_t *p = pThis->worker_private;
+        p->worker.we = we;
         p->port = jk_get_worker_port(props, p->name, port);
         if (!host) {
             host = "undefined";
@@ -2715,8 +2716,8 @@ int ajp_validate(jk_worker_t *pThis,
              */
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "worker %s contact '%s:%d' already configured (%u->%u)",
-                        p->name, p->host, p->port, p->s->addr_sequence, p->addr_sequence);
+                       "worker %s contact '%s:%d' already configured type=%d (%d) [%d]",
+                        p->name, p->host, p->port, p->s->h.type, p->s->h.sequence, p->s->addr_sequence);
             /* Force resolve */
             p->addr_sequence = -1;
             jk_ajp_pull(p, JK_TRUE, l);
@@ -3018,7 +3019,10 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG,
+               "ajp worker '%s' type=%d created",
+               aw->name, aw->s->h.type);
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
