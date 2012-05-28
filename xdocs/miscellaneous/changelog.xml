@@ -40,6 +40,21 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.36 and 1.2.35">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        Fix regression which can crash webserver in case worker is
+        defined both as member of load balancer and as standlaone worker. (mturk)
+      </fix>
+      <fix>
+        Fix core if debug log level is specifed and there is no
+        session identifier present. (mturk)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
 <section name="Changes between 1.2.35 and 1.2.36">
   <br />
   <subsection name="Native">
