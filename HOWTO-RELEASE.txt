@@ -35,9 +35,23 @@ had to be updated:
 
 native/iis/README
 native/netscape/README
-native/STATUS.txt
 xdocs/index.xml
 xdocs/news/<THISYEAR0101>.xml
+tools/dist/README.html
+tools/dist/binaries/windows/README.html
+
+Check version numbers in the files that are listed in the section
+"Update source for next version" below:
+
+native/STATUS.txt
+native/configure.in
+native/common/jk_version.h
+native/iis/installer/isapi-redirector-win32-msi.ism
+xdocs/miscellaneous/changelog.xml
+
+In native/STATUS.txt the current version stays labeled as "in development"
+during release. It is updated with release date after release process is
+completed.
 
 Update the JK_VERISRELEASE define in native/common/jk_version.h, here is
 a svn diff that shows what I changed:
@@ -139,11 +153,11 @@ Make sure the group write bit is on for all files you upload.
 Update source for next version
 ------------------------------
 
-native/STATUS.txt: Add status "in development" for new version.
+native/STATUS.txt: Add release date for released version and
+                   status "in development" for new version.
 native/configure.in: Update variable VERSION.
 native/common/jk_version.h: Update variables JK_VERMAJOR, JK_VERMINOR, JK_VERFIX,
                             JK_VERSTRING, and JK_VERISRELEASE.
-native/common/portable.h.sample: Update VERSION define.
 native/iis/installer/isapi-redirector-win32-msi.ism: Update ProductVersion.
 xdocs/miscellaneous/changelog.xml: Start a new section for the new version.
 
