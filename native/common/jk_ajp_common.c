@@ -1134,7 +1134,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
         address_change = JK_TRUE;
         strncpy(aw->s->host, aw->host, JK_SHM_STR_SIZ);
         aw->s->port = aw->port;
-        aw->addr_sequence = aw->s->h.sequence;
+        aw->addr_sequence = aw->s->addr_sequence;
     }
     if (locked == JK_FALSE)
         jk_shm_unlock();
