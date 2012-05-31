@@ -46,10 +46,10 @@
     <changelog>
       <fix>
         Fix regression which can crash webserver in case worker is
-        defined both as member of load balancer and as standlaone worker. (mturk)
+        defined both as member of load balancer and as standalone worker. (mturk)
       </fix>
       <fix>
-        Fix core if debug log level is specifed and there is no
+        Fix core if debug log level is specified and there is no
         session identifier present. (mturk)
       </fix>
     </changelog>
@@ -61,7 +61,7 @@
     <changelog>
       <fix>
         Use named shared memory objects so that we preserve runtime configured
-		data instead reseting on each child ceation. (mturk)
+        data instead of resetting on each child creation. (mturk)
       </fix>
       <fix>
         Fix dead-lock caused by not releasing mutex on close. (mturk)
