@@ -3647,7 +3647,7 @@ static void commit_all_members(jk_ws_service_t *s,
                 }
             }
             if (sync_needed == JK_TRUE) {
-                wr->sequence = 0;
+                wr->sequence = -1;
                 if (!rc)
                     rc = 3;
             }
