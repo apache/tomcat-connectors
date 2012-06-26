@@ -420,7 +420,7 @@ int main(void)
 JK_HAVE_IPV6
 JK_CHECK_SASTORAGE
 AC_CHECK_FUNC(getaddrinfo, AC_DEFINE(HAVE_GETADDRINFO,1,[Have getaddrinfo()]))
-AC_CHECK_FUNC(gethostbyname_r, AC_DEFINE(HAVE_HOSTBYNAME_R,1,[Have gethostbyname_r()]))
+AC_CHECK_FUNC(gethostbyname_r, AC_DEFINE(HAVE_GETHOSTBYNAME_R,1,[Have gethostbyname_r()]))
 
 dnl Apache-2.0 needs the os subdirectory to include os.h
 dnl this include is copy from os/config.m4
