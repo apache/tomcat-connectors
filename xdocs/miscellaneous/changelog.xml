@@ -47,6 +47,11 @@
       <fix>
         Fix status worker not updating parameters for all members. (mturk)
       </fix>
+      <add>
+        Add --disable-sock-cloexec to configure to disable use of SOCK_CLOEXEC
+        (using FD_CLOEXEC + fnctl instead) so built modules will work with
+        Linux kernels prior to 2.6.27. (timw)
+      </add>
     </changelog>
   </subsection>
 </section>

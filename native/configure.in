@@ -366,8 +366,15 @@ int main(void)
 )
 ])dnl
 
-dnl check for SOCK_CLOEXEC
-JK_CHECK_SOCKOPT(SOCK_CLOEXEC)
+AC_ARG_ENABLE(sock-cloexec,
+[AS_HELP_STRING([--disable-sock-cloexec],[Disable use of SOCK_CLOEXEC.
+This ensures the built module can be used on systems that do not support SOCK_CLOEXEC])],
+[
+],
+[
+	dnl check for SOCK_CLOEXEC
+	JK_CHECK_SOCKOPT(SOCK_CLOEXEC)
+])
 
 dnl check for poll.h header
 AC_CHECK_HEADERS(poll.h)
