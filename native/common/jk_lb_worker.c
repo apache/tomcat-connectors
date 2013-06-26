@@ -334,8 +334,6 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
     p->lbmethod = p->s->lbmethod;
     p->lblock = p->s->lblock;
     p->max_packet_size = p->s->max_packet_size;
-    strncpy(p->session_cookie, p->s->session_cookie, JK_SHM_STR_SIZ);
-    strncpy(p->session_path, p->s->session_path, JK_SHM_STR_SIZ);
 
     for (i = 0; i < p->num_of_workers; i++) {
         jk_lb_pull_worker(p, i, l);
@@ -370,8 +368,6 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
     p->s->lbmethod = p->lbmethod;
     p->s->lblock = p->lblock;
     p->s->max_packet_size = p->max_packet_size;
-    strncpy(p->s->session_cookie, p->session_cookie, JK_SHM_STR_SIZ);
-    strncpy(p->s->session_path, p->session_path, JK_SHM_STR_SIZ);
 
     for (i = 0; i < p->num_of_workers; i++) {
         lb_sub_worker_t *w = &p->lb_workers[i];
@@ -1795,8 +1791,6 @@ static int JK_METHOD init(jk_worker_t *pThis,
     strncpy(p->session_path,
             jk_get_lb_session_path(props, p->name, JK_PATH_SESSION_IDENTIFIER),
             JK_SHM_STR_SIZ);
-    strcpy(p->s->session_cookie, p->session_cookie);
-    strcpy(p->s->session_path, p->session_path);
 
     JK_INIT_CS(&(p->cs), i);
     if (i == JK_FALSE) {

@@ -182,11 +182,6 @@ struct jk_shm_lb_worker
     /* Last reset time */
     volatile time_t last_reset;
     volatile time_t last_maintain_time;
-    /* Session cookie */
-    char    session_cookie[JK_SHM_STR_SIZ+1];
-    /* Session path */
-    char    session_path[JK_SHM_STR_SIZ+1];
-
 };
 typedef struct jk_shm_lb_worker jk_shm_lb_worker_t;
 
