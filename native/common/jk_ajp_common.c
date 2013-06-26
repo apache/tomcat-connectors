@@ -74,6 +74,12 @@ static const char *ajp_state_type[] = {
     NULL
 };
 
+static char ajp_cping_mode[] = {
+    AJP_CPING_CONNECT_TEXT,
+    AJP_CPING_PREPOST_TEXT,
+    AJP_CPING_INTERVAL_TEXT,
+};
+
 #define UNKNOWN_METHOD (-1)
 
 static int sc_for_req_method(const char *method, size_t len)
@@ -343,25 +349,43 @@ int jk_ajp_get_state_code(const char *v)
     return JK_AJP_STATE_DEF;
 }
 
+void jk_ajp_get_cping_text(int mode, char *buf)
+{
+    int bit = 1;
+    int log2 = 0;
+    int pos = 0;
+    while (bit <= mode && bit <= AJP_CPING_MAX) {
+        if (mode & bit) {
+            buf[pos] = ajp_cping_mode[log2];
+            pos +=1;
+        }
+        bit *= 2;
+        log2 += 1;
+    }
+    buf[pos] = '\0';
+}
+
 int jk_ajp_get_cping_mode(const char *m, int def)
 {
-    int mv = def;
+    int mv = 0;
     if (!m)
-        return mv;
+        return def;
     while (*m != '\0') {
-        if (*m == 'C' || *m == 'c')
+        if (*m == AJP_CPING_CONNECT_TEXT || *m == tolower(AJP_CPING_CONNECT_TEXT))
             mv |= AJP_CPING_CONNECT;
-        if (*m == 'P' || *m == 'p')
+        if (*m == AJP_CPING_PREPOST_TEXT || *m == tolower(AJP_CPING_PREPOST_TEXT))
             mv |= AJP_CPING_PREPOST;
-        if (*m == 'I' || *m == 'i')
+        if (*m == AJP_CPING_INTERVAL_TEXT || *m == tolower(AJP_CPING_INTERVAL_TEXT))
             mv |= AJP_CPING_INTERVAL;
-        if (*m == 'A' || *m == 'a') {
+        if (*m == AJP_CPING_ALL_TEXT || *m == tolower(AJP_CPING_ALL_TEXT)) {
             mv = AJP_CPING_CONNECT | AJP_CPING_PREPOST | AJP_CPING_INTERVAL;
             break;
         }
         m++;
     }
-    return mv;
+    if (mv)
+        return mv;
+    return def;
 }
 
 /*

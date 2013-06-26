@@ -236,6 +236,12 @@ extern "C"
 #define AJP_CPING_CONNECT         (1)   /* Send cping on fresh connection */
 #define AJP_CPING_PREPOST         (2)   /* Send cping before sending request */
 #define AJP_CPING_INTERVAL        (4)   /* Send cping on regular intervals */
+#define AJP_CPING_MAX             (AJP_CPING_INTERVAL)
+
+#define AJP_CPING_CONNECT_TEXT    ('C')   /* Send cping on fresh connection */
+#define AJP_CPING_PREPOST_TEXT    ('P')   /* Send cping before sending request */
+#define AJP_CPING_INTERVAL_TEXT   ('I')   /* Send cping on regular intervals */
+#define AJP_CPING_ALL_TEXT        ('A')   /* Send cping on regular intervals */
 
 
 #define RECOVER_ABORT_IF_TCGETREQUEST    0x0001 /* DON'T RECOVER IF TOMCAT FAILS AFTER RECEIVING REQUEST */
@@ -456,6 +462,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
 
 int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t now, jk_logger_t *l);
 
+void jk_ajp_get_cping_text(int mode, char *buf);
 int jk_ajp_get_cping_mode(const char *m, int def);
 
 int ajp_has_endpoint(jk_worker_t *pThis, jk_logger_t *l);
