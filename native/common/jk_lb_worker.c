@@ -877,6 +877,8 @@ static int find_bysession_route(jk_ws_service_t *s,
     if (candidate < 0) {
         uses_domain = 1;
         candidate = find_best_bydomain(s, p, session_route, states, l);
+    } else {
+        s->sticky = JK_TRUE;
     }
     if (candidate >= 0) {
         lb_sub_worker_t wr = p->lb_workers[candidate];
@@ -939,8 +941,10 @@ static int find_failover_worker(jk_ws_service_t *s,
             break;
         }
     }
-    if (redirect)
+    if (redirect) {
         rc = find_bysession_route(s, p, redirect, states, l);
+        s->sticky = JK_FALSE;
+    }
     return rc;
 }
 
@@ -967,6 +971,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
     int rc = -1;
 
     JK_TRACE_ENTER(l);
+    s->sticky = JK_FALSE;
     if (p->num_of_workers == 1) {
         /* No need to find the best worker
          * if there is a single one
@@ -978,6 +983,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
             activation = p->lb_workers[0].activation;
         if (JK_WORKER_USABLE_STICKY(states[0], activation)) {
             if (activation != JK_LB_ACTIVATION_DISABLED) {
+                s->sticky = JK_TRUE;
                 JK_TRACE_EXIT(l);
                 return 0;
             }
@@ -1240,8 +1246,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
 
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "service worker=%s route=%s",
-                       rec->name, s->route);
+                       "service worker=%s route=%s failover=%s",
+                       rec->name, s->route, s->sticky ? "false" : "true");
 
             if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                 jk_shm_lock();

@@ -224,6 +224,12 @@ struct jk_ws_service
     unsigned num_attributes;        /* Number of request attributes     */
 
     /*
+     * JK_TRUE iff handled by a load balancer, the request
+     * contained a route and it is the route of the current worker.
+     */
+    int sticky;
+
+    /*
      * The route is in use when the adapter load balance among
      * several workers. It is the ID of a specific target in the load balance
      * group. We are using this variable to implement target session
