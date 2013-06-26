@@ -208,7 +208,6 @@ struct jk_ws_service
     char **headers_values;  /* Values of the request headers */
     unsigned num_headers;   /* Number of request headers     */
 
-
     /*
      * Request attributes.
      *
@@ -222,6 +221,16 @@ struct jk_ws_service
     char **attributes_names;        /* Names of the request attributes  */
     char **attributes_values;       /* Values of the request attributes */
     unsigned num_attributes;        /* Number of request attributes     */
+
+    /*
+     * Response headers, names and values.
+     * These are additional headers that we want to add to
+     * the headers send to us from tomcat.
+     * Example: a stickyness cookie header
+     */
+    char **resp_headers_names;   /* Names of the response headers  */
+    char **resp_headers_values;  /* Values of the response headers */
+    unsigned num_resp_headers;   /* Number of response headers     */
 
     /*
      * JK_TRUE iff handled by a load balancer, the request

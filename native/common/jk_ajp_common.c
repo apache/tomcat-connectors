@@ -1870,6 +1870,32 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 JK_TRACE_EXIT(l);
                 return JK_AJP13_ERROR;
             }
+            if (r->num_resp_headers > 0) {
+                char **old_names = res.header_names;
+                char **old_values = res.header_values;
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG, "Adding %d response headers to %d headers received from tomcat", r->num_resp_headers, res.num_headers);
+                res.header_names  = jk_pool_alloc(r->pool,
+                                                  (r->num_resp_headers + res.num_headers) * sizeof(char *));
+                res.header_values = jk_pool_alloc(r->pool,
+                                                  (r->num_resp_headers + res.num_headers) * sizeof(char *));
+                if (!res.header_names || !res.header_values) {
+                    jk_log(l, JK_LOG_ERROR,
+                        "Failed allocating one %d response headers.", r->num_resp_headers + res.num_headers);
+                    res.header_names = old_names;
+                    res.header_values = old_values;
+                } else {
+                    if (res.num_headers) {
+                        memcpy(res.header_names, old_names, res.num_headers * sizeof(char *));
+                        memcpy(res.header_values, old_values, res.num_headers * sizeof(char *));
+                    }
+                    if (r->num_resp_headers) {
+                        memcpy(res.header_names + res.num_headers, r->resp_headers_names, r->num_resp_headers * sizeof(char *));
+                        memcpy(res.header_values + res.num_headers, r->resp_headers_values, r->num_resp_headers * sizeof(char *));
+                    }
+                    res.num_headers = res.num_headers + r->num_resp_headers;
+                }
+            }
             r->http_response_status = res.status;
             if (r->extension.fail_on_status_size > 0)
                 rc = is_http_status_fail(r->extension.fail_on_status_size,

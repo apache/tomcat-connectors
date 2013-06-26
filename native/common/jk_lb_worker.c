@@ -1307,6 +1307,41 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                     jk_shm_unlock();
 
+                if (!s->sticky && (s->extension.set_session_cookie || p->worker->set_session_cookie)) {
+                    char **old_names = s->resp_headers_names;
+                    char **old_values = s->resp_headers_values;
+                    s->resp_headers_names  = jk_pool_alloc(s->pool,
+                                                      (s->num_resp_headers + 1) * sizeof(char *));
+                    s->resp_headers_values = jk_pool_alloc(s->pool,
+                                                      (s->num_resp_headers + 1) * sizeof(char *));
+                    if (!s->resp_headers_names || !s->resp_headers_values) {
+                        jk_log(l, JK_LOG_ERROR,
+                            "Failed allocating %d new response headers.", s->num_resp_headers + 1);
+                        s->resp_headers_names = old_names;
+                        s->resp_headers_values = old_values;
+                    } else if (s->num_resp_headers) {
+                        memcpy(s->resp_headers_names, old_names, s->num_resp_headers * sizeof(char *));
+                        memcpy(s->resp_headers_values, old_values, s->num_resp_headers * sizeof(char *));
+                    }
+                    s->resp_headers_names[s->num_resp_headers] = "Set-Cookie";
+                    s->resp_headers_values[s->num_resp_headers] = jk_pool_strcatv(s->pool, p->worker->session_cookie,
+                                                                                  "=.", rec->route,
+                                                                                  NULL);
+                    if (p->worker->session_cookie_path && *p->worker->session_cookie_path) {
+                        s->resp_headers_values[s->num_resp_headers] = jk_pool_strcatv(s->pool, s->resp_headers_values[s->num_resp_headers],
+                                                                                      ";PATH=", p->worker->session_cookie_path,
+                                                                                      NULL);
+                    }
+                    s->resp_headers_values[s->num_resp_headers] = jk_pool_strcatv(s->pool, s->resp_headers_values[s->num_resp_headers],
+                                                                                  ";HttpOnly",
+                                                                                  (s->is_ssl ? ";Secure" : ""),
+                                                                                  NULL);
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG, "Added cookie header '%s' with value '%s' ",
+                               s->resp_headers_names[s->num_resp_headers],
+                               s->resp_headers_values[s->num_resp_headers]);
+                    s->num_resp_headers++;
+                }
                 service_stat = end->service(end, s, l, &is_service_error);
                 rd = end->rd;
                 wr = end->wr;
