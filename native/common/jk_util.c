@@ -125,11 +125,21 @@
 
 #define HUGE_BUFFER_SIZE 8192
 
-#define MAKE_WORKER_PARAM(P)     \
-        strcpy(buf, "worker.");  \
-        strcat(buf, wname);      \
-        strcat(buf, ".");        \
-        strcat(buf, P)
+/*
+ * Our longest worker attribute name is about 30 bytes,
+ * so 100 bytes for "worker." plus worker name plus "."
+ * plus attribute names leaves at least 60 bytes for
+ * the worker names. That should be enough.
+ */
+#define PARAM_BUFFER_SIZE 100
+#define MAKE_WORKER_PARAM(P) \
+        { \
+            size_t remain = PARAM_BUFFER_SIZE; \
+            strcpy(buf, "worker."); remain -= strlen("worker."); \
+            strncat(buf, wname, remain); remain -= strlen(wname); \
+            strncat(buf, ".", remain); remain -= 1; \
+            strncat(buf, P, remain); \
+        }
 
 /*
  * define the log format, we're using by default the one from error.log
@@ -351,13 +361,13 @@ int jk_get_bool_code(const char *v, int def)
              *v == 'F' || *v == 'f' ||
              *v == 'N' || *v == 'n' ||
             (*v == '0' && *(v + 1) == '\0')) {
-        return 0;
+        return JK_FALSE;
     }
     if (!strcasecmp(v, "on") ||
              *v == 'T' || *v == 't' ||
              *v == 'Y' || *v == 'y' ||
             (*v == '1' && *(v + 1) == '\0')) {
-        return 1;
+        return JK_TRUE;
     }
     return def;
 }
@@ -783,7 +793,7 @@ int jk_log(jk_logger_t *l,
 
 const char *jk_get_worker_type(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return NULL;
@@ -794,13 +804,13 @@ const char *jk_get_worker_type(jk_map_t *m, const char *wname)
 
 const char *jk_get_worker_route(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     const char *v;
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
     MAKE_WORKER_PARAM(ROUTE_OF_WORKER);
-    v = jk_map_get_string(m, buf, NULL);
+    v = jk_map_get_string(m, buf, def);
     if (v) {
         return v;
     }
@@ -811,9 +821,9 @@ const char *jk_get_worker_route(jk_map_t *m, const char *wname, const char *def)
 
 const char *jk_get_worker_domain(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
     MAKE_WORKER_PARAM(DOMAIN_OF_WORKER);
     return jk_map_get_string(m, buf, def);
@@ -821,9 +831,9 @@ const char *jk_get_worker_domain(jk_map_t *m, const char *wname, const char *def
 
 const char *jk_get_worker_redirect(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
     MAKE_WORKER_PARAM(REDIRECT_OF_WORKER);
     return jk_map_get_string(m, buf, def);
@@ -831,7 +841,7 @@ const char *jk_get_worker_redirect(jk_map_t *m, const char *wname, const char *d
 
 const char *jk_get_worker_secret(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return NULL;
@@ -849,7 +859,7 @@ const char *jk_get_worker_secret(jk_map_t *m, const char *wname)
 int jk_get_worker_str_prop(jk_map_t *m,
                            const char *wname, const char *pname, const char **prop)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && prop && wname && pname) {
         MAKE_WORKER_PARAM(pname);
@@ -864,7 +874,7 @@ int jk_get_worker_str_prop(jk_map_t *m,
 int jk_get_worker_int_prop(jk_map_t *m,
                            const char *wname, const char *pname, int *prop)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && prop && wname && pname) {
         int i;
@@ -880,7 +890,7 @@ int jk_get_worker_int_prop(jk_map_t *m,
 
 const char *jk_get_worker_host(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return NULL;
@@ -893,10 +903,10 @@ const char *jk_get_worker_host(jk_map_t *m, const char *wname, const char *def)
 
 int jk_get_worker_port(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(PORT_OF_WORKER);
@@ -923,11 +933,11 @@ void jk_set_worker_def_cache_size(int sz)
 
 int jk_get_worker_cache_size(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     int rv;
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(CACHE_OF_WORKER);
@@ -939,10 +949,10 @@ int jk_get_worker_cache_size(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_cache_size_min(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(CACHE_OF_WORKER_MIN);
@@ -951,10 +961,10 @@ int jk_get_worker_cache_size_min(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_cache_acquire_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(CACHE_ACQUIRE_OF_WORKER);
@@ -963,10 +973,10 @@ int jk_get_worker_cache_acquire_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_socket_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(SOCKET_TIMEOUT_OF_WORKER);
@@ -976,10 +986,10 @@ int jk_get_worker_socket_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_socket_connect_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(SOCKET_CONNECT_TIMEOUT_OF_WORKER);
@@ -989,10 +999,10 @@ int jk_get_worker_socket_connect_timeout(jk_map_t *m, const char *wname, int def
 
 int jk_get_worker_recover_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(WORKER_RECOVER_TIME);
@@ -1002,10 +1012,10 @@ int jk_get_worker_recover_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_error_escalation_time(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(WORKER_ERROR_ESCALATION_TIME);
@@ -1015,10 +1025,10 @@ int jk_get_worker_error_escalation_time(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_max_reply_timeouts(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(MAX_REPLY_TIMEOUTS_OF_WORKER);
@@ -1028,10 +1038,10 @@ int jk_get_worker_max_reply_timeouts(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_retry_interval(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(RETRY_INTERVAL_OF_WORKER);
@@ -1041,10 +1051,10 @@ int jk_get_worker_retry_interval(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_socket_buffer(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     int i;
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(SOCKET_BUFFER_OF_WORKER);
@@ -1057,10 +1067,9 @@ int jk_get_worker_socket_buffer(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_socket_keepalive(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
-
+    char buf[PARAM_BUFFER_SIZE];
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(SOCKET_KEEPALIVE_OF_WORKER);
@@ -1070,10 +1079,10 @@ int jk_get_worker_socket_keepalive(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_conn_ping_interval(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(CONN_PING_INTERVAL_OF_WORKER);
@@ -1083,11 +1092,11 @@ int jk_get_worker_conn_ping_interval(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_cache_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     int rv;
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(CACHE_TIMEOUT_OF_WORKER);
@@ -1100,10 +1109,10 @@ int jk_get_worker_cache_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_connect_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(CONNECT_TIMEOUT_OF_WORKER);
@@ -1113,10 +1122,10 @@ int jk_get_worker_connect_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_prepost_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(PREPOST_TIMEOUT_OF_WORKER);
@@ -1126,10 +1135,10 @@ int jk_get_worker_prepost_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_ping_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(PING_TIMEOUT_OF_WORKER);
@@ -1139,7 +1148,8 @@ int jk_get_worker_ping_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_ping_mode(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
+    char mode[100];
     const char *v;
 
     if (!m || !wname) {
@@ -1148,16 +1158,17 @@ int jk_get_worker_ping_mode(jk_map_t *m, const char *wname, int def)
 
     MAKE_WORKER_PARAM(PING_MODE_OF_WORKER);
 
-    v = jk_map_get_string(m, buf, NULL);
+    jk_ajp_get_cping_text(def, mode);
+    v = jk_map_get_string(m, buf, mode);
     return jk_ajp_get_cping_mode(v, def);
 }
 
 int jk_get_worker_reply_timeout(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(REPLY_TIMEOUT_OF_WORKER);
@@ -1172,10 +1183,10 @@ int jk_get_worker_recycle_timeout(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_retries(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     int rv;
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(RETRIES_OF_WORKER);
@@ -1189,10 +1200,10 @@ int jk_get_worker_retries(jk_map_t *m, const char *wname, int def)
 
 int jk_get_worker_recovery_opts(jk_map_t *m, const char *wname, int def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return -1;
+        return def;
     }
 
     MAKE_WORKER_PARAM(RECOVERY_OPTS_OF_WORKER);
@@ -1202,7 +1213,7 @@ int jk_get_worker_recovery_opts(jk_map_t *m, const char *wname, int def)
 
 const char *jk_get_worker_secret_key(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return NULL;
@@ -1232,37 +1243,31 @@ int jk_get_worker_list(jk_map_t *m, char ***list, unsigned *num_of_workers)
 
 int jk_get_is_worker_disabled(jk_map_t *m, const char *wname)
 {
-    int rc = JK_TRUE;
-    char buf[1024];
+    int def = JK_FALSE;
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && wname) {
-        int value;
         MAKE_WORKER_PARAM(IS_WORKER_DISABLED_DEPRECATED);
-        value = jk_map_get_bool(m, buf, 0);
-        if (!value)
-            rc = JK_FALSE;
+        return jk_map_get_bool(m, buf, def);
     }
-    return rc;
+    return JK_TRUE;
 }
 
 int jk_get_is_worker_stopped(jk_map_t *m, const char *wname)
 {
-    int rc = JK_TRUE;
-    char buf[1024];
+    int def = JK_FALSE;
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && wname) {
-        int value;
         MAKE_WORKER_PARAM(IS_WORKER_STOPPED_DEPRECATED);
-        value = jk_map_get_bool(m, buf, 0);
-        if (!value)
-            rc = JK_FALSE;
+        return jk_map_get_bool(m, buf, def);
     }
-    return rc;
+    return JK_TRUE;
 }
 
 int jk_get_worker_activation(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     const char *v;
 
     if (!m || !wname) {
@@ -1282,7 +1287,7 @@ int jk_get_worker_activation(jk_map_t *m, const char *wname)
 
 int jk_get_lb_factor(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return DEFAULT_LB_FACTOR;
@@ -1295,7 +1300,7 @@ int jk_get_lb_factor(jk_map_t *m, const char *wname)
 
 int jk_get_distance(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return DEFAULT_DISTANCE;
@@ -1308,37 +1313,31 @@ int jk_get_distance(jk_map_t *m, const char *wname)
 
 int jk_get_is_sticky_session(jk_map_t *m, const char *wname)
 {
-    int rc = JK_TRUE;
-    char buf[1024];
+    int def = JK_TRUE;
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && wname) {
-        int value;
         MAKE_WORKER_PARAM(STICKY_SESSION);
-        value = jk_map_get_bool(m, buf, 1);
-        if (!value)
-            rc = JK_FALSE;
+        return jk_map_get_bool(m, buf, def);
     }
-    return rc;
+    return def;
 }
 
 int jk_get_is_sticky_session_force(jk_map_t *m, const char *wname)
 {
-    int rc = JK_FALSE;
-    char buf[1024];
+    int def = JK_FALSE;
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && wname) {
-        int value;
         MAKE_WORKER_PARAM(STICKY_SESSION_FORCE);
-        value = jk_map_get_bool(m, buf, 0);
-        if (value)
-            rc = JK_TRUE;
+        return jk_map_get_bool(m, buf, def);
     }
-    return rc;
+    return def;
 }
 
 int jk_get_lb_method(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     const char *v;
 
     if (!m || !wname) {
@@ -1346,13 +1345,13 @@ int jk_get_lb_method(jk_map_t *m, const char *wname)
     }
 
     MAKE_WORKER_PARAM(METHOD_OF_WORKER);
-    v = jk_map_get_string(m, buf, NULL);
+    v = jk_map_get_string(m, buf, JK_LB_METHOD_DEF);
     return jk_lb_get_method_code(v);
 }
 
 int jk_get_lb_lock(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     const char *v;
 
     if (!m || !wname) {
@@ -1360,13 +1359,13 @@ int jk_get_lb_lock(jk_map_t *m, const char *wname)
     }
 
     MAKE_WORKER_PARAM(LOCK_OF_WORKER);
-    v = jk_map_get_string(m, buf, NULL);
+    v = jk_map_get_string(m, buf, JK_LB_LOCK_DEF);
     return jk_lb_get_lock_code(v);
 }
 
 int jk_get_max_packet_size(jk_map_t *m, const char *wname)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     int sz;
 
     if (!m || !wname) {
@@ -1387,7 +1386,7 @@ int jk_get_max_packet_size(jk_map_t *m, const char *wname)
 int jk_get_worker_fail_on_status(jk_map_t *m, const char *wname,
                                  int *list, unsigned int list_size)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname || !list) {
         return 0;
@@ -1404,26 +1403,22 @@ int jk_get_worker_fail_on_status(jk_map_t *m, const char *wname,
 
 int jk_get_worker_user_case_insensitive(jk_map_t *m, const char *wname)
 {
-    int rc = JK_FALSE;
-    char buf[1024];
+    int def = JK_FALSE;
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && wname) {
-        int value;
         MAKE_WORKER_PARAM(USER_CASE_OF_WORKER);
-        value = jk_map_get_bool(m, buf, 0);
-        if (value)
-            rc = JK_TRUE;
+        return jk_map_get_bool(m, buf, def);
     }
-    return rc;
-
+    return def;
 }
 
 const char *jk_get_worker_style_sheet(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
 
     MAKE_WORKER_PARAM(STYLE_SHEET_OF_WORKER);
@@ -1434,10 +1429,10 @@ const char *jk_get_worker_style_sheet(jk_map_t *m, const char *wname, const char
 const char *jk_get_worker_name_space(jk_map_t *m, const char *wname, const char *def)
 {
     const char *rc;
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
     MAKE_WORKER_PARAM(NAMESPACE_OF_WORKER);
     rc = jk_map_get_string(m, buf, def);
@@ -1450,10 +1445,10 @@ const char *jk_get_worker_name_space(jk_map_t *m, const char *wname, const char 
 const char *jk_get_worker_xmlns(jk_map_t *m, const char *wname, const char *def)
 {
     const char *rc;
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
     MAKE_WORKER_PARAM(XML_NAMESPACE_OF_WORKER);
     rc = jk_map_get_string(m, buf, def);
@@ -1465,10 +1460,10 @@ const char *jk_get_worker_xmlns(jk_map_t *m, const char *wname, const char *def)
 
 const char *jk_get_worker_xml_doctype(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
     MAKE_WORKER_PARAM(XML_DOCTYPE_OF_WORKER);
     return jk_map_get_string(m, buf, def);
@@ -1476,10 +1471,10 @@ const char *jk_get_worker_xml_doctype(jk_map_t *m, const char *wname, const char
 
 const char *jk_get_worker_prop_prefix(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
-        return NULL;
+        return def;
     }
     MAKE_WORKER_PARAM(PROP_PREFIX_OF_WORKER);
     return jk_map_get_string(m, buf, def);
@@ -1487,24 +1482,21 @@ const char *jk_get_worker_prop_prefix(jk_map_t *m, const char *wname, const char
 
 int jk_get_is_read_only(jk_map_t *m, const char *wname)
 {
-    int rc = JK_FALSE;
-    char buf[1024];
+    int def = JK_FALSE;
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && wname) {
-        int value;
         MAKE_WORKER_PARAM(READ_ONLY_OF_WORKER);
-        value = jk_map_get_bool(m, buf, 0);
-        if (value)
-            rc = JK_TRUE;
+        return jk_map_get_bool(m, buf, def);
     }
-    return rc;
+    return def;
 }
 
 int jk_get_worker_user_list(jk_map_t *m,
                             const char *wname,
                             char ***list, unsigned int *num)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && list && num && wname) {
         char **ar = NULL;
@@ -1526,7 +1518,7 @@ int jk_get_worker_good_rating(jk_map_t *m,
                               const char *wname,
                               char ***list, unsigned int *num)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && list && num && wname) {
         char **ar = NULL;
@@ -1548,7 +1540,7 @@ int jk_get_worker_bad_rating(jk_map_t *m,
                              const char *wname,
                              char ***list, unsigned int *num)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && list && num && wname) {
         char **ar = NULL;
@@ -1570,7 +1562,7 @@ int jk_get_lb_worker_list(jk_map_t *m,
                           const char *wname,
                           char ***list, unsigned int *num_of_workers)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && list && num_of_workers && wname) {
         char **ar = NULL;
@@ -1599,7 +1591,7 @@ int jk_get_worker_mount_list(jk_map_t *m,
                              const char *wname,
                              char ***list, unsigned int *num_of_maps)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && list && num_of_maps && wname) {
         char **ar = NULL;
@@ -1625,7 +1617,7 @@ int jk_get_worker_maintain_time(jk_map_t *m)
 
 int jk_get_worker_mx(jk_map_t *m, const char *wname, unsigned *mx)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && mx && wname) {
         int i;
@@ -1643,7 +1635,7 @@ int jk_get_worker_mx(jk_map_t *m, const char *wname, unsigned *mx)
 
 int jk_get_worker_ms(jk_map_t *m, const char *wname, unsigned *ms)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && ms && wname) {
         int i;
@@ -1661,7 +1653,7 @@ int jk_get_worker_ms(jk_map_t *m, const char *wname, unsigned *ms)
 
 int jk_get_worker_classpath(jk_map_t *m, const char *wname, const char **cp)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && cp && wname) {
         MAKE_WORKER_PARAM(CP_OF_WORKER);
@@ -1677,7 +1669,7 @@ int jk_get_worker_classpath(jk_map_t *m, const char *wname, const char **cp)
 
 int jk_get_worker_bridge_type(jk_map_t *m, const char *wname, unsigned *bt)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
     const char *type;
 
     if (m && bt && wname) {
@@ -1706,7 +1698,7 @@ int jk_get_worker_bridge_type(jk_map_t *m, const char *wname, unsigned *bt)
 
 int jk_get_worker_jvm_path(jk_map_t *m, const char *wname, const char **vm_path)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && vm_path && wname) {
         MAKE_WORKER_PARAM(JVM_OF_WORKER);
@@ -1723,7 +1715,7 @@ int jk_get_worker_jvm_path(jk_map_t *m, const char *wname, const char **vm_path)
 /* [V] This is unused. currently. */
 int jk_get_worker_callback_dll(jk_map_t *m, const char *wname, const char **cb_path)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && cb_path && wname) {
         MAKE_WORKER_PARAM(NATIVE_LIB_OF_WORKER);
@@ -1739,7 +1731,7 @@ int jk_get_worker_callback_dll(jk_map_t *m, const char *wname, const char **cb_p
 
 int jk_get_worker_cmd_line(jk_map_t *m, const char *wname, const char **cmd_line)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && cmd_line && wname) {
         MAKE_WORKER_PARAM(CMD_LINE_OF_WORKER);
@@ -1789,7 +1781,7 @@ int jk_file_exists(const char *f)
 
 static int jk_is_some_property(const char *prp_name, const char *suffix, const char *sep)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (prp_name && suffix) {
         size_t prp_name_len;
@@ -1876,7 +1868,7 @@ int jk_is_valid_property(const char *prp_name)
 
 int jk_get_worker_stdout(jk_map_t *m, const char *wname, const char **stdout_name)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && stdout_name && wname) {
         MAKE_WORKER_PARAM(STDOUT_OF_WORKER);
@@ -1892,7 +1884,7 @@ int jk_get_worker_stdout(jk_map_t *m, const char *wname, const char **stdout_nam
 
 int jk_get_worker_stderr(jk_map_t *m, const char *wname, const char **stderr_name)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && stderr_name && wname) {
         MAKE_WORKER_PARAM(STDERR_OF_WORKER);
@@ -1908,7 +1900,7 @@ int jk_get_worker_stderr(jk_map_t *m, const char *wname, const char **stderr_nam
 
 int jk_get_worker_sysprops(jk_map_t *m, const char *wname, const char **sysprops)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && sysprops && wname) {
         MAKE_WORKER_PARAM(SYSPROPS_OF_WORKER);
@@ -1924,7 +1916,7 @@ int jk_get_worker_sysprops(jk_map_t *m, const char *wname, const char **sysprops
 
 int jk_get_worker_libpath(jk_map_t *m, const char *wname, const char **libpath)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (m && libpath && wname) {
         MAKE_WORKER_PARAM(LIBPATH_OF_WORKER);
@@ -1940,7 +1932,7 @@ int jk_get_worker_libpath(jk_map_t *m, const char *wname, const char **libpath)
 
 const char *jk_get_lb_session_cookie(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return NULL;
@@ -1951,7 +1943,7 @@ const char *jk_get_lb_session_cookie(jk_map_t *m, const char *wname, const char 
 
 const char *jk_get_lb_session_path(jk_map_t *m, const char *wname, const char *def)
 {
-    char buf[1024];
+    char buf[PARAM_BUFFER_SIZE];
 
     if (!m || !wname) {
         return NULL;
@@ -1959,7 +1951,6 @@ const char *jk_get_lb_session_path(jk_map_t *m, const char *wname, const char *d
     MAKE_WORKER_PARAM(SESSION_PATH_OF_WORKER);
     return jk_map_get_string(m, buf, def);
 }
-
 
 int is_http_status_fail(unsigned int http_status_fail_num,
                         int *http_status_fail, int status)
