@@ -56,6 +56,11 @@
         Clean up config file parsing. Worker names are now restricted to
         60 bytes. (rjung)
       </update>
+      <update>
+        Allow to set a stickyness cookie in case a web framework breaks
+        Tomcat's adding of the routing ID to the end of the JSESSIONID
+        cookie. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>

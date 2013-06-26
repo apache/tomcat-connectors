@@ -340,12 +340,19 @@ for this status code.
 </source>
 </p>
 </subsection>
-<subsection name="Extensions session_cookie and session_path">
+<subsection name="Extensions controlling load balancer stickyness">
 <br/>
 <p>
-The extensions <code>session_cookie</code> and <code>session_path</code>
-allows to define the load balancer worker attributes of the same name
-per mount.
+The extensions
+<ul>
+<li><code>session_cookie</code></li>
+<li><code>session_path</code></li>
+<li><code>set_session_cookie</code></li>
+<li><code>session_cookie_path</code></li>
+</ul>
+allow to define the load balancer worker attributes of the same name
+per mount. See their descriptions in the
+<a href="../reference/workers.html">worker.properties configuration reference</a>.
 </p>
 </subsection>
 </section>
