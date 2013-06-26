@@ -52,6 +52,10 @@
         (using FD_CLOEXEC + fnctl instead) so built modules will work with
         Linux kernels prior to 2.6.27. (timw)
       </add>
+      <update>
+        Clean up config file parsing. Worker names are now restricted to
+        60 bytes. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>
