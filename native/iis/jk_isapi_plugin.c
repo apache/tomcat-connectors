@@ -3238,6 +3238,12 @@ static int init_ws_service(isapi_private_data_t * private_data,
         if (e->session_path) {
             s->extension.session_path = jk_pool_strdup(s->pool, e->session_path);
         }
+        if (e->set_session_cookie) {
+            s->extension.set_session_cookie = e->set_session_cookie;
+        }
+        if (e->session_cookie_path) {
+            s->extension.session_cookie_path = jk_pool_strdup(s->pool, e->session_cookie_path);
+        }
 
     }
 

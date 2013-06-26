@@ -825,6 +825,12 @@ static int init_ws_service(apache_private_data_t * private_data,
         if (e->session_path) {
             s->extension.session_path = apr_pstrdup(r->pool, e->session_path);
         }
+        if (e->set_session_cookie) {
+            s->extension.set_session_cookie = e->set_session_cookie;
+        }
+        if (e->session_cookie_path) {
+            s->extension.session_cookie_path = apr_pstrdup(r->pool, e->session_cookie_path);
+        }
     }
     reply_timeout = apr_table_get(r->subprocess_env, JK_ENV_REPLY_TIMEOUT);
     if (reply_timeout) {

@@ -101,6 +101,10 @@ struct svc_extension
     char *session_cookie;
     /* session_path overwrite */
     char *session_path;
+    /* Whether mod_jk should set the session cookie itself */
+    int set_session_cookie;
+    /* An optional PATH to add the the set session cookie */
+    char *session_cookie_path;
 };
 typedef struct svc_extension svc_extension_t;
 

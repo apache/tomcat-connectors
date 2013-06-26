@@ -73,6 +73,8 @@
 #define STICKY_SESSION_FORCE        "sticky_session_force"
 #define SESSION_COOKIE_OF_WORKER    "session_cookie"
 #define SESSION_PATH_OF_WORKER      "session_path"
+#define SET_SESSION_COOKIE          "set_session_cookie"
+#define SESSION_COOKIE_PATH_OF_WORKER "session_cookie_path"
 
 #define LOCAL_WORKER_DEPRECATED     "local_worker"
 #define LOCAL_WORKER_ONLY_DEPRECATED "local_worker_only"
@@ -204,6 +206,8 @@ static const char *unique_properties[] = {
     STICKY_SESSION_FORCE,
     SESSION_COOKIE_OF_WORKER,
     SESSION_PATH_OF_WORKER,
+    SET_SESSION_COOKIE,
+    SESSION_COOKIE_PATH_OF_WORKER,
     LOCAL_WORKER_DEPRECATED,
     LOCAL_WORKER_ONLY_DEPRECATED,
     JVM_ROUTE_OF_WORKER_DEPRECATED,
@@ -299,6 +303,8 @@ static const char *supported_properties[] = {
     STICKY_SESSION_FORCE,
     SESSION_COOKIE_OF_WORKER,
     SESSION_PATH_OF_WORKER,
+    SET_SESSION_COOKIE,
+    SESSION_COOKIE_PATH_OF_WORKER,
     LOCAL_WORKER_DEPRECATED,
     LOCAL_WORKER_ONLY_DEPRECATED,
     JVM_ROUTE_OF_WORKER_DEPRECATED,
@@ -1949,6 +1955,28 @@ const char *jk_get_lb_session_path(jk_map_t *m, const char *wname, const char *d
         return NULL;
     }
     MAKE_WORKER_PARAM(SESSION_PATH_OF_WORKER);
+    return jk_map_get_string(m, buf, def);
+}
+
+int jk_get_lb_set_session_cookie(jk_map_t *m, const char *wname, int def)
+{
+    char buf[PARAM_BUFFER_SIZE];
+
+    if (m && wname) {
+        MAKE_WORKER_PARAM(SET_SESSION_COOKIE);
+        return jk_map_get_bool(m, buf, def);
+    }
+    return def;
+}
+
+const char *jk_get_lb_session_cookie_path(jk_map_t *m, const char *wname, const char *def)
+{
+    char buf[PARAM_BUFFER_SIZE];
+
+    if (!m || !wname) {
+        return NULL;
+    }
+    MAKE_WORKER_PARAM(SESSION_COOKIE_PATH_OF_WORKER);
     return jk_map_get_string(m, buf, def);
 }
 

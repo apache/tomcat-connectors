@@ -1791,6 +1791,10 @@ static int JK_METHOD init(jk_worker_t *pThis,
     strncpy(p->session_path,
             jk_get_lb_session_path(props, p->name, JK_PATH_SESSION_IDENTIFIER),
             JK_SHM_STR_SIZ);
+    p->set_session_cookie = jk_get_lb_set_session_cookie(props, p->name, JK_FALSE);
+    strncpy(p->session_cookie_path,
+            jk_get_lb_session_cookie_path(props, p->name, "/"),
+            JK_SHM_STR_SIZ);
 
     JK_INIT_CS(&(p->cs), i);
     if (i == JK_FALSE) {

@@ -200,6 +200,8 @@ struct lb_worker
     char         session_cookie[JK_SHM_STR_SIZ+1];
     /* Session path */
     char         session_path[JK_SHM_STR_SIZ+1];
+    int          set_session_cookie;
+    char         session_cookie_path[JK_SHM_STR_SIZ+1];
 };
 typedef struct lb_worker lb_worker_t;
 

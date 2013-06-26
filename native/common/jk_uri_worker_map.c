@@ -39,16 +39,18 @@
 #define JK_STRNCMP  strncmp
 #endif
 
-#define JK_UWMAP_EXTENSION_REPLY_TIMEOUT  "reply_timeout="
-#define JK_UWMAP_EXTENSION_STICKY_IGNORE  "sticky_ignore="
-#define JK_UWMAP_EXTENSION_STATELESS      "stateless="
-#define JK_UWMAP_EXTENSION_ACTIVE         "active="
-#define JK_UWMAP_EXTENSION_DISABLED       "disabled="
-#define JK_UWMAP_EXTENSION_STOPPED        "stopped="
-#define JK_UWMAP_EXTENSION_FAIL_ON_STATUS "fail_on_status="
-#define JK_UWMAP_EXTENSION_USE_SRV_ERRORS "use_server_errors="
-#define JK_UWMAP_EXTENSION_SESSION_COOKIE "session_cookie="
-#define JK_UWMAP_EXTENSION_SESSION_PATH   "session_path="
+#define JK_UWMAP_EXTENSION_REPLY_TIMEOUT       "reply_timeout="
+#define JK_UWMAP_EXTENSION_STICKY_IGNORE       "sticky_ignore="
+#define JK_UWMAP_EXTENSION_STATELESS           "stateless="
+#define JK_UWMAP_EXTENSION_ACTIVE              "active="
+#define JK_UWMAP_EXTENSION_DISABLED            "disabled="
+#define JK_UWMAP_EXTENSION_STOPPED             "stopped="
+#define JK_UWMAP_EXTENSION_FAIL_ON_STATUS      "fail_on_status="
+#define JK_UWMAP_EXTENSION_USE_SRV_ERRORS      "use_server_errors="
+#define JK_UWMAP_EXTENSION_SESSION_COOKIE      "session_cookie="
+#define JK_UWMAP_EXTENSION_SESSION_PATH        "session_path="
+#define JK_UWMAP_EXTENSION_SET_SESSION_COOKIE  "set_session_cookie="
+#define JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH "session_cookie_path="
 
 #define IND_SWITCH(x)                      (((x)+1) % 2)
 #define IND_THIS(x)                        ((x)[uw_map->index])
@@ -554,6 +556,18 @@ static void extension_fix_session(jk_pool_t *p, const char *name, jk_worker_t *j
                 JK_UWMAP_EXTENSION_SESSION_PATH " for %s ignored",
                 name, extensions->session_path);
     }
+    if (jw->type != JK_LB_WORKER_TYPE && extensions->set_session_cookie) {
+        jk_log(l, JK_LOG_WARNING,
+                "Worker %s is not of type lb, extension "
+                JK_UWMAP_EXTENSION_SET_SESSION_COOKIE " for %s ignored",
+                name, extensions->set_session_cookie ? "'true'" : "'false'");
+    }
+    if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie_path) {
+        jk_log(l, JK_LOG_WARNING,
+                "Worker %s is not of type lb, extension "
+                JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH " for %s ignored",
+                name, extensions->session_cookie_path);
+    }
 }
 
 void extension_fix(jk_pool_t *p, const char *name,
@@ -642,6 +656,8 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
     extensions->use_server_error_pages = 0;
     extensions->session_cookie = NULL;
     extensions->session_path = NULL;
+    extensions->set_session_cookie = JK_FALSE;
+    extensions->session_cookie_path = NULL;
 
 #ifdef _MT_CODE_PTHREAD
     param = strtok_r(rule, ";", &lasts);
@@ -735,6 +751,29 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
                     } else
                         extensions->session_path = param + strlen(JK_UWMAP_EXTENSION_SESSION_PATH);
                 }
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SET_SESSION_COOKIE, strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE))) {
+                if (extensions->set_session_cookie)
+                    jk_log(l, JK_LOG_WARNING,
+                           "extension '%s' in uri worker map only allowed once",
+                           JK_UWMAP_EXTENSION_SET_SESSION_COOKIE);
+                else {
+                    int val = atoi(param + strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE));
+                    if (val) {
+                        extensions->set_session_cookie = JK_TRUE;
+                    }
+                    else {
+                        extensions->set_session_cookie = JK_FALSE;
+                    }
+                }
+            }
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH, strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH))) {
+                if (extensions->session_cookie_path)
+                    jk_log(l, JK_LOG_WARNING,
+                           "extension '%s' in uri worker map only allowed once",
+                           JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH);
+                else
+                    extensions->session_cookie_path = param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH);
             }
             else {
                 jk_log(l, JK_LOG_WARNING,

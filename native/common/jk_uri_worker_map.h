@@ -100,6 +100,8 @@ struct rule_extension
     char *session_cookie;
     /* session_path overwrite */
     char *session_path;
+    int set_session_cookie;
+    char *session_cookie_path;
 };
 typedef struct rule_extension rule_extension_t;
 

@@ -123,6 +123,10 @@ const char *jk_get_lb_session_cookie(jk_map_t *m, const char *wname, const char 
 
 const char *jk_get_lb_session_path(jk_map_t *m, const char *wname, const char *def);
 
+int jk_get_lb_set_session_cookie(jk_map_t *m, const char *wname, int def);
+
+const char *jk_get_lb_session_cookie_path(jk_map_t *m, const char *wname, const char *def);
+
 int jk_get_worker_retries(jk_map_t *m, const char *wname, int def);
 
 int jk_get_is_worker_disabled(jk_map_t *m, const char *wname);
