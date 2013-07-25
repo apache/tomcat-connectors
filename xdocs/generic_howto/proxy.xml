@@ -246,14 +246,14 @@ Here's the recipe for the case, where you want to hide the first path component
 <code>/myapp</code>. More complex manipulations are left as an exercise to the reader.
 First the solution for the case of Apache httpd:
 </p>
-<p>1. Use <a href="http://httpd.apache.org/docs/2.2/mod/mod_rewrite.html"><code>mod_rewrite</code></a>
+<p>1. Use <a href="http://httpd.apache.org/docs/current/mod/mod_rewrite.html"><code>mod_rewrite</code></a>
 to add <code>/myapp</code> to all requests before forwarding to the backend:
 </p>
 <source>
 # Don't forget the PT flag! (pass through)
 RewriteRule ^/(.*) http://www.mycompany.com/myapp/$1 [PT]
 </source>
-<p>2. Use <a href="http://httpd.apache.org/docs/2.2/mod/mod_headers.html"><code>mod_headers</code></a>
+<p>2. Use <a href="http://httpd.apache.org/docs/current/mod/mod_headers.html"><code>mod_headers</code></a>
 to rewrite any HTTP redirects your application might return. Such redirects typically contain
 the path components you want to hide, because by the HTTP standard, redirects always need to include
 the full URL, and your application is not aware of the fact, that your clients talk to it via
@@ -281,7 +281,7 @@ to configure the base URL. If not, your only chance is to parse all response
 content bodies and do search and replace. This is fragile and very resource intensive.
 If you really need to do this, you can use
 <a href="http://apache.webthing.com/mod_proxy_html/"><code>mod_proxy_html</code></a>,
-<a href="http://httpd.apache.org/docs/2.2/mod/mod_substitute.html"><code>mod_substitute</code></a>
+<a href="http://httpd.apache.org/docs/current/mod/mod_substitute.html"><code>mod_substitute</code></a>
 or <a href="http://blogs.sun.com/basant/entry/using_mod_sed_to_filter"><code>mod_sed</code></a>
 for this task.
 </p>
