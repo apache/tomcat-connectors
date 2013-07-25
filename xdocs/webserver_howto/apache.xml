@@ -31,8 +31,7 @@
 <section name="Introduction">
 <p>
 This document explains how to connect Tomcat to the popular open source web server, Apache httpd.
-There is actually three versions of Apache HTTP Server, 1.3, 2.0 and 2.2 and all can be used with mod_jk,
-the Tomcat redirector module.
+You can use mod_jk, the Tomcat redirector module, with any version of Apache starting with 1.3.
 </p>
 
 <p>
@@ -902,10 +901,11 @@ You could set <b>CFLAGS</b> and <b>LDFLAGS</b> to add some platform specifics:
 </screen>
 
 <p>
-If you want to build mod_jk for different version of Apache httpd, like 1.3, 2.x,
+If you want to build mod_jk for different version of Apache httpd, like 1.3 or 2.x,
 you need to go through the full build process for each of them.
-Please note, that httpd 2.0 and 2.2 or 2.3 modules are <b>not</b> compatible. The mod_jk directory
-used is "apache-2.0" in both cases, but you need to compile separately.
+Please note, that httpd 2.0, 2.2 or 2.4 modules are <b>not</b> binary compatible.
+You have to compile the module using the Apache version you plan to run it in.
+The mod_jk build directory used is "apache-2.0" for all 2.x builds.
 <ul>
 <li>
 use configure and indicate the correct Apache httpd apxs location (--with-apxs)

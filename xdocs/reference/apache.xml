@@ -1084,7 +1084,7 @@ ways of defining the forwards, in general to mod_jk directives will win.
 If you neither specify any workers via JkMount and the related directives,
 not via the environment variable described below,
 the first worker in the list of all worker will be chosen. You can use SetHandler
-for example in Location blocks or with Apache 2.2 also in RewriteRule.
+for example in Location blocks or with Apache 2.2 and later also in RewriteRule.
 </p>
 <p>
 In order to control the worker using <b>SetEnvIf</b> or <b>RewriteRule</b>

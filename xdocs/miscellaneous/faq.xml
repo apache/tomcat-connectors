@@ -237,27 +237,33 @@ Note: The above steps assume that you downloaded the Apache source and placed it
 </p>
 </subsection>
 
-<subsection name="Apache 2.0 complains about incorrect module version">
+<subsection name="Apache complains about incorrect module version">
 <p>
-Since Apache 2.0 API still change often, the Apache 2.0 teams decide to put in headers of compiled modules the 
-Apache 2.0 version used to compile the module. This check is called Magic Module Number bump.
+Since the Apache API can change between versions, any Apache module contains the
+Apache API version used to compile the module. This is called the Magic Module Number.
 </p>
 <p>
-At start time Apache 2.0 check that version in modules headers and stop if it detect that a module was compiled 
-for another Apache 2.0 version. As such you should allways use modules compiled for the same Apache 2.0 version. 
-This check may be removed if the future.
+At start time Apache checks that the version in the module header is compatible
+with the Apache server. If not it will deny to start and log an error.
+</p>
+<p>
+Note that minor versions are forward compatible. If the module was compiled using
+Apache 2.x.y the resulting binary should work with any other version 2.x.z where z
+is bigger or equals to y. If you also need compatibility for versions 2.x.z
+with z smaller than y, use the configure flag --enable-api-compatibility. Note
+that the module compiled with any 2.x will never be compatible with 2.y for
+x different from y.
 </p>
 </subsection>
 
-<subsection name="Does it work for Apache 2.2?">
+<subsection name="Does it work for the latest Apache 2.x?">
 <p>
-mod_jk works well with Apache 2.2. You need a binary module compiled for version 2.2 of the Apache web server.
-A binary compiled for version 2.0 will not work.
+mod_jk works well with Apache 2.x from 2.0 to 2.4.
 </p>
 <p>
 Important parts of the functionality of mod_jk have been reimplemented as Apache httpd modules mod_proxy_ajp
 and mod_proxy_balancer. These are part of the standard distributoin of Apache 2.2. The new modules do not contain
-all features of mod_jk, but you get them automatically with every Apache 2.2.
+all features of mod_jk, but you get them automatically with every Apache 2.2 and later.
 </p>
 </subsection>
 
