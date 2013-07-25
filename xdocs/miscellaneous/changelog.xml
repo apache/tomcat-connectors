@@ -61,6 +61,9 @@
         Tomcat's adding of the routing ID to the end of the JSESSIONID
         cookie. (rjung)
       </update>
+      <update>
+        Minor documentation improvements. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>

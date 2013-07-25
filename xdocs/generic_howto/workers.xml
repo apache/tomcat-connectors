@@ -145,7 +145,7 @@ Each worker has a set of properties that you can set as specified in the followi
 <subsection name="ajp12 Worker properties">
 <p><warn>
 The <b>ajp12</b> has been <b>deprecated</b> with Tomcat 3.3.x and you should use instead 
-<b>ajp13</b> which is the only ajp protocol known by Tomcat 4.x and 5 and 5.5 and Tomcat 6.
+<b>ajp13</b> which is the only ajp protocol known by all Tomcat 4 and above.
 </warn></p> 
 <p>
 The ajp12 typed workers forward requests to out-of-process Tomcat workers 
@@ -205,7 +205,7 @@ SSL related methods such as isSecure().
 </p>
 
 <p>
-You should note that Ajp13 is now the only out-process protocol supported by Tomcat 4.0.x, 4.1.x, 5.0.x, 5.5.x and 6.
+You should note that Ajp13 is now the only out-process protocol supported by Tomcat 4 and above.
 </p>
 
 

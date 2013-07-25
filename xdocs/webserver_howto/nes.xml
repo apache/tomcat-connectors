@@ -83,7 +83,7 @@ WINNT 2000/XP/2003 (should be able to work with other service packs) and some Un
 Sun ONE Web Server 6.1
 </li>
 <li>
-Tomcat 4.1.x , Tomcat 5.0.x and Tomcat 5.5.x
+Tomcat 4.1 to Tomcat 7.
 </li>
 </ul>
 </p>
@@ -102,7 +102,7 @@ The ajp12 protocol is only available in Tomcat 3.2.x and 3.3.x.
 
 <p>
 The <b>ajp12</b> has been <b>deprecated</b> with Tomcat 3.3.x and you should use instead 
-<b>ajp13</b> which is the only ajp protocol known by Tomcat 4.0.x, 4.1.x, 5.0.x, 5.5.x and 6.
+<b>ajp13</b> which is the only ajp protocol known by Tomcat 4 and above.
 </p>
 
 <p>

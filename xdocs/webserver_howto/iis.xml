@@ -130,7 +130,7 @@ The ajp12 protocol is only available in Tomcat 3.2.x and 3.3.x.
 
 <p>
 The <b>ajp12</b> has been <b>deprecated</b> with Tomcat 3.3.x and you should use instead 
-<b>ajp13</b> which is the only ajp protocol known by Tomcat 4.x, 5 and 5.5 and Tomcat 6.
+<b>ajp13</b> which is the only ajp protocol known by Tomcat 4 and above.
 </p>
 
 <p>

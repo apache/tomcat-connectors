@@ -122,8 +122,7 @@ You could also try searching the mailing list archives for "JK" or look at the s
 You almost certainly want to use it now that <strong>ajp12 is deprecated</strong>.
 </p>
 <p> 
-Also ajp13 is supported by all Apache Tomcat including 3.2.x , 3.3.x, 4.0.x, 4.1.x, 5.0.x, 5.5.x
-and the new tomcat 6. 
+Also ajp13 is supported by all Apache Tomcat versions starting with Tomcat 3.2.
 </p>
 
 <p>
