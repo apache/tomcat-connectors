@@ -148,14 +148,14 @@ static int sononblock(jk_sock_t sd)
  *                               during blocking connect
  *                 0: success
  */
-static int nb_connect(jk_sock_t sd, struct sockaddr *addr, int timeout, jk_logger_t *l)
+static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_t *l)
 {
     int rc;
 
     JK_TRACE_ENTER(l);
 
     if (timeout <= 0) {
-        rc = connect(sd, addr, sizeof(struct sockaddr_in));
+        rc = connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen);
         JK_TRACE_EXIT(l);
         return rc;
     }
@@ -164,7 +164,7 @@ static int nb_connect(jk_sock_t sd, struct sockaddr *addr, int timeout, jk_logge
         JK_TRACE_EXIT(l);
         return -1;
     }
-    if (JK_IS_SOCKET_ERROR(connect(sd, addr, sizeof(struct sockaddr_in)))) {
+    if (JK_IS_SOCKET_ERROR(connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen))) {
         struct timeval tv;
         fd_set wfdset, efdset;
 
@@ -220,7 +220,7 @@ static int nb_connect(jk_sock_t sd, struct sockaddr *addr, int timeout, jk_logge
  * @return         -1: some kind of error occured
  *                 0: success
  */
-static int nb_connect(jk_sock_t sd, struct sockaddr *addr, int timeout, jk_logger_t *l)
+static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_t *l)
 {
     int rc = 0;
 
@@ -233,7 +233,7 @@ static int nb_connect(jk_sock_t sd, struct sockaddr *addr, int timeout, jk_logge
         }
     }
     do {
-        rc = connect(sd, addr, sizeof(struct sockaddr_in));
+        rc = connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen);
     } while (rc == -1 && errno == EINTR);
 
     if ((rc == -1) && (errno == EINPROGRESS || errno == EALREADY)
@@ -283,13 +283,13 @@ static int nb_connect(jk_sock_t sd, struct sockaddr *addr, int timeout, jk_logge
  * @return         -1: some kind of error occured
  *                 0: success
  */
-static int nb_connect(jk_sock_t sd, struct sockaddr *addr, int timeout, jk_logger_t *l)
+static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_t *l)
 {
     int rc;
 
     JK_TRACE_ENTER(l);
 
-    rc = connect(sd, addr, sizeof(struct sockaddr_in));
+    rc = connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen);
     JK_TRACE_EXIT(l);
     return rc;
 }
@@ -324,16 +324,23 @@ in_addr_t jk_inet_addr(const char * addrstr)
  * @return         JK_FALSE: some kind of error occured
  *                 JK_TRUE: success
  */
-int jk_resolve(const char *host, int port, struct sockaddr_in *rc,
-               void *pool, jk_logger_t *l)
+int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
+               void *pool, int prefer_ipv6, jk_logger_t *l)
 {
     int x;
     struct in_addr laddr;
+    struct sockaddr_in *rc;
 
     JK_TRACE_ENTER(l);
 
-    memset(rc, 0, sizeof(struct sockaddr_in));
+    memset(saddr, 0, sizeof(jk_sockaddr_t));
+    /* TODO:
+     * This will depend on IPV4/IPV6 resolving
+     * and prefer_ipv6
+     */
+    saddr->salen = (int)sizeof(struct sockaddr_in);
 
+    rc = &saddr->sa.sin;
     rc->sin_port = htons((short)port);
     rc->sin_family = AF_INET;
 
@@ -408,6 +415,8 @@ int jk_resolve(const char *host, int port, struct sockaddr_in *rc,
     }
     memcpy(&(rc->sin_addr), &laddr, sizeof(laddr));
 
+    saddr->port = port;
+    saddr->host = host;
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
@@ -424,7 +433,7 @@ int jk_resolve(const char *host, int port, struct sockaddr_in *rc,
  *                  created socket: success
  * @remark          Cares about errno
  */
-jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
+jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
                          int timeout, int connect_timeout,
                          int sock_buf, jk_logger_t *l)
 {
@@ -613,9 +622,9 @@ jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
 /* Need more infos for BSD 4.4 and Unix 98 defines, for now only
 iSeries when Unix98 is required at compil time */
 #if (_XOPEN_SOURCE >= 520) && defined(AS400)
-    ((struct sockaddr *)addr)->sa_len = sizeof(struct sockaddr_in);
+    ((struct sockaddr *)addr)->sa.sin.sa_len = sizeof(struct sockaddr_in);
 #endif
-    ret = nb_connect(sd, (struct sockaddr *)addr, connect_timeout, l);
+    ret = nb_connect(sd, addr, connect_timeout, l);
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
     if (JK_IS_SOCKET_ERROR(ret)) {
         JK_GET_SOCKET_ERRNO();
@@ -926,10 +935,10 @@ int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t 
  * dump a sockaddr_in in A.B.C.D:P in ASCII buffer
  *
  */
-char *jk_dump_hinfo(struct sockaddr_in *saddr, char *buf)
+char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf)
 {
-    unsigned long laddr = (unsigned long)htonl(saddr->sin_addr.s_addr);
-    unsigned short lport = (unsigned short)htons(saddr->sin_port);
+    unsigned long laddr = (unsigned long)htonl(saddr->sa.sin.sin_addr.s_addr);
+    unsigned short lport = (unsigned short)htons(saddr->sa.sin.sin_port);
 
     sprintf(buf, "%d.%d.%d.%d:%d",
             (int)(laddr >> 24), (int)((laddr >> 16) & 0xff),

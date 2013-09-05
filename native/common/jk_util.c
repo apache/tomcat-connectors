@@ -104,6 +104,7 @@
 #define USER_CASE_OF_WORKER         "user_case_insensitive"
 #define GOOD_RATING_OF_WORKER       "good"
 #define BAD_RATING_OF_WORKER        "bad"
+#define PREFER_IPV6_ADDRESS         "prefer_ipv6"
 
 #define DEFAULT_WORKER_TYPE         JK_AJP13_WORKER_NAME
 #define SECRET_KEY_OF_WORKER        "secretkey"
@@ -233,6 +234,7 @@ static const char *unique_properties[] = {
     XML_DOCTYPE_OF_WORKER,
     PROP_PREFIX_OF_WORKER,
     USER_CASE_OF_WORKER,
+    PREFER_IPV6_ADDRESS,
     NULL
 };
 
@@ -337,6 +339,7 @@ static const char *supported_properties[] = {
     STATUS_FAIL_OF_WORKER,
     LIST_PROPERTY_NAME,
     MAINTAIN_PROPERTY_NAME,
+    PREFER_IPV6_ADDRESS,
     NULL
 };
 
@@ -918,6 +921,18 @@ int jk_get_worker_port(jk_map_t *m, const char *wname, int def)
     MAKE_WORKER_PARAM(PORT_OF_WORKER);
 
     return jk_map_get_int(m, buf, def);
+}
+
+int jk_get_worker_prefer_ipv6(jk_map_t *m, const char *wname, int def)
+{
+    char buf[PARAM_BUFFER_SIZE];
+    if (!m || !wname) {
+        return def;
+    }
+
+    MAKE_WORKER_PARAM(PREFER_IPV6_ADDRESS);
+
+    return jk_map_get_bool(m, buf, def);
 }
 
 static int def_cache_size = -1;

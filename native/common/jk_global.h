@@ -400,6 +400,37 @@ typedef int jk_sock_t;
 #define strcasecmp(a,b) apr_strnatcasecmp(a,b)
 #endif
 
+/* IPV6 support */
+#if defined(HAVE_APR)
+#define JK_HAVE_IPV6    APR_HAVE_IPV6
+#else
+#if defined(WIN32) || defined(HAVE_IPV6)
+#define JK_HAVE_IPV6    1
+#else
+#define JK_HAVE_IPV6    0
+#endif
+#endif
+
+typedef struct jk_sockaddr_t jk_sockaddr_t;
+struct jk_sockaddr_t {
+    int         family;
+    int         port;
+    const char *host;
+    int         salen;
+    /** Union of either IPv4 or IPv6 sockaddr. */
+    union {
+        /** IPv4 sockaddr structure */
+        struct sockaddr_in sin;
+#if JK_HAVE_IPV6
+        /** IPv6 sockaddr structure */
+        struct sockaddr_in6 sin6;
+#endif
+        /** Placeholder to ensure that the size of this union is not
+         * dependent on whether JK_HAVE_IPV6 is defined. */
+        char sas[128];
+    } sa;
+};
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

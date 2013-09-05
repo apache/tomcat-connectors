@@ -1062,7 +1062,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
     int address_change = JK_FALSE;
     int port = 0;
     char host[JK_SHM_STR_SIZ+1];
-    struct sockaddr_in inet_addr;
+    jk_sockaddr_t inet_addr;
     JK_TRACE_ENTER(l);
 
     if (JK_IS_DEBUG_LEVEL(l))
@@ -1095,7 +1095,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
         aw->port = port;
         strncpy(aw->host, host, JK_SHM_STR_SIZ);
         if (!jk_resolve(host, port, &inet_addr,
-                        aw->worker.we->pool, l)) {
+                        aw->worker.we->pool, aw->prefer_ipv6, l)) {
             jk_log(l, JK_LOG_ERROR,
                    "Failed resolving address '%s:%d' for worker '%s'.",
                    host, port, aw->name);
@@ -2734,6 +2734,7 @@ int ajp_validate(jk_worker_t *pThis,
             host = "undefined";
         }
         strncpy(p->host, jk_get_worker_host(props, p->name, host), JK_SHM_STR_SIZ);
+        p->prefer_ipv6 = jk_get_worker_prefer_ipv6(props, p->name, 0);
         if (p->s->h.sequence == 0) {
             /* Initial setup.
              */
@@ -2742,7 +2743,8 @@ int ajp_validate(jk_worker_t *pThis,
                        "worker %s contact is '%s:%d'",
                        p->name, p->host, p->port);
             if (p->port > 0) {
-                if (!jk_resolve(p->host, p->port, &p->worker_inet_addr, we->pool, l)) {
+                if (!jk_resolve(p->host, p->port, &p->worker_inet_addr,
+                                we->pool, p->prefer_ipv6, l)) {
                     jk_log(l, JK_LOG_ERROR,
                            "worker %s can't resolve tomcat address %s",
                            p->name, p->host);

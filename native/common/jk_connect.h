@@ -38,9 +38,10 @@ extern "C"
 
 #define JK_SOCKET_EOF      (-2)
 
-int jk_resolve(const char *host, int port, struct sockaddr_in *rc, void *pool, jk_logger_t *l);
+int jk_resolve(const char *host, int port, jk_sockaddr_t *rc, void *pool,
+               int prefer_ipv6, jk_logger_t *l);
 
-jk_sock_t jk_open_socket(struct sockaddr_in *addr, int keepalive,
+jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
                          int timeout, int connect_timeout,
                          int sock_buf, jk_logger_t *l);
 
@@ -52,7 +53,7 @@ int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_log
 
 int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t *l);
 
-char *jk_dump_hinfo(struct sockaddr_in *saddr, char *buf);
+char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf);
 
 char *jk_dump_sinfo(jk_sock_t sd, char *buf);
 

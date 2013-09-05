@@ -40,7 +40,7 @@
 
 struct ajp12_worker
 {
-    struct sockaddr_in worker_inet_addr;
+    jk_sockaddr_t worker_inet_addr;
     unsigned connect_retry_attempts;
     char *name;
     jk_worker_t worker;
@@ -192,7 +192,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                p->name, host, port);
 
         if (host) {
-            if (jk_resolve(host, port, &p->worker_inet_addr, we->pool, l)) {
+            if (jk_resolve(host, port, &p->worker_inet_addr, we->pool, 0, l)) {
                 return JK_TRUE;
             }
             jk_log(l, JK_LOG_ERROR,

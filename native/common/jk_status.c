@@ -3370,9 +3370,9 @@ static int commit_member(jk_ws_service_t *s,
         }
     }
     if (resolve == JK_TRUE) {
-        struct sockaddr_in inet_addr;
+        jk_sockaddr_t inet_addr;
         if (!jk_resolve(host, port, &inet_addr,
-                        aw->worker.we->pool, l)) {
+                        aw->worker.we->pool, aw->prefer_ipv6, l)) {
             const char *msg = "Update failed (at least partially): could not resolve address '%s:%d' for sub worker '%s'.";
             size_t size = strlen(msg) + strlen(host) + strlen(aw->name) + 10 + 1;
             p->msg = jk_pool_alloc(s->pool, size);

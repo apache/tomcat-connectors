@@ -294,12 +294,14 @@ struct ajp_worker
 
     JK_CRIT_SEC cs;
 
-    struct sockaddr_in worker_inet_addr;    /* Contains host and port */
+    jk_sockaddr_t worker_inet_addr;    /* Contains host and port */
     unsigned connect_retry_attempts;
     char host[JK_SHM_STR_SIZ+1];
     int port;
     int addr_sequence;  /* Whether the address is resolved */
     int maintain_time;
+    int prefer_ipv6;
+
     /*
      * Open connections cache...
      *

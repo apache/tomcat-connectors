@@ -71,6 +71,8 @@ const char *jk_get_worker_type(jk_map_t *m, const char *wname);
 
 int jk_get_worker_port(jk_map_t *m, const char *wname, int def);
 
+int jk_get_worker_prefer_ipv6(jk_map_t *m, const char *wname, int def);
+
 int jk_get_worker_cache_size(jk_map_t *m, const char *wname, int def);
 
 int jk_get_worker_cache_size_min(jk_map_t *m, const char *wname, int def);
