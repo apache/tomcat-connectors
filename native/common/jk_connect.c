@@ -339,31 +339,21 @@ in_addr_t jk_inet_addr(const char * addrstr)
 int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
                void *pool, int prefer_ipv6, jk_logger_t *l)
 {
-    int x;
-    struct in_addr laddr4;
-    struct sockaddr_in *rc4;
+    int family = AF_INET;
+    struct in_addr iaddr;
 
     JK_TRACE_ENTER(l);
 
     memset(saddr, 0, sizeof(jk_sockaddr_t));
+    if (*host >= '0' && *host <= '9' && strspn(host, "0123456789.") == strlen(host)) {
 
-    rc4 = &saddr->sa.sin;
-    rc4->sin_port   = htons((short)port);
-    rc4->sin_family = AF_INET;
-
-    /* Check if we only have digits in the string */
-    for (x = 0; host[x] != '\0'; x++) {
-        if (!jk_isdigit(host[x]) && host[x] != '.') {
-            break;
-        }
+        /* If we found only digits we use inet_addr() */
+        iaddr.s_addr = jk_inet_addr(host);
+        memcpy(&(saddr->sa.sin.sin_addr), &iaddr, sizeof(struct in_addr));
     }
-
-    /* If we found also characters we should make name to IP resolution */
-    if (host[x] != '\0') {
-
+    else {
 #ifdef HAVE_APR
         apr_sockaddr_t *remote_sa, *temp_sa;
-        char *remote_ipaddr;
 
         if (!jk_apr_pool) {
             if (apr_pool_create(&jk_apr_pool, (apr_pool_t *)pool) != APR_SUCCESS) {
@@ -372,66 +362,94 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
             }
         }
         apr_pool_clear(jk_apr_pool);
-        if (apr_sockaddr_info_get
-            (&remote_sa, host, APR_UNSPEC, (apr_port_t) port, 0, jk_apr_pool)
-            != APR_SUCCESS) {
+        if (apr_sockaddr_info_get(&remote_sa, host, APR_UNSPEC, (apr_port_t)port,
+                                  0, jk_apr_pool) != APR_SUCCESS) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
 
-        /* Since we are only handling AF_INET (IPV4) address (in_addr_t) */
-        /* make sure we find one of those.                               */
-        temp_sa = remote_sa;
-        while ((NULL != temp_sa) && (AF_INET != temp_sa->family))
-            temp_sa = temp_sa->next;
-
-        /* if temp_sa is set, we have a valid address otherwise, just return */
-        if (NULL != temp_sa) {
-            remote_sa = temp_sa;
+        /* Check if we have multiple address matches
+         */
+        if (remote_sa->next) {
+            /* Since we are only handling AF_INET (IPV4) address (in_addr_t) */
+            /* make sure we find one of those.                               */
+            temp_sa = remote_sa;
+#if APR_HAVE_IPV6
+            if (prefer_ipv6) {
+                while ((NULL != temp_sa) && (AF_INET6 != temp_sa->family))
+                    temp_sa = temp_sa->next;
+            }
+#endif
+            if (NULL != temp_sa) {
+                remote_sa = temp_sa;
+            }
+            else {
+                while ((NULL != temp_sa) && (AF_INET != temp_sa->family))
+                    temp_sa = temp_sa->next;
+            }
+            /* if temp_sa is set, we have a valid address otherwise, just return */
+            if (NULL != temp_sa) {
+                remote_sa = temp_sa;
+            }
+            else {
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
         }
+        if (remote_sa->family == AF_INET) {
+            saddr->sa.sin = remote_sa->sa.sin;
+            family = AF_INET;
+        }
+#if APR_HAVE_IPV6
         else {
-            JK_TRACE_EXIT(l);
-            return JK_FALSE;
+            saddr->sa.sin6 = remote_sa->sa.sin6;
+            family = AF_INET6;
         }
-
-        apr_sockaddr_ip_get(&remote_ipaddr, remote_sa);
-
-        laddr4.s_addr = jk_inet_addr(remote_ipaddr);
-
+#endif
 #else /* HAVE_APR */
+        /* Without APR go the classic way.
+         */
+
+        struct hostent *hoste;
+        /* TODO:
+         * Check for numeric IPV6 addresses
+         */
 
         /* XXX : WARNING : We should really use gethostbyname_r in multi-threaded env */
         /* Fortunatly when APR is available, ie under Apache 2.0, we use it */
 #if defined(NETWARE) && !defined(__NOVELL_LIBC__)
-        struct hostent *hoste = gethostbyname((char*)host);
+        hoste = gethostbyname((char*)host);
 #else
-        struct hostent *hoste = gethostbyname(host);
+        hoste = gethostbyname(host);
 #endif
         if (!hoste) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
-
-        laddr4 = *((struct in_addr *)hoste->h_addr_list[0]);
+        iaddr = *((struct in_addr *)hoste->h_addr_list[0]);
+        memcpy(&(saddr->sa.sin.sin_addr), &iaddr, sizeof(struct in_addr));
 
 #endif /* HAVE_APR */
     }
-    else {
-        /* If we found only digits we use inet_addr() */
-        laddr4.s_addr = jk_inet_addr(host);
-    }
-    /* TODO:
-     * This will depend on IPV4/IPV6 resolving
-     * and prefer_ipv6
-     */
-    saddr->ipaddr_ptr = &rc4->sin_addr;
-    saddr->ipaddr_len = (int)sizeof(struct in_addr);
-    saddr->salen      = (int)sizeof(struct sockaddr_in);
-    saddr->port       = port;
-    saddr->host       = host;
-    saddr->family     = rc4->sin_family;
 
-    memcpy(saddr->ipaddr_ptr, &laddr4, saddr->ipaddr_len);
+    if (family == AF_INET) {
+        saddr->ipaddr_ptr = &(saddr->sa.sin.sin_addr);
+        saddr->ipaddr_len = (int)sizeof(struct in_addr);
+        saddr->salen      = (int)sizeof(struct sockaddr_in);
+    }
+#if APR_HAVE_IPV6
+    else {
+        saddr->ipaddr_ptr = &(saddr->sa.sin6.sin6_addr);
+        saddr->ipaddr_len = (int)sizeof(struct in6_addr);
+        saddr->salen      = (int)sizeof(struct sockaddr_in6);
+    }
+#endif
+    saddr->sa.sin.sin_family = family;
+    /* XXX IPv6: assumes sin_port and sin6_port at same offset */
+    saddr->sa.sin.sin_port = htons(port);
+    saddr->port   = port;
+    saddr->host   = host;
+    saddr->family = family;
 
     JK_TRACE_EXIT(l);
     return JK_TRUE;
