@@ -411,12 +411,17 @@ typedef int jk_sock_t;
 #endif
 #endif
 
+
 typedef struct jk_sockaddr_t jk_sockaddr_t;
 struct jk_sockaddr_t {
     int         family;
     int         port;
-    const char *host;
     int         salen;
+    int         ipaddr_len;
+    /** This points to the IP address structure within the appropriate
+     *  sockaddr structure.  */
+    void       *ipaddr_ptr;
+    const char *host;
     /** Union of either IPv4 or IPv6 sockaddr. */
     union {
         /** IPv4 sockaddr structure */

@@ -1727,7 +1727,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                                             int type,
                                             jk_logger_t *l)
 {
-    char buf[32];
+    char buf[64];
 
     JK_TRACE_ENTER(l);
 
@@ -1770,7 +1770,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                                        int map_count,
                                        jk_logger_t *l)
 {
-    char buf[32];
+    char buf[64];
     char buf_rd[32];
     char buf_rd_sec[32];
     char buf_wr[32];

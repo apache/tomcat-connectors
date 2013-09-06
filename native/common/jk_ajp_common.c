@@ -1002,7 +1002,7 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
  */
 int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 {
-    char buf[32];
+    char buf[64];
     int rc = JK_TRUE;
 
     JK_TRACE_ENTER(l);
@@ -1264,7 +1264,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
     int rc;
     int msglen;
     unsigned int header;
-    char buf[32];
+    char buf[64];
 
     JK_TRACE_ENTER(l);
 

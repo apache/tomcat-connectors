@@ -59,6 +59,18 @@ static apr_pool_t *jk_apr_pool = NULL;
 #define USE_SOCK_CLOEXEC
 #endif
 
+#ifndef IN6ADDRSZ
+#define IN6ADDRSZ   16
+#endif
+
+#ifndef INT16SZ
+#define INT16SZ sizeof(apr_int16_t)
+#endif
+
+#if !defined(EAFNOSUPPORT) && defined(WSAEAFNOSUPPORT)
+#define EAFNOSUPPORT WSAEAFNOSUPPORT
+#endif
+
 /* our compiler cant deal with char* <-> const char* ... */
 #if defined(NETWARE) && !defined(__NOVELL_LIBC__)
 typedef char* SET_TYPE;
@@ -328,21 +340,16 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
                void *pool, int prefer_ipv6, jk_logger_t *l)
 {
     int x;
-    struct in_addr laddr;
-    struct sockaddr_in *rc;
+    struct in_addr laddr4;
+    struct sockaddr_in *rc4;
 
     JK_TRACE_ENTER(l);
 
     memset(saddr, 0, sizeof(jk_sockaddr_t));
-    /* TODO:
-     * This will depend on IPV4/IPV6 resolving
-     * and prefer_ipv6
-     */
-    saddr->salen = (int)sizeof(struct sockaddr_in);
 
-    rc = &saddr->sa.sin;
-    rc->sin_port = htons((short)port);
-    rc->sin_family = AF_INET;
+    rc4 = &saddr->sa.sin;
+    rc4->sin_port   = htons((short)port);
+    rc4->sin_family = AF_INET;
 
     /* Check if we only have digits in the string */
     for (x = 0; host[x] != '\0'; x++) {
@@ -389,7 +396,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 
         apr_sockaddr_ip_get(&remote_ipaddr, remote_sa);
 
-        laddr.s_addr = jk_inet_addr(remote_ipaddr);
+        laddr4.s_addr = jk_inet_addr(remote_ipaddr);
 
 #else /* HAVE_APR */
 
@@ -405,18 +412,27 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
             return JK_FALSE;
         }
 
-        laddr = *((struct in_addr *)hoste->h_addr_list[0]);
+        laddr4 = *((struct in_addr *)hoste->h_addr_list[0]);
 
 #endif /* HAVE_APR */
     }
     else {
         /* If we found only digits we use inet_addr() */
-        laddr.s_addr = jk_inet_addr(host);
+        laddr4.s_addr = jk_inet_addr(host);
     }
-    memcpy(&(rc->sin_addr), &laddr, sizeof(laddr));
+    /* TODO:
+     * This will depend on IPV4/IPV6 resolving
+     * and prefer_ipv6
+     */
+    saddr->ipaddr_ptr = &rc4->sin_addr;
+    saddr->ipaddr_len = (int)sizeof(struct in_addr);
+    saddr->salen      = (int)sizeof(struct sockaddr_in);
+    saddr->port       = port;
+    saddr->host       = host;
+    saddr->family     = rc4->sin_family;
 
-    saddr->port = port;
-    saddr->host = host;
+    memcpy(saddr->ipaddr_ptr, &laddr4, saddr->ipaddr_len);
+
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
@@ -931,19 +947,178 @@ int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t 
     return rdlen;
 }
 
+/* const char *
+ * inet_ntop4(src, dst, size)
+ *  format an IPv4 address, more or less like inet_ntoa()
+ * return:
+ *  `dst' (as a const)
+ * notes:
+ *  (1) uses no statics
+ *  (2) takes a u_char* not an in_addr as input
+ * author:
+ *  Paul Vixie, 1996.
+ */
+static const char *inet_ntop4(const unsigned char *src, char *dst, size_t size)
+{
+    const apr_size_t MIN_SIZE = 16; /* space for 255.255.255.255\0 */
+    int n = 0;
+    char *next = dst;
+
+    if (size < MIN_SIZE) {
+        errno = ENOSPC;
+        return NULL;
+    }
+    do {
+        unsigned char u = *src++;
+        if (u > 99) {
+            *next++ = '0' + u/100;
+             u %= 100;
+            *next++ = '0' + u/10;
+             u %= 10;
+        }
+        else if (u > 9) {
+            *next++ = '0' + u/10;
+             u %= 10;
+        }
+        *next++ = '0' + u;
+        *next++ = '.';
+        n++;
+    } while (n < 4);
+    *--next = '\0';
+    return dst;
+}
+
+#if JK_HAVE_IPV6
+/* const char *
+ * inet_ntop6(src, dst, size)
+ *  convert IPv6 binary address into presentation (printable) format
+ * author:
+ *  Paul Vixie, 1996.
+ */
+static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
+{
+    /*
+     * Note that int32_t and int16_t need only be "at least" large enough
+     * to contain a value of the specified size.  On some systems, like
+     * Crays, there is no such thing as an integer variable with 16 bits.
+     * Keep this in mind if you think this function should have been coded
+     * to use pointer overlays.  All the world's not a VAX.
+     */
+    char tmp[sizeof "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"], *tp;
+    struct { int base, len; } best = {-1, 0}, cur = {-1, 0};
+    unsigned int words[IN6ADDRSZ / INT16SZ];
+    int i;
+    const unsigned char *next_src, *src_end;
+    unsigned int *next_dest;
+
+    /*
+     * Preprocess:
+     *  Copy the input (bytewise) array into a wordwise array.
+     *  Find the longest run of 0x00's in src[] for :: shorthanding.
+     */
+    next_src = src;
+    src_end = src + IN6ADDRSZ;
+    next_dest = words;
+    i = 0;
+    do {
+        unsigned int next_word = (unsigned int)*next_src++;
+        next_word <<= 8;
+        next_word |= (unsigned int)*next_src++;
+        *next_dest++ = next_word;
+
+        if (next_word == 0) {
+            if (cur.base == -1) {
+                cur.base = i;
+                cur.len = 1;
+            }
+            else {
+                cur.len++;
+            }
+        } else {
+            if (cur.base != -1) {
+                if (best.base == -1 || cur.len > best.len) {
+                    best = cur;
+                }
+                cur.base = -1;
+            }
+        }
+
+        i++;
+    } while (next_src < src_end);
+
+    if (cur.base != -1) {
+        if (best.base == -1 || cur.len > best.len) {
+            best = cur;
+        }
+    }
+    if (best.base != -1 && best.len < 2) {
+        best.base = -1;
+    }
+
+    /*
+     * Format the result.
+     */
+    tp = tmp;
+    for (i = 0; i < (IN6ADDRSZ / INT16SZ);) {
+        /* Are we inside the best run of 0x00's? */
+        if (i == best.base) {
+            *tp++ = ':';
+            i += best.len;
+            continue;
+        }
+        /* Are we following an initial run of 0x00s or any real hex? */
+        if (i != 0) {
+            *tp++ = ':';
+        }
+        /* Is this address an encapsulated IPv4? */
+        if (i == 6 && best.base == 0 &&
+            (best.len == 6 || (best.len == 5 && words[5] == 0xffff))) {
+            if (!inet_ntop4(src+12, tp, sizeof tmp - (tp - tmp))) {
+                return (NULL);
+            }
+            tp += strlen(tp);
+            break;
+        }
+        tp += sprintf(tp, "%x", words[i]);
+        i++;
+    }
+    /* Was it a trailing run of 0x00's? */
+    if (best.base != -1 && (best.base + best.len) == (IN6ADDRSZ / INT16SZ)) {
+        *tp++ = ':';
+    }
+    *tp++ = '\0';
+
+    /*
+     * Check for overflow, copy, and we're done.
+     */
+    if ((size_t)(tp - tmp) > size) {
+        errno = ENOSPC;
+        return NULL;
+    }
+    strcpy(dst, tmp);
+    return dst;
+}
+#endif
+
 /**
  * dump a sockaddr_in in A.B.C.D:P in ASCII buffer
  *
  */
 char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf)
 {
-    unsigned long laddr = (unsigned long)htonl(saddr->sa.sin.sin_addr.s_addr);
-    unsigned short lport = (unsigned short)htons(saddr->sa.sin.sin_port);
+    char pb[8];
 
-    sprintf(buf, "%d.%d.%d.%d:%d",
-            (int)(laddr >> 24), (int)((laddr >> 16) & 0xff),
-            (int)((laddr >> 8) & 0xff), (int)(laddr & 0xff), (int)lport);
+    if (saddr->family == AF_INET) {
+        inet_ntop4(saddr->ipaddr_ptr, buf, 16);
+    }
+#if APR_HAVE_IPV6
+    else {
+        inet_ntop6(saddr->ipaddr_ptr, buf, 64);
+    }
+#endif
+    sprintf(pb, ":%d", saddr->port);
 
+    strcat(buf, pb);
     return buf;
 }
 
