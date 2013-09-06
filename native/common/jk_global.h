@@ -345,6 +345,7 @@ extern "C"
                                (tv)->tv_usec = tb.millitm * 1000; }
 #define HAVE_VSNPRINTF
 #define HAVE_SNPRINTF
+#define HAVE_SOCKADDR_STORAGE
 #ifdef HAVE_APR
 #define snprintf apr_snprintf
 #define vsnprintf apr_vsnprintf
@@ -404,10 +405,10 @@ typedef int jk_sock_t;
 #if defined(HAVE_APR)
 #define JK_HAVE_IPV6    APR_HAVE_IPV6
 #else
-#if defined(WIN32) || defined(HAVE_IPV6)
-#define JK_HAVE_IPV6    1
+#if defined(WIN32) || defined(HAVE_AF_INET6)
+#define JK_HAVE_IPV6            1
 #else
-#define JK_HAVE_IPV6    0
+#define JK_HAVE_IPV6            0
 #endif
 #endif
 
@@ -431,8 +432,12 @@ struct jk_sockaddr_t {
         struct sockaddr_in6 sin6;
 #endif
         /** Placeholder to ensure that the size of this union is not
-         * dependent on whether JK_HAVE_IPV6 is defined. */
+         * dependent on whether APR_HAVE_IPV6 is defined. */
+#ifdef HAVE_SOCKADDR_STORAGE
+        struct sockaddr_storage sas;
+#else
         char sas[128];
+#endif
     } sa;
 };
 
