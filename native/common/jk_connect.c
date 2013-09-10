@@ -64,7 +64,7 @@ static apr_pool_t *jk_apr_pool = NULL;
 #endif
 
 #ifndef INT16SZ
-#define INT16SZ sizeof(apr_int16_t)
+#define INT16SZ     sizeof(short)
 #endif
 
 #if !defined(EAFNOSUPPORT) && defined(WSAEAFNOSUPPORT)
@@ -978,7 +978,7 @@ int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t 
  */
 static const char *inet_ntop4(const unsigned char *src, char *dst, size_t size)
 {
-    const apr_size_t MIN_SIZE = 16; /* space for 255.255.255.255\0 */
+    const size_t MIN_SIZE = 16; /* space for 255.255.255.255\0 */
     int n = 0;
     char *next = dst;
 
