@@ -1142,23 +1142,44 @@ char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf)
 
 char *jk_dump_sinfo(jk_sock_t sd, char *buf)
 {
-    struct sockaddr_in rsaddr;
-    struct sockaddr_in lsaddr;
-    socklen_t          salen;
+    struct sockaddr rsaddr;
+    struct sockaddr lsaddr;
+    socklen_t       salen;
 
     salen = sizeof(struct sockaddr);
-    if (getsockname(sd, (struct sockaddr *)&lsaddr, &salen) == 0) {
+    if (getsockname(sd, &lsaddr, &salen) == 0) {
         salen = sizeof(struct sockaddr);
-        if (getpeername(sd, (struct sockaddr *)&rsaddr, &salen) == 0) {
-            unsigned long  laddr = (unsigned  long)htonl(lsaddr.sin_addr.s_addr);
-            unsigned short lport = (unsigned short)htons(lsaddr.sin_port);
-            unsigned long  raddr = (unsigned  long)htonl(rsaddr.sin_addr.s_addr);
-            unsigned short rport = (unsigned short)htons(rsaddr.sin_port);
-            sprintf(buf, "%d.%d.%d.%d:%d -> %d.%d.%d.%d:%d",
-                    (int)(laddr >> 24), (int)((laddr >> 16) & 0xff),
-                    (int)((laddr >> 8) & 0xff), (int)(laddr & 0xff), (int)lport,
-                    (int)(raddr >> 24), (int)((raddr >> 16) & 0xff),
-                    (int)((raddr >> 8) & 0xff), (int)(raddr & 0xff), (int)rport);
+        if (getpeername(sd, &rsaddr, &salen) == 0) {
+            char   pb[8];
+            size_t ps;
+            if (lsaddr.sa_family == AF_INET) {
+                struct sockaddr_in  *sa = (struct sockaddr_in  *)&lsaddr;
+                inet_ntop4((unsigned char *)&sa->sin_addr,  buf, 16);
+                sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
+            }
+#if APR_HAVE_IPV6
+            else {
+                struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&lsaddr;
+                inet_ntop6((unsigned char *)&sa->sin6_addr, buf, 64);
+                sprintf(pb, ":%d", (unsigned int)htons(sa->sin6_port));
+            }
+#endif
+            strcat(buf, pb);
+            strcat(buf, " -> ");
+            ps = strlen(buf);
+            if (rsaddr.sa_family == AF_INET) {
+                struct sockaddr_in  *sa = (struct sockaddr_in  *)&rsaddr;
+                inet_ntop4((unsigned char *)&sa->sin_addr,  buf + ps, 16);
+                sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
+            }
+#if APR_HAVE_IPV6
+            else {
+                struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&rsaddr;
+                inet_ntop6((unsigned char *)&sa->sin6_addr, buf + ps, 64);
+                sprintf(pb, ":%d", (unsigned int)htons(sa->sin6_port));
+            }
+#endif
+            strcat(buf, pb);
             return buf;
         }
     }
