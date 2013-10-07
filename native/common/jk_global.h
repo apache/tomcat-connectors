@@ -347,6 +347,7 @@ extern "C"
 #define HAVE_SNPRINTF
 #define HAVE_SOCKADDR_STORAGE
 #define HAVE_AF_INET6
+#define HAVE_GETADDRINFO
 #ifdef HAVE_APR
 #define snprintf apr_snprintf
 #define vsnprintf apr_vsnprintf

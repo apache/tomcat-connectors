@@ -409,11 +409,76 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 #else /* HAVE_APR */
         /* Without APR go the classic way.
          */
-
-        struct hostent *hoste;
+#if defined(HAVE_GETADDRINFO)
         /* TODO:
-         * Check for numeric IPV6 addresses
+         * 1. Check for numeric IPV6 addresses
+         * 2. Do we need to set service name for getaddrinfo?
          */
+        struct addrinfo hints, *ai_list, *ai = NULL;
+        int error;
+
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_socktype = SOCK_STREAM;
+#if JK_HAVE_IPV6
+        if (prefer_ipv6)
+            hints.ai_family = JK_INET6;
+        else
+#endif
+            hints.ai_family = JK_INET;
+        error = getaddrinfo(host, NULL, &hints, &ai_list);
+#if JK_HAVE_IPV6
+        /* XXX:
+         * Is the check for EAI_FAMILY/WSAEAFNOSUPPORT correct
+         * way to retry the IPv4 address?
+         */
+        if (error == EAI_FAMILY && prefer_ipv6) {
+            hints.ai_family = JK_INET;
+            error = getaddrinfo(host, NULL, &hints, &ai_list);
+        }
+#endif
+        if (error) {
+            JK_TRACE_EXIT(l);
+            errno = error;
+            return JK_FALSE;
+        }
+#if JK_HAVE_IPV6
+        if (prefer_ipv6) {
+            ai = ai_list;
+            while (ai) {
+                if (ai->ai_family == AF_INET6) {
+                    family = JK_INET6;
+                    break;
+                }
+                else {
+                    ai = ai->ai_next;
+                }
+            }
+        }
+#endif
+        if (ai == NULL) {
+            ai = ai_list;
+            while (ai) {
+                if (ai->ai_family == AF_INET) {
+                    family = JK_INET;
+                    break;
+                }
+                else {
+                    ai = ai->ai_next;
+                }
+            }
+        }
+        freeaddrinfo(ai_list);
+        if (ai == NULL) {
+            /* No address found
+             * XXX: Use better error code?
+             */
+            JK_TRACE_EXIT(l);
+            errno = ENOENT;
+            return JK_FALSE;
+        }
+        memcpy(&(saddr->sa), ai->ai_addr, ai->ai_addrlen);
+#else /* HAVE_GETADDRINFO */
+        struct hostent *hoste;
 
         /* XXX : WARNING : We should really use gethostbyname_r in multi-threaded env */
         /* Fortunatly when APR is available, ie under Apache 2.0, we use it */
@@ -428,7 +493,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         }
         iaddr = *((struct in_addr *)hoste->h_addr_list[0]);
         memcpy(&(saddr->sa.sin.sin_addr), &iaddr, sizeof(struct in_addr));
-
+#endif /* HAVE_GETADDRINFO */
 #endif /* HAVE_APR */
     }
 
@@ -823,7 +888,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
         rd += rp;
         if (rp < sizeof(dummy)) {
             if (timeout > MS_TO_LINGER_LAST) {
-                /* Try one last time with a short timeout 
+                /* Try one last time with a short timeout
                 */
                 timeout = MS_TO_LINGER_LAST;
                 continue;
