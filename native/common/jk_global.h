@@ -346,6 +346,7 @@ extern "C"
 #define HAVE_VSNPRINTF
 #define HAVE_SNPRINTF
 #define HAVE_SOCKADDR_STORAGE
+#define HAVE_AF_INET6
 #ifdef HAVE_APR
 #define snprintf apr_snprintf
 #define vsnprintf apr_vsnprintf
@@ -403,15 +404,25 @@ typedef int jk_sock_t;
 
 /* IPV6 support */
 #if defined(HAVE_APR)
-#define JK_HAVE_IPV6    APR_HAVE_IPV6
+#define JK_HAVE_IPV6            APR_HAVE_IPV6
+#define JK_INET                 APR_INET
+#define JK_UNSPEC               APR_UNSPEC
 #else
 #if defined(WIN32) || defined(HAVE_AF_INET6)
 #define JK_HAVE_IPV6            1
 #else
 #define JK_HAVE_IPV6            0
 #endif
+#define JK_INET                 AF_INET
+#if defined(AF_UNSPEC)
+#define JK_UNSPEC               AF_UNSPEC
+#else
+#define JK_UNSPEC               0
 #endif
-
+#endif
+#if JK_HAVE_IPV6
+#define JK_INET6                AF_INET6
+#endif
 
 typedef struct jk_sockaddr_t jk_sockaddr_t;
 struct jk_sockaddr_t {
@@ -432,7 +443,7 @@ struct jk_sockaddr_t {
         struct sockaddr_in6 sin6;
 #endif
         /** Placeholder to ensure that the size of this union is not
-         * dependent on whether APR_HAVE_IPV6 is defined. */
+         * dependent on whether JK_HAVE_IPV6 is defined. */
 #ifdef HAVE_SOCKADDR_STORAGE
         struct sockaddr_storage sas;
 #else
