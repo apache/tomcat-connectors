@@ -339,7 +339,7 @@ in_addr_t jk_inet_addr(const char * addrstr)
 int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
                void *pool, int prefer_ipv6, jk_logger_t *l)
 {
-    int family = AF_INET;
+    int family = JK_INET;
     struct in_addr iaddr;
 
     JK_TRACE_ENTER(l);
@@ -371,12 +371,12 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         /* Check if we have multiple address matches
          */
         if (remote_sa->next) {
-            /* Since we are only handling AF_INET (IPV4) address (in_addr_t) */
+            /* Since we are only handling JK_INET (IPV4) address (in_addr_t) */
             /* make sure we find one of those.                               */
             temp_sa = remote_sa;
 #if APR_HAVE_IPV6
             if (prefer_ipv6) {
-                while ((NULL != temp_sa) && (AF_INET6 != temp_sa->family))
+                while ((NULL != temp_sa) && (APR_INET6 != temp_sa->family))
                     temp_sa = temp_sa->next;
             }
 #endif
@@ -384,7 +384,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
                 remote_sa = temp_sa;
             }
             else {
-                while ((NULL != temp_sa) && (AF_INET != temp_sa->family))
+                while ((NULL != temp_sa) && (APR_INET != temp_sa->family))
                     temp_sa = temp_sa->next;
             }
             /* if temp_sa is set, we have a valid address otherwise, just return */
@@ -396,14 +396,14 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
                 return JK_FALSE;
             }
         }
-        if (remote_sa->family == AF_INET) {
+        if (remote_sa->family == APR_INET) {
             saddr->sa.sin = remote_sa->sa.sin;
-            family = AF_INET;
+            family = JK_INET;
         }
 #if APR_HAVE_IPV6
         else {
             saddr->sa.sin6 = remote_sa->sa.sin6;
-            family = AF_INET6;
+            family = JK_INET6;
         }
 #endif
 #else /* HAVE_APR */
@@ -432,12 +432,12 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 #endif /* HAVE_APR */
     }
 
-    if (family == AF_INET) {
+    if (family == JK_INET) {
         saddr->ipaddr_ptr = &(saddr->sa.sin.sin_addr);
         saddr->ipaddr_len = (int)sizeof(struct in_addr);
         saddr->salen      = (int)sizeof(struct sockaddr_in);
     }
-#if APR_HAVE_IPV6
+#if JK_HAVE_IPV6
     else {
         saddr->ipaddr_ptr = &(saddr->sa.sin6.sin6_addr);
         saddr->ipaddr_len = (int)sizeof(struct in6_addr);
@@ -486,7 +486,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
 #if defined(SOCK_CLOEXEC) && defined(USE_SOCK_CLOEXEC)
     flags |= SOCK_CLOEXEC;
 #endif
-    sd = socket(AF_INET, SOCK_STREAM | flags, 0);
+    sd = socket(addr->family, SOCK_STREAM | flags, 0);
     if (!IS_VALID_SOCKET(sd)) {
         JK_GET_SOCKET_ERRNO();
         jk_log(l, JK_LOG_ERROR,
@@ -1126,7 +1126,7 @@ char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf)
 {
     char pb[8];
 
-    if (saddr->family == AF_INET) {
+    if (saddr->family == JK_INET) {
         inet_ntop4(saddr->ipaddr_ptr, buf, 16);
     }
 #if APR_HAVE_IPV6
@@ -1152,7 +1152,7 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf)
         if (getpeername(sd, &rsaddr, &salen) == 0) {
             char   pb[8];
             size_t ps;
-            if (lsaddr.sa_family == AF_INET) {
+            if (lsaddr.sa_family == JK_INET) {
                 struct sockaddr_in  *sa = (struct sockaddr_in  *)&lsaddr;
                 inet_ntop4((unsigned char *)&sa->sin_addr,  buf, 16);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
@@ -1167,7 +1167,7 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf)
             strcat(buf, pb);
             strcat(buf, " -> ");
             ps = strlen(buf);
-            if (rsaddr.sa_family == AF_INET) {
+            if (rsaddr.sa_family == JK_INET) {
                 struct sockaddr_in  *sa = (struct sockaddr_in  *)&rsaddr;
                 inet_ntop4((unsigned char *)&sa->sin_addr,  buf + ps, 16);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
