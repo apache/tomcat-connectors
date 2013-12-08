@@ -47,6 +47,10 @@
       <fix>
         Fix status worker not updating parameters for all members. (mturk)
       </fix>
+      <fix>
+        <bug>55853</bug>: HTTPD: Use the correct API for setting Content-Length.
+        Patch contributed by areese yahoo-inc.com. (rjung)
+      </fix>
       <add>
         Add --disable-sock-cloexec to configure to disable use of SOCK_CLOEXEC
         (using FD_CLOEXEC + fnctl instead) so built modules will work with

@@ -365,8 +365,7 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
                              header_values[h]);
             }
             else if (!strcasecmp(header_names[h], "Content-Length")) {
-                ap_table_set(r->headers_out, header_names[h],
-                             header_values[h]);
+                ap_set_content_length(r, atol(header_values[h]));
             }
             else if (!strcasecmp(header_names[h], "Transfer-Encoding")) {
                 ap_table_set(r->headers_out, header_names[h],
