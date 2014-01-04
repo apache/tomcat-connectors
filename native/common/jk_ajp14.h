@@ -38,10 +38,8 @@ extern "C"
 
 #define AJP14_DEF_HOST              ("localhost")
 #define AJP14_DEF_PORT              (8011)
-#define AJP14_READ_BUF_SIZE         (8*1024)
 #define AJP14_DEF_RETRY_ATTEMPTS    (1)
 #define AJP14_DEF_CACHE_SZ          (1)
-#define AJP14_MAX_SEND_BODY_SZ      (DEF_BUFFER_SZ - 6)
 #define AJP14_HEADER_LEN            (4)
 #define AJP14_HEADER_SZ_LEN         (2)
 
