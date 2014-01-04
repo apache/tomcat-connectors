@@ -1390,16 +1390,16 @@ int jk_get_max_packet_size(jk_map_t *m, const char *wname)
     int sz;
 
     if (!m || !wname) {
-        return DEF_BUFFER_SZ;
+        return AJP13_DEF_PACKET_SIZE;
     }
 
     MAKE_WORKER_PARAM(WORKER_MAX_PACKET_SIZE);
-    sz = jk_map_get_int(m, buf, DEF_BUFFER_SZ);
-    sz = JK_ALIGN(sz, 1024);
-    if (sz < DEF_BUFFER_SZ)
-        sz = DEF_BUFFER_SZ;
-    else if (sz > 64*1024)
-        sz = 64*1024;
+    sz = jk_map_get_int(m, buf, AJP13_DEF_PACKET_SIZE);
+    sz = JK_ALIGN(sz, AJP13_PACKET_SIZE_ALIGN);
+    if (sz < AJP13_DEF_PACKET_SIZE)
+        sz = AJP13_DEF_PACKET_SIZE;
+    else if (sz > AJP13_MAX_PACKET_SIZE)
+        sz = AJP13_MAX_PACKET_SIZE;
 
     return sz;
 }

@@ -30,7 +30,6 @@
 #include "jk_util.h"
 #include "jk_worker.h"
 #include "jk_lb_worker.h"
-#include "jk_ajp13.h"
 #include "jk_ajp13_worker.h"
 #include "jk_ajp14_worker.h"
 #include "jk_mt.h"
@@ -1944,7 +1943,7 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
         private_data->recover_wait_time = WAIT_BEFORE_RECOVER;
         private_data->error_escalation_time = private_data->recover_wait_time / 2;
         private_data->max_reply_timeouts = 0;
-        private_data->max_packet_size = DEF_BUFFER_SZ;
+        private_data->max_packet_size = AJP13_DEF_PACKET_SIZE;
         private_data->sequence = 0;
         private_data->next_offset = 0;
         *w = &private_data->worker;

@@ -225,7 +225,7 @@ static int logon(ajp_endpoint_t * ae, jk_logger_t *l)
     JK_TRACE_ENTER(l);
 
     msg = jk_b_new(p);
-    jk_b_set_buffer_size(msg, DEF_BUFFER_SZ);
+    jk_b_set_buffer_size(msg, AJP13_DEF_PACKET_SIZE);
 
     if ((rc = handle_logon(ae, msg, l)) == JK_FALSE)
         ajp_close_endpoint(ae, l);
@@ -243,7 +243,7 @@ static int discovery(ajp_endpoint_t * ae, jk_worker_env_t *we, jk_logger_t *l)
     JK_TRACE_ENTER(l);
 
     msg = jk_b_new(p);
-    jk_b_set_buffer_size(msg, DEF_BUFFER_SZ);
+    jk_b_set_buffer_size(msg, AJP13_DEF_PACKET_SIZE);
 
     if ((rc = handle_discovery(ae, we, msg, l)) == JK_FALSE)
         ajp_close_endpoint(ae, l);

@@ -167,7 +167,6 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define BAD_PATH        -2
 #define MAX_SERVERNAME  1024
 #define MAX_INSTANCEID  32
-#define MAX_PACKET_SIZE 65536
 
 char HTML_ERROR_HEAD[] =        "<!--\n"
                                 "  Licensed to the Apache Software Foundation (ASF) under one or more\n"
@@ -3306,13 +3305,13 @@ static int init_ws_service(isapi_private_data_t * private_data,
             s->num_attributes = num_of_vars;
             if (ssl_env_values[4] && ssl_env_values[4][0] == '1') {
                 CERT_CONTEXT_EX cc;
-                BYTE *cb = jk_pool_alloc(&private_data->p, MAX_PACKET_SIZE);
+                BYTE *cb = jk_pool_alloc(&private_data->p, AJP13_MAX_PACKET_SIZE);
 
                 if (!cb) {
                     JK_TRACE_EXIT(logger);
                     return JK_FALSE;
                 }
-                cc.cbAllocated = MAX_PACKET_SIZE;
+                cc.cbAllocated = AJP13_MAX_PACKET_SIZE;
                 cc.CertContext.pbCertEncoded = cb;
                 cc.CertContext.cbCertEncoded = 0;
 

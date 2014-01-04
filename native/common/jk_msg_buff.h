@@ -31,8 +31,6 @@ extern "C"
 {
 #endif                          /* __cplusplus */
 
-#define DEF_BUFFER_SZ (8 * 1024)
-
 /* XXX replace all return values with error codes */
 #define ERR_BAD_PACKET -5
 

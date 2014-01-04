@@ -36,7 +36,9 @@ extern "C"
 
 #define AJP13_DEF_HOST              ("localhost")
 #define AJP13_DEF_PORT              (8009)
-#define AJP13_READ_BUF_SIZE         (8*1024)
+#define AJP13_DEF_PACKET_SIZE       (8*1024)
+#define AJP13_MAX_PACKET_SIZE       (64*1024)
+#define AJP13_PACKET_SIZE_ALIGN     (1024)
 #define AJP13_DEF_CACHE_SZ          (1)
 #define JK_INTERNAL_ERROR           (-2)
 #define JK_FATAL_ERROR              (-3)
@@ -49,7 +51,7 @@ extern "C"
 #define JK_REPLY_TIMEOUT            (-10)
 #define JK_AJP_PROTOCOL_ERROR       (-11)
 
-#define AJP13_MAX_SEND_BODY_SZ      (DEF_BUFFER_SZ - 6)
+#define AJP13_MAX_SEND_BODY_SZ      (AJP13_DEF_PACKET_SIZE - 6)
 #define AJP13_DEF_TIMEOUT           (0) /* Idle timout for pooled connections */
 
 /*
