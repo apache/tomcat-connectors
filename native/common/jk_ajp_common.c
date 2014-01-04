@@ -1467,6 +1467,7 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
                                   jk_msg_buf_t *msg, int len, jk_logger_t *l)
 {
     unsigned char *read_buf = msg->buf;
+    int maxlen;
 
     JK_TRACE_ENTER(l);
 
@@ -1474,11 +1475,15 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
 
     read_buf += AJP_HEADER_LEN;    /* leave some space for the buffer headers */
     read_buf += AJP_HEADER_SZ_LEN; /* leave some space for the read length */
+    maxlen = ae->worker->max_packet_size - AJP_HEADER_LEN - AJP_HEADER_SZ_LEN;
 
     /* Pick the max size since we don't know the content_length
      */
-    if (r->is_chunked && len == 0) {
-        len = AJP13_MAX_SEND_BODY_SZ;
+    if ((r->is_chunked && len == 0) || len < 0 || len > maxlen) {
+        len = maxlen;
+    }
+    if ((jk_uint64_t)len > ae->left_bytes_to_send) {
+        len = (int)ae->left_bytes_to_send;
     }
 
     if ((len = ajp_read_fully_from_server(r, l, read_buf, len)) < 0) {
@@ -1781,11 +1786,8 @@ static int ajp_send_request(jk_endpoint_t *e,
          * Note that chunking will continue to work - using the normal read.
          */
         if (ae->left_bytes_to_send > 0) {
-            int len = AJP13_MAX_SEND_BODY_SZ;
-            if (ae->left_bytes_to_send < (jk_uint64_t)AJP13_MAX_SEND_BODY_SZ) {
-                len = (int)ae->left_bytes_to_send;
-            }
-            if ((len = ajp_read_into_msg_buff(ae, s, op->post, len, l)) <= 0) {
+            int len;
+            if ((len = ajp_read_into_msg_buff(ae, s, op->post, -1, l)) <= 0) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
                            "(%s) browser stop sending data, no need to recover",
@@ -2008,12 +2010,6 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
 
             if (len < 0) {
                 len = 0;
-            }
-            if (len > AJP13_MAX_SEND_BODY_SZ) {
-                len = AJP13_MAX_SEND_BODY_SZ;
-            }
-            if ((jk_uint64_t)len > ae->left_bytes_to_send) {
-                len = (int)ae->left_bytes_to_send;
             }
 
             /* the right place to add file storage for upload
