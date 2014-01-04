@@ -3227,6 +3227,7 @@ static int set_uint_if_changed(status_endpoint_t *p,
                                const char *arg,
                                unsigned int min,
                                unsigned int max,
+                               unsigned int align,
                                unsigned int *param,
                                const char *lb_name,
                                jk_logger_t *l)
@@ -3234,6 +3235,9 @@ static int set_uint_if_changed(status_endpoint_t *p,
     unsigned i;
     status_worker_t *w = p->worker;
     i = (unsigned)status_get_int(p, arg, *param, l);
+    if (align > 1) {
+        i = JK_ALIGN(i, align);
+    }
     if (i != *param && i >= min && i <= max) {
         if (lb_name)
             jk_log(l, JK_LOG_INFO,
@@ -3412,10 +3416,10 @@ static int commit_member(jk_ws_service_t *s,
                            1, INT_MAX, &aw->conn_ping_interval, lb_name, l))
         *side_effect |= JK_STATUS_NEEDS_PUSH;
     if (set_uint_if_changed(p, aw->name, "recovery_options", JK_STATUS_ARG_AJP_REC_OPTS,
-                           0, INT_MAX, &aw->recovery_opts, lb_name, l))
+                           0, INT_MAX, 1, &aw->recovery_opts, lb_name, l))
         *side_effect |= JK_STATUS_NEEDS_PUSH;
     if (set_uint_if_changed(p, aw->name, "max_packet_size", JK_STATUS_ARG_AJP_MAX_PK_SZ,
-                           AJP13_DEF_PACKET_SIZE, AJP13_MAX_PACKET_SIZE,
+                           AJP13_DEF_PACKET_SIZE, AJP13_MAX_PACKET_SIZE, AJP13_PACKET_SIZE_ALIGN,
                            &aw->max_packet_size, lb_name, l)) {
         *side_effect |= JK_STATUS_NEEDS_PUSH;
         if (aw->max_packet_size > lb->max_packet_size) {
@@ -3578,12 +3582,12 @@ static void commit_all_members(jk_ws_service_t *s,
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_AJP_REC_OPTS)) {
                 if (set_uint_if_changed(p, aw->name, "recovery_options", vname,
-                                       0, INT_MAX, &aw->recovery_opts, name, l))
+                                       0, INT_MAX, 1, &aw->recovery_opts, name, l))
                     sync_needed = JK_TRUE;
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_AJP_MAX_PK_SZ)) {
                 if (set_uint_if_changed(p, aw->name, "max_packet_size", vname,
-                                       AJP13_DEF_PACKET_SIZE, AJP13_MAX_PACKET_SIZE,
+                                       AJP13_DEF_PACKET_SIZE, AJP13_MAX_PACKET_SIZE, AJP13_PACKET_SIZE_ALIGN,
                                        &aw->max_packet_size, name, l)) {
                     sync_needed = JK_TRUE;
                     if (aw->max_packet_size > lb->max_packet_size) {
