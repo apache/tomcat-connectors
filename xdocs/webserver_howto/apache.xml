@@ -102,7 +102,7 @@ Netware
 i5/OS V5R4 (System I) with Apache HTTP Server 2.0.58. Be sure to have the latest Apache PTF installed.
 </li>
 <li>
-Tomcat 3.2 to Tomcat 7.
+Tomcat 3.2 to Tomcat 8.
 </li>
 </ul>
 </p>
