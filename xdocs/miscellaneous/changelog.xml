@@ -66,6 +66,9 @@
         cookie. (rjung)
       </update>
       <update>
+        Use max_packet_size also for request body forwarding. (rjung)
+      </update>
+      <update>
         Minor documentation improvements. (rjung)
       </update>
     </changelog>
