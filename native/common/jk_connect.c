@@ -1194,7 +1194,7 @@ char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf)
     if (saddr->family == JK_INET) {
         inet_ntop4(saddr->ipaddr_ptr, buf, 16);
     }
-#if APR_HAVE_IPV6
+#if JK_HAVE_IPV6
     else {
         inet_ntop6(saddr->ipaddr_ptr, buf, 64);
     }
@@ -1222,7 +1222,7 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf)
                 inet_ntop4((unsigned char *)&sa->sin_addr,  buf, 16);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
             }
-#if APR_HAVE_IPV6
+#if JK_HAVE_IPV6
             else {
                 struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&lsaddr;
                 inet_ntop6((unsigned char *)&sa->sin6_addr, buf, 64);
@@ -1237,7 +1237,7 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf)
                 inet_ntop4((unsigned char *)&sa->sin_addr,  buf + ps, 16);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
             }
-#if APR_HAVE_IPV6
+#if JK_HAVE_IPV6
             else {
                 struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&rsaddr;
                 inet_ntop6((unsigned char *)&sa->sin6_addr, buf + ps, 64);
