@@ -188,10 +188,15 @@ For the details see the <a href="../reference/apache.html">Apache reference</a> 
 </p>
 <p>All variables, that are not SSL-related have only been introduced in version 1.2.27.
 </p>
-<p>Finally there is a shortcut to forward the local IP of the web server as the remote IP.
-This can be useful, e.g. when using the Tomcat remote address valve for allowing connections
-only from registered Apache web servers. This feature is activated by setting
-<code>JkOptions ForwardLocalAddress</code>.
+<p>In addition there are two special shortcuts to influence the client IP address that is forwarded.
+Using <code>JkOptions ForwardLocalAddress</code> you can forward the local IP address of the web server
+as the client IP address. This can be useful, e.g. when using the Tomcat remote address valve for
+allowing connections only from registered Apache web servers.
+Using <code>JkOptions ForwardPhysicalAddress</code> you always forward the physical peer
+IP address as the client address. By default mod_jk
+uses the logical address as provided by the web server. For example the module
+mod_remoteip sets the logical IP address to the client IP forwarded by proxies
+in the <code>X-Forwarded-For</code> header.
 </p>
 </section>
 <section name="Tomcat AJP Connector Settings">

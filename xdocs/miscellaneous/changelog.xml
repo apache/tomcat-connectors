@@ -69,6 +69,11 @@
         Use max_packet_size also for request body forwarding. (rjung)
       </update>
       <update>
+        Apache 2.4: By default forward logical client address as provided by
+        mod_remoteip. When setting JkOptions ForwardPhysicalAddress mod_jk
+        will instead forward the physical peer address. (rjung)
+      </update>
+      <update>
         Minor documentation improvements. (rjung)
       </update>
     </changelog>

@@ -251,6 +251,7 @@ extern "C"
  */
 
 #define JK_OPT_FWDURIMASK           0x0007
+#define JK_OPT_FWDADDRMASK          0x0810
 
 #define JK_OPT_FWDURICOMPAT         0x0001
 #define JK_OPT_FWDURICOMPATUNPARSED 0x0002
@@ -268,6 +269,9 @@ extern "C"
 #define JK_OPT_FWDCERTCHAIN         0x0100
 #define JK_OPT_FWDKEYSIZE           0x0200
 #define JK_OPT_REJECTUNSAFE         0x0400
+/* Forward physical tcp peer address instead of
+ * client address as provided e.g. by httpd mod_remoteip. */
+#define JK_OPT_FWDPHYSICAL          0x0800
 
 #define JK_OPT_DEFAULT              (JK_OPT_FWDURIDEFAULT | JK_OPT_FWDKEYSIZE)
 

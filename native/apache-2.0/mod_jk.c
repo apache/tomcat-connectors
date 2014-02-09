@@ -785,8 +785,13 @@ static int init_ws_service(apache_private_data_t * private_data,
     }
     else {
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20111130)
-        s->remote_addr = r->connection->client_ip;
-        s->remote_port = apr_itoa(r->pool, r->connection->client_addr->port);
+        if (conf->options & JK_OPT_FWDPHYSICAL) {
+            s->remote_addr = r->connection->client_ip;
+            s->remote_port = apr_itoa(r->pool, r->connection->client_addr->port);
+        } else {
+            s->remote_addr = r->useragent_ip;
+            s->remote_port = apr_itoa(r->pool, r->useragent_addr->port);
+        }
 #else
         s->remote_addr = r->connection->remote_ip;
         s->remote_port = apr_itoa(r->pool, r->connection->remote_addr->port);
@@ -1101,7 +1106,7 @@ static int init_ws_service(apache_private_data_t * private_data,
      */
     if (JK_IS_DEBUG_LEVEL(conf->log)) {
         jk_log(conf->log, JK_LOG_DEBUG,
-               "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uri=%s",
+               "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uaddr=%s uri=%s",
                STRNULL_FOR_NULL(s->protocol),
                STRNULL_FOR_NULL(s->method),
                s->is_ssl ? "true" : "false",
@@ -1114,7 +1119,9 @@ static int init_ws_service(apache_private_data_t * private_data,
                STRNULL_FOR_NULL(r->connection->local_ip),
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20111130)
                STRNULL_FOR_NULL(r->connection->client_ip),
+               STRNULL_FOR_NULL(r->useragent_ip),
 #else
+               STRNULL_FOR_NULL(r->connection->remote_ip),
                STRNULL_FOR_NULL(r->connection->remote_ip),
 #endif
                STRNULL_FOR_NULL(s->req_uri));
@@ -2206,6 +2213,11 @@ static const char *jk_set_options(cmd_parms * cmd, void *dummy,
         }
         else if (!strcasecmp(w, "ForwardLocalAddress")) {
             opt = JK_OPT_FWDLOCAL;
+            mask = JK_OPT_FWDADDRMASK;
+        }
+        else if (!strcasecmp(w, "ForwardPhysicalAddress")) {
+            opt = JK_OPT_FWDPHYSICAL;
+            mask = JK_OPT_FWDADDRMASK;
         }
         else if (!strcasecmp(w, "FlushPackets")) {
             opt = JK_OPT_FLUSHPACKETS;
