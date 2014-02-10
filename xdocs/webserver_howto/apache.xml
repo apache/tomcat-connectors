@@ -611,8 +611,8 @@ file that Tomcat normally serves - for instance Velocity pages and JSP pages.
 </p>
 
 <p>
-Setting JkOptions <b>ForwardLocalAddress</b>, you ask mod_jk to send the local address,
-of the Apache web server instead remote client address. This can be used by
+Setting JkOptions <b>ForwardLocalAddress</b>, you ask mod_jk to send the local address
+of the Apache web server instead of remote client address. This can be used by
 Tomcat remote address valve for allowing connections only from registered Apache
 web servers.
 
