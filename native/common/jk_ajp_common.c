@@ -2267,7 +2267,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
              */
             op->recoverable = JK_FALSE;
             rc = ajp_connection_tcp_send_message(p, op->post, l);
-            if (rc < 0) {
+            if (rc != JK_TRUE) {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) Tomcat is down or network problems",
                         p->worker->name);

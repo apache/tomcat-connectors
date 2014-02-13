@@ -45,6 +45,11 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>56133</bug>: Fix possible crash when a request fails during
+        request body transfer to the back end and reply_timeout was set.
+        Patch contributed by Hiroto Shimizu. (rjung)
+      </fix>
+      <fix>
         Fix status worker not updating parameters for all members. (mturk)
       </fix>
       <fix>
