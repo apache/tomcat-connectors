@@ -1101,6 +1101,17 @@ This feature has been added in <b>jk 1.2.38</b>.
 </p>
 </directive>
 
+<directive name="prefer_ipv6" workers="AJP" default="0" required="false">
+When compiled with IPV6 support, this directive forces IPV6 address
+resolution for host names which have both IPV6 and IPV4 addresses. In case there is
+no IPV6 address defined for the given hostname this directive in ineffective. This directive will
+be also ineffective if there is only IPV6 address defined or if IP address is used for "host",
+either in IPV4 or IPV6 notation.
+<p>
+This feature has been added in <b>jk 1.2.38</b>.
+</p>
+</directive>
+
 </advanceddirectives>
 </subsection>
 
