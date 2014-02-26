@@ -370,6 +370,12 @@ AC_ARG_ENABLE(sock-cloexec,
 [AS_HELP_STRING([--disable-sock-cloexec],[Disable use of SOCK_CLOEXEC.
 This ensures the built module can be used on systems that do not support SOCK_CLOEXEC])],
 [
+case "${enableval}" in
+    y | Y | YES | yes | TRUE | true )
+	dnl check for SOCK_CLOEXEC
+	JK_CHECK_SOCKOPT(SOCK_CLOEXEC)
+        ;;
+esac
 ],
 [
 	dnl check for SOCK_CLOEXEC
