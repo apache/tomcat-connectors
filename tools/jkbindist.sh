@@ -1,5 +1,4 @@
-#!/bin/ksh
-
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -126,11 +125,10 @@ done
 unix2dos README
 chmod 755 $1
 # Pack
-zip -9 -j ${dist}.zip $@ LICENSE README NOTICE ${copy}
-
-# Sign
 archive=${dist}.zip
-. ${tools}/signfile.sh ${sign} $archive
+zip -9 -j ${archive} $@ README ${copy}
+# Sign
+. ${tools}/signfile.sh ${sign} ${archive}
 
 # Cleanup
 rm -f README ${copy} 2>/dev/null
