@@ -1184,7 +1184,7 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
 #endif
 
 /**
- * dump a sockaddr_in in A.B.C.D:P in ASCII buffer
+ * dump a jk_sockaddr_t in A.B.C.D:P in ASCII buffer
  *
  */
 char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf)
