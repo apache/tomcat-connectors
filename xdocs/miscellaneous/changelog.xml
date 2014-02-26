@@ -57,6 +57,11 @@
         Patch contributed by areese yahoo-inc.com. (rjung)
       </fix>
       <add>
+        Add IPV6 support for connection to webserver.
+        New directive prefer_ipv6 has been added to control the hostame resolution
+        and preserve backward compatibility. (mturk)
+      </add>
+      <add>
         Add --disable-sock-cloexec to configure to disable use of SOCK_CLOEXEC
         (using FD_CLOEXEC + fnctl instead) so built modules will work with
         Linux kernels prior to 2.6.27. (timw)
