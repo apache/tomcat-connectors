@@ -44,6 +44,9 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Deprecate nt_service from Tomcat Connectors. (mturk) 
+      </update>
       <fix>
         <bug>56133</bug>: Fix possible crash when a request fails during
         request body transfer to the back end and reply_timeout was set.
