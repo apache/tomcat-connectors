@@ -411,6 +411,7 @@ typedef int jk_sock_t;
 #if defined(HAVE_APR)
 #define JK_HAVE_IPV6            APR_HAVE_IPV6
 #define JK_INET                 APR_INET
+#define JK_INET6                APR_INET6
 #define JK_UNSPEC               APR_UNSPEC
 #else
 #if defined(WIN32) || defined(HAVE_AF_INET6)
@@ -424,9 +425,11 @@ typedef int jk_sock_t;
 #else
 #define JK_UNSPEC               0
 #endif
-#endif
 #if JK_HAVE_IPV6
 #define JK_INET6                AF_INET6
+#else
+#define JK_INET6                0
+#endif
 #endif
 
 typedef struct jk_sockaddr_t jk_sockaddr_t;
