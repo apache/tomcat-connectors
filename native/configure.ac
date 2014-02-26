@@ -18,17 +18,19 @@ dnl Process this file with autoconf to produce a configure script
 dnl
 AC_REVISION($Id$)dnl
 
-AC_PREREQ(2.13)
-AC_INIT(common/jk_worker.h)
+dnl Minimum autoconf version
+AC_PREREQ(2.59)
+
+dnl package and version.
+dnl synchronization with common/jk_version.h ?
+AC_INIT([mod_jk], [1.2.38])
+
+AC_CONFIG_SRCDIR([common/jk_worker.h])
 AC_CONFIG_HEADER(common/config.h)
 AC_CONFIG_AUX_DIR(scripts/build/unix)
 AC_CANONICAL_SYSTEM
 
-dnl package and version. (synchronization with common/jk_version.h ?)
-PACKAGE=mod_jk
-VERSION=1.2.38
-
-AM_INIT_AUTOMAKE(${PACKAGE}, ${VERSION})
+AM_INIT_AUTOMAKE
 
 dnl
 dnl Include our own M4 macros
