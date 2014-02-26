@@ -513,10 +513,10 @@ static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
         return val;
     }
 
-    // set session_path
+    /* set session_path */
     session_path = (s->extension.session_path) ?
             s->extension.session_path : p->session_path;
-    // set session_cookie
+    /* set session_cookie */
     session_cookie = (s->extension.session_cookie) ?
             s->extension.session_cookie : p->session_cookie;
 
