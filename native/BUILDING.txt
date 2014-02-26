@@ -142,7 +142,7 @@
   - libtool files in scripts/build/unix (should copy them?)
   - Makefile.in from Makefile.am
   - aclocal.m4 from different m4 files located on the local machine
-  - configure from configure.in and aclocal.m4
+  - configure from configure.ac and aclocal.m4
 
   buildconf.sh is known to work with libtool 1.5.2, automake 1.10
   and autoconf 2.59 or newer. The use of more recent versions is
