@@ -2730,7 +2730,7 @@ int ajp_validate(jk_worker_t *pThis,
             host = "undefined";
         }
         strncpy(p->host, jk_get_worker_host(props, p->name, host), JK_SHM_STR_SIZ);
-        p->prefer_ipv6 = jk_get_worker_prefer_ipv6(props, p->name, 0);
+        p->prefer_ipv6 = jk_get_worker_prefer_ipv6(props, p->name, JK_FALSE);
         if (p->s->h.sequence == 0) {
             /* Initial setup.
              */

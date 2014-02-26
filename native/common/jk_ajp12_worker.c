@@ -192,7 +192,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                p->name, host, port);
 
         if (host) {
-            if (jk_resolve(host, port, &p->worker_inet_addr, we->pool, 0, l)) {
+            if (jk_resolve(host, port, &p->worker_inet_addr, we->pool, JK_FALSE, l)) {
                 return JK_TRUE;
             }
             jk_log(l, JK_LOG_ERROR,
