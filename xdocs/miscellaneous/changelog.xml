@@ -61,7 +61,7 @@
       </fix>
       <add>
         Add IPV6 support for connection to webserver.
-        New directive prefer_ipv6 has been added to control the hostame resolution
+        New directive prefer_ipv6 has been added to control the hostname resolution
         and preserve backward compatibility. (mturk)
       </add>
       <add>
