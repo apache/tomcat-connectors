@@ -155,7 +155,7 @@ Update source for next version
 
 native/STATUS.txt: Add release date for released version and
                    status "in development" for new version.
-native/configure.ac: Update variable VERSION.
+native/configure.ac: Update version in AC_INIT macro.
 native/common/jk_version.h: Update variables JK_VERMAJOR, JK_VERMINOR, JK_VERFIX,
                             JK_VERSTRING, and JK_VERISRELEASE.
 native/iis/installer/isapi-redirector-win32-msi.ism: Update ProductVersion.
