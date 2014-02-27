@@ -416,19 +416,16 @@ typedef int jk_sock_t;
 #else
 #if defined(WIN32) || defined(HAVE_AF_INET6)
 #define JK_HAVE_IPV6            1
+#define JK_INET6                AF_INET6
 #else
 #define JK_HAVE_IPV6            0
+#define JK_INET6                0
 #endif
 #define JK_INET                 AF_INET
 #if defined(AF_UNSPEC)
 #define JK_UNSPEC               AF_UNSPEC
 #else
 #define JK_UNSPEC               0
-#endif
-#if JK_HAVE_IPV6
-#define JK_INET6                AF_INET6
-#else
-#define JK_INET6                0
 #endif
 #endif
 
