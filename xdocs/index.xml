@@ -45,6 +45,18 @@ manual is described in more detail below.</p>
 <section name="Headlines">
 <br />
 <ul>
+<li><a href="news/20140201.html#11 March - JK-1.2.39 released">11 March 2014 - <b>JK-1.2.39 released</b></a>
+<p>The Apache Tomcat team is proud to announce the immediate availability
+    of Tomcat Connectors 1.2.39 Stable. This release contains bug fixes found in previous releases
+    and few new features.
+</p>
+<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.39-src.tar.gz">JK 1.2.39 release sources</a>
+    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.39-src.tar.gz.asc">PGP signature</a>
+</p>
+<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
+</p>
+</li>
+
 <li><a href="news/20120301.html#31 May - JK-1.2.37 released">31 May 2012 - <b>JK-1.2.37 released</b></a>
 <p>The Apache Tomcat team is proud to announce the immediate availability
     of Tomcat Connectors 1.2.37 Stable. This release contains bug fixes found in previous release.
