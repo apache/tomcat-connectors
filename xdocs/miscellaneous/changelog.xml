@@ -54,6 +54,9 @@
       <fix>
         <bug>55683</bug>: Remove quotes from quoted session cookies. (rjung)
       </fix>
+      <fix>
+        <bug>53542</bug>: ISAPI: Fix grammar in 503 error page. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

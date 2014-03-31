@@ -410,7 +410,7 @@ static struct error_reasons {
     },
     { 503,
       "Service Unavailable",
-      "Service Temporary Unavailable",
+      "Service Temporarily Unavailable",
       "The server is temporarily unable to service your "
       "request due to maintenance downtime or capacity problems. "
       "Please try again later."
