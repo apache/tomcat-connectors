@@ -513,7 +513,6 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
     /* XXX IPv6: assumes sin_port and sin6_port at same offset */
     saddr->sa.sin.sin_port = htons(port);
     saddr->port   = port;
-    saddr->host   = host;
     saddr->family = family;
 
     JK_TRACE_EXIT(l);
