@@ -3390,7 +3390,7 @@ static int commit_member(jk_ws_service_t *s,
             /* This is not atomic and not thread safe */
             aw->port = port;
             strncpy(aw->host, host, JK_SHM_STR_SIZ);
-            memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
+            jk_clone_sockaddr(&(aw->worker_inet_addr), &inet_addr);
             *side_effect |= JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH;
         }
     }

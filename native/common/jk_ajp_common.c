@@ -1117,7 +1117,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
                     aw->s->connected--;
                 }
             }
-            memcpy(&(aw->worker_inet_addr), &inet_addr, sizeof(inet_addr));
+            jk_clone_sockaddr(&(aw->worker_inet_addr), &inet_addr);
             JK_LEAVE_CS(&aw->cs);
         }
     }

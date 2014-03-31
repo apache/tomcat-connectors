@@ -38,6 +38,8 @@ extern "C"
 
 #define JK_SOCKET_EOF      (-2)
 
+void jk_clone_sockaddr(jk_sockaddr_t *out, jk_sockaddr_t *in);
+
 int jk_resolve(const char *host, int port, jk_sockaddr_t *rc, void *pool,
                int prefer_ipv6, jk_logger_t *l);
 

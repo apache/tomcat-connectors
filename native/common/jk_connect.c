@@ -328,6 +328,20 @@ in_addr_t jk_inet_addr(const char * addrstr)
 
 #endif
 
+/** Clone a jk_sockaddr_t
+ * @param out     The source structure
+ * @param in      The target structure
+ */
+void jk_clone_sockaddr(jk_sockaddr_t *out, jk_sockaddr_t *in)
+{
+    memcpy(out, in, sizeof(*in));
+    /* The ipaddr_ptr member points to memory inside the struct.
+     * Do not copy the pointer but use the same offset relative
+     * to the struct start
+     */
+    out->ipaddr_ptr = (void *)out + (in->ipaddr_ptr - (void *)in);
+}
+
 /** Resolve the host IP
  * @param host     host or ip address
  * @param port     port

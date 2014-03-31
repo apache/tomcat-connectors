@@ -40,6 +40,16 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.39 and 1.2.40">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        Fix status worker display of worker IP address after name or port
+        was changed. (rjung)
+      </fix>
+    </changelog>
+  </subsection>
 <section name="Changes between 1.2.37 and 1.2.39">
   <br />
   <subsection name="Native">
