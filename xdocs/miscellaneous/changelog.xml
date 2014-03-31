@@ -51,6 +51,9 @@
       <update>
         <bug>56297</bug>: Improve key hash function. Copied from APR. (rjung)
       </update>
+      <fix>
+        <bug>55683</bug>: Remove quotes from quoted session cookies. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

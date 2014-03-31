@@ -470,6 +470,11 @@ static char *get_cookie(jk_ws_service_t *s, const char *name)
                             sz = strlen(id_start);
                             id_end = id_start + sz;
                         }
+                        /* Chop off surrounding '"' (quoted cookie) */
+                        if (sz > 1 && *id_start == '"' && *(id_start + sz - 1) == '"') {
+                            id_start++;
+                            sz -= 2;
+                        }
                         if (result == NULL) {
                             result = jk_pool_alloc(s->pool, sz + 1);
                             memcpy(result, id_start, sz);
