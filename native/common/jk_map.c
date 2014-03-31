@@ -36,32 +36,51 @@
 #define JK_MAP_REFERENCE    (".reference")
 #define JK_MAP_REFERENCE_SZ (strlen(JK_MAP_REFERENCE))
 
-/* Compute the "checksum" for a key, consisting of the first
- * 4 bytes, packed into an int.
- * This checksum allows us to do a single integer
- * comparison as a fast check to determine whether we can
- * skip a strcmp
+/* Taken from APR tables/apr_hash.c */
+/*
+ * This is the popular `times 33' hash algorithm which is used by
+ * perl and also appears in Berkeley DB. This is one of the best
+ * known hash functions for strings because it is both computed
+ * very fast and distributes very well.
+ *
+ * The originator may be Dan Bernstein but the code in Berkeley DB
+ * cites Chris Torek as the source. The best citation I have found
+ * is "Chris Torek, Hash function for text in C, Usenet message
+ * <27038@mimsy.umd.edu> in comp.lang.c , October, 1990." in Rich
+ * Salz's USENIX 1992 paper about INN which can be found at
+ * <http://citeseer.nj.nec.com/salz92internetnews.html>.
+ *
+ * The magic of number 33, i.e. why it works better than many other
+ * constants, prime or not, has never been adequately explained by
+ * anyone. So I try an explanation: if one experimentally tests all
+ * multipliers between 1 and 256 (as I did while writing a low-level
+ * data structure library some time ago) one detects that even
+ * numbers are not useable at all. The remaining 128 odd numbers
+ * (except for the number 1) work more or less all equally well.
+ * They all distribute in an acceptable way and this way fill a hash
+ * table with an average percent of approx. 86%.
+ *
+ * If one compares the chi^2 values of the variants (see
+ * Bob Jenkins ``Hashing Frequently Asked Questions'' at
+ * http://burtleburtle.net/bob/hash/hashfaq.html for a description
+ * of chi^2), the number 33 not even has the best value. But the
+ * number 33 and a few other equally good numbers like 17, 31, 63,
+ * 127 and 129 have nevertheless a great advantage to the remaining
+ * numbers in the large set of possible multipliers: their multiply
+ * operation can be replaced by a faster operation based on just one
+ * shift plus either a single addition or subtraction operation. And
+ * because a hash function has to both distribute good _and_ has to
+ * be very fast to compute, those few numbers should be preferred.
+ *
+ *                  -- Ralf S. Engelschall <rse@engelschall.com>
  */
-#define COMPUTE_KEY_CHECKSUM(key, checksum)    \
-{                                              \
-    const char *k = (key);                     \
-    unsigned int c = (unsigned int)*k;         \
-    (checksum) = c;                            \
-    (checksum) <<= 8;                          \
-    if (c) {                                   \
-        c = (unsigned int)*++k;                \
-        checksum |= c;                         \
-    }                                          \
-    (checksum) <<= 8;                          \
-    if (c) {                                   \
-        c = (unsigned int)*++k;                \
-        checksum |= c;                         \
-    }                                          \
-    (checksum) <<= 8;                          \
-    if (c) {                                   \
-        c = (unsigned int)*++k;                \
-        checksum |= c;                         \
-    }                                          \
+#define COMPUTE_KEY_HASH(key, hash)    \
+{                                                    \
+    const unsigned char *p;                          \
+    hash = 0;                                        \
+    for (p = (const unsigned char *)key; *p; p++) {  \
+        hash = hash * 33 + *p;                       \
+    }                                                \
 }
 
 static volatile int global_map_id = 0;
@@ -130,10 +149,10 @@ void *jk_map_get(jk_map_t *m, const char *name, const void *def)
 
     if (m && name) {
         unsigned int i;
-        unsigned int key;
-        COMPUTE_KEY_CHECKSUM(name, key)
+        unsigned int hash;
+        COMPUTE_KEY_HASH(name, hash)
         for (i = 0; i < m->size; i++) {
-            if (m->keys[i] == key && strcmp(m->names[i], name) == 0) {
+            if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 rc = m->values[i];
                 break;
             }
@@ -148,10 +167,10 @@ int jk_map_get_id(jk_map_t *m, const char *name)
     int rc = -1;
     if (m && name) {
         unsigned int i;
-        unsigned int key;
-        COMPUTE_KEY_CHECKSUM(name, key)
+        unsigned int hash;
+        COMPUTE_KEY_HASH(name, hash)
         for (i = 0; i < m->size; i++) {
-            if (m->keys[i] == key && strcmp(m->names[i], name) == 0) {
+            if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 rc = i;
                 break;
             }
@@ -167,10 +186,10 @@ const char *jk_map_get_string(jk_map_t *m, const char *name, const char *def)
 
     if (m && name) {
         unsigned int i;
-        unsigned int key;
-        COMPUTE_KEY_CHECKSUM(name, key)
+        unsigned int hash;
+        COMPUTE_KEY_HASH(name, hash)
         for (i = 0; i < m->size; i++) {
-            if (m->keys[i] == key && strcmp(m->names[i], name) == 0) {
+            if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 rc = m->values[i];
                 break;
             }
@@ -343,14 +362,14 @@ int jk_map_add(jk_map_t *m, const char *name, const void *value)
     int rc = JK_FALSE;
 
     if (m && name) {
-        unsigned int key;
-        COMPUTE_KEY_CHECKSUM(name, key)
+        unsigned int hash;
+        COMPUTE_KEY_HASH(name, hash)
         map_realloc(m);
 
         if (m->size < m->capacity) {
             m->values[m->size] = value;
             m->names[m->size] = jk_pool_strdup(&m->p, name);
-            m->keys[m->size] = key;
+            m->keys[m->size] = hash;
             m->size++;
             rc = JK_TRUE;
         }
@@ -365,10 +384,10 @@ int jk_map_put(jk_map_t *m, const char *name, const void *value, void **old)
 
     if (m && name) {
         unsigned int i;
-        unsigned int key;
-        COMPUTE_KEY_CHECKSUM(name, key)
+        unsigned int hash;
+        COMPUTE_KEY_HASH(name, hash)
         for (i = 0; i < m->size; i++) {
-            if (m->keys[i] == key && strcmp(m->names[i], name) == 0) {
+            if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 break;
             }
         }
