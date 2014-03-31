@@ -26,6 +26,16 @@ directory.
 
 If you haven't already, add your public PGP key to KEYS.
 
+Add a preliminary note about the new release to the docs
+--------------------------------------------------------
+
+Candidate pages are:
+
+xdocs/index.xml
+xdocs/news/<THISYEAR0101>.xml
+
+We can't add a final release date though.
+
 Update version numbers as needed
 --------------------------------
 
