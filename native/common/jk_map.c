@@ -206,29 +206,27 @@ int jk_map_get_int(jk_map_t *m, const char *name, int def)
     const char *rc;
     size_t len;
     int int_res;
-    int multit = 1;
 
     sprintf(buf, "%d", def);
     rc = jk_map_get_string(m, name, buf);
 
     len = strlen(rc);
     if (len) {
-        char *lastchar = &buf[0] + len - 1;
-        strcpy(buf, rc);
+        const char *lastchar = &rc[0] + len - 1;
+        int multit = 1;
         if ('m' == *lastchar || 'M' == *lastchar) {
-            *lastchar = '\0';
             multit = 1024 * 1024;
         }
         else if ('k' == *lastchar || 'K' == *lastchar) {
-            *lastchar = '\0';
             multit = 1024;
         }
-        int_res = atoi(buf);
+        /* Safe because atoi() will stop at any non-numeric lastchar */
+        int_res = atoi(rc) * multit;
     }
     else
         int_res = def;
 
-    return int_res * multit;
+    return int_res;
 }
 
 double jk_map_get_double(jk_map_t *m, const char *name, double def)

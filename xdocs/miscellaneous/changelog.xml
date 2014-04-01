@@ -57,6 +57,10 @@
       <fix>
         <bug>53542</bug>: ISAPI: Fix grammar in 503 error page. (rjung)
       </fix>
+      <fix>
+        <bug>55696</bug>: Crash on Mac OS X 10.9 during config parsing.
+        (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
