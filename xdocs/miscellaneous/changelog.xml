@@ -45,6 +45,9 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>56352</bug>: Fix regression in memory release. (mturk)
+      </fix>
+      <fix>
         Fix status worker display of worker IP address after name or port
         was changed. (rjung)
       </fix>

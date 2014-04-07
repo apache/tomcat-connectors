@@ -481,16 +481,17 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
                 }
             }
         }
-        freeaddrinfo(ai_list);
         if (ai == NULL) {
             /* No address found
              * XXX: Use better error code?
              */
+            freeaddrinfo(ai_list);
             JK_TRACE_EXIT(l);
             errno = ENOENT;
             return JK_FALSE;
         }
         memcpy(&(saddr->sa), ai->ai_addr, ai->ai_addrlen);
+        freeaddrinfo(ai_list);
 #else /* HAVE_GETADDRINFO */
         struct hostent *hoste;
 
