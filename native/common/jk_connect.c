@@ -430,6 +430,8 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
          */
         struct addrinfo hints, *ai_list, *ai = NULL;
         int error;
+        char  pbuf[12];
+        char *pbufptr = NULL;
 
         memset(&hints, 0, sizeof(hints));
         hints.ai_socktype = SOCK_STREAM;
@@ -440,7 +442,11 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         else
 #endif
             hints.ai_family = JK_INET;
-        error = getaddrinfo(host, NULL, &hints, &ai_list);
+        if (port > 0) {
+            snprintf(pbuf, port, sizeof(pbuf));
+            pbufptr = pbuf;
+        }
+        error = getaddrinfo(host, pbufptr, &hints, &ai_list);
 #if JK_HAVE_IPV6
         /* XXX:
          * Is the check for EAI_FAMILY/WSAEAFNOSUPPORT correct
@@ -461,12 +467,13 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
             ai = ai_list;
             while (ai) {
                 if (ai->ai_family == AF_INET6) {
-                    family = JK_INET6;
-                    break;
+                    /* ignore elements without required address info */
+                    if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {                        
+                        family = JK_INET6;
+                        break;
+                    }
                 }
-                else {
-                    ai = ai->ai_next;
-                }
+                ai = ai->ai_next;
             }
         }
 #endif
@@ -474,12 +481,13 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
             ai = ai_list;
             while (ai) {
                 if (ai->ai_family == AF_INET) {
-                    family = JK_INET;
-                    break;
+                    /* ignore elements without required address info */
+                    if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {                        
+                        family = JK_INET;
+                        break;
+                    }
                 }
-                else {
-                    ai = ai->ai_next;
-                }
+                ai = ai->ai_next;
             }
         }
         if (ai == NULL) {
