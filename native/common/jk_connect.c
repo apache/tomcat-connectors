@@ -433,6 +433,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 
         memset(&hints, 0, sizeof(hints));
         hints.ai_socktype = SOCK_STREAM;
+        hints.ai_protocol = IPPROTO_TCP;
 #if JK_HAVE_IPV6
         if (prefer_ipv6)
             hints.ai_family = JK_INET6;
