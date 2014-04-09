@@ -1482,7 +1482,7 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
     if ((r->is_chunked && len == 0) || len < 0 || len > maxlen) {
         len = maxlen;
     }
-    if ((jk_uint64_t)len > ae->left_bytes_to_send) {
+    if (ae->left_bytes_to_send > 0 && (jk_uint64_t)len > ae->left_bytes_to_send) {
         len = (int)ae->left_bytes_to_send;
     }
 

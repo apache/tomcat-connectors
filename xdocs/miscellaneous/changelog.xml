@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        Fix forwarding of chunked requests, which is broken in version 1.2.39.
+        (rjung)
+      </fix>
+      <fix>
         <bug>56352</bug>: Fix regression in memory release. (mturk)
       </fix>
       <fix>
