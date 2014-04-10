@@ -1479,11 +1479,15 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
 
     /* Pick the max size since we don't know the content_length
      */
-    if ((r->is_chunked && len == 0) || len < 0 || len > maxlen) {
+    if (r->is_chunked && ae->left_bytes_to_send == 0) {
         len = maxlen;
-    }
-    if (ae->left_bytes_to_send > 0 && (jk_uint64_t)len > ae->left_bytes_to_send) {
-        len = (int)ae->left_bytes_to_send;
+    } else {
+        if ((jk_uint64_t)maxlen > ae->left_bytes_to_send) {
+            maxlen = (int)ae->left_bytes_to_send;
+        }
+        if (len < 0 || len > maxlen) {
+            len = maxlen;
+        }
     }
 
     if ((len = ajp_read_fully_from_server(r, l, read_buf, len)) < 0) {
