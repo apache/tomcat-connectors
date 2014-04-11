@@ -339,7 +339,7 @@ void jk_clone_sockaddr(jk_sockaddr_t *out, jk_sockaddr_t *in)
      * Do not copy the pointer but use the same offset relative
      * to the struct start
      */
-    out->ipaddr_ptr = (void *)out + (in->ipaddr_ptr - (void *)in);
+    out->ipaddr_ptr = (char *)out + ((char *)in->ipaddr_ptr - (char *)in);
 }
 
 /** Resolve the host IP
@@ -443,7 +443,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 #endif
             hints.ai_family = JK_INET;
         if (port > 0) {
-            snprintf(pbuf, port, sizeof(pbuf));
+            snprintf(pbuf, sizeof(pbuf), "%d", port);
             pbufptr = pbuf;
         }
         error = getaddrinfo(host, pbufptr, &hints, &ai_list);
