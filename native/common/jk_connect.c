@@ -454,7 +454,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
          */
         if (error == EAI_FAMILY && prefer_ipv6) {
             hints.ai_family = JK_INET;
-            error = getaddrinfo(host, NULL, &hints, &ai_list);
+            error = getaddrinfo(host, pbufptr, &hints, &ai_list);
         }
 #endif
         if (error) {
@@ -466,7 +466,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         if (prefer_ipv6) {
             ai = ai_list;
             while (ai) {
-                if (ai->ai_family == AF_INET6) {
+                if (ai->ai_family == JK_INET6) {
                     /* ignore elements without required address info */
                     if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {                        
                         family = JK_INET6;
@@ -480,7 +480,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         if (ai == NULL) {
             ai = ai_list;
             while (ai) {
-                if (ai->ai_family == AF_INET) {
+                if (ai->ai_family == JK_INET) {
                     /* ignore elements without required address info */
                     if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {                        
                         family = JK_INET;
