@@ -123,7 +123,7 @@ do
     unix2dos $i
 done
 unix2dos README
-chmod 755 $1
+#chmod 755 $1
 # Pack
 archive=${dist}.zip
 zip -9 -j ${archive} $@ README ${copy}
