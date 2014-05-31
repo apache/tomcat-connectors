@@ -1093,8 +1093,14 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     if (index)
         *index = -1;
     if (*uri != '/') {
-        jk_log(l, JK_LOG_WARNING,
-                "Uri %s is invalid. Uri must start with /", uri);
+        if (*uri == '*' && *(uri+1) == '\0' && JK_IS_DEBUG_LEVEL(l)) {
+            /* Most likely an "OPTIONS *" request */
+            jk_log(l, JK_LOG_DEBUG,
+                   "Uri %s can't be mapped.", uri);
+        } else {
+            jk_log(l, JK_LOG_WARNING,
+                   "Uri %s is invalid. Uri must start with /", uri);
+        }
         JK_TRACE_EXIT(l);
         return NULL;
     }

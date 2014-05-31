@@ -40,6 +40,17 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.40 and 1.2.41">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        Reduce log level for "OPTIONS *" requests from warning to debug.
+        (rjung)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
 <section name="Changes between 1.2.39 and 1.2.40">
   <br />
   <subsection name="Native">
