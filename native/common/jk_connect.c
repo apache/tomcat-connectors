@@ -400,6 +400,13 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
             else {
                 while ((NULL != temp_sa) && (APR_INET != temp_sa->family))
                     temp_sa = temp_sa->next;
+#if APR_HAVE_IPV6
+                if (NULL == temp_sa) {
+                    temp_sa = remote_sa;
+                    while ((NULL != temp_sa) && (APR_INET6 != temp_sa->family))
+                        temp_sa = temp_sa->next;
+                }
+#endif
             }
             /* if temp_sa is set, we have a valid address otherwise, just return */
             if (NULL != temp_sa) {

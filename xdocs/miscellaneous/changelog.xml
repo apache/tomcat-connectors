@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>56565</bug>: Fix IPV6 address resolve on non-dual
+          network stacks. (mturk)
+      </fix>
+      <fix>
         Reduce log level for "OPTIONS *" requests from warning to debug.
         (rjung)
       </fix>
