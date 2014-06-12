@@ -443,7 +443,14 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         memset(&hints, 0, sizeof(hints));
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_protocol = IPPROTO_TCP;
+        
 #if JK_HAVE_IPV6
+        if (strchr(host, ':')) {
+            /* If host name contains collon this must be IPV6 address.
+             * Set prefer_ipv6 flag in this case if it wasn't set already
+             */
+            prefer_ipv6 = 1;            
+        }
         if (prefer_ipv6)
             hints.ai_family = JK_INET6;
         else
