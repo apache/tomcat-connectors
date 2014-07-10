@@ -1764,7 +1764,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                     }
                     if (JK_IS_DEBUG_LEVEL(l)) {
                         jk_log(l, JK_LOG_DEBUG,
-                               "Balanced worker %i has name %s and route %s in domain %s",
+                               "Balanced worker %d has name %s and route %s in domain %s",
                                i,
                                p->lb_workers[i].name,
                                p->lb_workers[i].route,
@@ -1777,7 +1777,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                     for (j = 0; j < i; j++) {
                         if (strcmp(p->lb_workers[i].route, p->lb_workers[j].route) == 0) {
                             jk_log(l, JK_LOG_ERROR,
-                                   "Balanced workers number %i (%s) and %i (%s) share the same route %s - aborting configuration!",
+                                   "Balanced workers number %d (%s) and %d (%s) share the same route %s - aborting configuration!",
                                    i,
                                    p->lb_workers[i].name,
                                    j,

@@ -1976,8 +1976,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
              */
             if (len > (unsigned int)(msg->len - 3)) {
                 jk_log(l, JK_LOG_ERROR,
-                       "Chunk length too large. Length of AJP message is %i,"
-                       " chunk length is %i.", msg->len, len);
+                       "Chunk length too large. Length of AJP message is %d,"
+                       " chunk length is %d.", msg->len, len);
                 JK_TRACE_EXIT(l);
                 return JK_INTERNAL_ERROR;
             }

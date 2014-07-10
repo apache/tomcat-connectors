@@ -3110,7 +3110,7 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->retries, l);
     if (i != lb->retries && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'retries' for lb worker '%s' to '%i'",
+               "Status worker '%s' setting 'retries' for lb worker '%s' to '%d'",
                w->name, name, i);
         lb->retries = i;
         sync_needed = JK_TRUE;
@@ -3119,7 +3119,7 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->retry_interval, l);
     if (i != lb->retry_interval && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'retry_interval' for lb worker '%s' to '%i'",
+               "Status worker '%s' setting 'retry_interval' for lb worker '%s' to '%d'",
                w->name, name, i);
         lb->retry_interval = i;
         sync_needed = JK_TRUE;
@@ -3128,7 +3128,7 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->recover_wait_time, l);
     if (i != lb->recover_wait_time && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'recover_time' for lb worker '%s' to '%i'",
+               "Status worker '%s' setting 'recover_time' for lb worker '%s' to '%d'",
                w->name, name, i);
         lb->recover_wait_time = i;
         sync_needed = JK_TRUE;
@@ -3137,7 +3137,7 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->error_escalation_time, l);
     if (i != lb->error_escalation_time && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'error_escalation_time' for lb worker '%s' to '%i'",
+               "Status worker '%s' setting 'error_escalation_time' for lb worker '%s' to '%d'",
                w->name, name, i);
         lb->error_escalation_time = i;
         sync_needed = JK_TRUE;
@@ -3146,7 +3146,7 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->max_reply_timeouts, l);
     if (i != lb->max_reply_timeouts && i >= 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'max_reply_timeouts' for lb worker '%s' to '%i'",
+               "Status worker '%s' setting 'max_reply_timeouts' for lb worker '%s' to '%d'",
                w->name, name, i);
         lb->max_reply_timeouts = i;
         sync_needed = JK_TRUE;
@@ -3154,7 +3154,7 @@ static void commit_worker(jk_ws_service_t *s,
     i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY, lb->sticky_session, l);
     if (i != lb->sticky_session) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'sticky_session' for lb worker '%s' to '%i'",
+               "Status worker '%s' setting 'sticky_session' for lb worker '%s' to '%d'",
                w->name, name, i);
         lb->sticky_session = i;
         sync_needed = JK_TRUE;
@@ -3162,7 +3162,7 @@ static void commit_worker(jk_ws_service_t *s,
     i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY_FORCE, lb->sticky_session_force, l);
     if (i != lb->sticky_session_force) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'sticky_session_force' for lb worker '%s' to '%i'",
+               "Status worker '%s' setting 'sticky_session_force' for lb worker '%s' to '%d'",
                w->name, name, i);
         lb->sticky_session_force = i;
         sync_needed = JK_TRUE;
@@ -3209,11 +3209,11 @@ static int set_int_if_changed(status_endpoint_t *p,
     if (i != *param && i >= min && i <= max) {
         if (lb_name)
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting '%s' for sub worker '%s' of lb worker '%s' to '%i'",
+                   "Status worker '%s' setting '%s' for sub worker '%s' of lb worker '%s' to '%d'",
                    w->name, att, name, lb_name, i);
         else
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting '%s' for ajp worker '%s' to '%i'",
+                   "Status worker '%s' setting '%s' for ajp worker '%s' to '%d'",
                    w->name, att, name, i);
         *param = i;
         return JK_TRUE;
