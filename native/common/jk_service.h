@@ -168,6 +168,7 @@ struct jk_ws_service
     const char *auth_type;
     const char *query_string;
     const char *server_name;
+    const char *local_addr;
     unsigned server_port;
     char *server_software;
     jk_uint64_t content_length; /* 64 bit integer that represents the content */

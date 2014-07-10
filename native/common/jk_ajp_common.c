@@ -604,6 +604,22 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
+    /* Forward the local ip address information, which was forgotten
+     * from the builtin data of the AJP 13 protocol.
+     * Since the servlet spec allows to retrieve it via getLocalAddr(),
+     * we provide the address to the Tomcat connector as a request
+     * attribute. Modern Tomcat versions know how to retrieve
+     * the local address from this attribute.
+     */
+    if (jk_b_append_byte(msg, SC_A_REQ_ATTRIBUTE) ||
+        jk_b_append_string(msg, SC_A_REQ_LOCAL_ADDR)   ||
+        jk_b_append_string(msg, s->local_addr)) {
+        jk_log(l, JK_LOG_ERROR,
+               "failed appending the local address %s",
+               s->local_addr);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
     /* Forward activation information from the load balancer.
      * It can be used by the backend to deny access by requests,
      * which come with a session id but for an invalid session.

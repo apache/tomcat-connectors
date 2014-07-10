@@ -71,6 +71,7 @@
 #define JK_ENV_REMOTE_USER          ("JK_REMOTE_USER")
 #define JK_ENV_AUTH_TYPE            ("JK_AUTH_TYPE")
 #define JK_ENV_LOCAL_NAME           ("JK_LOCAL_NAME")
+#define JK_ENV_LOCAL_ADDR           ("JK_LOCAL_ADDR")
 #define JK_ENV_LOCAL_PORT           ("JK_LOCAL_PORT")
 #define JK_ENV_HTTPS                ("HTTPS")
 #define JK_ENV_CERTS                ("SSL_CLIENT_CERT")
@@ -181,6 +182,7 @@ typedef struct
     char *remote_user_indicator;
     char *auth_type_indicator;
     char *local_name_indicator;
+    char *local_addr_indicator;
     char *local_port_indicator;
 
     /*
@@ -826,6 +828,12 @@ static int init_ws_service(apache_private_data_t * private_data,
     /* XXX : a la jk2 */
     s->server_name = get_env_string(r, (char *)ap_get_server_name(r),
                                     conf->local_name_indicator, 0);
+
+    /* get the local IP address */
+    /* s->local_addr     = r->connection->local_ip; */
+    /* XXX : a la jk2 */
+    s->local_addr = get_env_string(r, r->connection->local_ip,
+                                   conf->local_addr_indicator, 0);
 
     /* get the real port (otherwise redirect failed) */
     /* s->server_port     = htons( r->connection->local_addr.sin_port ); */
@@ -1906,6 +1914,16 @@ static const char *jk_set_local_name_indicator(cmd_parms * cmd,
     return NULL;
 }
 
+static const char *jk_set_local_addr_indicator(cmd_parms * cmd,
+                                               void *dummy, char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->local_addr_indicator = ap_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
 static const char *jk_set_local_port_indicator(cmd_parms * cmd,
                                                void *dummy, char *indicator)
 {
@@ -2315,6 +2333,8 @@ static const command_rec jk_cmds[] = {
      "Name of the Apache environment that contains the type of authentication"},
     {"JkLocalNameIndicator", jk_set_local_name_indicator, NULL, RSRC_CONF, TAKE1,
      "Name of the Apache environment that contains the local name"},
+    {"JkLocalAddrIndicator", jk_set_local_addr_indicator, NULL, RSRC_CONF, TAKE1,
+     "Name of the Apache environment that contains the local IP address"},
     {"JkLocalPortIndicator", jk_set_local_port_indicator, NULL, RSRC_CONF, TAKE1,
      "Name of the Apache environment that contains the local port"},
 
@@ -2667,6 +2687,7 @@ static void *create_jk_config(ap_pool * p, server_rec * s)
         c->remote_user_indicator = JK_ENV_REMOTE_USER;
         c->auth_type_indicator = JK_ENV_AUTH_TYPE;
         c->local_name_indicator = JK_ENV_LOCAL_NAME;
+        c->local_addr_indicator = JK_ENV_LOCAL_ADDR;
         c->local_port_indicator = JK_ENV_LOCAL_PORT;
 
         /*

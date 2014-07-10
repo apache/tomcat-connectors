@@ -44,6 +44,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>56661</bug>: Fix Servlet API getLocalAddr().
+        Works for Tomcat 6.0.41, 7.0.55 and 8.0.11 and Apache and ISAPI
+        plugins. (rjung)
+      </fix>
       <update>
         Status: Log old and new values when changing worker attributes.
         (rjung)

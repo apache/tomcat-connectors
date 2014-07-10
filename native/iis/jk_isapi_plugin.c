@@ -3180,6 +3180,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
     GET_SERVER_VARIABLE_VALUE("REMOTE_ADDR", s->remote_addr);
     GET_SERVER_VARIABLE_VALUE("REMOTE_PORT", s->remote_port);
     GET_SERVER_VARIABLE_VALUE("SERVER_NAME", s->server_name);
+    GET_SERVER_VARIABLE_VALUE("LOCAL_ADDR", s->local_addr);
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT", s->server_port, 80);
     GET_SERVER_VARIABLE_VALUE("SERVER_SOFTWARE", s->server_software);
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT_SECURE", s->is_ssl, 0);

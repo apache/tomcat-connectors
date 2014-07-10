@@ -492,6 +492,8 @@ static int init_ws_service(nsapi_private_data_t * private_data,
 
     s->query_string = pblock_findval("query", private_data->rq->reqpb);
 
+    /* Local address is not available from NSAPI. */
+    s->local_addr = server_hostname;
     s->server_name = server_hostname;
 
 #ifdef NETWARE
@@ -503,7 +505,7 @@ static int init_ws_service(nsapi_private_data_t * private_data,
         s->server_port = atoi(tmp);
     else
 #endif
-        s->server_port = server_portnum;
+    s->server_port = server_portnum;
     s->server_software = system_version();
 
     s->uw_map = uw_map;
