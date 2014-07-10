@@ -208,10 +208,13 @@ typedef struct lb_worker lb_worker_t;
 int JK_METHOD lb_worker_factory(jk_worker_t **w,
                                 const char *name, jk_logger_t *l);
 
+const char *jk_lb_get_lock_direct(int lblock, jk_logger_t *l);
 const char *jk_lb_get_lock(lb_worker_t *p, jk_logger_t *l);
 int jk_lb_get_lock_code(const char *v);
+const char *jk_lb_get_method_direct(int lbmethod, jk_logger_t *l);
 const char *jk_lb_get_method(lb_worker_t *p, jk_logger_t *l);
 int jk_lb_get_method_code(const char *v);
+const char *jk_lb_get_state_direct(int state, jk_logger_t *l);
 const char *jk_lb_get_state(lb_sub_worker_t *p, jk_logger_t *l);
 int jk_lb_get_state_code(const char *v);
 const char *jk_lb_get_activation_direct(int activation, jk_logger_t *l);

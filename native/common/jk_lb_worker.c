@@ -150,6 +150,14 @@ static jk_uint64_t scm(jk_uint64_t a, jk_uint64_t b)
 }
 
 /* Return the string representation of the lb lock type */
+/* based on the integer representation */
+const char *jk_lb_get_lock_direct(int lblock, jk_logger_t *l)
+{
+    return lb_locking_type[lblock];
+}
+
+/* Return the string representation of the lb lock type */
+/* based on the lb worker struct */
 const char *jk_lb_get_lock(lb_worker_t *p, jk_logger_t *l)
 {
     return lb_locking_type[p->lblock];
@@ -168,6 +176,14 @@ int jk_lb_get_lock_code(const char *v)
 }
 
 /* Return the string representation of the lb method type */
+/* based on the integer representation */
+const char *jk_lb_get_method_direct(int lbmethod, jk_logger_t *l)
+{
+    return lb_method_type[lbmethod];
+}
+
+/* Return the string representation of the lb method type */
+/* based on the lb worker struct */
 const char *jk_lb_get_method(lb_worker_t *p, jk_logger_t *l)
 {
     return lb_method_type[p->lbmethod];
@@ -192,6 +208,14 @@ int jk_lb_get_method_code(const char *v)
 }
 
 /* Return the string representation of the balance worker state */
+/* based on the integer representation */
+const char *jk_lb_get_state_direct(int state, jk_logger_t *l)
+{
+    return lb_state_type[state];
+}
+
+/* Return the string representation of the balance worker state */
+/* based on the sub worker struct */
 const char *jk_lb_get_state(lb_sub_worker_t *p, jk_logger_t *l)
 {
     return lb_state_type[p->s->state];
