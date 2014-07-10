@@ -3110,8 +3110,8 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->retries, l);
     if (i != lb->retries && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'retries' for lb worker '%s' to '%d'",
-               w->name, name, i);
+               "Status worker '%s' changing 'retries' for lb worker '%s' from '%d' to '%d'",
+               w->name, name, lb->retries, i);
         lb->retries = i;
         sync_needed = JK_TRUE;
     }
@@ -3119,8 +3119,8 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->retry_interval, l);
     if (i != lb->retry_interval && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'retry_interval' for lb worker '%s' to '%d'",
-               w->name, name, i);
+               "Status worker '%s' changing 'retry_interval' for lb worker '%s' from '%d' to '%d'",
+               w->name, name, lb->retry_interval, i);
         lb->retry_interval = i;
         sync_needed = JK_TRUE;
     }
@@ -3128,8 +3128,8 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->recover_wait_time, l);
     if (i != lb->recover_wait_time && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'recover_time' for lb worker '%s' to '%d'",
-               w->name, name, i);
+               "Status worker '%s' changing 'recover_time' for lb worker '%s' from '%d' to '%d'",
+               w->name, name, lb->recover_wait_time, i);
         lb->recover_wait_time = i;
         sync_needed = JK_TRUE;
     }
@@ -3137,8 +3137,8 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->error_escalation_time, l);
     if (i != lb->error_escalation_time && i > 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'error_escalation_time' for lb worker '%s' to '%d'",
-               w->name, name, i);
+               "Status worker '%s' changing 'error_escalation_time' for lb worker '%s' from '%d' to '%d'",
+               w->name, name, lb->error_escalation_time, i);
         lb->error_escalation_time = i;
         sync_needed = JK_TRUE;
     }
@@ -3146,24 +3146,24 @@ static void commit_worker(jk_ws_service_t *s,
                        lb->max_reply_timeouts, l);
     if (i != lb->max_reply_timeouts && i >= 0) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'max_reply_timeouts' for lb worker '%s' to '%d'",
-               w->name, name, i);
+               "Status worker '%s' changing 'max_reply_timeouts' for lb worker '%s' from '%d' to '%d'",
+               w->name, name, lb->max_reply_timeouts, i);
         lb->max_reply_timeouts = i;
         sync_needed = JK_TRUE;
     }
     i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY, lb->sticky_session, l);
     if (i != lb->sticky_session) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'sticky_session' for lb worker '%s' to '%d'",
-               w->name, name, i);
+               "Status worker '%s' changing 'sticky_session' for lb worker '%s' from '%d' to '%d'",
+               w->name, name, lb->sticky_session, i);
         lb->sticky_session = i;
         sync_needed = JK_TRUE;
     }
     i = status_get_bool(p, JK_STATUS_ARG_LB_STICKY_FORCE, lb->sticky_session_force, l);
     if (i != lb->sticky_session_force) {
         jk_log(l, JK_LOG_INFO,
-               "Status worker '%s' setting 'sticky_session_force' for lb worker '%s' to '%d'",
-               w->name, name, i);
+               "Status worker '%s' changing 'sticky_session_force' for lb worker '%s' from '%d' to '%d'",
+               w->name, name, lb->sticky_session_force, i);
         lb->sticky_session_force = i;
         sync_needed = JK_TRUE;
     }
@@ -3171,8 +3171,8 @@ static void commit_worker(jk_ws_service_t *s,
         i = jk_lb_get_method_code(arg);
         if (i != lb->lbmethod && i >= 0 && i <= JK_LB_METHOD_MAX) {
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting 'method' for lb worker '%s' to '%s'",
-                   w->name, name, jk_lb_get_method(lb, l));
+                   "Status worker '%s' changing 'method' for lb worker '%s' from '%s' to '%s'",
+                   w->name, name, jk_lb_get_method(lb, l), jk_lb_get_method_direct(i, l));
             lb->lbmethod = i;
             sync_needed = JK_TRUE;
         }
@@ -3181,8 +3181,8 @@ static void commit_worker(jk_ws_service_t *s,
         i = jk_lb_get_lock_code(arg);
         if (i != lb->lblock && i >= 0 && i <= JK_LB_LOCK_MAX) {
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting 'lock' for lb worker '%s' to '%s'",
-                   w->name, name, jk_lb_get_lock(lb, l));
+                   "Status worker '%s' changing 'lock' for lb worker '%s' from '%s' to '%s'",
+                   w->name, name, jk_lb_get_lock(lb, l), jk_lb_get_lock_direct(i, l));
             lb->lblock = i;
             sync_needed = JK_TRUE;
         }
@@ -3209,12 +3209,12 @@ static int set_int_if_changed(status_endpoint_t *p,
     if (i != *param && i >= min && i <= max) {
         if (lb_name)
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting '%s' for sub worker '%s' of lb worker '%s' to '%d'",
-                   w->name, att, name, lb_name, i);
+                   "Status worker '%s' changing '%s' for sub worker '%s' of lb worker '%s' from '%d' to '%d'",
+                   w->name, att, name, lb_name, *param, i);
         else
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting '%s' for ajp worker '%s' to '%d'",
-                   w->name, att, name, i);
+                   "Status worker '%s' changing '%s' for ajp worker '%s' from '%d' to '%d'",
+                   w->name, att, name, *param, i);
         *param = i;
         return JK_TRUE;
     }
@@ -3241,12 +3241,12 @@ static int set_uint_if_changed(status_endpoint_t *p,
     if (i != *param && i >= min && i <= max) {
         if (lb_name)
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting '%s' for sub worker '%s' of lb worker '%s' to '%u'",
-                   w->name, att, name, lb_name, i);
+                   "Status worker '%s' changing '%s' for sub worker '%s' of lb worker '%s' from '%u' to '%u'",
+                   w->name, att, name, lb_name, *param, i);
         else
             jk_log(l, JK_LOG_INFO,
-                   "Status worker '%s' setting '%s' for ajp worker '%s' to '%u'",
-                   w->name, att, name, i);
+                   "Status worker '%s' changing '%s' for ajp worker '%s' from '%u' to '%u'",
+                   w->name, att, name, *param, i);
         *param = i;
         return JK_TRUE;
     }
@@ -3291,10 +3291,10 @@ static int commit_member(jk_ws_service_t *s,
         if (status_get_string(p, JK_STATUS_ARG_LBM_ACTIVATION, NULL, &arg, l) == JK_TRUE) {
             i = jk_lb_get_activation_code(arg);
             if (i != wr->activation && i >= 0 && i <= JK_LB_ACTIVATION_MAX) {
-                wr->activation = i;
                 jk_log(l, JK_LOG_INFO,
-                       "Status worker '%s' setting 'activation' for sub worker '%s' of lb worker '%s' to '%s'",
-                       w->name, wr->name, lb_name, jk_lb_get_activation(wr, l));
+                       "Status worker '%s' changing 'activation' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                       w->name, wr->name, lb_name, jk_lb_get_activation(wr, l), jk_lb_get_activation_direct(i, l));
+                wr->activation = i;
                 *side_effect |= JK_STATUS_NEEDS_RESET_LB_VALUES | JK_STATUS_NEEDS_PUSH;
             }
         }
@@ -3306,8 +3306,8 @@ static int commit_member(jk_ws_service_t *s,
                                     NULL, &arg, l)) == JK_TRUE) {
             if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
                 jk_log(l, JK_LOG_INFO,
-                       "Status worker '%s' setting 'route' for sub worker '%s' of lb worker '%s' to '%s'",
-                       w->name, wr->name, lb_name, arg);
+                       "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                       w->name, wr->name, lb_name, wr->route, arg);
                 strncpy(wr->route, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
                 if (!wr->domain[0]) {
@@ -3324,8 +3324,8 @@ static int commit_member(jk_ws_service_t *s,
                                     NULL, &arg, l)) == JK_TRUE) {
             if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
                 jk_log(l, JK_LOG_INFO,
-                       "Status worker '%s' setting 'redirect' for sub worker '%s' of lb worker '%s' to '%s'",
-                       w->name, wr->name, lb_name, arg);
+                       "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                       w->name, wr->name, lb_name, wr->redirect, arg);
                 strncpy(wr->redirect, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
             }
@@ -3334,8 +3334,8 @@ static int commit_member(jk_ws_service_t *s,
                                     NULL, &arg, l)) == JK_TRUE) {
             if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
                 jk_log(l, JK_LOG_INFO,
-                       "Status worker '%s' setting 'domain' for sub worker '%s' of lb worker '%s' to '%s'",
-                       w->name, wr->name, lb_name, arg);
+                       "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                       w->name, wr->name, lb_name, wr->domain, arg);
                 strncpy(wr->domain, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
             }
@@ -3367,8 +3367,8 @@ static int commit_member(jk_ws_service_t *s,
                                 NULL, &arg, l)) == JK_TRUE) {
         if (strncmp(aw->host, arg, JK_SHM_STR_SIZ)) {
             jk_log(l, JK_LOG_INFO,
-                    "Status worker '%s' setting 'host' for sub worker '%s' to '%s'",
-                    w->name, aw->name, arg);
+                    "Status worker '%s' changing 'host' for sub worker '%s' from '%s' to '%s'",
+                    w->name, aw->name, aw->host, arg);
             strncpy(host, arg, JK_SHM_STR_SIZ);
             resolve = JK_TRUE;
         }
@@ -3601,10 +3601,10 @@ static void commit_all_members(jk_ws_service_t *s,
                     if (rv == JK_TRUE) {
                         i = jk_lb_get_activation_code(arg);
                         if (i != wr->activation && i >= 0 && i <= JK_LB_ACTIVATION_MAX) {
-                            wr->activation = i;
                             jk_log(l, JK_LOG_INFO,
-                                   "Status worker '%s' setting 'activation' for sub worker '%s' of lb worker '%s' to '%s'",
-                                   w->name, wr->name, name, jk_lb_get_activation(wr, l));
+                                   "Status worker '%s' changing 'activation' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                                   w->name, wr->name, name, jk_lb_get_activation(wr, l), jk_lb_get_activation_direct(i, l));
+                            wr->activation = i;
                             rc = 1;
                             sync_needed = JK_TRUE;
                         }
@@ -3614,8 +3614,8 @@ static void commit_all_members(jk_ws_service_t *s,
                     if (rv == JK_TRUE) {
                         if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
                             jk_log(l, JK_LOG_INFO,
-                                   "Status worker '%s' setting 'route' for sub worker '%s' of lb worker '%s' to '%s'",
-                                   w->name, wr->name, name, arg);
+                                   "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                                   w->name, wr->name, name, wr->route, arg);
                             strncpy(wr->route, arg, JK_SHM_STR_SIZ);
                             sync_needed = JK_TRUE;
                             if (!wr->domain[0]) {
@@ -3633,8 +3633,8 @@ static void commit_all_members(jk_ws_service_t *s,
                     if (rv == JK_TRUE) {
                         if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
                             jk_log(l, JK_LOG_INFO,
-                                   "Status worker '%s' setting 'redirect' for sub worker '%s' of lb worker '%s' to '%s'",
-                                   w->name, wr->name, name, arg);
+                                   "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                                   w->name, wr->name, name, wr->redirect, arg);
                             strncpy(wr->redirect, arg, JK_SHM_STR_SIZ);
                             sync_needed = JK_TRUE;
                         }
@@ -3644,8 +3644,8 @@ static void commit_all_members(jk_ws_service_t *s,
                     if (rv == JK_TRUE) {
                         if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
                             jk_log(l, JK_LOG_INFO,
-                                   "Status worker '%s' setting 'domain' for sub worker '%s' of lb worker '%s' to '%s'",
-                                   w->name, wr->name, name, arg);
+                                   "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
+                                   w->name, wr->name, name, wr->domain, arg);
                             strncpy(wr->domain, arg, JK_SHM_STR_SIZ);
                             sync_needed = JK_TRUE;
                         }

@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        Status: Log old and new values when changing worker attributes.
+        (rjung)
+      </update>
       <fix>
         <bug>56667</bug>: Status: Fix log message when changing activation
         state of all members. (rjung)
