@@ -45,6 +45,10 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>56667</bug>: Status: Fix log message when changing activation
+        state of all members. (rjung)
+      </fix>
+      <fix>
         <bug>56565</bug>: Fix IPV6 address resolve on non-dual
           network stacks. (mturk)
       </fix>

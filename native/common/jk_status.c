@@ -3601,10 +3601,10 @@ static void commit_all_members(jk_ws_service_t *s,
                     if (rv == JK_TRUE) {
                         i = jk_lb_get_activation_code(arg);
                         if (i != wr->activation && i >= 0 && i <= JK_LB_ACTIVATION_MAX) {
+                            wr->activation = i;
                             jk_log(l, JK_LOG_INFO,
                                    "Status worker '%s' setting 'activation' for sub worker '%s' of lb worker '%s' to '%s'",
                                    w->name, wr->name, name, jk_lb_get_activation(wr, l));
-                            wr->activation = i;
                             rc = 1;
                             sync_needed = JK_TRUE;
                         }
