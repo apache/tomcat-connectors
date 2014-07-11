@@ -46,7 +46,7 @@
     <changelog>
       <fix>
         <bug>56661</bug>: Fix Servlet API getLocalAddr().
-        Works for Tomcat 6.0.41, 7.0.55 and 8.0.11 and Apache and ISAPI
+        Works for Tomcat 6.0.42, 7.0.55 and 8.0.11 and Apache and ISAPI
         plugins. (rjung)
       </fix>
       <update>
