@@ -798,19 +798,21 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
 static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
-    if (shutdown == JK_TRUE && IS_VALID_SOCKET(ae->sd)) {
-        if (ae->hard_close) {
-            /* Force unclean connection close to communicate client write errors
-             * back to Tomcat by aborting AJP response writes.
-             */
-            jk_close_socket(ae->sd, l);
-        }
-        else {
-            jk_shutdown_socket(ae->sd, l);
+    if (IS_VALID_SOCKET(ae->sd)) {
+        if (shutdown == JK_TRUE) {
+            if (ae->hard_close) {
+                /* Force unclean connection close to communicate client write errors
+                 * back to Tomcat by aborting AJP response writes.
+                 */
+                jk_close_socket(ae->sd, l);
+            }
+            else {
+                jk_shutdown_socket(ae->sd, l);
+            }
         }
         ae->worker->s->connected--;
+        ae->sd = JK_INVALID_SOCKET;
     }
-    ae->sd = JK_INVALID_SOCKET;
     ae->last_op = JK_AJP13_END_RESPONSE;
     JK_TRACE_EXIT(l);
 }
