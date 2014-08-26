@@ -2677,8 +2677,8 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
             msg = "because of an unknown reason";
             rc = JK_FATAL_ERROR;
             jk_log(l, JK_LOG_ERROR,
-                   "(%s) unexpected condition err=%d recoverable=%d",
-                   aw->name, err, op->recoverable);
+                   "(%s) unexpected condition err=%d (%srecoverable)",
+                   aw->name, err, op->recoverable ? "" : "un");
         }
         if (!op->recoverable && log_error == JK_TRUE) {
             jk_log(l, JK_LOG_ERROR,
