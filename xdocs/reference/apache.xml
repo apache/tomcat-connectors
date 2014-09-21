@@ -138,9 +138,14 @@ A mount point from a context to a Tomcat worker.
 <br/>
 This directive is allowed multiple times.
 It is allowed in the global configuration and in VirtualHost.
+<br/>
 You can also use it inside Location with a different syntax.
 Inside Location, one omits the first argument (path),
-which gets inherited from the Location.
+which gets inherited verbatim from the Location argument.
+Whereas &lt;Location /myapp&gt; matches any URI beginning with
+"/myapp", any JkMount nested in such a Location block will
+only match for requests with exact URI /myapp. Therefore nesting
+JkMount in Location is typically not the right thing to do.
 <br/>
 By default JkMount entries are not inherited from the global
 server to other VirtualHosts or between VirtualHosts.
@@ -159,9 +164,15 @@ it will not be forwarded to tomcat, and instead be served locally.
 <br/>
 This directive is allowed multiple times.
 It is allowed in the global configuration and in VirtualHost.
+<br/>
 You can also use it inside Location with a different syntax.
 Inside Location, one omits the first argument (path),
-which gets inherited from the Location.
+which gets inherited verbatim from the Location argument.
+Whereas &lt;Location /myapp&gt; matches any URI beginning with
+"/myapp", any JkUnMount nested in such a Location block will
+only match for requests with exact URI /myapp. Therefore nesting
+JkUnMount in Location is typically not the right thing to do.
+<br/>
 For inheritance rules, see: JkMountCopy.
 <br/>
 This directive is available in jk1.2.7 version and later.
