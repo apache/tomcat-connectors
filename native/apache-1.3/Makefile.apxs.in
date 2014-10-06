@@ -15,21 +15,24 @@
 
 ## configure should make the Makefile out of this file.
 
+srcdir=@srcdir@
+top_srcdir=@top_srcdir@
+top_builddir=@top_builddir@
 APXS=@APXS@
 APXSLDFLAGS=@APXSLDFLAGS@
 APXSCFLAGS=@APXSCFLAGS@
 
-JK=../common/
-JK_INCL=-DUSE_APACHE_MD5 -I ${JK}
+COMMON=common
+JK_INCL=-DUSE_APACHE_MD5 -I${top_builddir}/${COMMON} -I ${top_srcdir}/${COMMON}
 
 ## read the object (.c) from the list file.
 OEXT=.c
-include ../common/list.mk
+include @top_srcdir@/common/list.mk
 
 all: mod_jk.so
 
 mod_jk.so:
-	$(APXS) -c -o $@ -Wc,"${APXSCFLAGS} ${JK_INCL}" ${APXSLDFLAGS} mod_jk.c ${APACHE_OBJECTS}
+        $(APXS) -c -o $@ -Wc,"${APXSCFLAGS} ${JK_INCL}" ${APXSLDFLAGS} ${srcdir}/mod_jk.c ${APACHE_OBJECTS}
 
 clean:
 	rm -f *.o *.lo *.a *.la *.so *.so.* *.slo

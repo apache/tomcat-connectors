@@ -31,7 +31,7 @@ CC = @CC@
 OEXT=.lo
 include list.mk
 
-CFLAGS=@apache_include@ @CFLAGS@ ${APXSCFLAGS} ${APXSCPPFLAGS}
+CFLAGS=-I. @apache_include@ @CFLAGS@ ${APXSCFLAGS} ${APXSCPPFLAGS}
 
 include @top_srcdir@/scripts/build/rules.mk
 
