@@ -45,7 +45,7 @@
   <subsection name="Native">
     <changelog>
       <fix>
-        <bug>57060</bug>: Allow building out of source tree.
+        <bug>57060</bug>: Allow building from outside of source tree.
         Patch contributed by Petr Sumbera. (rjung)
       </fix>
       <fix>
