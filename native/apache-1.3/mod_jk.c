@@ -2579,7 +2579,7 @@ static int jk_handler(request_rec * r)
                 ap_table_setn(r->notes, JK_NOTE_REQUEST_DURATION, duration);
 #endif
                 if (s.route && *s.route)
-                    ap_table_setn(r->notes, JK_NOTE_WORKER_ROUTE, s.route);
+                    ap_table_set(r->notes, JK_NOTE_WORKER_ROUTE, s.route);
             }
             else {
                 jk_log(conf->log, JK_LOG_ERROR, "Could not init service"

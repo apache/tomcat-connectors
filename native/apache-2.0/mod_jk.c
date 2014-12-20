@@ -2780,7 +2780,7 @@ static int jk_handler(request_rec * r)
             duration = apr_psprintf(r->pool, "%.1ld.%.6ld", seconds, micro);
             apr_table_setn(r->notes, JK_NOTE_REQUEST_DURATION, duration);
             if (s.route && *s.route)
-                apr_table_setn(r->notes, JK_NOTE_WORKER_ROUTE, s.route);
+                apr_table_set(r->notes, JK_NOTE_WORKER_ROUTE, s.route);
 
             jk_close_pool(&private_data.p);
 
