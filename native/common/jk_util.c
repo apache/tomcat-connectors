@@ -2123,6 +2123,25 @@ int jk_wildchar_match(const char *str, const char *exp, int icase)
     return (str[x] != '\0');
 }
 
+void jk_no2slash(char *name)
+{
+    char *d, *s;
+
+    s = d = name;
+
+    while (*s) {
+        if ((*d++ = *s) == '/') {
+            do {
+                ++s;
+            } while (*s == '/');
+        }
+        else {
+            ++s;
+        }
+    }
+    *d = '\0';
+}
+
 #ifdef _MT_CODE_PTHREAD
 jk_pthread_t jk_gettid()
 {

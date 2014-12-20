@@ -78,6 +78,14 @@
         Apache: Copy log notes instead of using references to prevent access
         to memory from closed pool. (rjung)
       </fix>
+      <add>
+        Add option to control handling of multiple adjacent slashes in
+        mount and unmount. New default is collapsing the slashes only in
+        unmount. Configuration is done via new JkOption for Apache
+        ("CollapseSlashesAll", "CollapseSlashesNone" or
+        "CollapseSlashesUnmount") and via property "collapse_slashes" for IIS
+        (values "all", "none", "unmount"). (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

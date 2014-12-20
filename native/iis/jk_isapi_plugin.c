@@ -117,23 +117,27 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define W3SVC_REGISTRY_KEY      "SYSTEM\\CurrentControlSet\\Services\\W3SVC\\Parameters"
 #define EXTENSION_URI_TAG       "extension_uri"
 
-#define URI_SELECT_TAG              "uri_select"
-#define URI_SELECT_PARSED_VERB      "parsed"
-#define URI_SELECT_UNPARSED_VERB    "unparsed"
-#define URI_SELECT_ESCAPED_VERB     "escaped"
-#define URI_SELECT_PROXY_VERB       "proxy"
-#define URI_REWRITE_TAG             "rewrite_rule_file"
-#define SHM_SIZE_TAG                "shm_size"
-#define WORKER_MOUNT_RELOAD_TAG     "worker_mount_reload"
-#define STRIP_SESSION_TAG           "strip_session"
-#define AUTH_COMPLETE_TAG           "auth_complete"
-#define REJECT_UNSAFE_TAG           "reject_unsafe"
-#define WATCHDOG_INTERVAL_TAG       "watchdog_interval"
-#define ENABLE_CHUNKED_ENCODING_TAG "enable_chunked_encoding"
-#define ERROR_PAGE_TAG              "error_page"
+#define URI_SELECT_TAG                "uri_select"
+#define URI_SELECT_PARSED_VERB        "parsed"
+#define URI_SELECT_UNPARSED_VERB      "unparsed"
+#define URI_SELECT_ESCAPED_VERB       "escaped"
+#define URI_SELECT_PROXY_VERB         "proxy"
+#define URI_REWRITE_TAG               "rewrite_rule_file"
+#define SHM_SIZE_TAG                  "shm_size"
+#define WORKER_MOUNT_RELOAD_TAG       "worker_mount_reload"
+#define STRIP_SESSION_TAG             "strip_session"
+#define AUTH_COMPLETE_TAG             "auth_complete"
+#define REJECT_UNSAFE_TAG             "reject_unsafe"
+#define COLLAPSE_SLASHES_TAG          "collapse_slashes"
+#define COLLAPSE_SLASHES_ALL_VERB     "all"
+#define COLLAPSE_SLASHES_NONE_VERB    "none"
+#define COLLAPSE_SLASHES_UNMOUNT_VERB "unmount"
+#define WATCHDOG_INTERVAL_TAG         "watchdog_interval"
+#define ENABLE_CHUNKED_ENCODING_TAG   "enable_chunked_encoding"
+#define ERROR_PAGE_TAG                "error_page"
 
-#define LOG_ROTATION_TIME_TAG       "log_rotationtime"
-#define LOG_FILESIZE_TAG            "log_filesize"
+#define LOG_ROTATION_TIME_TAG         "log_rotationtime"
+#define LOG_FILESIZE_TAG              "log_filesize"
 
 /* HTTP standard headers */
 #define TRANSFER_ENCODING_CHUNKED_HEADER_COMPLETE     "Transfer-Encoding: chunked"
@@ -500,6 +504,7 @@ static int  strip_session = 0;
 static int  use_auth_notification_flags = 1;
 static int  chunked_encoding_enabled = JK_FALSE;
 static int  reject_unsafe = 0;
+static int  collapse_slashes = JK_COLLAPSE_DEFAULT;
 static volatile int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
 static char error_page_buf[INTERNET_MAX_URL_LENGTH] = {0};
@@ -2790,6 +2795,7 @@ static int init_jk(char *serverName)
             uw_map->reject_unsafe = 1;
         else
             uw_map->reject_unsafe = 0;
+        uw_map->collapse_slashes = collapse_slashes;
         uw_map->reload = worker_mount_reload;
         if (worker_mount_file[0]) {
             uw_map->fname = worker_mount_file;
@@ -2919,6 +2925,17 @@ int parse_uri_select(const char *uri_select)
     return -1;
 }
 
+int parse_collapse_slashes(const char *collapse_slashes)
+{
+    if (!strcasecmp(collapse_slashes, COLLAPSE_SLASHES_ALL_VERB))
+        return JK_OPT_COLLAPSEALL;
+    if (!strcasecmp(collapse_slashes, COLLAPSE_SLASHES_NONE_VERB))
+        return JK_OPT_COLLAPSENONE;
+    if (!strcasecmp(collapse_slashes, COLLAPSE_SLASHES_UNMOUNT_VERB))
+        return JK_OPT_COLLAPSEUNMOUNT;
+    return -1;
+}
+
 static int read_registry_init_data(void)
 {
     char tmpbuf[MAX_PATH];
@@ -3016,7 +3033,18 @@ static int read_registry_init_data(void)
             uri_select_option = opt;
         }
         else {
-            goto cleanup;
+            jk_log(logger, JK_LOG_ERROR, "Invalid value '%s' for configuration item '"
+                   URI_SELECT_TAG "'", tmpbuf);
+        }
+    }
+    if (get_config_parameter(src, COLLAPSE_SLASHES_TAG, tmpbuf, sizeof(tmpbuf))) {
+        int opt = parse_collapse_slashes(tmpbuf);
+        if (opt >= 0) {
+            collapse_slashes = opt;
+        }
+        else {
+            jk_log(logger, JK_LOG_ERROR, "Invalid value '%s' for configuration item '"
+                   COLLAPSE_SLASHES_TAG "'", tmpbuf);
         }
     }
     shm_config_size = get_config_int(src, SHM_SIZE_TAG, -1);

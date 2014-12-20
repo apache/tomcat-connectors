@@ -176,9 +176,10 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
         int i, off;
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG, "uri map dump %s: id=%d, index=%d file='%s' reject_unsafe=%d "
-                  "reload=%d modified=%d checked=%d",
+                  "collapse_slashes=%d reload=%d modified=%d checked=%d",
                    reason, uw_map->id, uw_map->index, STRNULL_FOR_NULL(uw_map->fname),
-                   uw_map->reject_unsafe, uw_map->reload, uw_map->modified, uw_map->checked);
+                   uw_map->reject_unsafe, uw_map->collapse_slashes,
+                   uw_map->reload, uw_map->modified, uw_map->checked);
         }
         for (i = 0; i <= 1; i++) {
             jk_log(l, JK_LOG_DEBUG, "generation %d: size=%d nosize=%d capacity=%d",
@@ -244,6 +245,7 @@ int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
         uw_map->index = 0;
         uw_map->fname = NULL;
         uw_map->reject_unsafe = 0;
+        uw_map->collapse_slashes = JK_COLLAPSE_DEFAULT;
         uw_map->reload = JK_URIMAP_DEF_RELOAD;
         uw_map->modified = 0;
         uw_map->checked = 0;
@@ -697,48 +699,42 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
             else if (!strncmp(param, JK_UWMAP_EXTENSION_ACTIVE, strlen(JK_UWMAP_EXTENSION_ACTIVE))) {
                 if (extensions->active)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '%s' only allowed once",
-                           JK_UWMAP_EXTENSION_ACTIVE);
+                           "rule extension '" JK_UWMAP_EXTENSION_ACTIVE "' only allowed once");
                 else
                     extensions->active = param + strlen(JK_UWMAP_EXTENSION_ACTIVE);
             }
             else if (!strncmp(param, JK_UWMAP_EXTENSION_DISABLED, strlen(JK_UWMAP_EXTENSION_DISABLED))) {
                 if (extensions->disabled)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '%s' only allowed once",
-                           JK_UWMAP_EXTENSION_DISABLED);
+                           "rule extension '" JK_UWMAP_EXTENSION_DISABLED "' only allowed once");
                 else
                     extensions->disabled = param + strlen(JK_UWMAP_EXTENSION_DISABLED);
             }
             else if (!strncmp(param, JK_UWMAP_EXTENSION_STOPPED, strlen(JK_UWMAP_EXTENSION_STOPPED))) {
                 if (extensions->stopped)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '%s' only allowed once",
-                           JK_UWMAP_EXTENSION_STOPPED);
+                           "rule extension '" JK_UWMAP_EXTENSION_STOPPED "' only allowed once");
                 else
                     extensions->stopped = param + strlen(JK_UWMAP_EXTENSION_STOPPED);
             }
             else if (!strncmp(param, JK_UWMAP_EXTENSION_FAIL_ON_STATUS, strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS))) {
                 if (extensions->fail_on_status_str)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '%s' only allowed once",
-                           JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
+                           "rule extension '" JK_UWMAP_EXTENSION_FAIL_ON_STATUS "' only allowed once");
                 else
                     extensions->fail_on_status_str = param + strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
             }
             else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE, strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE))) {
                 if (extensions->session_cookie)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '%s' in uri worker map only allowed once",
-                           JK_UWMAP_EXTENSION_SESSION_COOKIE);
+                           "extension '" JK_UWMAP_EXTENSION_SESSION_COOKIE "' in uri worker map only allowed once");
                 else
                     extensions->session_cookie = param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE);
             }
             else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_PATH, strlen(JK_UWMAP_EXTENSION_SESSION_PATH))) {
                 if (extensions->session_path)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '%s' in uri worker map only allowed once",
-                           JK_UWMAP_EXTENSION_SESSION_PATH);
+                           "extension '" JK_UWMAP_EXTENSION_SESSION_PATH "' in uri worker map only allowed once");
                 else {
                     // Check if the session identifier starts with semicolon.
                     if (!strcmp(param, JK_UWMAP_EXTENSION_SESSION_PATH)) {
@@ -755,8 +751,7 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
             else if (!strncmp(param, JK_UWMAP_EXTENSION_SET_SESSION_COOKIE, strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE))) {
                 if (extensions->set_session_cookie)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '%s' in uri worker map only allowed once",
-                           JK_UWMAP_EXTENSION_SET_SESSION_COOKIE);
+                           "extension '" JK_UWMAP_EXTENSION_SET_SESSION_COOKIE "' in uri worker map only allowed once");
                 else {
                     int val = atoi(param + strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE));
                     if (val) {
@@ -770,8 +765,7 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
             else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH, strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH))) {
                 if (extensions->session_cookie_path)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '%s' in uri worker map only allowed once",
-                           JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH);
+                           "extension '" JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH "' in uri worker map only allowed once");
                 else
                     extensions->session_cookie_path = param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH);
             }
@@ -1073,12 +1067,12 @@ static int is_nomatch(jk_uri_worker_map_t *uw_map,
 const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
                                   const char *uri, const char *vhost,
                                   rule_extension_t **extensions,
-                                  int *index,
-                                  jk_logger_t *l)
+                                  int *index, jk_logger_t *l)
 {
     unsigned int i;
     unsigned int vhost_len;
     int reject_unsafe;
+    int collapse_slashes;
     int rv = -1;
     char  url[JK_MAX_URI_LEN+1];
 
@@ -1116,10 +1110,8 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
             return NULL;
         }
     }
-    /* Make the copy of the provided uri and strip
-     * everything after the first ';' char.
-     */
     reject_unsafe = uw_map->reject_unsafe;
+    collapse_slashes = uw_map->collapse_slashes;
     vhost_len = 0;
     /*
      * In case we got a vhost, we prepend a slash
@@ -1147,6 +1139,9 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
         }
         vhost_len += off;
     }
+    /* Make the copy of the provided uri and strip
+     * everything after the first ';' char.
+     */
     for (i = 0; i < strlen(uri); i++) {
         if (i == JK_MAX_URI_LEN) {
             jk_log(l, JK_LOG_WARNING,
@@ -1174,6 +1169,12 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
             jk_log(l, JK_LOG_DEBUG, "Found session identifier '%s' in url '%s'",
                    url_rewrite, uri);
     }
+    if (collapse_slashes == JK_COLLAPSE_ALL) {
+        /* Remove multiple slashes
+         * No need to copy url, because it is local and
+         * the unchanged url is no longer needed */
+        jk_no2slash(url);
+    }
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG, "Attempting to map URI '%s' from %d maps",
                url, IND_THIS(uw_map->size));
@@ -1185,6 +1186,13 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
 
     /* In case we found a match, check for the unmounts. */
     if (rv >= 0 && IND_THIS(uw_map->nosize)) {
+        if (collapse_slashes == JK_COLLAPSE_UNMOUNT) {
+            /* Remove multiple slashes when looking for
+             * unmount to prevent trivial unmount bypass attack.
+             * No need to copy url, because it is local and
+             * the unchanged url is no longer needed */
+            jk_no2slash(url);
+        }
         /* Again first including vhost. */
         int rc = is_nomatch(uw_map, url, rv, l);
         /* If no unmount was found, try without vhost. */

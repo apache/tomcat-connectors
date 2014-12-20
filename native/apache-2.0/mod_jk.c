@@ -2204,9 +2204,11 @@ static const char *jk_set_options(cmd_parms * cmd, void *dummy,
 
         mask = 0;
 
-        if (action == '-' && !strncasecmp(w, "ForwardURI", strlen("ForwardURI")))
+        if (action == '-' &&
+            (!strncasecmp(w, "ForwardURI", strlen("ForwardURI")) ||
+             !strncasecmp(w, "CollapseSlashes", strlen("CollapseSlashes"))))
             return apr_pstrcat(cmd->pool, "JkOptions: Illegal option '-", w,
-                               "': ForwardURI* options can not be disabled", NULL);
+                               "': option can not be disabled", NULL);
 
         if (!strcasecmp(w, "ForwardURICompat")) {
             opt = JK_OPT_FWDURICOMPAT;
@@ -2223,6 +2225,18 @@ static const char *jk_set_options(cmd_parms * cmd, void *dummy,
         else if (!strcasecmp(w, "ForwardURIProxy")) {
             opt = JK_OPT_FWDURIPROXY;
             mask = JK_OPT_FWDURIMASK;
+        }
+        else if (!strcasecmp(w, "CollapseSlashesAll")) {
+            opt = JK_OPT_COLLAPSEALL;
+            mask = JK_OPT_COLLAPSEMASK;
+        }
+        else if (!strcasecmp(w, "CollapseSlashesNone")) {
+            opt = JK_OPT_COLLAPSENONE;
+            mask = JK_OPT_COLLAPSEMASK;
+        }
+        else if (!strcasecmp(w, "CollapseSlashesUnmount")) {
+            opt = JK_OPT_COLLAPSEUNMOUNT;
+            mask = JK_OPT_COLLAPSEMASK;
         }
         else if (!strcasecmp(w, "ForwardDirectories")) {
             opt = JK_OPT_FWDDIRS;
@@ -3024,6 +3038,10 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
         overrides->options |= (base->options & ~base->exclude_options) & ~JK_OPT_FWDURIMASK;
     else
         overrides->options |= (base->options & ~base->exclude_options);
+    if (overrides->options & JK_OPT_COLLAPSEMASK)
+        overrides->options |= (base->options & ~base->exclude_options) & ~JK_OPT_COLLAPSEMASK;
+    else
+        overrides->options |= (base->options & ~base->exclude_options);
 
     if (base->envvars) {
         if (overrides->envvars && overrides->envvars_has_own) {
@@ -3501,6 +3519,8 @@ static int jk_post_config(apr_pool_t * pconf,
                             uri_worker_map_switch(sconf->uw_map, sconf->log);
                             uri_worker_map_load(sconf->uw_map, sconf->log);
                         }
+                        if (conf->options & JK_OPT_COLLAPSEMASK)
+                            sconf->uw_map->collapse_slashes = conf->options & JK_OPT_COLLAPSEMASK;
                     }
                     else {
                         if (sconf->mountcopy == JK_TRUE) {

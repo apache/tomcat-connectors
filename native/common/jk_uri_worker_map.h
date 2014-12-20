@@ -58,6 +58,11 @@ extern "C"
 #define MATCH_TYPE_STOPPED          0x4000
  */
 
+#define JK_COLLAPSE_ALL             0x0001
+#define JK_COLLAPSE_NONE            0x0002
+#define JK_COLLAPSE_UNMOUNT         0x0003
+#define JK_COLLAPSE_DEFAULT         JK_COLLAPSE_UNMOUNT
+
 #define SOURCE_TYPE_WORKERDEF       0x0001
 #define SOURCE_TYPE_JKMOUNT         0x0002
 #define SOURCE_TYPE_URIMAP          0x0003
@@ -168,6 +173,8 @@ struct jk_uri_worker_map
     JK_CRIT_SEC cs;
     /* should we forward potentially unsafe URLs */
     int reject_unsafe;    
+    /* how to handle multiple adjacent slashes in URLs */
+    int collapse_slashes;    
     /* uriworkermap filename */
     const char *fname;    
     /* uriworkermap reload check interval */

@@ -244,6 +244,8 @@ int is_http_status_fail(unsigned int http_status_fail_num,
 
 int jk_wildchar_match(const char *str, const char *exp, int icase);
 
+void jk_no2slash(char *name);
+
 #define TC32_BRIDGE_TYPE    32
 #define TC33_BRIDGE_TYPE    33
 #define TC40_BRIDGE_TYPE    40

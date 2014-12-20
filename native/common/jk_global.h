@@ -272,8 +272,12 @@ extern "C"
 /* Forward physical tcp peer address instead of
  * client address as provided e.g. by httpd mod_remoteip. */
 #define JK_OPT_FWDPHYSICAL          0x0800
+#define JK_OPT_COLLAPSEMASK         0x7000
+#define JK_OPT_COLLAPSEALL          0x1000
+#define JK_OPT_COLLAPSENONE         0x2000
+#define JK_OPT_COLLAPSEUNMOUNT      0x4000
 
-#define JK_OPT_DEFAULT              (JK_OPT_FWDURIDEFAULT | JK_OPT_FWDKEYSIZE)
+#define JK_OPT_DEFAULT              (JK_OPT_FWDURIDEFAULT | JK_OPT_FWDKEYSIZE | JK_OPT_COLLAPSEUNMOUNT)
 
 /* Check for EBCDIC systems */
 
