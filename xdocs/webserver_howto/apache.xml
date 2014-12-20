@@ -570,6 +570,31 @@ but also slightly more complicated.
 </p>
 
 <p>
+JkOptions <b>CollapseSlashesAll</b> will collapse multiple
+adjacent slashes in request URLs before looking for mount or unmount
+matches.
+<br/>
+<br/>
+</p>
+
+<p>
+JkOptions <b>CollapseSlashesUnmount</b> will collapse multiple
+adjacent slashes in request URLs only before looking for unmount
+matches. This is the default value.
+<br/>
+<br/>
+</p>
+
+<p>
+JkOptions <b>CollapseSlashesNone</b> will never collapse multiple
+adjacent slashes in request URLs before looking for mount or unmount
+matches. Using this value might make you vulnerable for attacks
+bypassing your unmount rules.
+<br/>
+<br/>
+</p>
+
+<p>
 JkOptions <b>ForwardDirectories</b> is used in conjunction with <b>DirectoryIndex</b>
 directive of Apache web server. As such mod_dir should be available to Apache,
 statically or dynamically (DSO)
