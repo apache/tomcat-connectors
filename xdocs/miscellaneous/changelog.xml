@@ -71,8 +71,12 @@
           network stacks. (mturk)
       </fix>
       <fix>
-        Reduce log level for "OPTIONS *" requests from warning to debug.
-        (rjung)
+        <bug>50511</bug>: Reduce log level for "OPTIONS *" requests
+        from warning to debug. (rjung)
+      </fix>
+      <fix>
+        Apache: Copy log notes instead of using references to prevent access
+        to memory from closed pool. (rjung)
       </fix>
     </changelog>
   </subsection>

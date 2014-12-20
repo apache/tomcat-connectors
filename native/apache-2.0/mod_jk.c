@@ -583,7 +583,7 @@ static void JK_METHOD ws_add_log_items(jk_ws_service_t *s,
 
     for (h = 0; h < num_of_log_items; h++) {
         if (log_names[h] && log_values[h]) {
-            apr_table_setn(r->notes, log_names[h], log_values[h]);
+            apr_table_set(r->notes, log_names[h], log_values[h]);
         }
     }
 }
