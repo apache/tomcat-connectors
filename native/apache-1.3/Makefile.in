@@ -45,7 +45,8 @@ COMPILE    = $(CC)
 SH_COMPILE = $(LIBTOOL) --mode=compile $(COMPILE) $(JK_CFLAGS)
 MOD_LINK   = $(LIBTOOL) --mode=link $(CC) @APXSLDFLAGS@
 
-include @top_srcdir@/common/list.mk
+JK=${top_builddir}/common/
+include @top_builddir@/common/list.mk
 
 all: @LIB_JK_TYPE@
 

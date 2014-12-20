@@ -27,7 +27,7 @@ JK_INCL=-DUSE_APACHE_MD5 -I${top_builddir}/${COMMON} -I ${top_srcdir}/${COMMON}
 
 ## read the object (.c) from the list file.
 OEXT=.c
-include @top_srcdir@/common/list.mk
+include @top_builddir@/common/list.mk
 
 all: mod_jk.so
 

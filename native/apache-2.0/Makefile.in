@@ -32,7 +32,7 @@ libexecdir=${APACHE_DIR}/modules
 
 JK=../common/
 # Defines APACHE_OBJECTS - the list of all common files
-include ../common/list.mk
+include @top_builddir/common/list.mk
 
 # Apache2 settings, values guessed by Apache config and used to build it
 # Will define libexecdir, LIBTOOL, etc
