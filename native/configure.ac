@@ -63,7 +63,9 @@ dnl Mark that we have generated config.h
 CFLAGS="${CFLAGS} -DHAVE_CONFIG_H"
 AC_SUBST(CFLAGS)
 
-APACHE_CONFIG_VARS=`pwd`/scripts/build/config_vars.mk
+configure_dir=`dirname $0`
+configure_dir=`cd $configure_dir; pwd`
+APACHE_CONFIG_VARS=$configure_dir/scripts/build/config_vars.mk
 WEBSERVER=""
 apache_dir=""
 apache_include=""

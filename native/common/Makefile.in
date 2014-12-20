@@ -22,6 +22,7 @@ exec_prefix = @exec_prefix@
 APXSLDFLAGS=@APXSLDFLAGS@
 APXSCFLAGS=@APXSCFLAGS@
 APXSCPPFLAGS=@APXSCPPFLAGS@
+SHELL=@SHELL@
 
 top_builddir = ..
 
