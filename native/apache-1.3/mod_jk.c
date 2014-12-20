@@ -3175,7 +3175,6 @@ static int jk_translate(request_rec * r)
                                                       &jk_module);
 
         if (conf) {
-            char *clean_uri = ap_pstrdup(r->pool, r->uri);
             const char *worker;
 
             if (ap_table_get(r->subprocess_env, "no-jk")) {
@@ -3186,7 +3185,6 @@ static int jk_translate(request_rec * r)
                 return DECLINED;
             }
 
-            ap_no2slash(clean_uri);
             if (!conf->uw_map) {
                 if (JK_IS_DEBUG_LEVEL(conf->log))
                     jk_log(conf->log, JK_LOG_DEBUG,
@@ -3197,7 +3195,7 @@ static int jk_translate(request_rec * r)
             }
             else {
                 rule_extension_t *e;
-                worker = map_uri_to_worker_ext(conf->uw_map, clean_uri,
+                worker = map_uri_to_worker_ext(conf->uw_map, r->uri,
                                                NULL, &e, NULL, conf->log);
                 rconf->rule_extensions = e;
                 ap_set_module_config(r->request_config, &jk_module, rconf);
@@ -3209,8 +3207,8 @@ static int jk_translate(request_rec * r)
              * --> forward to Tomcat, via default worker */
             if (!worker && (conf->options & JK_OPT_FWDDIRS) &&
                 r->prev && r->prev->handler &&
-                !strcmp(r->prev->handler, JK_HANDLER) && clean_uri &&
-                strlen(clean_uri) && clean_uri[strlen(clean_uri) - 1] == '/') {
+                !strcmp(r->prev->handler, JK_HANDLER) && r->uri &&
+                strlen(r->uri) && r->uri[strlen(r->uri) - 1] == '/') {
 
                 if (worker_env.num_of_workers) {
                     /* Nothing here to do but assign the first worker since we
@@ -3219,7 +3217,7 @@ static int jk_translate(request_rec * r)
 
                     if (JK_IS_DEBUG_LEVEL(conf->log))
                         jk_log(conf->log, JK_LOG_DEBUG, "Manual configuration for %s %s",
-                               clean_uri, worker_env.worker_list[0]);
+                               r->uri, worker_env.worker_list[0]);
                 }
             }
 
@@ -3228,6 +3226,8 @@ static int jk_translate(request_rec * r)
                 ap_table_setn(r->notes, JK_NOTE_WORKER_NAME, worker);
             }
             else if (conf->alias_dir != NULL) {
+                char *clean_uri = ap_pstrdup(r->pool, r->uri);
+                ap_no2slash(clean_uri);
                 /* Automatically map uri to a context static file */
                 if (JK_IS_DEBUG_LEVEL(conf->log))
                     jk_log(conf->log, JK_LOG_DEBUG,
