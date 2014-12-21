@@ -44,7 +44,6 @@ extern "C"
 #define JK_SHM_MINOR    '3'
 #define JK_SHM_STR_SIZ  63
 #define JK_SHM_URI_SIZ  127
-#define JK_SHM_DYNAMIC  16
 #define JK_SHM_MAGIC    '!', 'J', 'K', 'S', 'H', 'M', JK_SHM_MAJOR, JK_SHM_MINOR
 #define JK_SHM_MAGIC_SIZ  8
 
