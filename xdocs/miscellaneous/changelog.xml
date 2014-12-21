@@ -50,7 +50,7 @@
       </fix>
       <fix>
         <bug>56703</bug>: Status: Fix inflated counter for current number
-        of backend connections especially when a connection timeout occured
+        of backend connections especially when a connection timeout occurred
         on the backend. (rjung)
       </fix>
       <fix>
