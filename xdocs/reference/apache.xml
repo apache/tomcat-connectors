@@ -776,6 +776,9 @@ but also slightly more complicated.
 JkOptions <b>CollapseSlashesAll</b> will collapse multiple
 adjacent slashes in request URLs before looking for mount or unmount
 matches.
+<source>
+  JkOptions     +CollapseSlashesAll
+</source>
 <br/>
 <br/>
 </p>
@@ -784,6 +787,9 @@ matches.
 JkOptions <b>CollapseSlashesUnmount</b> will collapse multiple
 adjacent slashes in request URLs only before looking for unmount
 matches. This is the default value.
+<source>
+  JkOptions     +CollapseSlashesUnmount
+</source>
 <br/>
 <br/>
 </p>
@@ -793,6 +799,9 @@ JkOptions <b>CollapseSlashesNone</b> will never collapse multiple
 adjacent slashes in request URLs before looking for mount or unmount
 matches. Using this value might make you vulnerable for attacks
 bypassing your unmount rules.
+<source>
+  JkOptions     +CollapseSlashesNone
+</source>
 <br/>
 <br/>
 </p>
