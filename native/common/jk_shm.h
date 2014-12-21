@@ -98,6 +98,8 @@ struct jk_shm_ajp_worker
     /* Statistical data */
     /* Number of currently connected channels */
     volatile int connected;
+    /* Maximum number of connected channels */
+    volatile int max_connected;
     /* Number of currently busy channels */
     volatile int busy;
     /* Maximum number of busy channels */

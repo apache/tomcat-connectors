@@ -263,7 +263,7 @@
                                            "<th>State</th>" \
                                            "<th>Acc</th>" \
                                            "<th>Err</th><th>CE</th><th>RE</th>" \
-                                           "<th>Wr</th><th>Rd</th><th>Busy</th><th>Max</th><th>Con</th><th>LR</th><th>LE</th>" \
+                                           "<th>Wr</th><th>Rd</th><th>Busy</th><th>MaxBusy</th><th>Con</th><th>MaxCon</th><th>LR</th><th>LE</th>" \
                                            "</tr>\n"
 #define JK_STATUS_SHOW_AJP_ROW             "<tr>" \
                                            "<td>%s</td>" \
@@ -273,6 +273,7 @@
                                            "<td>%" JK_UINT32_T_FMT "</td>" \
                                            "<td>%s (%s/sec)</td>" \
                                            "<td>%s (%s/sec)</td>" \
+                                           "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
@@ -308,7 +309,7 @@
                                            "<th>D</th><th>F</th><th>M</th>" \
                                            "<th>V</th><th>Acc</th><th>Sess</th>" \
                                            "<th>Err</th><th>CE</th><th>RE</th>" \
-                                           "<th>Wr</th><th>Rd</th><th>Busy</th><th>Max</th><th>Con</th>" \
+                                           "<th>Wr</th><th>Rd</th><th>Busy</th><th>MaxBusy</th><th>Con</th><th>MaxCon</th>" \
                                            "<th>" JK_STATUS_ARG_LBM_TEXT_ROUTE "</th>" \
                                            "<th>RR</th><th>Cd</th><th>Rs</th><th>LR</th><th>LE</th>" \
                                            "</tr>\n"
@@ -326,6 +327,7 @@
                                            "<td>%" JK_UINT32_T_FMT "</td>" \
                                            "<td>%s (%s/sec)</td>" \
                                            "<td>%s (%s/sec)</td>" \
+                                           "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
@@ -1849,6 +1851,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                       aw->s->busy,
                       aw->s->max_busy,
                       aw->s->connected,
+                      aw->s->max_connected,
                       wr->route,
                       wr->redirect ? (*wr->redirect ? wr->redirect : "&nbsp;") : "&nbsp",
                       wr->domain ? (*wr->domain ? wr->domain : "&nbsp;") : "&nbsp",
@@ -1871,6 +1874,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                       aw->s->busy,
                       aw->s->max_busy,
                       aw->s->connected,
+                      aw->s->max_connected,
                       delta_reset,
                       rc_time > 0 ? buf_time : "&nbsp;");
         }
@@ -1928,6 +1932,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_print_xml_att_int(s, off+2, "busy", aw->s->busy);
         jk_print_xml_att_int(s, off+2, "max_busy", aw->s->max_busy);
         jk_print_xml_att_int(s, off+2, "connected", aw->s->connected);
+        jk_print_xml_att_int(s, off+2, "max_connected", aw->s->max_connected);
         if (lb) {
             jk_print_xml_att_int(s, off+2, "time_to_recover_min", rs_min);
             jk_print_xml_att_int(s, off+2, "time_to_recover_max", rs_max);
@@ -1995,6 +2000,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_printf(s, " busy=%d", aw->s->busy);
         jk_printf(s, " max_busy=%d", aw->s->max_busy);
         jk_printf(s, " connected=%d", aw->s->connected);
+        jk_printf(s, " max_connected=%d", aw->s->max_connected);
         if (lb) {
             jk_printf(s, " time_to_recover_min=%d", rs_min);
             jk_printf(s, " time_to_recover_max=%d", rs_max);
@@ -2059,6 +2065,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_print_prop_att_int(s, w, ajp_name, "busy", aw->s->busy);
         jk_print_prop_att_int(s, w, ajp_name, "max_busy", aw->s->max_busy);
         jk_print_prop_att_int(s, w, ajp_name, "connected", aw->s->connected);
+        jk_print_prop_att_int(s, w, ajp_name, "max_connected", aw->s->max_connected);
         if (lb) {
             jk_print_prop_att_int(s, w, ajp_name, "time_to_recover_min", rs_min);
             jk_print_prop_att_int(s, w, ajp_name, "time_to_recover_max", rs_max);
@@ -3724,8 +3731,9 @@ static void display_legend(jk_ws_service_t *s,
             "<tr><th>Wr</th><td>Number of bytes transferred</td></tr>\n"
             "<tr><th>Rd</th><td>Number of bytes read</td></tr>\n"
             "<tr><th>Busy</th><td>Current number of busy connections</td></tr>\n"
-            "<tr><th>Max</th><td>Maximum number of busy connections</td></tr>\n"
+            "<tr><th>MaxBusy</th><td>Maximum number of busy connections</td></tr>\n"
             "<tr><th>Con</th><td>Current number of backend connections</td></tr>\n"
+            "<tr><th>MaxCon</th><td>Maximum number of backend connections</td></tr>\n"
             "<tr><th>RR</th><td>Route redirect</td></tr>\n"
             "<tr><th>Cd</th><td>Cluster domain</td></tr>\n"
             "<tr><th>Rs</th><td>Recovery scheduled in app. min/max seconds</td></tr>\n"

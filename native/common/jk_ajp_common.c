@@ -1041,6 +1041,10 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         return JK_FALSE;
     }
     ae->worker->s->connected++;
+    /* Update maximum number of connections
+    */
+    if (ae->worker->s->connected > ae->worker->s->max_connected)
+        ae->worker->s->max_connected = ae->worker->s->connected;  
     /* set last_access only if needed
      */
     if (ae->worker->cache_timeout > 0)
