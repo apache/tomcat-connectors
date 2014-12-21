@@ -93,6 +93,10 @@
         <bug>56869</bug>: Status: Add maximum number of open backend connections
         to status worker. Patch contributed by Martin Knoblauch. (rjung)
       </add>
+      <add>
+        <bug>56770</bug>: AJP: Add worker name to all log messages.
+        Patch contributed by Martin Knoblauch. (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

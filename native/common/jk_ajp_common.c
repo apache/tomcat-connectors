@@ -445,7 +445,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         jk_b_append_int(msg, (unsigned short)(s->num_headers))) {
 
         jk_log(l, JK_LOG_ERROR,
-               "failed appending the message begining");
+               "(%s) failed appending the message begining", ae->worker->name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -456,7 +456,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if ((sc = sc_for_req_header(s->headers_names[i])) != UNKNOWN_METHOD) {
             if (jk_b_append_int(msg, (unsigned short)sc)) {
                 jk_log(l, JK_LOG_ERROR,
-                       "failed appending the header code for '%s'", s->headers_names[i]);
+                       "(%s) failed appending the header code for '%s'",
+                       ae->worker->name, s->headers_names[i]);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -464,7 +465,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         else {
             if (jk_b_append_string(msg, s->headers_names[i])) {
                 jk_log(l, JK_LOG_ERROR,
-                       "failed appending the header name '%s'", s->headers_names[i]);
+                       "(%s) failed appending the header name '%s'",
+                       ae->worker->name, s->headers_names[i]);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -472,8 +474,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
 
         if (jk_b_append_string(msg, s->headers_values[i])) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the header value for header '%s' of length %u",
-                   s->headers_names[i], strlen(s->headers_names[i]));
+                   "(%s) failed appending the header value for header '%s' of length %u",
+                   ae->worker->name, s->headers_names[i], strlen(s->headers_names[i]));
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -483,7 +485,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_SECRET) ||
             jk_b_append_string(msg, s->secret)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending secret");
+                   "(%s) failed appending secret", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -493,7 +495,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_REMOTE_USER) ||
             jk_b_append_string(msg, s->remote_user)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the remote user");
+                   "(%s) failed appending the remote user", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -502,7 +504,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_AUTH_TYPE) ||
             jk_b_append_string(msg, s->auth_type)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the auth type");
+                   "(%s) failed appending the auth type", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -515,8 +517,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
             jk_b_append_string(msg, s->query_string)) {
 #endif
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the query string of length %u",
-                   strlen(s->query_string));
+                   "(%s) failed appending the query string of length %u",
+                   ae->worker->name, strlen(s->query_string));
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -525,7 +527,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_ROUTE) ||
             jk_b_append_string(msg, s->route)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the route");
+                   "(%s) failed appending the route", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -534,7 +536,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_SSL_CERT) ||
             jk_b_append_string(msg, s->ssl_cert)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the SSL certificates");
+                   "(%s) failed appending the SSL certificates", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -544,7 +546,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_SSL_CIPHER) ||
             jk_b_append_string(msg, s->ssl_cipher)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the SSL ciphers");
+                   "(%s) failed appending the SSL ciphers", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -553,7 +555,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_SSL_SESSION) ||
             jk_b_append_string(msg, s->ssl_session)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the SSL session");
+                   "(%s) failed appending the SSL session", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -568,8 +570,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         if (jk_b_append_byte(msg, SC_A_SSL_KEY_SIZE) ||
             jk_b_append_int(msg, (unsigned short)s->ssl_key_size)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the SSL key size of length %d",
-                  s->ssl_key_size);
+                   "(%s) failed appending the SSL key size of length %d",
+                   ae->worker->name, s->ssl_key_size);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -578,11 +580,12 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
     /* If the method was unrecognized, encode it as an attribute */
     if (method == SC_M_JK_STORED) {
         if (JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG, "unknown method %s", s->method);
+            jk_log(l, JK_LOG_DEBUG, "(%s) unknown method %s",
+                   ae->worker->name, s->method);
         if (jk_b_append_byte(msg, SC_A_STORED_METHOD) ||
             jk_b_append_string(msg, s->method)) {
             jk_log(l, JK_LOG_ERROR,
-                   "failed appending the request method");
+                   "(%s) failed appending the request method", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -599,8 +602,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         jk_b_append_string(msg, SC_A_REQ_REMOTE_PORT)   ||
         jk_b_append_string(msg, s->remote_port)) {
         jk_log(l, JK_LOG_ERROR,
-               "failed appending the remote port %s",
-               s->remote_port);
+               "(%s) failed appending the remote port %s",
+               ae->worker->name, s->remote_port);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -615,8 +618,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         jk_b_append_string(msg, SC_A_REQ_LOCAL_ADDR)   ||
         jk_b_append_string(msg, s->local_addr)) {
         jk_log(l, JK_LOG_ERROR,
-               "failed appending the local address %s",
-               s->local_addr);
+               "(s) failed appending the local address %s",
+               ae->worker->name, s->local_addr);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -635,8 +638,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         jk_b_append_string(msg, SC_A_JK_LB_ACTIVATION)   ||
         jk_b_append_string(msg, s->activation)) {
         jk_log(l, JK_LOG_ERROR,
-               "failed appending the activation state %s",
-               s->activation);
+               "(%s) failed appending the activation state %s",
+               ae->worker->name, s->activation);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -647,8 +650,8 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
                 jk_b_append_string(msg, s->attributes_names[i]) ||
                 jk_b_append_string(msg, s->attributes_values[i])) {
                 jk_log(l, JK_LOG_ERROR,
-                       "failed appending attribute %s=%s",
-                       s->attributes_names[i], s->attributes_values[i]);
+                       "(%s) failed appending attribute %s=%s",
+                       ae->worker->name, s->attributes_names[i], s->attributes_values[i]);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -657,13 +660,13 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
 
     if (jk_b_append_byte(msg, SC_A_ARE_DONE)) {
         jk_log(l, JK_LOG_ERROR,
-               "failed appending the message end");
+               "(%s) failed appending the message end", ae->worker->name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
 
     if (JK_IS_DEBUG_LEVEL(l))
-        jk_log(l, JK_LOG_DEBUG, "ajp marshaling done");
+        jk_log(l, JK_LOG_DEBUG, "(%s) ajp marshaling done", ae->worker->name);
     JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
@@ -705,7 +708,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
     d->status = jk_b_get_int(msg);
     if (!d->status) {
         jk_log(l, JK_LOG_ERROR,
-               "NULL status");
+               "(%s) NULL status", ae->worker->name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -719,7 +722,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "status = %d", d->status);
+               "(%s) status = %d", ae->worker->name, d->status);
 
     d->num_headers = jk_b_get_int(msg);
     d->header_names = d->header_values = NULL;
@@ -747,7 +750,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
                     }
                     else {
                         jk_log(l, JK_LOG_ERROR,
-                               "No such sc (%d)", name);
+                               "(%s) No such sc (%d)", ae->worker->name, name);
                         JK_TRACE_EXIT(l);
                         return JK_FALSE;
                     }
@@ -756,7 +759,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
                     d->header_names[i] = jk_b_get_string(msg);
                     if (!d->header_names[i]) {
                         jk_log(l, JK_LOG_ERROR,
-                               "NULL header name");
+                               "(%s) NULL header name", ae->worker->name);
                         JK_TRACE_EXIT(l);
                         return JK_FALSE;
                     }
@@ -770,7 +773,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
                 d->header_values[i] = jk_b_get_string(msg);
                 if (!d->header_values[i]) {
                     jk_log(l, JK_LOG_ERROR,
-                           "NULL header value");
+                           "(%s) NULL header value", ae->worker->name);
                     JK_TRACE_EXIT(l);
                     return JK_FALSE;
                 }
@@ -782,8 +785,8 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
 
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                           "Header[%d] [%s] = [%s]",
-                           i, d->header_names[i], d->header_values[i]);
+                           "(%s) Header[%d] [%s] = [%s]",
+                           ae->worker->name, i, d->header_names[i], d->header_values[i]);
             }
         }
     }
@@ -798,6 +801,11 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
 static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
+
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG,
+               "(%s) aborting endpoint with socket %d",
+               ae->worker->name, ae->sd);
     if (IS_VALID_SOCKET(ae->sd)) {
         if (shutdown == JK_TRUE) {
             if (ae->hard_close) {
@@ -925,13 +933,15 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
     msg = jk_b_new(&ae->pool);
     if (!msg) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message");
+               "(%s) Failed allocating AJP message",
+               ae->worker->name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     if (jk_b_set_buffer_size(msg, 16)) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message buffer");
+               "(%s) Failed allocating AJP message buffer",
+               ae->worker->name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -942,7 +952,8 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
      */
     if (ajp_connection_tcp_send_message(ae, msg, l) != JK_TRUE) {
         jk_log(l, JK_LOG_INFO,
-               "can't send cping query");
+               "(%s) can't send cping query",
+               ae->worker->name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -952,7 +963,9 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
          */
         if (jk_is_input_event(ae->sd, timeout, l) == JK_FALSE) {
             ae->last_errno = errno;
-            jk_log(l, JK_LOG_INFO, "timeout in reply cpong");
+            jk_log(l, JK_LOG_INFO, "(%s) timeout in reply cpong after %d ms. "
+                   "Socket = %d (event=%d)",
+                   ae->worker->name, timeout, ae->sd, errno);
             /* We can't trust this connection any more.
              */
             ajp_abort_endpoint(ae, JK_TRUE, l);
@@ -964,7 +977,8 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
          */
         if (ajp_connection_tcp_get_message(ae, msg, l) != JK_TRUE) {
             jk_log(l, JK_LOG_INFO,
-                   "awaited reply cpong, not received");
+                   "(%s) awaited reply cpong, not received",
+                   ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -981,9 +995,9 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
                      cmd < JK_AJP13_SEND_BODY_CHUNK ||
                      cmd > AJP13_CPONG_REPLY) {
                 jk_log(l, JK_LOG_WARNING,
-                       "awaited reply cpong, received %d instead. "
+                       "(%s) awaited reply cpong, received %d instead. "
                        "Closing connection",
-                       cmd);
+                       ae->worker->name, cmd);
                 /* We can't trust this connection any more.
                  */
                 ajp_abort_endpoint(ae, JK_TRUE, l);
@@ -992,9 +1006,9 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
             }
             else {
                 jk_log(l, JK_LOG_INFO,
-                       "awaited reply cpong, received %d instead. "
+                       "(%s) awaited reply cpong, received %d instead. "
                        "Retrying next packet",
-                       cmd);
+                       ae->worker->name, cmd);
 
             }
         }
@@ -1035,8 +1049,9 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
     if (!IS_VALID_SOCKET(ae->sd)) {
         ae->last_errno = errno;
         jk_log(l, JK_LOG_INFO,
-               "Failed opening socket to (%s) (errno=%d)",
-               jk_dump_hinfo(&ae->worker->worker_inet_addr, buf), ae->last_errno);
+               "(%s)Failed opening socket to (%s) (errno=%d)",
+               ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
+               ae->last_errno);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -1070,7 +1085,8 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         rc = ajp_handle_cping_cpong(ae, ae->worker->connect_timeout, l);
         if (rc == JK_FALSE)
             jk_log(l, JK_LOG_ERROR,
-                   "(%s) cping/cpong after connecting to the backend server failed (errno=%d)",
+                   "(%s) cping/cpong after connecting to the backend server failed "
+                   "(errno=%d)",
                    ae->worker->name, ae->last_errno);
     }
     JK_TRACE_EXIT(l);
@@ -1090,7 +1106,8 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "syncing mem for ajp worker '%s' from shm (%d->%d) [%d->%d]",
-               aw->name, aw->sequence, aw->s->h.sequence, aw->addr_sequence, aw->s->addr_sequence);
+               aw->name, aw->sequence, aw->s->h.sequence, aw->addr_sequence,
+               aw->s->addr_sequence);
     if (locked == JK_FALSE)
         jk_shm_lock();
 
@@ -1158,7 +1175,8 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "syncing shm for ajp worker '%s' from mem (%d->%d) [%d->%d]",
-               aw->name, aw->s->h.sequence, aw->sequence, aw->s->addr_sequence, aw->addr_sequence);
+               aw->name, aw->s->h.sequence, aw->sequence, aw->s->addr_sequence,
+               aw->addr_sequence);
     if (locked == JK_FALSE)
         jk_shm_lock();
 
@@ -1260,8 +1278,8 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
     }
     ae->last_errno = errno;
     jk_log(l, JK_LOG_INFO,
-           "sendfull for socket %d returned %d (errno=%d)",
-           ae->sd, rc, ae->last_errno);
+           "(%s) sendfull for socket %d returned %d (errno=%d)",
+           ae->worker->name, ae->sd, rc, ae->last_errno);
     ajp_abort_endpoint(ae, JK_FALSE, l);
     JK_TRACE_EXIT(l);
     return JK_FALSE;
@@ -1328,13 +1346,13 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
 
             if (header == AJP14_SW_HEADER) {
                 jk_log(l, JK_LOG_ERROR,
-                       "received AJP14 reply on an AJP13 connection from %s",
-                       jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
+                       "(%s) received AJP14 reply on an AJP13 connection from %s",
+                       ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
             }
             else {
                 jk_log(l, JK_LOG_ERROR,
-                       "wrong message format 0x%04x from %s",
-                       header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
+                       "(%s) wrong message format 0x%04x from %s",
+                       ae->worker->name, header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
                                              buf));
             }
             /* We've got a protocol error.
@@ -1350,13 +1368,13 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
 
             if (header == AJP13_SW_HEADER) {
                 jk_log(l, JK_LOG_ERROR,
-                       "received AJP13 reply on an AJP14 connection from %s",
-                       jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
+                       "(%s) received AJP13 reply on an AJP14 connection from %s",
+                       ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
             }
             else {
                 jk_log(l, JK_LOG_ERROR,
-                       "wrong message format 0x%04x from %s",
-                       header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
+                       "(%s) wrong message format 0x%04x from %s",
+                       ae->worker->name, header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
                                              buf));
             }
             /* We've got a protocol error.
@@ -1373,8 +1391,8 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
 
     if (msglen > msg->maxlen) {
         jk_log(l, JK_LOG_ERROR,
-               "wrong message size %d %d from %s",
-               msglen, msg->maxlen,
+               "(%s) wrong message size %d %d from %s",
+               ae->worker->name, msglen, msg->maxlen,
                jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
         /* We've got a protocol error.
          * We can't trust this connection any more.
@@ -1531,7 +1549,7 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
          */
         if (0 != jk_b_append_int(msg, (unsigned short)len)) {
             jk_log(l, JK_LOG_INFO,
-                   "Failed appending message length");
+                   "(%s) Failed appending message length", ae->worker->name);
             JK_TRACE_EXIT(l);
             return JK_CLIENT_RD_ERROR;
         }
@@ -1737,7 +1755,8 @@ static int ajp_send_request(jk_endpoint_t *e,
 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-               "(%s) request body to send %" JK_UINT64_T_FMT " - request body to resend %d",
+               "(%s) request body to send %" JK_UINT64_T_FMT
+               " - request body to resend %d",
                ae->worker->name, ae->left_bytes_to_send,
                op->post->len > AJP_HEADER_LEN ? op->post->len - AJP_HEADER_LEN : 0);
 
@@ -1758,8 +1777,8 @@ static int ajp_send_request(jk_endpoint_t *e,
             if (rc == JK_FATAL_ERROR)
                 op->recoverable = JK_FALSE;
             jk_log(l, JK_LOG_ERROR,
-                   "(%s) failed sending request body of size %d (%srecoverable), "
-                   "socket %d (errno=%d)",
+                   "(%s) failed sending request body of size %d "
+                   "(%srecoverable), socket %d (errno=%d)",
                     ae->worker->name, postlen, op->recoverable ? "" : "un",
                     ae->sd, ae->last_errno);
             JK_TRACE_EXIT(l);
@@ -1767,8 +1786,8 @@ static int ajp_send_request(jk_endpoint_t *e,
         }
         else {
             if (JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG, "Resent the request body (%d)",
-                       postlen);
+                jk_log(l, JK_LOG_DEBUG, "(%s) Resent the request body (%d)",
+                       ae->worker->name, postlen);
         }
     }
     else if (s->reco_status == RECO_FILLED) {
@@ -1784,8 +1803,8 @@ static int ajp_send_request(jk_endpoint_t *e,
                 if (rc == JK_FATAL_ERROR)
                     op->recoverable = JK_FALSE;
                 jk_log(l, JK_LOG_ERROR,
-                       "(%s) failed sending request body of size %d (lb mode) (%srecoverable), "
-                       "socket %d (errno=%d)",
+                       "(%s) failed sending request body of size %d (lb mode) "
+                       "(%srecoverable), socket %d (errno=%d)",
                         ae->worker->name, postlen, op->recoverable ? "" : "un",
                         ae->sd, ae->last_errno);
                 JK_TRACE_EXIT(l);
@@ -1795,7 +1814,8 @@ static int ajp_send_request(jk_endpoint_t *e,
         else {
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "Resent the request body (lb mode) (%d)", postlen);
+                       "(%s) Resent the request body (lb mode) (%d)",
+                       ae->worker->name, postlen);
         }
     }
     else {
@@ -1850,8 +1870,8 @@ static int ajp_send_request(jk_endpoint_t *e,
                 if (rc == JK_FATAL_ERROR)
                     op->recoverable = JK_FALSE;
                 jk_log(l, JK_LOG_ERROR,
-                       "(%s) failed sending request body of size %d (%srecoverable), "
-                       "socket %d (errno=%d)",
+                       "(%s) failed sending request body of size %d "
+                       "(%srecoverable), socket %d (errno=%d)",
                         ae->worker->name, len, op->recoverable ? "" : "un",
                         ae->sd, ae->last_errno);
                 JK_TRACE_EXIT(l);
@@ -1887,14 +1907,14 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                  */
                 if (JK_IS_DEBUG_LEVEL(l)) {
                     jk_log(l, JK_LOG_DEBUG,
-                           "Already received AJP13_SEND HEADERS");
+                           "(%s) Already received AJP13_SEND HEADERS", ae->worker->name);
                 }
                 JK_TRACE_EXIT(l);
                 return JK_AJP13_ERROR;
             }
             if (!ajp_unmarshal_response(msg, &res, ae, l)) {
                 jk_log(l, JK_LOG_ERROR,
-                       "ajp_unmarshal_response failed");
+                       "(%s) ajp_unmarshal_response failed", ae->worker->name);
                 JK_TRACE_EXIT(l);
                 return JK_AJP13_ERROR;
             }
@@ -1902,14 +1922,19 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 char **old_names = res.header_names;
                 char **old_values = res.header_values;
                 if (JK_IS_DEBUG_LEVEL(l))
-                    jk_log(l, JK_LOG_DEBUG, "Adding %d response headers to %d headers received from tomcat", r->num_resp_headers, res.num_headers);
+                    jk_log(l, JK_LOG_DEBUG, "(%s) Adding %d response headers to %d "
+                    "headers received from tomcat",
+                    ae->worker->name, r->num_resp_headers, res.num_headers);
                 res.header_names  = jk_pool_alloc(r->pool,
-                                                  (r->num_resp_headers + res.num_headers) * sizeof(char *));
+                                                  (r->num_resp_headers + res.num_headers) *
+                                                   sizeof(char *));
                 res.header_values = jk_pool_alloc(r->pool,
-                                                  (r->num_resp_headers + res.num_headers) * sizeof(char *));
+                                                  (r->num_resp_headers + res.num_headers) *
+                                                   sizeof(char *));
                 if (!res.header_names || !res.header_values) {
                     jk_log(l, JK_LOG_ERROR,
-                        "Failed allocating one %d response headers.", r->num_resp_headers + res.num_headers);
+                           "(%s) Failed allocating one %d response headers.",
+                           ae->worker->name, r->num_resp_headers + res.num_headers);
                     res.header_names = old_names;
                     res.header_values = old_values;
                 } else {
@@ -1918,8 +1943,10 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                         memcpy(res.header_values, old_values, res.num_headers * sizeof(char *));
                     }
                     if (r->num_resp_headers) {
-                        memcpy(res.header_names + res.num_headers, r->resp_headers_names, r->num_resp_headers * sizeof(char *));
-                        memcpy(res.header_values + res.num_headers, r->resp_headers_values, r->num_resp_headers * sizeof(char *));
+                        memcpy(res.header_names + res.num_headers, r->resp_headers_names,
+                               r->num_resp_headers * sizeof(char *));
+                        memcpy(res.header_values + res.num_headers, r->resp_headers_values,
+                               r->num_resp_headers * sizeof(char *));
                     }
                     res.num_headers = res.num_headers + r->num_resp_headers;
                 }
@@ -1972,7 +1999,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
              */
             if (jk_b_get_int(msg) == 0) {
                 jk_log(l, JK_LOG_DEBUG,
-                       "Ignoring flush message received while sending the request");
+                       "(%s) Ignoring flush message received while sending the request",
+                       ae->worker->name);
                 return ae->last_op;
             }
             /* We have just send a request but received something
@@ -1980,7 +2008,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
              */
             if (JK_IS_DEBUG_LEVEL(l)) {
                 jk_log(l, JK_LOG_DEBUG,
-                       "Unexpected AJP13_SEND_BODY_CHUNK");
+                       "(%s) Unexpected AJP13_SEND_BODY_CHUNK",
+                       ae->worker->name);
             }
             JK_TRACE_EXIT(l);
             return JK_AJP13_ERROR;
@@ -1998,8 +2027,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
              */
             if (len > (unsigned int)(msg->len - 3)) {
                 jk_log(l, JK_LOG_ERROR,
-                       "Chunk length too large. Length of AJP message is %d,"
-                       " chunk length is %d.", msg->len, len);
+                       "(%s) Chunk length too large. Length of AJP message is %d,"
+                       " chunk length is %d.", ae->worker->name, msg->len, len);
                 JK_TRACE_EXIT(l);
                 return JK_INTERNAL_ERROR;
             }
@@ -2014,13 +2043,15 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 }
                 else {
                     jk_log(l, JK_LOG_DEBUG,
-                           "Ignoring flush message received before headers");
+                        "(%s) Ignoring flush message received before headers",
+                        ae->worker->name);
                 }
             }
             else {
                 if (!r->write(r, msg->buf + msg->pos, len)) {
                     jk_log(l, JK_LOG_INFO,
-                           "Writing to client aborted or client network problems");
+                        "(%s) Writing to client aborted or client network problems",
+                        ae->worker->name);
                     JK_TRACE_EXIT(l);
                     return JK_CLIENT_WR_ERROR;
                 }
@@ -2047,7 +2078,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
             }
 
             jk_log(l, JK_LOG_INFO,
-                   "Reading from client aborted or client network problems");
+                   "(%s) Reading from client aborted or client network problems",
+                   ae->worker->name);
 
             JK_TRACE_EXIT(l);
             return JK_CLIENT_RD_ERROR;
@@ -2061,11 +2093,13 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
              * AJP13 protocol reuse flag set to false.
              * Tomcat will close its side of the connection.
              */
-            jk_log(l, JK_LOG_WARNING, "AJP13 protocol: Reuse is set to false");
+            jk_log(l, JK_LOG_WARNING, "(%s) AJP13 protocol: Reuse is set to false",
+                   ae->worker->name);
         }
         else if (r->disable_reuse) {
             if (JK_IS_DEBUG_LEVEL(l)) {
-                jk_log(l, JK_LOG_DEBUG, "AJP13 protocol: Reuse is disabled");
+                jk_log(l, JK_LOG_DEBUG, "(%s) AJP13 protocol: Reuse is disabled",
+                       ae->worker->name);
             }
             ae->reuse = JK_FALSE;
         }
@@ -2073,7 +2107,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
             /* Reuse in all cases
              */
             if (JK_IS_DEBUG_LEVEL(l)) {
-                jk_log(l, JK_LOG_DEBUG, "AJP13 protocol: Reuse is OK");
+                jk_log(l, JK_LOG_DEBUG, "(%s) AJP13 protocol: Reuse is OK",
+                       ae->worker->name);
             }
             ae->reuse = JK_TRUE;
         }
@@ -2095,7 +2130,7 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
 
     default:
         jk_log(l, JK_LOG_ERROR,
-               "Unknown AJP protocol code: %02X", code);
+               "(%s) Unknown AJP protocol code: %02X", ae->worker->name, code);
         JK_TRACE_EXIT(l);
         return JK_AJP13_ERROR;
     }
@@ -2170,7 +2205,8 @@ static int ajp_get_reply(jk_endpoint_t *e,
                     if (p->worker->recovery_opts & RECOVER_ABORT_IF_TCGETREQUEST)
                         op->recoverable = JK_FALSE;
                     /*
-                     * We revert back to recoverable, if recovery_opts allow it for GET or HEAD
+                     * We revert back to recoverable, if recovery_opts allow it
+                     * for GET or HEAD
                      */
                     if (op->recoverable == JK_FALSE) {
                         if (p->worker->recovery_opts & RECOVER_ALWAYS_HTTP_HEAD) {
@@ -2203,12 +2239,14 @@ static int ajp_get_reply(jk_endpoint_t *e,
                  * communication with tomcat has been interrupted BEFORE
                  * headers have been sent to the client.
                  *
-                 * We mark it unrecoverable if recovery_opts set to RECOVER_ABORT_IF_TCGETREQUEST
+                 * We mark it unrecoverable if recovery_opts set to
+                 * RECOVER_ABORT_IF_TCGETREQUEST
                  */
                 if (p->worker->recovery_opts & RECOVER_ABORT_IF_TCGETREQUEST)
                     op->recoverable = JK_FALSE;
                 /*
-                 * We revert back to recoverable, if recovery_opts allow it for GET or HEAD
+                 * We revert back to recoverable, if recovery_opts allow it
+                 * for GET or HEAD
                  */
                 if (op->recoverable == JK_FALSE) {
                     if (p->worker->recovery_opts & RECOVER_ALWAYS_HTTP_HEAD) {
@@ -2235,7 +2273,8 @@ static int ajp_get_reply(jk_endpoint_t *e,
                  * that nobody should append any data, especially no 500 error
                  * page of the webserver!
                  *
-                 * We mark it unrecoverable if recovery_opts set to RECOVER_ABORT_IF_TCSENDHEADER
+                 * We mark it unrecoverable if recovery_opts set to
+                 * RECOVER_ABORT_IF_TCSENDHEADER
                  */
                 if (p->worker->recovery_opts & RECOVER_ABORT_IF_TCSENDHEADER)
                     op->recoverable = JK_FALSE;
@@ -2451,13 +2490,13 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     op->request = jk_b_new(&(p->pool));
     if (!op->request) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message");
+               "(%s) Failed allocating AJP message", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
     if (jk_b_set_buffer_size(op->request, aw->max_packet_size)) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message buffer");
+               "(%s) Failed allocating AJP message buffer", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
@@ -2466,13 +2505,13 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     op->reply = jk_b_new(&(p->pool));
     if (!op->reply) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message");
+               "(%s) Failed allocating AJP message", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
     if (jk_b_set_buffer_size(op->reply, aw->max_packet_size)) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message buffer");
+               "(%s) Failed allocating AJP message buffer", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
@@ -2480,13 +2519,13 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     op->post = jk_b_new(&(p->pool));
     if (!op->post) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message");
+               "(%s) Failed allocating AJP message", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
     if (jk_b_set_buffer_size(op->post, aw->max_packet_size)) {
         jk_log(l, JK_LOG_ERROR,
-               "Failed allocating AJP message buffer");
+               "(%s) Failed allocating AJP message buffer", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
@@ -2511,8 +2550,8 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     if (!ajp_marshal_into_msgb(op->request, s, l, p)) {
         *is_error = JK_HTTP_REQUEST_TOO_LARGE;
         jk_log(l, JK_LOG_INFO,
-                "Creating AJP message failed "
-                "without recovery - check max_packet_size");
+                "(%s) Creating AJP message failed "
+                "without recovery - check max_packet_size", aw->name);
         aw->s->client_errors++;
         JK_TRACE_EXIT(l);
         return JK_CLIENT_ERROR;
@@ -2542,8 +2581,8 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
         if (i > 0 && retry_interval >= 0) {
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "retry %d, sleeping for %d ms before retrying",
-                       i, retry_interval);
+                       "(%s) retry %d, sleeping for %d ms before retrying",
+                       aw->name, i, retry_interval);
             jk_sleep(retry_interval);
             /* Pull shared memory if something changed during sleep
              */
@@ -2710,13 +2749,13 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
          */
         ajp_next_connection(p, l);
     }
+    ajp_update_stats(e, aw, rc, l);
     /* Log the error only once per failed request.
      */
     jk_log(l, JK_LOG_ERROR,
-           "(%s) connecting to tomcat failed.",
-           aw->name);
+           "(%s) connecting to tomcat failed (rc=%d, errors=%d, client_errors=%d).",
+           aw->name, rc, aw->s->errors, aw->s->client_errors);
 
-    ajp_update_stats(e, aw, rc, l);
     JK_TRACE_EXIT(l);
     return rc;
 }
@@ -2742,8 +2781,15 @@ int ajp_validate(jk_worker_t *pThis,
         host = AJP14_DEF_HOST;
     }
     else {
-        jk_log(l, JK_LOG_ERROR,
-               "unknown protocol %d", proto);
+        if (pThis && pThis->worker_private) {
+            ajp_worker_t *p = pThis->worker_private;
+            jk_log(l, JK_LOG_ERROR,
+                   "(%s) unknown protocol %d", p->name, proto);
+        }
+        else {
+            jk_log(l, JK_LOG_ERROR,
+                   "(unset worker) unknown protocol %d", proto);
+        }
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -2791,7 +2837,8 @@ int ajp_validate(jk_worker_t *pThis,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "worker %s contact '%s:%d' already configured type=%d (%d) [%d]",
-                        p->name, p->host, p->port, p->s->h.type, p->s->h.sequence, p->s->addr_sequence);
+                       p->name, p->host, p->port, p->s->h.type,
+                       p->s->h.sequence, p->s->addr_sequence);
             /* Force resolve */
             p->addr_sequence = -1;
             jk_ajp_pull(p, JK_TRUE, l);
@@ -2822,14 +2869,15 @@ static int ajp_create_endpoint_cache(ajp_worker_t *p, int proto, jk_logger_t *l)
     }
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-                "setting connection pool size to %u with min %u and acquire timeout %d",
-                p->ep_cache_sz, p->ep_mincache_sz, p->cache_acquire_timeout);
+                "(%s) setting connection pool size to %u with min %u "
+                "and acquire timeout %d",
+                p->name, p->ep_cache_sz, p->ep_mincache_sz, p->cache_acquire_timeout);
     for (i = 0; i < p->ep_cache_sz; i++) {
         p->ep_cache[i] = (ajp_endpoint_t *)calloc(1, sizeof(ajp_endpoint_t));
         if (!p->ep_cache[i]) {
             jk_log(l, JK_LOG_ERROR,
-                    "allocating endpoint slot %d (errno=%d)",
-                    i, errno);
+                    "(%s) allocating endpoint slot %d (errno=%d)",
+                    p->name, i, errno);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -2948,8 +2996,8 @@ int ajp_init(jk_worker_t *pThis,
 
         if (p->retries < 1) {
             jk_log(l, JK_LOG_INFO,
-                   "number of retries must be greater then 1. Setting to default=%d",
-                   JK_RETRIES);
+                   "(%s) number of retries must be greater then 1. Setting to default=%d",
+                   p->name, JK_RETRIES);
             p->retries = JK_RETRIES;
         }
 
@@ -2959,8 +3007,9 @@ int ajp_init(jk_worker_t *pThis,
         if (JK_IS_DEBUG_LEVEL(l)) {
 
             jk_log(l, JK_LOG_DEBUG,
-                   "setting endpoint options:",
-                   p->keepalive);
+                   "(%s) setting endpoint options:",
+                   p->name);
+
             jk_log(l, JK_LOG_DEBUG,
                    "keepalive:              %d",
                    p->keepalive);
@@ -3020,8 +3069,8 @@ int ajp_init(jk_worker_t *pThis,
         p->secret = jk_get_worker_secret(props, p->name);
         if (!ajp_create_endpoint_cache(p, proto, l)) {
             jk_log(l, JK_LOG_ERROR,
-                   "allocating connection pool of size %u",
-                   p->ep_cache_sz);
+                   "(%s) allocating connection pool of size %u",
+                   p->name, p->ep_cache_sz);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -3051,7 +3100,7 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
     aw = (ajp_worker_t *) calloc(1, sizeof(ajp_worker_t));
     if (!aw) {
         jk_log(l, JK_LOG_ERROR,
-               "malloc of private_data failed");
+               "(%s) malloc of private_data failed", name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -3079,15 +3128,15 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
         jk_close_pool(&aw->p);
         free(aw);
         jk_log(l, JK_LOG_ERROR,
-               "allocating ajp worker record from shared memory");
+               "(%s) allocating ajp worker record from shared memory", aw->name);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     JK_INIT_CS(&aw->cs, rc);
     if (!rc) {
         jk_log(l, JK_LOG_ERROR,
-               "creating thread lock (errno=%d)",
-               errno);
+               "(%s) creating thread lock (errno=%d)",
+               aw->name, errno);
         jk_close_pool(&aw->p);
         free(aw);
         JK_TRACE_EXIT(l);
@@ -3111,8 +3160,8 @@ int ajp_destroy(jk_worker_t **pThis, jk_logger_t *l, int proto)
 
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                   "up to %u endpoints to close",
-                   aw->ep_cache_sz);
+                   "(%s) up to %u endpoints to close",
+                   aw->name, aw->ep_cache_sz);
 
         for (i = 0; i < aw->ep_cache_sz; i++) {
             if (aw->ep_cache[i])
@@ -3210,7 +3259,7 @@ int ajp_get_endpoint(jk_worker_t *pThis,
                         ae->avail = JK_TRUE;
                         ae = NULL;
                         jk_log(l, JK_LOG_WARNING,
-                               "closing non reusable pool slot=%d", slot);
+                               "(%s) closing non reusable pool slot=%d", aw->name, slot);
                     }
                 }
             }
@@ -3233,8 +3282,8 @@ int ajp_get_endpoint(jk_worker_t *pThis,
                 *je = &ae->endpoint;
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                           "acquired connection pool slot=%u after %d retries",
-                           slot, retry);
+                           "(%s) acquired connection pool slot=%u after %d retries",
+                           aw->name, slot, retry);
                 JK_TRACE_EXIT(l);
                 return JK_TRUE;
             }
@@ -3281,7 +3330,8 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
          * Since it's possible that we come here a few milliseconds
          * before the interval has passed, we allow a little tolerance.
          */
-        delta = (long)difftime(mstarted, aw->s->last_maintain_time) + JK_AJP_MAINTAIN_TOLERANCE;
+        delta = (long)difftime(mstarted, aw->s->last_maintain_time) +
+                JK_AJP_MAINTAIN_TOLERANCE;
         if (delta >= aw->maintain_time) {
             aw->s->last_maintain_time = mstarted;
             if (aw->s->state == JK_AJP_STATE_OK &&
@@ -3331,15 +3381,15 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
                         ajp_reset_endpoint(aw->ep_cache[i], l);
                         if (JK_IS_DEBUG_LEVEL(l))
                             jk_log(l, JK_LOG_DEBUG,
-                                   "cleaning pool slot=%d elapsed %d in %d",
-                                   i, elapsed, (int)(difftime(time(NULL), rt)));
+                                   "(%s) cleaning pool slot=%d elapsed %d in %d",
+                                   aw->name, i, elapsed, (int)(difftime(time(NULL), rt)));
                     }
                 }
                 if (cnt <= aw->ep_mincache_sz + n) {
                     if (JK_IS_DEBUG_LEVEL(l)) {
                         jk_log(l, JK_LOG_DEBUG,
-                        "reached pool min size %u from %u cache slots",
-                        aw->ep_mincache_sz, aw->ep_cache_sz);
+                        "(%s) reached pool min size %u from %u cache slots",
+                        aw->name, aw->ep_mincache_sz, aw->ep_cache_sz);
                     }
                     break;
                 }
@@ -3394,13 +3444,13 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
         free(m_sock);
         if (n && JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                   "recycled %u sockets in %d seconds from %u pool slots",
-                   n, (int)(difftime(time(NULL), mstarted)),
+                   "(%s) recycled %u sockets in %d seconds from %u pool slots",
+                   aw->name, n, (int)(difftime(time(NULL), mstarted)),
                    aw->ep_cache_sz);
         if (k && JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                   "pinged %u sockets in %d seconds from %u pool slots",
-                   k, (int)(difftime(time(NULL), mstarted)),
+                   "(%s) pinged %u sockets in %d seconds from %u pool slots",
+                   aw->name, k, (int)(difftime(time(NULL), mstarted)),
                    aw->ep_cache_sz);
         JK_TRACE_EXIT(l);
         return JK_TRUE;
