@@ -2988,6 +2988,7 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
 {
     jk_server_conf_t *base = (jk_server_conf_t *) basev;
     jk_server_conf_t *overrides = (jk_server_conf_t *) overridesv;
+    int mask = 0;
 
     if (!overrides->log_file)
         overrides->log_file = base->log_file;
@@ -3032,16 +3033,13 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
     if (!overrides->key_size_indicator)
         overrides->key_size_indicator = base->key_size_indicator;
 
-/* Don't simply accumulate bits in the JK_OPT_FWDURIMASK region, */
-/* because those are multi-bit values. */
+/* Don't simply accumulate bits in the JK_OPT_FWDURIMASK or
+ * JK_OPT_COLLAPSEMASK region, because those are multi-bit values. */
     if (overrides->options & JK_OPT_FWDURIMASK)
-        overrides->options |= (base->options & ~base->exclude_options) & ~JK_OPT_FWDURIMASK;
-    else
-        overrides->options |= (base->options & ~base->exclude_options);
+        mask |= JK_OPT_FWDURIMASK;
     if (overrides->options & JK_OPT_COLLAPSEMASK)
-        overrides->options |= (base->options & ~base->exclude_options) & ~JK_OPT_COLLAPSEMASK;
-    else
-        overrides->options |= (base->options & ~base->exclude_options);
+        mask |= JK_OPT_COLLAPSEMASK;
+    overrides->options |= (base->options & ~base->exclude_options) & ~mask;
 
     if (base->envvars) {
         if (overrides->envvars && overrides->envvars_has_own) {
@@ -3496,7 +3494,6 @@ static int jk_post_config(apr_pool_t * pconf,
                     jk_server_conf_t *srvconf = (jk_server_conf_t *)create_jk_config(pconf, srv);
                     sconf = (jk_server_conf_t *)merge_jk_config(pconf, sconf, srvconf);
                     ap_set_module_config(srv->module_config, &jk_module, sconf);
-
                 }
 
                 if (sconf && sconf->was_initialized == JK_FALSE) {
@@ -3519,8 +3516,22 @@ static int jk_post_config(apr_pool_t * pconf,
                             uri_worker_map_switch(sconf->uw_map, sconf->log);
                             uri_worker_map_load(sconf->uw_map, sconf->log);
                         }
-                        if (conf->options & JK_OPT_COLLAPSEMASK)
-                            sconf->uw_map->collapse_slashes = conf->options & JK_OPT_COLLAPSEMASK;
+                        switch (sconf->options & JK_OPT_COLLAPSEMASK) {
+                        case JK_OPT_COLLAPSEALL:
+                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_ALL;
+                            break;
+                        case JK_OPT_COLLAPSENONE:
+                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_NONE;
+                            break;
+                        case JK_OPT_COLLAPSEUNMOUNT:
+                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_UNMOUNT;
+                            break;
+                        default:
+                            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
+                                         "Collapse slashes value %d ignored, setting to %d",
+                                         sconf->options & JK_OPT_COLLAPSEMASK, JK_COLLAPSE_DEFAULT);
+                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_DEFAULT;
+                        }
                     }
                     else {
                         if (sconf->mountcopy == JK_TRUE) {
