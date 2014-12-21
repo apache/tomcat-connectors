@@ -1358,8 +1358,8 @@ static const char *jk_set_shm_size(cmd_parms * cmd,
     int sz = 0;
     /* we need an absolute path */
     sz = atoi(shm_size) * 1024;
-    if (sz < JK_SHM_DEF_SIZE)
-        sz = JK_SHM_DEF_SIZE;
+    if (sz < JK_SHM_MIN_SIZE)
+        sz = JK_SHM_MIN_SIZE;
     else
         sz = JK_SHM_ALIGN(sz);
     jk_shm_size = sz;

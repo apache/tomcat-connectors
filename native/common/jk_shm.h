@@ -50,10 +50,10 @@ extern "C"
 /* XXX: Check if adding struct members for overflow */
 #define JK_SHM_SLOT_SIZE          384
 /* Really huge numbers, but 64 workers should be enough */
-#define JK_SHM_MAX_WORKERS        64
+#define JK_SHM_DEF_WORKERS        64
 #define JK_SHM_ALIGNMENT          JK_SHM_SLOT_SIZE
 #define JK_SHM_ALIGN(x)           JK_ALIGN((x), JK_SHM_ALIGNMENT)
-#define JK_SHM_DEF_SIZE           ((JK_SHM_SLOT_SIZE * JK_SHM_MAX_WORKERS * 3) + JK_SHM_ALIGNMENT)
+#define JK_SHM_MIN_SIZE           ((JK_SHM_SLOT_SIZE * JK_SHM_DEF_WORKERS * 3) + JK_SHM_ALIGNMENT)
 
 /** jk shm generic worker record structure */
 struct jk_shm_worker_header
