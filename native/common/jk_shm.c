@@ -89,10 +89,41 @@ static HANDLE jk_shm_hlock = NULL;
 #endif
 static int jk_shm_inited_cs = 0;
 
+static size_t jk_shm_calculate_slot_size()
+{
+    int align = 64;
+    size_t slot_size = 0;
+    size_t this_size = 0;
+
+    this_size = sizeof(jk_shm_header_data_t);
+    if (this_size > slot_size)
+        slot_size = this_size;
+
+    this_size = sizeof(jk_shm_worker_header_t);
+    if (this_size > slot_size)
+        slot_size = this_size;
+
+    this_size = sizeof(jk_shm_ajp_worker_t);
+    if (this_size > slot_size)
+        slot_size = this_size;
+
+    this_size = sizeof(jk_shm_lb_sub_worker_t);
+    if (this_size > slot_size)
+        slot_size = this_size;
+
+    this_size = sizeof(jk_shm_lb_worker_t);
+    if (this_size > slot_size)
+        slot_size = this_size;
+
+    slot_size = JK_ALIGN(slot_size, align);
+    return slot_size;
+}
+
 /* Calculate needed shm size */
 int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
 {
     char **worker_list;
+    size_t needed_slot_size = 0;
     unsigned int i;
     unsigned int num_of_workers;
     int num_of_ajp_workers = 0;
@@ -105,6 +136,17 @@ int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
                            &num_of_workers) == JK_FALSE) {
         jk_log(l, JK_LOG_ERROR,
                "Could not get worker list from map");
+        JK_TRACE_EXIT(l);
+        return 0;
+    }
+    needed_slot_size = jk_shm_calculate_slot_size();
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG, "JK_SHM_SLOT_SIZE defined as %d, need at least %d",
+               JK_SHM_SLOT_SIZE , needed_slot_size);
+    if (needed_slot_size > JK_SHM_SLOT_SIZE) {
+        jk_log(l, JK_LOG_ERROR,
+               "JK_SHM_SLOT_SIZE %d is to small, need at least %d",
+               JK_SHM_SLOT_SIZE, needed_slot_size);
         JK_TRACE_EXIT(l);
         return 0;
     }
@@ -763,7 +805,8 @@ void jk_shm_close(jk_logger_t *l)
 #endif
 
 jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
-                                            int parent_id, const char *name)
+                                            int parent_id, const char *name,
+                                            jk_logger_t *l)
 {
     unsigned int i;
     jk_shm_worker_header_t *w = 0;
@@ -793,6 +836,9 @@ jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
         else {
             /* No more free memory left.
              */
+            jk_log(l, JK_LOG_ERROR,
+                   "Could not allocate shared memory for worker %s",
+                   name);
             w = NULL;
         }
         jk_shm_unlock();
@@ -889,20 +935,23 @@ int jk_shm_unlock()
     return rc;
 }
 
-jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p, const char *name)
+jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p, const char *name,
+                                             jk_logger_t *l)
 {
     return (jk_shm_ajp_worker_t *)jk_shm_alloc_worker(p,
-                                    JK_AJP13_WORKER_TYPE, 0, name);
+                                    JK_AJP13_WORKER_TYPE, 0, name, l);
 }
 
-jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p, int lb_id, const char *name)
+jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p, int lb_id, const char *name,
+                                                   jk_logger_t *l)
 {
     return (jk_shm_lb_sub_worker_t *)jk_shm_alloc_worker(p,
-                                    JK_LB_SUB_WORKER_TYPE, lb_id, name);
+                                    JK_LB_SUB_WORKER_TYPE, lb_id, name, l);
 }
 
-jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name)
+jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name,
+                                           jk_logger_t *l)
 {
     return (jk_shm_lb_worker_t *)jk_shm_alloc_worker(p,
-                                    JK_LB_WORKER_TYPE, 0, name);
+                                    JK_LB_WORKER_TYPE, 0, name, l);
 }

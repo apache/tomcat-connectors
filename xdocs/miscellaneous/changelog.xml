@@ -86,6 +86,9 @@
         "CollapseSlashesUnmount") and via property "collapse_slashes" for IIS
         (values "all", "none", "unmount"). (rjung)
       </add>
+      <add>
+        Add more checks for shared memory allocation. (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

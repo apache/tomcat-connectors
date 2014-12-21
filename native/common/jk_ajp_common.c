@@ -3070,7 +3070,7 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
 
     *w = &aw->worker;
 
-    aw->s = jk_shm_alloc_ajp_worker(&aw->p, name);
+    aw->s = jk_shm_alloc_ajp_worker(&aw->p, name, l);
     if (!aw->s) {
         jk_close_pool(&aw->p);
         free(aw);

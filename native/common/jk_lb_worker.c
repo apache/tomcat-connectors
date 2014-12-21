@@ -1686,7 +1686,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
             }
             memset(p->lb_workers, 0, num_of_workers * sizeof(lb_sub_worker_t));
             for (i = 0; i < num_of_workers; i++) {
-                p->lb_workers[i].s = jk_shm_alloc_lb_sub_worker(&p->p, p->s->h.id, worker_names[i]);
+                p->lb_workers[i].s = jk_shm_alloc_lb_sub_worker(&p->p, p->s->h.id, worker_names[i], l);
                 if (p->lb_workers[i].s == NULL) {
                     jk_log(l, JK_LOG_ERROR,
                            "allocating lb sub worker record from shared memory");
@@ -1954,7 +1954,7 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
                         private_data->buf,
                         sizeof(jk_pool_atom_t) * TINY_POOL_SIZE);
 
-        private_data->s = jk_shm_alloc_lb_worker(&private_data->p, name);
+        private_data->s = jk_shm_alloc_lb_worker(&private_data->p, name, l);
         if (!private_data->s) {
             free(private_data);
             JK_TRACE_EXIT(l);

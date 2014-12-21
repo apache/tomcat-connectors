@@ -202,27 +202,24 @@ void jk_shm_close(jk_logger_t *l);
  */
 int jk_shm_attach(const char *fname, int sz, jk_logger_t *l);
 
-/* allocate shm memory
- * If there is no shm present the pool will be used instead
- */
-jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
-                                            int parent_id, const char *name);
-
 /* allocate shm ajp worker record
  * If there is no shm present the pool will be used instead
  */
-jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p, const char *name);
+jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p, const char *name,
+                                             jk_logger_t *l);
 
 /* allocate shm lb sub worker record
  * If there is no shm present the pool will be used instead
  */
 jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p,
-                                                   int lb_id, const char *name);
+                                                   int lb_id, const char *name,
+                                                   jk_logger_t *l);
 
 /* allocate shm lb worker record
  * If there is no shm present the pool will be used instead
  */
-jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name);
+jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name,
+                                           jk_logger_t *l);
 
 /* Return workers.properties last modified time
  */
