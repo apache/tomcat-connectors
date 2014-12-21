@@ -2928,11 +2928,11 @@ int parse_uri_select(const char *uri_select)
 int parse_collapse_slashes(const char *collapse_slashes)
 {
     if (!strcasecmp(collapse_slashes, COLLAPSE_SLASHES_ALL_VERB))
-        return JK_OPT_COLLAPSEALL;
+        return JK_COLLAPSE_ALL;
     if (!strcasecmp(collapse_slashes, COLLAPSE_SLASHES_NONE_VERB))
-        return JK_OPT_COLLAPSENONE;
+        return JK_COLLAPSE_NONE;
     if (!strcasecmp(collapse_slashes, COLLAPSE_SLASHES_UNMOUNT_VERB))
-        return JK_OPT_COLLAPSEUNMOUNT;
+        return JK_COLLAPSE_UNMOUNT;
     return -1;
 }
 
