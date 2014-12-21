@@ -244,6 +244,9 @@ static int build_worker_map(jk_map_t *init_data,
         if (wc_create_worker(worker_list[i], 1, init_data, &w, we, l)) {
             jk_worker_t *oldw = NULL;
             if (!jk_map_put(worker_map, worker_list[i], w, (void *)&oldw)) {
+                jk_log(l, JK_LOG_ERROR,
+                       "failed to add worker %s to worker map",
+                       worker_list[i]);
                 w->destroy(&w, l);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
