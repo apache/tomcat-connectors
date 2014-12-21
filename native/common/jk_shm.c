@@ -762,24 +762,6 @@ void jk_shm_close(jk_logger_t *l)
 
 #endif
 
-void *jk_shm_alloc(jk_pool_t *p)
-{
-    void *rc = NULL;
-
-    if (jk_shmem.hdr) {
-        jk_shm_lock();
-        if ((jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos) >= JK_SHM_SLOT_SIZE) {
-            rc = &(jk_shmem.hdr->buf[jk_shmem.hdr->h.data.pos]);
-            jk_shmem.hdr->h.data.pos += JK_SHM_SLOT_SIZE;
-        }
-        jk_shm_unlock();
-    }
-    else if (p)
-        rc = jk_pool_alloc(p, JK_SHM_SLOT_SIZE);
-
-    return rc;
-}
-
 jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
                                             int parent_id, const char *name)
 {

@@ -205,11 +205,6 @@ int jk_shm_attach(const char *fname, int sz, jk_logger_t *l);
 /* allocate shm memory
  * If there is no shm present the pool will be used instead
  */
-void *jk_shm_alloc(jk_pool_t *p);
-
-/* allocate shm memory
- * If there is no shm present the pool will be used instead
- */
 jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
                                             int parent_id, const char *name);
 
