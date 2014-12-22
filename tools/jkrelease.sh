@@ -36,7 +36,7 @@ JK_TOOLS="`pwd`"
 COPY_JK="README.txt HOWTO-RELEASE.txt native jkstatus support tools xdocs"
 COPY_NATIVE="LICENSE NOTICE"
 COPY_BUILD="docs"
-COPY_CONF="httpd-jk.conf uriworkermap.properties workers.properties workers.properties.minimal"
+COPY_CONF="httpd-jk.conf uriworkermap.properties workers.properties"
 SIGN_OPTS=""
 
 #################### NO CHANGE BELOW THIS LINE ##############
