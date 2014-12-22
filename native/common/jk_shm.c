@@ -145,7 +145,7 @@ int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
                JK_SHM_SLOT_SIZE , needed_slot_size);
     if (needed_slot_size > JK_SHM_SLOT_SIZE) {
         jk_log(l, JK_LOG_ERROR,
-               "JK_SHM_SLOT_SIZE %d is to small, need at least %d",
+               "JK_SHM_SLOT_SIZE %d is too small, need at least %d",
                JK_SHM_SLOT_SIZE, needed_slot_size);
         JK_TRACE_EXIT(l);
         return 0;
