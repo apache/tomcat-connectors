@@ -562,12 +562,11 @@ set the log level between :
 
 <p>
 <b>JkLogStampFormat</b> will configure the date/time format found on mod_jk log file. 
-Using the strftime() format string it's set by<br />
-default to <b>"[%a %b %d %H:%M:%S %Y]"</b>
+See above for details.
 </p>
 
 <source>
-  JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
+  JkLogStampFormat "[%Y-%m-%d %H:%M:%S.%Q] "
 </source>
 
 <p>
@@ -576,41 +575,7 @@ default to <b>"[%a %b %d %H:%M:%S %Y]"</b>
 </p>
 
 <p>
-<b>JkRequestLogFormat</b> will configure the format of mod_jk individual request logging. 
-Request logging is configured and enabled on a per virtual host basis. 
-To enable request logging for a virtual host just add a JkRequestLogFormat config. 
-The syntax of the format string is similar to the Apache LogFormat command, 
-here is a list of the available request log format options:
-</p>
-
-<p>
-<attributes name="Options">
-  <attribute name="%b" required="false">Bytes sent, excluding HTTP headers (CLF format)</attribute>
-  <attribute name="%B" required="false">Bytes sent, excluding HTTP headers</attribute>
-  <attribute name="%H" required="false">The request protocol</attribute>
-  <attribute name="%m" required="false">The request method</attribute>
-  <attribute name="%p" required="false">The canonical Port of the server serving the request</attribute>
-  <attribute name="%q" required="false">The query string (prepended with a ? if a query string exists, otherwise an empty string)</attribute>
-  <attribute name="%r" required="false">First line of request</attribute>
-  <attribute name="%s" required="false">Request HTTP status code</attribute>
-  <attribute name="%T" required="false">Request duration, elapsed time to handle request in seconds '.' micro seconds</attribute>
-  <attribute name="%U" required="false">The URL path requested, not including any query string.</attribute>
-  <attribute name="%v" required="false">The canonical ServerName of the server serving the request</attribute>
-  <attribute name="%V" required="false">The server name according to the UseCanonicalName setting</attribute>
-  <attribute name="%w" required="false">Tomcat worker name</attribute>
-  <attribute name="%R" required="false">Real worker name</attribute>
-</attributes>
-
-<source>
-  JkRequestLogFormat     "%w %V %T"
-</source>
-
-<br/>
-<br/>
-</p>
-
-<p>
-You can also log mod_jk information using the Apache standard module <b>mod_log_config</b>.
+You can log mod_jk information using the Apache standard module <b>mod_log_config</b>.
 The module sets several notes in the Apache httpd notes table.
 Most of them are are only useful in combination with a load balancer worker.
 </p>
@@ -649,6 +614,42 @@ Most of them are are only useful in combination with a load balancer worker.
   LogFormat     "%h %l %u %t \"%r\" %>s %b %{JK_WORKER_NAME}n %{JK_LB_FIRST_NAME}n \
                  %{JK_LB_FIRST_BUSY}n %{JK_LB_LAST_NAME}n %{JK_LB_LAST_BUSY}n" mod_jk_log
   CustomLog     logs/access_log     mod_jk_log
+</source>
+
+<br/>
+<br/>
+</p>
+
+<p>
+You can also log a request protocol in the mod_jk log file instead of
+the access log. This is not recommended and mostly a backward compatibility
+feature. The directive <b>JkRequestLogFormat</b> will configure the format
+of this protocol. It gets configured and enabled on a per virtual host basis. 
+To enable request logging for a virtual host just add a JkRequestLogFormat config. 
+The syntax of the format string is similar to the Apache LogFormat command, 
+here is a list of the available request log format options:
+</p>
+
+<p>
+<attributes name="Options">
+  <attribute name="%b" required="false">Bytes sent, excluding HTTP headers (CLF format)</attribute>
+  <attribute name="%B" required="false">Bytes sent, excluding HTTP headers</attribute>
+  <attribute name="%H" required="false">The request protocol</attribute>
+  <attribute name="%m" required="false">The request method</attribute>
+  <attribute name="%p" required="false">The canonical Port of the server serving the request</attribute>
+  <attribute name="%q" required="false">The query string (prepended with a ? if a query string exists, otherwise an empty string)</attribute>
+  <attribute name="%r" required="false">First line of request</attribute>
+  <attribute name="%s" required="false">Request HTTP status code</attribute>
+  <attribute name="%T" required="false">Request duration, elapsed time to handle request in seconds '.' micro seconds</attribute>
+  <attribute name="%U" required="false">The URL path requested, not including any query string.</attribute>
+  <attribute name="%v" required="false">The canonical ServerName of the server serving the request</attribute>
+  <attribute name="%V" required="false">The server name according to the UseCanonicalName setting</attribute>
+  <attribute name="%w" required="false">Tomcat worker name</attribute>
+  <attribute name="%R" required="false">Real worker name</attribute>
+</attributes>
+
+<source>
+  JkRequestLogFormat     "%w %V %T"
 </source>
 
 <br/>
