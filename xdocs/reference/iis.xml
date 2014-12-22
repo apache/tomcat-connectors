@@ -287,7 +287,7 @@ The property names and values in the properties file are the same as for the reg
 </p>
 <p>
 <source>
-# Configuration file for the Jakarta ISAPI Redirector
+# Configuration file for the Tomcat ISAPI Redirector
 
 # The path to the ISAPI Redirector Extension, relative to the website
 # This must be in a virtual directory with execute privileges
@@ -344,7 +344,7 @@ If both are specified, the <b>log_rotationtime</b> will take precedence, and <b>
 <br/>For example, to configure daily rotation of the log file:
 </p>
 <source>
-# Configuration file for the Jakarta ISAPI Redirector
+# Configuration file for the Tomcat ISAPI Redirector
 ...
 
 # Full path to the log file for the ISAPI Redirector
@@ -362,7 +362,7 @@ log_rotationtime=86400
 Or to configure rotation of the log file when it reaches 5MB in size:
 </p>
 <source>
-# Configuration file for the Jakarta ISAPI Redirector
+# Configuration file for the Tomcat ISAPI Redirector
 ...
 
 # Full path to the log file for the ISAPI Redirector

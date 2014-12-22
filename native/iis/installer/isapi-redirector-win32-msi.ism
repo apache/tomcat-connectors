@@ -1972,7 +1972,6 @@
 		<row><td>ISProductFolder</td><td/><td/><td>1</td></row>
 		<row><td>ISProjectDataFolder</td><td/><td/><td>1</td></row>
 		<row><td>ISProjectFolder</td><td/><td/><td>1</td></row>
-		<row><td>PATH_TO_IIS_FILES</td><td>C:\W\jakarta\jtc\jk\native\iis</td><td/><td>2</td></row>
 		<row><td>ProgramFilesFolder</td><td/><td/><td>1</td></row>
 		<row><td>SystemFolder</td><td/><td/><td>1</td></row>
 		<row><td>WindowsFolder</td><td/><td/><td>1</td></row>
@@ -2887,7 +2886,7 @@
 		<row><td>IDS__TargetReq_DESC_PROCESSOR</td><td>1033</td><td>The processor is not adequate for running [ProductName].</td><td>0</td><td/><td>-1256677244</td></row>
 		<row><td>IDS__TargetReq_DESC_RAM</td><td>1033</td><td>The amount of RAM is not adequate for running [ProductName].</td><td>0</td><td/><td>-1256677244</td></row>
 		<row><td>IDS__TargetReq_DESC_RESOLUTION</td><td>1033</td><td>The screen resolution is not adequate for running [ProductName].</td><td>0</td><td/><td>-1256677244</td></row>
-		<row><td>ID_STRING1</td><td>1033</td><td>http://jakarta.apache.org</td><td>0</td><td/><td>2115538665</td></row>
+		<row><td>ID_STRING1</td><td>1033</td><td>http://tomcat.apache.org</td><td>0</td><td/><td>2115538665</td></row>
 		<row><td>ID_STRING2</td><td>1033</td><td>DisplayName1</td><td>0</td><td/><td>2115549418</td></row>
 		<row><td>ID_STRING3</td><td>1033</td><td>jakarta</td><td>0</td><td/><td>2115510538</td></row>
 		<row><td>ID_STRING4</td><td>1033</td><td>CoreFiles</td><td>0</td><td/><td>2115544011</td></row>

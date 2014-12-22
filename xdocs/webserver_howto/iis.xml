@@ -259,7 +259,7 @@ you need to insert the full path to isapi_redirect.dll.
 <li>
 If you're using IIS 6.0 you must also do the following:
 <br />
-Using the IIS management console, add the Jakarta Isapi Redirector to the Web
+Using the IIS management console, add the Tomcat Isapi Redirector to the Web
 Service Extensions. 
 <ol>
 <li>Right-click on Web Service Extensions and choose Add a new Web Service
