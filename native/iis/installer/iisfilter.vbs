@@ -65,7 +65,7 @@ Function IISInstallFilter(filterDir, filterObject)
     '
     filter.FilterPath = filterDir + filterLib
 '    filter.FilterEnabled = true
-    filter.FilterDescription = "Jakarta Isapi Redirector"
+    filter.FilterDescription = "Tomcat Isapi Redirector"
     filter.NotifyOrderHigh = true
     filter.SetInfo
     info "Created Filter " + filterDir + filterLib

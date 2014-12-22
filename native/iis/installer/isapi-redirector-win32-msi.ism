@@ -1139,19 +1139,15 @@
 		<row><td>FontsFolder</td><td>TARGETDIR</td><td>.:Fonts</td><td/><td>0</td><td/></row>
 		<row><td>GlobalAssemblyCache</td><td>TARGETDIR</td><td>.:Global~1|GlobalAssemblyCache</td><td/><td>0</td><td/></row>
 		<row><td>IISROOTFOLDER</td><td>TARGETDIR</td><td>.:IISRoo~1|IISRootFolder</td><td/><td>0</td><td/></row>
-		<row><td>INSTALLDIR</td><td>JAKARTA_ISAPI_REDIRECTOR</td><td>.</td><td/><td>0</td><td/></row>
+		<row><td>INSTALLDIR</td><td>TOMCAT_ISAPI_REDIRECTOR</td><td>.</td><td/><td>0</td><td/></row>
 		<row><td>ISCommonFilesFolder</td><td>CommonFilesFolder</td><td>Instal~1|InstallShield</td><td/><td>0</td><td/></row>
 		<row><td>ISMyCompanyDir</td><td>ProgramFilesFolder</td><td>MYCOMP~1|My Company Name</td><td/><td>0</td><td/></row>
 		<row><td>ISMyProductDir</td><td>ISMyCompanyDir</td><td>MYPROD~1|My Product Name</td><td/><td>0</td><td/></row>
 		<row><td>ISUpdateServiceFolder</td><td>ISCommonFilesFolder</td><td>UPDATE~1|UpdateService</td><td/><td>0</td><td/></row>
 		<row><td>ISYourDataBaseDir</td><td>INSTALLDIR</td><td>Database</td><td/><td>0</td><td/></row>
-		<row><td>JAKARTA_ISAPI_REDIRECTOR</td><td>APACHE_SOFTWARE_FOUNDATION</td><td>JAKART~1|Tomcat Isapi Redirector</td><td/><td>0</td><td/></row>
-		<row><td>JAKARTA_ISAPU_REDIRECTOR</td><td>APACHE_SOFTWARE_FOUNDATION</td><td>JAKART~1|Jakarta Isapu Redirector</td><td/><td>0</td><td/></row>
-		<row><td>JBOSS_EUROPE_SARL</td><td>ProgramFilesFolder</td><td>JBOSSE~1|JBoss Europe SaRL</td><td/><td>0</td><td/></row>
+		<row><td>TOMCAT_ISAPI_REDIRECTOR</td><td>APACHE_SOFTWARE_FOUNDATION</td><td>TOMCAT~1|Tomcat Isapi Redirector</td><td/><td>0</td><td/></row>
 		<row><td>LOG</td><td>INSTALLDIR</td><td>log</td><td/><td>0</td><td/></row>
 		<row><td>LocalAppDataFolder</td><td>TARGETDIR</td><td>.:LocalA~1|LocalAppData</td><td/><td>0</td><td/></row>
-		<row><td>MY_PRODUCT_NAME</td><td>JBOSS_EUROPE_SARL</td><td>MYPROD~1|My Product Name</td><td/><td>0</td><td/></row>
-		<row><td>MY_PRODUCT_NAME1</td><td>APACHE_SOFTWARE_FOUNDATION</td><td>MYPROD~1|My Product Name</td><td/><td>0</td><td/></row>
 		<row><td>MyPicturesFolder</td><td>TARGETDIR</td><td>.:MyPict~1|MyPictures</td><td/><td>0</td><td/></row>
 		<row><td>PersonalFolder</td><td>TARGETDIR</td><td>.:Personal</td><td/><td>0</td><td/></row>
 		<row><td>PrimaryVolumePath</td><td>TARGETDIR</td><td>.:Primar~1|PrimaryVolumePath</td><td/><td>0</td><td/></row>
@@ -3496,7 +3492,7 @@ TQBzAGkAAQBSAGUAbABlAGEAcwBlAA==
 		<row><td>Registry13</td><td>2</td><td>SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0</td><td>extension_uri</td><td>/jakarta/isapi_redirect.dll</td><td>ISRegistryComponent1</td><td>0</td></row>
 		<row><td>Registry14</td><td>2</td><td>SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0</td><td>log_file</td><td>[INSTALLDIR]log\isapi_redirect.log</td><td>ISRegistryComponent1</td><td>0</td></row>
 		<row><td>Registry15</td><td>2</td><td>SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0</td><td>log_level</td><td>info</td><td>ISRegistryComponent1</td><td>0</td></row>
-		<row><td>Registry16</td><td>2</td><td>SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0</td><td>worker_file</td><td>[INSTALLDIR]conf\workers.properties.minimal</td><td>ISRegistryComponent1</td><td>0</td></row>
+		<row><td>Registry16</td><td>2</td><td>SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0</td><td>worker_file</td><td>[INSTALLDIR]conf\workers.properties</td><td>ISRegistryComponent1</td><td>0</td></row>
 		<row><td>Registry17</td><td>2</td><td>SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0</td><td>worker_mount_file</td><td>[INSTALLDIR]conf\uriworkermap.properties</td><td>ISRegistryComponent1</td><td>0</td></row>
 	</table>
 
