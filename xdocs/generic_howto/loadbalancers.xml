@@ -83,9 +83,9 @@ not need to appear in the <code>worker.list</code> property themselves, adding t
 load balancer to it suffices.</li>
 <li><b>sticky_session</b> specifies whether requests with SESSION ID's should be routed
 back to the same Tomcat instance that created the session. You can set sticky_session to
-<b>False</b> when Tomcat is using a session manager which can share session data across
+<b>false</b> when Tomcat is using a session manager which can share session data across
 multiple instances of Tomcat - or if your application is stateless.
-By default sticky_session is set to <b>True</b>.</li>
+By default sticky_session is set to <b>true</b>.</li>
 <li><b>lbfactor</b> can be added to each member worker to configure individual
 strengths for the members. A higher <code>lbfactor</code> will lead to more
 requests being balanced to that worker. The factors must be given by integers and the

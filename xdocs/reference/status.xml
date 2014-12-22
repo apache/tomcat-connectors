@@ -276,7 +276,7 @@ access to the status worker URLs you have chosen. Nevertheless two configuration
 attributes of status workers are helpful. The attribute "read_only" disables all features of
 the status worker, that can be used to change configurations or runtime status of the other workers.
 A read_only status worker will not allow access to the edit, update, reset or recover actions.
-The default value is "False", ie. read/write. To enable read_only you need to set it to "True".
+The default value is <b>false</b>, ie. read/write. To enable read_only you need to set it to <b>true</b>.
 </p>
 <p>
 You could configure two status workers, one has read_only and will be made available to a larger
@@ -284,7 +284,7 @@ admin group, the other one will be used fully featured, but only by fewer people
 <source>
 worker.list=jk-watch
 worker.jk-watch.type=status
-worker.jk-watch.read_only=True
+worker.jk-watch.read_only=true
 worker.jk-watch.mount=/user/status/jk
 worker.list=jk-manage
 worker.jk-manage.type=status
@@ -306,7 +306,7 @@ The user list can be split over multiple occurrences of the "user" attribute.
 </p>
 <p>
 By default, the user names are matched case sensitively. Starting with version 1.2.21 you can set
-the attribute <b>user_case_insensitive</b> to "True". Then the comparison will be made case insensitive.
+the attribute <b>user_case_insensitive</b> to <b>true</b>. Then the comparison will be made case insensitive.
 </p>
 </subsection>
 

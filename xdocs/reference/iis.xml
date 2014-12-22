@@ -75,6 +75,15 @@ ISAPI redirector reads configuration from the registry, create a new registry ke
 <p>
 <b>"HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0"</b>
 </p>
+<p>
+Attributes described below as a "string value representing a boolean"
+can be set either using the numbers <b>0</b> (false) and <b>1</b> (true)
+as values, or <b>off</b> (false) and <b>on</b> (true) or any other string
+starting with the letters <b>f</b> (false), <b>n</b> (false),
+<b>t</b> (true) or <b>y</b> (true).
+The values are taken case insensitive. In this documentation we will stick
+to <b>false</b> and <b>true</b>.
+</p>
 <attributes name="Key Name">
 <attribute name="extension_uri" required="true"><p>
 A string value pointing to the ISAPI extension <b>/jakarta/isapi_redirect.dll</b>
@@ -131,14 +140,12 @@ A DWORD value specifying the time in seconds upon which the
 <p>This directive has been added in version 1.2.20</p>
 </attribute>
 <attribute name="strip_session" required="false"><p>
-A string value representing a boolean. If it is set to true,
-URL session suffixes of the form ";jsessionid=..." get stripped of URLs,
-even if the are served locally by the web server.
+A string value representing a boolean. If it is set to <b>true</b>,
+URL session suffixes of the form ";jsessionid=..." get stripped of
+URLs, if the are served locally by the web server.
 </p>
 <p>
-A true value can be represented by the string "1" or any string starting
-with the letters "T" or "t". A false value will be assumed for "0"
-or any string starting with "F" or "f". The default value is false.
+The default value is false.
 </p>
 <p>This directive has been added in version 1.2.21</p>
 </attribute>
@@ -186,18 +193,16 @@ and problematic are re-encoded.
 <p>The default value since version 1.2.24 is "proxy". Before it was "parsed".</p>
 </attribute>
 <attribute name="reject_unsafe" required="false"><p>
-A string value representing a boolean. If it is set to true,
-URLs containing percent signs '%' or backslashes '\'
+A string value representing a boolean. If it is set to <b>true</b>,
+URLs still containing percent signs '%' or backslashes '\'
 after decoding will be rejected.
 </p>
 <p>
-Most web apps do not use such URLs. By enabling "reject_unsafe" you
+Most web apps do not use such URLs. By enabling <b>reject_unsafe</b> you
 can block several well known URL encoding attacks.
 </p>
 <p>
-A true value can be represented by the string "1" or any string starting
-with the letters "T" or "t". A false value will be assumed for "0"
-or any string starting with "F" or "f". The default value is false.
+The default value is false.
 </p>
 <p>This directive has been added in version 1.2.24</p>
 </attribute>
@@ -253,13 +258,11 @@ case is formatted by replacing <code>%d</code> from
 <p>This directive has been added in version 1.2.27</p>
 </attribute>
 <attribute name="enable_chunked_encoding" required="false"><p>
-A string value representing a boolean. If it is set to true,
+A string value representing a boolean. If it is set to <b>true</b>,
 chunked encoding is supported by the server.
 </p>
 <p>
-A true value can be represented by the string "1" or any string starting
-with the letters "T" or "t". A false value will be assumed for "0"
-or any string starting with "F" or "f". The default value is false.
+The default value is false.
 </p>
 <p>This directive has been added in version 1.2.27. Until version 1.2.30 it
 was considered experimental and only available when a special build containing
@@ -275,7 +278,9 @@ This has the advantage that you can use multiple ISAPI redirectors with independ
 The redirector will check for the properties file during initialisation, and use it in preference to the registry if present.
 </p>
 <p>
-Create a properties file in the same directory as the ISAPI redirector called <b>isapi_redirect.properties</b> i.e. with the same name as the ISAPI redirector DLL but with a <em>.properties</em> extension. A sample isapi_redirect.properties can be found under the conf directory.
+Create a properties file in the same directory as the ISAPI redirector called <b>isapi_redirect.properties</b> i.e.
+with the same name as the ISAPI redirector DLL but with a <em>.properties</em> extension.
+A sample isapi_redirect.properties can be found under the conf directory.
 </p>
 <p>
 The property names and values in the properties file are the same as for the registry settings described above. For example:
@@ -313,7 +318,7 @@ worker_mount_file=c:\tomcat\conf\uriworkermap.properties
     </ul>
 </p>
 <p>Starting with version 1.2.27 two environment variables are
-dynamically added to the environment that can be used inside
+automatically added to the environment that can be used inside
 <code>.properties</code> files.
     <ul>
         <li>JKISAPI_PATH - Full path to the ISAPI Redirector.

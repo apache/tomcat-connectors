@@ -97,6 +97,13 @@ Whitespace at the beginning and the end of a property name or value gets ignored
 Comments can be placed in any line and start with a hash sign '#'.
 Any line contents behind the hash sign get ignored.
 </p>
+<p>
+Boolean properties can be set either using the numbers <b>0</b> (false) and <b>1</b> (true)
+as values, or <b>off</b> (false) and <b>on</b> (true) or any other string starting with the
+letters <b>f</b> (false), <b>n</b> (false), <b>t</b> (true) or <b>y</b> (true).
+The values are taken case insensitive. In this documentation we will stick
+to <b>false</b> and <b>true</b>.
+</p>
 </subsection>
 
 <subsection name="Global Properties">
@@ -264,12 +271,12 @@ This feature has been added in <b>jk 1.2.27</b>.
 </p>
 </directive>
 
-<directive name="socket_keepalive" default="False" required="false">
+<directive name="socket_keepalive" default="false" required="false">
 This directive should be used when you have a firewall between your webserver
 and the Tomcat engine, who tend to drop inactive connections. This flag will tell the Operating System
 to send <code>KEEP_ALIVE</code> messages on inactive connections (interval depend on global OS settings,
 generally 120 minutes), and thus prevent the firewall to cut inactive connections.
-To enable keepalive set this property value to <b>True</b>.
+To enable keepalive set this property value to <b>true</b>.
 <p>
 The problem with Firewall cutting inactive connections is that sometimes, neither webserver or Tomcat
 have information about the cut and couldn't handle it.
@@ -497,10 +504,10 @@ can be used only with mod_jk versions 1.2.7 and up.
 there is no need to also put them into the <b>worker.list</b> property.</warn>
 </directive>
 
-<directive name="sticky_session" default="True" required="false">
+<directive name="sticky_session" default="true" required="false">
 Specifies whether requests with SESSION ID's should be routed back to the same
-Tomcat worker. If sticky_session is set to <b>True</b> or <b>1</b> sessions are sticky, otherwise
-sticky_session is set to <b>False</b>. Set sticky_session to <b>False</b> when Tomcat
+Tomcat worker. If sticky_session is set to <b>true</b> sessions are sticky, otherwise
+sticky_session is set to <b>false</b>. Set sticky_session to <b>false</b> when Tomcat
 is using a Session Manager which can persist session data across multiple
 instances of Tomcat.
 <p>
@@ -510,13 +517,13 @@ environment variable <b>JK_STICKY_IGNORE</b> and the worker map extension for
 </p>
 </directive>
 
-<directive name="sticky_session_force" default="False" required="false">
+<directive name="sticky_session_force" default="false" required="false">
 Specifies whether requests with SESSION ID's for workers that are in error state
-should be rejected. If sticky_session_force is set to <b>True</b> or <b>1</b>
+should be rejected. If sticky_session_force is set to <b>true</b>
 and the worker that matches that SESSION ID is in error state, client will
-receive 500 (Server Error). If set to <b>False</b> or <b>0</b> failover on
+receive 500 (Server Error). If set to <b>false</b> failover on
 another worker will be issued with loosing client session. This directive is
-used only when you set <b>sticky_session=True</b>.
+used only when you set <b>sticky_session=true</b>.
 <p>
 This feature has been added in <b>jk 1.2.9</b>.
 </p>
@@ -624,8 +631,8 @@ Instead it is responsible for the load balancer management.
 <directive name="css" default="" required="false">
 Specifies the url for cascading stylesheet to use.
 </directive>
-<directive name="read_only" default="False" required="false">
-A status worker with read_only=True will not allow any operations,
+<directive name="read_only" default="false" required="false">
+A status worker with read_only=true will not allow any operations,
 that change the runtime state or configuration of the other workers.
 These are edit/update/reset/recover.
 <p>
@@ -644,9 +651,9 @@ This directive can be used multiple times.
 This feature has been added in <b>jk 1.2.20</b>.
 </p>
 </directive>
-<directive name="user_case_insensitive" default="False" required="false">
+<directive name="user_case_insensitive" default="false" required="false">
 By default, the user names are matched case sensitively. You can set
-user_case_insensitive=True to make the comparison case insensitive.
+user_case_insensitive=true to make the comparison case insensitive.
 This may be especially useful on the Windows platform.
 <p>
 This feature has been added in <b>jk 1.2.21</b>.
@@ -1067,7 +1074,7 @@ This feature has been added in <b>jk 1.2.27</b>.
 </p>
 </directive>
 
-<directive name="set_session_cookie" workers="LB" default="False" required="false">
+<directive name="set_session_cookie" workers="LB" default="false" required="false">
 Activates generation of session stickyness cookies. Typically you don't need this.
 <p>
 Some web frameworks replace Tomcat session management and use a different way
@@ -1076,7 +1083,7 @@ end of the session ID is lost and we no longer can do sticky load balancing.
 As a workaround you can use the following steps:
 <ul>
 <li>Choose a non-standard cookie name using the "session_cookie" attribute.</li>
-<li>Activate cookie sending by setting the attribute "set_session_cookie" to "True".</li>
+<li>Activate cookie sending by setting the attribute "set_session_cookie" to <b>true</b>.</li>
 <li>Set the attribute "session_cookie_path" to the correct application URI, like
 e.g. "/myapp/".</li>
 </ul>
@@ -1093,7 +1100,7 @@ This feature has been added in <b>jk 1.2.38</b>.
 </directive>
 
 <directive name="session_cookie_path" workers="LB" default="" required="false">
-This attribute is only used if "set_session_cookie" is set to "True".
+This attribute is only used if "set_session_cookie" is set to <b>true</b>.
 See "set_session_cookie" for a description. If the value of "session_cookie_path"
 is empty (default), then the send cookie will not contain a PATH information.
 <p>
@@ -1101,7 +1108,7 @@ This feature has been added in <b>jk 1.2.38</b>.
 </p>
 </directive>
 
-<directive name="prefer_ipv6" workers="AJP" default="0" required="false">
+<directive name="prefer_ipv6" workers="AJP" default="false" required="false">
 When compiled with IPV6 support, this directive forces IPV6 address
 resolution for host names which have both IPV6 and IPV4 addresses. In case there is
 no IPV6 address defined for the given hostname this directive in ineffective. This directive will
@@ -1173,18 +1180,18 @@ A comma separated list of workers that the load balancer
 need to manage.
 </directive>
 
-<directive name="disabled" successor="activation" default="False" required="false">
+<directive name="disabled" successor="activation" default="false" required="false">
 <warn>This directive has been deprecated since 1.2.19.</warn>
-If set to <b>True</b> or <b>1</b> the worker will be disabled if member
+If set to <b>true</b> the worker will be disabled if member
 of load balancer. This flag can be changed at runtime using status worker.
 <p>
 This feature has been added in <b>jk 1.2.9</b>.
 </p>
 </directive>
 
-<directive name="stopped" successor="activation" default="False" required="false">
+<directive name="stopped" successor="activation" default="false" required="false">
 <warn>This directive has been deprecated since 1.2.19.</warn>
-If set to <b>True</b> or <b>1</b> the worker will be stopped if member
+If set to <b>true</b> the worker will be stopped if member
 of load balancer. The flag is needed for stop complete traffic of a sticky session
 worker. It is only useful, when you have a cluster that replicated the sessions.
 This flag can be changed at runtime using status worker.

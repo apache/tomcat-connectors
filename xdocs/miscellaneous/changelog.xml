@@ -2200,7 +2200,8 @@
       Added ForwardLocalAddress JkOptions flag for passing local instead remote
       address. Useful for remote addr valve. (mturk)
       </update>
-     <fix>Fix that worker not used, when stopped flag is true. (pero)
+     <fix>Fix that worker does not get used, when stopped flag is set to
+      <b>true</b>. (pero)
      </fix>
       <update>
       Add loadbalance default worker secret attribute to the documentation (pero)
@@ -2222,8 +2223,8 @@
       Add worker secret attribute to the documentation (pero)
       </update>
       <update>
-      Add a stopped flag to worker configuration. Set flag True and
-      complete traffic to worker is stopped.
+      Add a stopped flag to worker configuration. Set flag to <b>true</b> and
+      the complete traffic to the worker will be stopped.
       Also update the Ant JkStatusUpdateTask at Tomcat 5.5.10 release.
       Only usefull in a replicated session cluster.(pero)
       </update>

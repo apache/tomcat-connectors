@@ -259,9 +259,9 @@ on the Tomcat side to prevent idle connection drop.
 <p>
 Furthermore using the boolean attribute <b>socket_keepalive</b> you can
 set a standard socket option, that automatically sends TCP keepalive packets
-after some idle time on each connection. By default this is set to "False".
+after some idle time on each connection. By default this is set to <b>false</b>.
 If you suspect idle connection drops by firewalls you should set this to
-"True".
+<b>true</b>.
 </p>
 <p>
 Unfortunately the default intervals and algorithms for these packets

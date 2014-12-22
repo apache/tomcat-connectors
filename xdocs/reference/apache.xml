@@ -472,7 +472,8 @@ has been introduced in version 1.2.21.
 <attribute name="JkStripSession" required="false"><p>
 If this directive is set to On in some virtual server,
 the session IDs <code>;jsessionid=...</code> will be
-removed for non matched URLs.
+removed for URLs which are not forwarded but instead are
+handled by the local server.
 <br/>
 This directive is only allowed inside VirtualHost.
 <br/>
@@ -821,14 +822,14 @@ local file that matches (this is done by stat-ing the file).
 </p>
 
 <p>
-If ForwardDirectories is set to false (default) and Apache doesn't find any
+If ForwardDirectories is set to <b>false</b> (default) and Apache doesn't find any
 files that match, Apache will serve the content of the directory (if directive
 Options specifies Indexes for that directory) or a <code>403 Forbidden</code> response (if
 directive Options doesn't specify Indexes for that directory).
 </p>
 
 <p>
-If ForwardDirectories is set to true and Apache doesn't find any files that
+If ForwardDirectories is set to <b>true</b> and Apache doesn't find any files that
 match, the request will be forwarded to Tomcat for resolution. This is used in
 cases when Apache cannot see the index files on the file system for various
 reasons: Tomcat is running on a different machine, the JSP file has been
