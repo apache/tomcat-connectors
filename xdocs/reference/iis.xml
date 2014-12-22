@@ -329,7 +329,7 @@ automatically added to the environment that can be used inside
 </p>
 <p><source>
 # Use the logs in the installation path of ISAPI Redirector
-log_file=$(ISAPI_PATH)\$(ISAPI_NAME).log
+log_file=$(JKISAPI_PATH)\$(JKISAPI_NAME).log
 </source></p>
 </section>
 
