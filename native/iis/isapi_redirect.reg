@@ -2,7 +2,11 @@ REGEDIT4
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0]
 "extension_uri"="/jakarta/isapi_redirect.dll"
-"log_file"="C:\\tomcat\\logs\\isapi.log"
-"log_level"="debug"
+"log_file"="C:\\tomcat\\logs\\isapi_redirect.%Y-%m-%d.log"
+"log_level"="info"
 "worker_file"="C:\\tomcat\\conf\\workers.properties"
 "worker_mount_file"="C:\\tomcat\\conf\\uriworkermap.properties"
+"log_rotationtime"="86400"
+"strip_session"="false"
+"reject_unsafe"="false"
+"enable_chunked_encoding"="false"
