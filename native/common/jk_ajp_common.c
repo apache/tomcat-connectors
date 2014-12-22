@@ -618,7 +618,7 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         jk_b_append_string(msg, SC_A_REQ_LOCAL_ADDR)   ||
         jk_b_append_string(msg, s->local_addr)) {
         jk_log(l, JK_LOG_ERROR,
-               "(s) failed appending the local address %s",
+               "(%s) failed appending the local address %s",
                ae->worker->name, s->local_addr);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
@@ -1049,7 +1049,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
     if (!IS_VALID_SOCKET(ae->sd)) {
         ae->last_errno = errno;
         jk_log(l, JK_LOG_INFO,
-               "(%s)Failed opening socket to (%s) (errno=%d)",
+               "(%s) Failed opening socket to (%s) (errno=%d)",
                ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
                ae->last_errno);
         JK_TRACE_EXIT(l);
