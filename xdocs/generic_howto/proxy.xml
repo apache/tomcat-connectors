@@ -312,7 +312,7 @@ changes like this:
 /oldapp/=/myapp/
 </source>
 <p>and then put the name of the file in the <code>rewrite_rule_file</code> entry of the registry or your
-<code>isapi_redirect.properties</code> file. In you <code>uriworkermap.properties</code> file, you
+<code>isapi_redirect.properties</code> file. In your <code>uriworkermap.properties</code> file, you
 still need to map the URLs as they are before rewriting!
 </p>
 <p>More complex rewrites can be done using the same file, but with regular expressions. A leading
