@@ -3710,11 +3710,9 @@ static __inline void BS2FSA(char *str)
         }                                                   \
     } while(0)
 
-static char *relative_path(char *path, size_t size)
+static char *skip_prefix(char *path, char **sp, char **cp)
 {
-    char *sp;
-    char *cp;
-    int   ch = '/';
+    size_t size;
 
     /* Convert everything to foward slashes
      */
@@ -3744,7 +3742,7 @@ static char *relative_path(char *path, size_t size)
             return 0;
         }
     }
-    sp = path;
+    *sp = path;
     if (size > 1 && path[1] == ':' && IS_DRIVE_CHAR(path[0])) {
         /* Never go above C: */
         path += 2;
@@ -3756,15 +3754,27 @@ static char *relative_path(char *path, size_t size)
             /* This is probably //./pipe/ */
             return path;
         }
-        cp = strchr(path + 2, '/');
-        if (cp != 0)
-            path = cp;
+        *cp = strchr(path + 2, '/');
+        if (*cp != 0)
+            path = *cp;
         else {
             /* We only have //share
              */
             return path;
         }
     }
+    return path;
+}
+
+static char *relative_path(char *path, int* remain)
+{
+    char *sp;
+    char *cp;
+    int   ch = '/';
+
+    path = skip_prefix(path, &sp, &cp);
+    if (!path)
+        return 0;
     /* Remaining is the same as on unixes */
     cp = path;
     while (*path) {
@@ -3789,8 +3799,10 @@ static char *relative_path(char *path, size_t size)
                             cp--;
                         }
                     }
-                    else
+                    else {
+                        (*remain)++;
                         break;
+                    }
                     nd--;
                 }
             }
@@ -3812,6 +3824,8 @@ static char *path_merge(const char *root, const char *path)
     char *rel;
     char *out = 0;
     size_t sz;
+    size_t rsz;
+    int remain = 0;
 
     if (root == NULL || path == NULL) {
         SetLastError(ERROR_INVALID_PARAMETER );
@@ -3823,8 +3837,30 @@ static char *path_merge(const char *root, const char *path)
         return 0;
     }
     sz = strlen(merge);
+    rsz = strlen(root);
     /* Normalize path */
-    if ((rel = relative_path(merge, sz))) {
+    if ((rel = relative_path(merge, &remain))) {
+        if (remain > 0) {
+            char *skip = root + rsz - 1;
+            char *spr;
+            char *cpr;
+            char *start = skip_prefix(root, &spr, &cpr);
+            if (*skip == '/')
+                skip--;
+            while (remain > 0 && skip >= start) {
+                if (*skip == '/') {
+                    remain--;
+                }
+                skip--;
+            }
+            if (remain > 0) {
+                return "";
+            }
+            if (skip < start) {
+                skip = start;
+            }
+            *++skip = '\0';
+        }
         /* one additkional byte for trailing '\0',
          * one additional byte for eventual path
          * separator between root and merge */

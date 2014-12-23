@@ -108,9 +108,14 @@
         recovery attempt. (rjung)
       </fix>
       <fix>
-        <bug>54596</bug>: IIS: Fix missing last character when parsing
+        <bug>54596</bug> part 1: IIS: Fix missing last character when parsing
         relative file names with no ".." directory components from
         configuration. (rjung)
+      </fix>
+      <fix>
+        <bug>54596</bug> part 2: IIS: Fix using relative file names in config
+        with ".." path segments that go up the directory hierarchy higher
+        than the starting point of the relative file name. (rjung)
       </fix>
     </changelog>
   </subsection>
