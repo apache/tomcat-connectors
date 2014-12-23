@@ -601,7 +601,7 @@ static int recover_workers(lb_worker_t *p,
         w = &p->lb_workers[i];
         aw = (ajp_worker_t *)w->worker->worker_private;
         if (w->s->state == JK_LB_STATE_ERROR) {
-            elapsed = (int)difftime(now, w->s->error_time);
+            elapsed = (int)difftime(now, w->s->last_error_time);
             if (elapsed <= p->recover_wait_time) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
@@ -620,8 +620,8 @@ static int recover_workers(lb_worker_t *p,
                 non_error++;
             }
         }
-        else if (w->s->error_time > 0 &&
-                 (int)difftime(now, w->s->error_time) >= p->error_escalation_time &&
+        else if (w->s->first_error_time > 0 &&
+                 (int)difftime(now, w->s->first_error_time) >= p->error_escalation_time &&
                  w->s->state != JK_LB_STATE_RECOVER) {
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
@@ -1428,7 +1428,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      */
                     rec->s->state  = JK_LB_STATE_OK;
                     p->states[rec->i] = JK_LB_STATE_OK;
-                    rec->s->error_time = 0;
+                    rec->s->first_error_time = 0;
+                    rec->s->last_error_time = 0;
                     rc = JK_TRUE;
                     recoverable = JK_UNSET;
                 }
@@ -1439,7 +1440,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      */
                     rec->s->state  = JK_LB_STATE_OK;
                     p->states[rec->i] = JK_LB_STATE_ERROR;
-                    rec->s->error_time = 0;
+                    rec->s->first_error_time = 0;
+                    rec->s->last_error_time = 0;
                     rc = JK_CLIENT_ERROR;
                     recoverable = JK_FALSE;
                 }
@@ -1472,7 +1474,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      */
                     rec->s->state  = JK_LB_STATE_OK;
                     p->states[rec->i] = JK_LB_STATE_ERROR;
-                    rec->s->error_time = 0;
+                    rec->s->first_error_time = 0;
+                    rec->s->last_error_time = 0;
                     rc = JK_FALSE;
                 }
                 else if (service_stat == JK_STATUS_FATAL_ERROR) {
@@ -1485,7 +1488,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     rec->s->errors++;
                     rec->s->state = JK_LB_STATE_ERROR;
                     p->states[rec->i] = JK_LB_STATE_ERROR;
-                    rec->s->error_time = time(NULL);
+                    rec->s->first_error_time = time(NULL);
+                    rec->s->last_error_time = rec->s->first_error_time;
                     rc = JK_FALSE;
                 }
                 else if (service_stat == JK_REPLY_TIMEOUT) {
@@ -1499,7 +1503,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                         rec->s->errors++;
                         rec->s->state = JK_LB_STATE_ERROR;
                         p->states[rec->i] = JK_LB_STATE_ERROR;
-                        rec->s->error_time = time(NULL);
+                        rec->s->first_error_time = time(NULL);
+                        rec->s->last_error_time = rec->s->first_error_time;
                     }
                     else {
                         /*
@@ -1523,8 +1528,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     rec->s->errors++;
                     if (rec->s->busy == 0 ||
                         p->worker->error_escalation_time == 0 ||
-                        (rec->s->error_time > 0 &&
-                         (int)difftime(now, rec->s->error_time) >= p->worker->error_escalation_time)) {
+                        (rec->s->first_error_time > 0 &&
+                         (int)difftime(now, rec->s->first_error_time) >= p->worker->error_escalation_time)) {
                         if (JK_IS_DEBUG_LEVEL(l))
                             jk_log(l, JK_LOG_DEBUG,
                                    "worker %s escalating local error to global error",
@@ -1532,9 +1537,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
                         rec->s->state = JK_LB_STATE_ERROR;
                     }
                     p->states[rec->i] = JK_LB_STATE_ERROR;
-                    if (rec->s->error_time == 0) {
-                        rec->s->error_time = now;
+                    if (rec->s->first_error_time == 0) {
+                        rec->s->first_error_time = now;
                     }
+                    rec->s->last_error_time = now;
                     rc = JK_FALSE;
                 }
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
@@ -1743,7 +1749,8 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 
                 p->lb_workers[i].s->lb_value = 0;
                 p->lb_workers[i].s->state = JK_LB_STATE_IDLE;
-                p->lb_workers[i].s->error_time = 0;
+                p->lb_workers[i].s->first_error_time = 0;
+                p->lb_workers[i].s->last_error_time = 0;
                 p->lb_workers[i].s->elected_snapshot = 0;
                 p->lb_workers[i].s->sessions = 0;
                 p->lb_workers[i].activation =

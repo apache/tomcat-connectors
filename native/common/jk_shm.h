@@ -150,8 +150,10 @@ struct jk_shm_lb_sub_worker
     volatile jk_uint64_t lb_mult;
     /* Current lb value  */
     volatile jk_uint64_t lb_value;
-    /* Statistical data */
-    volatile time_t error_time;
+    /* First consecutive error time */
+    volatile time_t first_error_time;
+    /* Last consecutive error time */
+    volatile time_t last_error_time;
     /* Number of times the worker was elected - snapshot during maintenance */
     volatile jk_uint64_t  elected_snapshot;
     /* Number of non-sticky requests handled, that were not marked as stateless */

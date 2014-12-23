@@ -102,6 +102,11 @@
         "connection_pool_timeout" and "keepAliveTimeout" or "connectionTimeout"
         in the Tomcat AJP connector configuration. (rjung)
       </fix>
+      <fix>
+        <bug>52334</bug>: LB: Calculate worker recovery time based on last
+        recovery attempt time instead of original error time after the first
+        recovery attempt. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

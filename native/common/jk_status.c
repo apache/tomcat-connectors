@@ -1802,9 +1802,9 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         name = lb->name;
         sub_name = wr->name;
         ajp_name = wr->name;
-        error_time = wr->s->error_time;
+        error_time = wr->s->first_error_time;
         if (wr->s->state == JK_LB_STATE_ERROR) {
-            rs_min = lb->recover_wait_time - (int)difftime(now, wr->s->error_time);
+            rs_min = lb->recover_wait_time - (int)difftime(now, wr->s->last_error_time);
             if (rs_min < 0) {
                 rs_min = 0;
             }
@@ -4300,7 +4300,8 @@ static int reset_worker(jk_ws_service_t *s,
                 wr->s->state            = JK_LB_STATE_IDLE;
                 wr->s->elected_snapshot = 0;
                 wr->s->sessions         = 0;
-                wr->s->error_time       = 0;
+                wr->s->first_error_time = 0;
+                wr->s->last_error_time  = 0;
                 wr->s->errors           = 0;
                 wr->s->lb_value         = 0;
                 aw->s->used             = 0;
@@ -4328,7 +4329,8 @@ static int reset_worker(jk_ws_service_t *s,
             wr->s->state            = JK_LB_STATE_IDLE;
             wr->s->elected_snapshot = 0;
             wr->s->sessions         = 0;
-            wr->s->error_time       = 0;
+            wr->s->first_error_time = 0;
+            wr->s->last_error_time  = 0;
             wr->s->errors           = 0;
             wr->s->lb_value         = 0;
             aw->s->used             = 0;
