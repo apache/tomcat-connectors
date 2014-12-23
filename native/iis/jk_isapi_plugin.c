@@ -2573,7 +2573,8 @@ static int init_logger(int rotate)
         if (strchr(log_file, '%')) {
             struct tm *tm_now;
 
-            /* If there are %s in the log file name, treat it as a sprintf format */
+            /* If there are % format patterns in the log file name,
+             * treat it as a strftime format */
             tm_now = localtime(&t);
             strftime(log_file_name, sizeof(log_file_name_buf), log_file, tm_now);
         }
@@ -3824,7 +3825,10 @@ static char *path_merge(const char *root, const char *path)
     sz = strlen(merge);
     /* Normalize path */
     if ((rel = relative_path(merge, sz))) {
-        size_t bl = strlen(root) + sz + 1;
+        /* one additkional byte for trailing '\0',
+         * one additional byte for eventual path
+         * separator between root and merge */
+        size_t bl = strlen(root) + sz + 2;
         out = malloc(bl);
         if (out == 0)
             return 0;

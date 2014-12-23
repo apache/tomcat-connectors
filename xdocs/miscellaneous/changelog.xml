@@ -107,6 +107,11 @@
         recovery attempt time instead of original error time after the first
         recovery attempt. (rjung)
       </fix>
+      <fix>
+        <bug>54596</bug>: IIS: Fix missing last character when parsing
+        relative file names with no ".." directory components from
+        configuration. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
