@@ -197,11 +197,13 @@ The default value is "0", which disables closing idle connections.
 <p>
 We generally recommend values around 10 minutes, so setting
 <b>connection_pool_timeout</b> to 600 (seconds). If you use this attribute,
-please also set the attribute <b>connectionTimeout</b> in the AJP
+please also set the attribute <b>keepAliveTimeout</b>
+(if it is set explicitly) or <b>connectionTimeout</b> in the AJP
 Connector element of your Tomcat server.xml configuration file to
-an analogous value. <b>Caution</b>: connectionTimeout is in milliseconds.
-So if you set JK connection_pool_timeout to 600, you should set Tomcat
-connectionTimeout to 600000.
+an analogous value. <b>Caution</b>: <b>keepAliveTimeout</b> and
+<b>connectionTimeout</b> must be given in milliseconds.
+So if you set JK <b>connection_pool_timeout</b> to 600, you should set Tomcat
+<b>keepAliveTimeout</b> or <b>connectionTimeout</b> to 600000.
 </p>
 <p>
 JK connections do not get closed immediately after the timeout passed.
@@ -253,8 +255,9 @@ it detects the missing TCP ACKs and tries to resend the packets for
 a relatively long time, typically several minutes.
 Therefore you should always use
 <a href="#Connection Pools and Idle Timeouts">connection_pool_timeout and
-connection_pool_minsize</a> on the JK side and <b>connectionTimeout</b>
-on the Tomcat side to prevent idle connection drop.
+connection_pool_minsize</a> on the JK side and <b>keepAliveTimeout</b>
+or <b>connectionTimeout</b> on the Tomcat side to prevent idle
+connection drop.
 </p>
 <p>
 Furthermore using the boolean attribute <b>socket_keepalive</b> you can

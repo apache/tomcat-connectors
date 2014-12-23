@@ -408,7 +408,8 @@ to handle high-load, even it the child/thread handle only static contents, you c
 finish having many unused ajp13 threads on the Tomcat side.
 </p>
 <p>
-You should keep this time interval in sync with the <b>connectionTimeout</b> attribute
+You should keep this time interval in sync with the <b>keepAliveTimeout</b> attribute
+(if it is set explicitly) or <b>connectionTimeout</b> attribute
 of your AJP connector in Tomcat's server.xml. Note however, that the value
 for mod_jk is given in seconds, the one in server.xml has to use milliseconds.
 </p>

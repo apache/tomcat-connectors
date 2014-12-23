@@ -97,6 +97,11 @@
         <bug>56770</bug>: AJP: Add worker name to all log messages.
         Patch contributed by Martin Knoblauch. (rjung)
       </add>
+      <fix>
+        <bug>50186</bug>: Docs: Clarify relation between
+        "connection_pool_timeout" and "keepAliveTimeout" or "connectionTimeout"
+        in the Tomcat AJP connector configuration. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
