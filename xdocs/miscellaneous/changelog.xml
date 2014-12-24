@@ -121,6 +121,11 @@
         Status: Add logging if status worker output was dropped due to
         insufficient buffer size. (rjung)
       </fix>
+      <fix>
+        Reduce log buffer from 8KB to 1KB. Add logging in case of failed
+        logging and add trailing "..." to lines which were likely truncated.
+        (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

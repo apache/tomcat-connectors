@@ -126,7 +126,7 @@
 #define TOMCAT41_BRIDGE_NAME        "tomcat41"
 #define TOMCAT50_BRIDGE_NAME        "tomcat5"
 
-#define HUGE_BUFFER_SIZE 8192
+#define LOG_BUFFER_SIZE 1024
 
 /*
  * Our longest worker attribute name is about 30 bytes,
@@ -693,12 +693,14 @@ int jk_log(jk_logger_t *l,
            const char *fmt, ...)
 {
     int rc = 0;
+    char *failure;
+
     /*
      * Need to reserve space for terminating zero byte
      * and platform specific line endings added during the call
      * to the output routing.
      */
-    static int usable_size = HUGE_BUFFER_SIZE - 3;
+    static int usable_size = LOG_BUFFER_SIZE - 3;
     if (!l || !file || !fmt) {
         return -1;
     }
@@ -709,7 +711,7 @@ int jk_log(jk_logger_t *l,
         /* we will allocate and free the temporary buffer in this function         */
         char *buf;
 #else
-        char buf[HUGE_BUFFER_SIZE];
+        char buf[LOG_BUFFER_SIZE];
 #endif
         char *f = (char *)(file + strlen(file) - 1);
         va_list args;
@@ -723,7 +725,7 @@ int jk_log(jk_logger_t *l,
         }
 
 #ifdef NETWARE
-        buf = (char *)malloc(HUGE_BUFFER_SIZE);
+        buf = (char *)malloc(LOG_BUFFER_SIZE);
         if (NULL == buf)
             return -1;
 #endif
@@ -739,6 +741,8 @@ int jk_log(jk_logger_t *l,
                           "[%" JK_PID_T_FMT ":%" JK_PTHREAD_T_FMT "] ", getpid(), jk_gettid());
             used += rc;
             if (rc < 0 ) {
+                failure = "Logging failed in pid/tid formatting";
+                l->log(l, level, strlen(failure), failure);
                 return 0;
             }
 
@@ -748,6 +752,8 @@ int jk_log(jk_logger_t *l,
                 used += rc;
             }
             else {
+                failure = "Logging failed in log level formatting";
+                l->log(l, level, strlen(failure), failure);
                 return 0;           /* [V] not sure what to return... */
             }
 
@@ -760,6 +766,8 @@ int jk_log(jk_logger_t *l,
                     used += 2;
                 }
                 else {
+                    failure = "Logging failed in function name formatting";
+                    l->log(l, level, strlen(failure), failure);
                     return 0;           /* [V] not sure what to return... */
                 }
             }
@@ -770,6 +778,8 @@ int jk_log(jk_logger_t *l,
                 used += rc;
             }
             else {
+                failure = "Logging failed in source file name formatting";
+                l->log(l, level, strlen(failure), failure);
                 return 0;           /* [V] not sure what to return... */
             }
 
@@ -777,6 +787,8 @@ int jk_log(jk_logger_t *l,
                           " (%d): ", line);
             used += rc;
             if (rc < 0 || usable_size - used < 0) {
+                failure = "Logging failed in line number formatting";
+                l->log(l, level, strlen(failure), failure);
                 return 0;           /* [V] not sure what to return... */
             }
         }
@@ -784,11 +796,16 @@ int jk_log(jk_logger_t *l,
         va_start(args, fmt);
         rc = vsnprintf(buf + used, usable_size - used, fmt, args);
         va_end(args);
-        if ( rc <= usable_size - used ) {
+        /* Depending on the snprintf implementation used,
+         * "rc == usable_size - used" can indicate not enough space in buffer */
+        if (rc < usable_size - used) {
             used += rc;
         }
         else {
             used = usable_size;
+            buf[used - 1] = '.';
+            buf[used - 2] = '.';
+            buf[used - 3] = '.';
         }
         l->log(l, level, used, buf);
 
