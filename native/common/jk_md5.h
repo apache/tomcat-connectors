@@ -65,13 +65,6 @@ typedef struct
     unsigned char buffer[64];       /* input buffer */
 } JK_MD5_CTX;
 
-/*
- * Define the Magic String prefix that identifies a password as being
- * hashed using our algorithm.
- */
-#define JK_MD5PW_ID "$apr1$"
-#define JK_MD5PW_IDLEN 6
-
 char *JK_METHOD jk_hextocstr(unsigned char *org, char *dst, int n);
 char *JK_METHOD jk_md5(const unsigned char *org,
                        const unsigned char *org2, char *dst);
