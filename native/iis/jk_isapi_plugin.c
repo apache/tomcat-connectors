@@ -3857,7 +3857,8 @@ static char *path_merge(const char *root, const char *path)
                 skip--;
             }
             if (remain > 0) {
-                return "";
+                SetLastError(ERROR_BAD_PATHNAME);
+                return 0;
             }
             if (skip < start) {
                 skip = start;
