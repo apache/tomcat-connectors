@@ -3710,9 +3710,10 @@ static __inline void BS2FSA(char *str)
         }                                                   \
     } while(0)
 
-static char *skip_prefix(char *path, char **sp, char **cp)
+static char *skip_prefix(char *path, char **sp)
 {
     size_t size;
+    char *cp;
 
     /* Convert everything to forward slashes
      */
@@ -3721,6 +3722,7 @@ static char *skip_prefix(char *path, char **sp, char **cp)
      */
     path = NO2UNC(path);
     size = strlen(path);
+    *sp = path;
     if (size < 2) {
         if (path[0] == ' ') {
             /* Single Trailing space is invalid path
@@ -3742,7 +3744,6 @@ static char *skip_prefix(char *path, char **sp, char **cp)
             return 0;
         }
     }
-    *sp = path;
     if (size > 1 && path[1] == ':' && IS_DRIVE_CHAR(path[0])) {
         /* Never go above C: */
         path += 2;
@@ -3754,9 +3755,9 @@ static char *skip_prefix(char *path, char **sp, char **cp)
             /* This is probably //./pipe/ */
             return path;
         }
-        *cp = strchr(path + 2, '/');
-        if (*cp != 0)
-            path = *cp;
+        cp = strchr(path + 2, '/');
+        if (cp != 0)
+            path = cp;
         else {
             /* We only have //share
              */
@@ -3772,25 +3773,30 @@ static char *relative_path(char *path, int* remain)
     char *cp;
     int   ch = '/';
 
-    path = skip_prefix(path, &sp, &cp);
+    path = skip_prefix(path, &sp);
     if (!path)
         return 0;
-    /* Remaining is the same as on unixes */
+    if (path != sp) {
+        /* Unexpected. Expected a relative path, but it starts with C: or //share/ */
+        SetLastError(ERROR_BAD_PATHNAME);
+        return 0;
+    }
     cp = path;
     while (*path) {
         if (IS_PATH_SEP(ch) && *path == '.') {
+            /* nd: number of consecutive dot characters */
             int nd = 0;
             while (path[nd] == '.')
                 nd++;
-            if (nd > 2 && path[nd] == '/') {
-                SetLastError(ERROR_BAD_PATHNAME);
-                return 0;
-            }
             if (IS_PATH_SEP(path[nd])) {
+                if (nd > 2) {
+                    SetLastError(ERROR_BAD_PATHNAME);
+                    return 0;
+                }
                 path += nd;
                 if (*path)
                     path++;
-                while (nd > 1) {
+                if (nd > 1) {
                     if (cp > sp + 1) {
                         cp--;
                         while (cp > sp) {
@@ -3801,9 +3807,7 @@ static char *relative_path(char *path, int* remain)
                     }
                     else {
                         (*remain)++;
-                        break;
                     }
-                    nd--;
                 }
             }
             else {
@@ -3843,8 +3847,7 @@ static char *path_merge(const char *root, const char *path)
         if (remain > 0) {
             char *skip = root + rsz - 1;
             char *spr;
-            char *cpr;
-            char *start = skip_prefix(root, &spr, &cpr);
+            char *start = skip_prefix(root, &spr);
             if (*skip == '/')
                 skip--;
             while (remain > 0 && skip >= start) {
