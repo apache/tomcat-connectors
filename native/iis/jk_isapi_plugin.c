@@ -3714,7 +3714,7 @@ static char *skip_prefix(char *path, char **sp, char **cp)
 {
     size_t size;
 
-    /* Convert everything to foward slashes
+    /* Convert everything to forward slashes
      */
     BS2FSA(path);
     /* Remove \\?\ and replace \\?\UNC\ with \\
@@ -3879,7 +3879,7 @@ static char *path_merge(const char *root, const char *path)
             ++rel;
         if (*rel != '\0')
             StringCbCopy(out + sz, bl - sz, rel);
-            FS2BSA(out);
+        FS2BSA(out);
     }
     return out;
 }
