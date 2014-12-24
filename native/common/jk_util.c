@@ -1422,21 +1422,26 @@ int jk_get_max_packet_size(jk_map_t *m, const char *wname)
 }
 
 int jk_get_worker_fail_on_status(jk_map_t *m, const char *wname,
-                                 int *list, unsigned int list_size)
+                                 int **list, unsigned int *list_size)
 {
     char buf[PARAM_BUFFER_SIZE];
 
-    if (!m || !wname || !list) {
+    if (!m || !wname || !list || !list_size) {
         return 0;
     }
     MAKE_WORKER_PARAM(STATUS_FAIL_OF_WORKER);
-    if (list_size) {
-        return jk_map_get_int_list(m, buf,
-                                   list, list_size,
-                                   NULL);
+    int *ar = jk_map_get_int_list(m,
+                                  buf,
+                                  list_size,
+                                  NULL);
+    if (ar) {
+        *list = ar;
+        return JK_TRUE;
     }
+    *list = NULL;
+    *list_size = 0;
 
-    return 0;
+    return JK_FALSE;
 }
 
 int jk_get_worker_user_case_insensitive(jk_map_t *m, const char *wname)

@@ -286,13 +286,12 @@ char **jk_map_get_string_list(jk_map_t *m,
 #endif
 
         {
-
             if (idex == capacity) {
                 ar = jk_pool_realloc(&m->p,
                                      sizeof(char *) * (capacity + 5),
                                      ar, sizeof(char *) * capacity);
                 if (!ar) {
-                    return JK_FALSE;
+                    return NULL;
                 }
                 capacity += 5;
             }
@@ -306,29 +305,26 @@ char **jk_map_get_string_list(jk_map_t *m,
     return ar;
 }
 
-int jk_map_get_int_list(jk_map_t *m,
-                        const char *name,
-                        int *list,
-                        unsigned int list_len,
-                        const char *def)
+int *jk_map_get_int_list(jk_map_t *m,
+                         const char *name,
+                         unsigned int *list_len,
+                         const char *def)
 {
     const char *l = jk_map_get_string(m, name, def);
+    int *ar = NULL;
 
 #ifdef _MT_CODE_PTHREAD
     char *lasts;
 #endif
 
-    if (!list_len)
-        return 0;
-
     if (l) {
-        unsigned int capacity = list_len;
-        unsigned int index = 0;
+        unsigned int capacity = 0;
+        unsigned int idex = 0;
         char *p;
         char *v = jk_pool_strdup(&m->p, l);
 
         if (!v) {
-            return 0;
+            return NULL;
         }
 
         /*
@@ -343,16 +339,22 @@ int jk_map_get_int_list(jk_map_t *m,
 #endif
 
         {
-            if (index < capacity) {
-                list[index] = atoi(p);
-                index++;
+            if (idex == capacity) {
+                ar = jk_pool_realloc(&m->p,
+                                     sizeof(int) * (capacity + 5),
+                                     ar, sizeof(int) * capacity);
+                if (!ar) {
+                    return NULL;
+                }
+                capacity += 5;
             }
-            else
-                break;
+            ar[idex] = atoi(p);
+            idex++;
         }
-        return index;
+
+        *list_len = idex;
     }
-    return 0;
+    return ar;
 }
 
 int jk_map_add(jk_map_t *m, const char *name, const void *value)
@@ -471,8 +473,8 @@ int jk_map_read_property(jk_map_t *m, jk_map_t *env, const char *str,
     char *prp = &buf[0];
 
     if (strlen(str) > LENGTH_OF_LINE) {
-        jk_log(l, JK_LOG_WARNING,
-               "Line to long (%d > %d), ignoring entry",
+        jk_log(l, JK_LOG_ERROR,
+               "Line too long (%d > %d), ignoring entry",
                strlen(str), LENGTH_OF_LINE);
         return JK_FALSE;
     }

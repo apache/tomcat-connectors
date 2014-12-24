@@ -256,8 +256,6 @@ extern "C"
 #define RECOVER_ALWAYS_HTTP_HEAD         0x0008 /* RECOVER HTTP HEAD REQUESTS, EVEN IF ABORT OPTIONS ARE SET */
 #define RECOVER_ALWAYS_HTTP_GET          0x0010 /* RECOVER HTTP GET REQUESTS, EVEN IF ABORT OPTIONS ARE SET */
 
-#define JK_MAX_HTTP_STATUS_FAILS   32   /* Should be enough for most 400 and 500 statuses */
-
 struct jk_res_data
 {
     int status;
@@ -377,7 +375,7 @@ struct ajp_worker
      * HTTP status that will cause failover (0 means disabled)
      */
      unsigned int http_status_fail_num;
-     int http_status_fail[JK_MAX_HTTP_STATUS_FAILS];
+     int *http_status_fail;
 };
 
 

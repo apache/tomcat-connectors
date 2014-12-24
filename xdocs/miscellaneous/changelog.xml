@@ -126,6 +126,10 @@
         logging and add trailing "..." to lines which were likely truncated.
         (rjung)
       </fix>
+      <update>
+        Replace fixed allocation of 32 entries for fail_on_status by
+        dynamic allocation. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>

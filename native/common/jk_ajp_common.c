@@ -2990,9 +2990,9 @@ int ajp_init(jk_worker_t *pThis,
                                          JK_SLEEP_DEF);
         p->cache_acquire_timeout = jk_get_worker_cache_acquire_timeout(props,
                                      p->name, p->retries * p->retry_interval);
-        p->http_status_fail_num = jk_get_worker_fail_on_status(props, p->name,
-                                     &p->http_status_fail[0],
-                                     JK_MAX_HTTP_STATUS_FAILS);
+        jk_get_worker_fail_on_status(props, p->name,
+                                     &(p->http_status_fail),
+                                     &(p->http_status_fail_num));
 
         if (p->retries < 1) {
             jk_log(l, JK_LOG_INFO,

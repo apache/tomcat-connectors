@@ -75,10 +75,10 @@ char **jk_map_get_string_list(jk_map_t *m,
                            const char *name,
                            unsigned *list_len, const char *def);
 
-int jk_map_get_int_list(jk_map_t *m,
-                        const char *name,
-                        int *list, unsigned int list_len,
-                        const char *def);
+int *jk_map_get_int_list(jk_map_t *m,
+                         const char *name,
+                         unsigned int *list_len,
+                         const char *def);
 
 int jk_map_add(jk_map_t *m, const char *name, const void *value);
 
