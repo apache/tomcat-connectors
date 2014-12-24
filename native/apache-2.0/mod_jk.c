@@ -495,10 +495,6 @@ static void JK_METHOD ws_done(jk_ws_service_t *s)
  * the jk_ws_service class.  Think of the *s param as a "this" or "self"
  * pointer.
  */
-/* Works with 4096, fails with 8192 */
-#ifndef CHUNK_SIZE
-#define CHUNK_SIZE 4096
-#endif
 
 static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
 {
@@ -541,15 +537,7 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
 #endif
 
             while (ll > 0 && !p->r->connection->aborted) {
-#if 0
-                /* Apache 2 output filter does not write
-                 * directly to the wire.
-                 */
-                int toSend = (ll > CHUNK_SIZE) ? CHUNK_SIZE : ll;
-                r = ap_rwrite(bb, toSend, p->r);
-#else
                 r = ap_rwrite(bb, ll, p->r);
-#endif
                 if (JK_IS_DEBUG_LEVEL(main_log))
                     jk_log(main_log, JK_LOG_DEBUG,
                            "written %d out of %d", r, ll);
