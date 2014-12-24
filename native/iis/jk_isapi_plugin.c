@@ -3861,7 +3861,7 @@ static char *path_merge(const char *root, const char *path)
             }
             *++skip = '\0';
         }
-        /* one additkional byte for trailing '\0',
+        /* one additional byte for trailing '\0',
          * one additional byte for eventual path
          * separator between root and merge */
         size_t bl = strlen(root) + sz + 2;
