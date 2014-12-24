@@ -182,10 +182,10 @@ the file, you can inherit properties from one worker to another, or even
 from a template to real workers.
 </p>
 <p>
-The directive "reference" allows to copy configurations between workers
-in a hierarchical way. If worker castor sets <b>worker.castor.reference=worker.pollux</b>
-then it inherits all properties of <b>pollux</b>, except for the ones that
-are explicitly set for <b>castor</b>.
+The directive "reference" allows to copy configurations between workers or
+worker templates in a hierarchical way. If worker castor sets
+<b>worker.castor.reference=worker.pollux</b> then it inherits all properties
+of <b>pollux</b>, except for the ones that are explicitly set for <b>castor</b>.
 </p>
 <p>
 Please note, that the value of the directive is not only the name of the referred worker,
@@ -202,6 +202,8 @@ reference those common properties in all balanced workers.
 </p>
 <p>
 References can be used to inherit properties over multiple hops in a hierarchical way.
+The maximum depth for nesting references is 20. Be careful not to introduce a reference
+loop!
 </p>
 <p>
 This feature has been added in <b>jk 1.2.19</b>.
