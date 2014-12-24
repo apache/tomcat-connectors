@@ -1112,6 +1112,7 @@ static void lb_add_log_items(jk_ws_service_t *s,
                              lb_sub_worker_t *w,
                              jk_logger_t *l)
 {
+    /* ADJUST JK_LB_NOTES_COUNT WHEN ADDING MORE NOTES HERE! */
     ajp_worker_t *aw = (ajp_worker_t *)w->worker->worker_private;
     const char **log_values = jk_pool_alloc(s->pool, sizeof(char *) * JK_LB_NOTES_COUNT);
     char *buf = jk_pool_alloc(s->pool, sizeof(char *) * JK_LB_NOTES_COUNT * JK_LB_UINT64_STR_SZ);
