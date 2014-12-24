@@ -117,6 +117,10 @@
         with ".." path segments that go up the directory hierarchy higher
         than the starting point of the relative file name. (rjung)
       </fix>
+      <fix>
+        Status: Add logging if status worker output was dropped due to
+        insufficient buffer size. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
