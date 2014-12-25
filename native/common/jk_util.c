@@ -129,12 +129,12 @@
 #define LOG_BUFFER_SIZE 1024
 
 /*
- * Our longest worker attribute name is about 30 bytes,
- * so 100 bytes for "worker." plus worker name plus "."
- * plus attribute names leaves at least 60 bytes for
- * the worker names. That should be enough.
+ * Our longest worker attribute name is below 30 bytes.
+ * Add space for "worker.", another ".", the
+ * worker name and the final '\0'.
  */
-#define PARAM_BUFFER_SIZE 100
+#define JK_MAX_ATTRIBUTE_NAME_SIZE (30)
+#define PARAM_BUFFER_SIZE (JK_MAX_NAME_SIZE + 8 + JK_MAX_ATTRIBUTE_NAME_SIZE + 1)
 #define MAKE_WORKER_PARAM(P) \
         { \
             size_t remain = PARAM_BUFFER_SIZE; \
@@ -1849,6 +1849,23 @@ int jk_is_deprecated_property(const char *prp_name)
     }
     return JK_FALSE;
 }
+
+int jk_check_buffer_size()
+{
+    const char **props;
+    size_t len = 0;
+    size_t max_len = 0;
+
+    props = &supported_properties[0];
+    while (*props) {
+        len = strlen(*props);
+        if (len > max_len)
+            max_len = len;
+        props++;
+    }
+    return JK_MAX_ATTRIBUTE_NAME_SIZE - max_len;
+}
+
 /*
  * Check that property is a valid one (to prevent user typos).
  * Only property starting with worker.

@@ -188,6 +188,8 @@ extern "C"
 #define JK_LF (10)
 #define JK_CR (13)
 
+#define JK_MAX_NAME_SIZE (60)
+
 #define JK_SESSION_IDENTIFIER "JSESSIONID"
 #define JK_PATH_SESSION_IDENTIFIER ";jsessionid"
 

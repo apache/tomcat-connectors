@@ -2975,9 +2975,16 @@ static void jk_init(server_rec * s, ap_pool * p)
     int rc;
     server_rec *srv = s;
     const char *err_string = NULL;
+    int remain;
     jk_server_conf_t *conf =
         (jk_server_conf_t *) ap_get_module_config(s->module_config,
                                                   &jk_module);
+    remain = jk_check_buffer_size();
+    if (remain < 0) {
+        jk_error_exit(APLOG_MARK, APLOG_EMERG, srv, p,
+                      "mod_jk: JK_MAX_ATTRIBUTE_NAME_SIZE in jk_util.c too small, "
+                      "increase by %d", -1 * remain);
+    }
     if (!jk_worker_properties)
         jk_map_alloc(&jk_worker_properties);
     jk_map_put(jk_worker_properties, "ServerRoot", ap_server_root, NULL);

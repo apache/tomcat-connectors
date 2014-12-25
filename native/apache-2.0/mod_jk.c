@@ -3424,8 +3424,16 @@ static int jk_post_config(apr_pool_t * pconf,
     jk_server_conf_t *conf;
     server_rec *srv = s;
     const char *err_string = NULL;
+    int remain;
     void *data = NULL;
 
+    remain = jk_check_buffer_size();
+    if (remain < 0) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s,
+                     "mod_jk: JK_MAX_ATTRIBUTE_NAME_SIZE in jk_util.c too small, "
+                     "increase by %d", -1 * remain);
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
     apr_pool_userdata_get(&data, JK_LOG_LOCK_KEY, s->process->pool);
     if (data == NULL) {
         /* create the jk log lockfiles in the parent */

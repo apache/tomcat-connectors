@@ -2943,8 +2943,15 @@ static int read_registry_init_data(void)
     int ok = JK_FALSE;
     LPVOID src;
     HKEY hkey;
+    int remain;
     jk_map_t *map = NULL;
 
+    remain = jk_check_buffer_size();
+    if (remain < 0) {
+        jk_log(logger, JK_LOG_ERROR,
+               "mod_jk: JK_MAX_ATTRIBUTE_NAME_SIZE in jk_util.c too small, "
+               "increase by %d", -1 * remain);
+    }
     if (jk_map_alloc(&map)) {
         if (jk_map_read_properties(map, jk_environment_map, ini_file_name, NULL,
                                    JK_MAP_HANDLE_DUPLICATES, logger)) {
