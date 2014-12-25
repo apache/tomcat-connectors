@@ -505,7 +505,7 @@ static int jk_printf(jk_ws_service_t *s, jk_logger_t *l, const char *fmt, ...)
 #endif
     rc = vsnprintf(buf, HUGE_BUFFER_SIZE, fmt, args);
     va_end(args);
-    if (rc > 0)
+    if (rc > 0 && rc < HUGE_BUFFER_SIZE)
         s->write(s, buf, rc);
     else
         jk_log(l, JK_LOG_WARNING,
