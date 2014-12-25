@@ -693,7 +693,6 @@ int jk_log(jk_logger_t *l,
            const char *fmt, ...)
 {
     int rc = 0;
-    char *failure;
 
     /*
      * Need to reserve space for terminating zero byte
@@ -741,8 +740,8 @@ int jk_log(jk_logger_t *l,
                           "[%" JK_PID_T_FMT ":%" JK_PTHREAD_T_FMT "] ", getpid(), jk_gettid());
             used += rc;
             if (rc < 0 ) {
-                failure = "Logging failed in pid/tid formatting";
-                l->log(l, level, strlen(failure), failure);
+                strcpy(buf, "Logging failed in pid/tid formatting");
+                l->log(l, level, strlen(buf), buf);
                 return 0;
             }
 
@@ -752,8 +751,8 @@ int jk_log(jk_logger_t *l,
                 used += rc;
             }
             else {
-                failure = "Logging failed in log level formatting";
-                l->log(l, level, strlen(failure), failure);
+                strcpy(buf, "Logging failed in log level formatting");
+                l->log(l, level, strlen(buf), buf);
                 return 0;           /* [V] not sure what to return... */
             }
 
@@ -766,8 +765,8 @@ int jk_log(jk_logger_t *l,
                     used += 2;
                 }
                 else {
-                    failure = "Logging failed in function name formatting";
-                    l->log(l, level, strlen(failure), failure);
+                    strcpy(buf, "Logging failed in function name formatting");
+                    l->log(l, level, strlen(buf), buf);
                     return 0;           /* [V] not sure what to return... */
                 }
             }
@@ -778,8 +777,8 @@ int jk_log(jk_logger_t *l,
                 used += rc;
             }
             else {
-                failure = "Logging failed in source file name formatting";
-                l->log(l, level, strlen(failure), failure);
+                strcpy(buf, "Logging failed in source file name formatting");
+                l->log(l, level, strlen(buf), buf);
                 return 0;           /* [V] not sure what to return... */
             }
 
@@ -787,8 +786,8 @@ int jk_log(jk_logger_t *l,
                           " (%d): ", line);
             used += rc;
             if (rc < 0 || usable_size - used < 0) {
-                failure = "Logging failed in line number formatting";
-                l->log(l, level, strlen(failure), failure);
+                strcpy(buf, "Logging failed in line number formatting");
+                l->log(l, level, strlen(buf), buf);
                 return 0;           /* [V] not sure what to return... */
             }
         }
