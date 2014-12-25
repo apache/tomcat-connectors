@@ -1787,18 +1787,15 @@ int jk_file_exists(const char *f)
 
 static int jk_is_some_property(const char *prp_name, const char *suffix, const char *sep)
 {
-    char buf[PARAM_BUFFER_SIZE];
-
-    if (prp_name && suffix) {
-        size_t prp_name_len;
-        size_t suffix_len;
-        strcpy(buf, sep);
-        strcat(buf, suffix);
-        prp_name_len = strlen(prp_name);
-        suffix_len = strlen(buf);
-        if (prp_name_len >= suffix_len) {
-            const char *prp_suffix = prp_name + prp_name_len - suffix_len;
-            if (!strcmp(buf, prp_suffix)) {
+    if (prp_name && suffix && sep) {
+        size_t prp_name_len = strlen(prp_name);
+        size_t suffix_len = strlen(suffix);
+        size_t sep_len = strlen(sep);
+        size_t sep_off = sep_len + suffix_len;
+        
+        if (prp_name_len >= sep_off) {
+            if (!strncmp(prp_name + prp_name_len - sep_off, sep, sep_len) &&
+                !strncmp(prp_name + prp_name_len - suffix_len, suffix, suffix_len)) {
                 return JK_TRUE;
             }
         }
