@@ -1860,6 +1860,9 @@ int jk_is_valid_property(const char *prp_name)
 {
     const char **props;
 
+    /* Any property not starting with "worker." is "valid".
+     * It is interpreted as the definition of a custom variable.
+     */
     if (memcmp(prp_name, "worker.", 7))
         return JK_TRUE;
 
