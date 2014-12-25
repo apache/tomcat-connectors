@@ -877,42 +877,6 @@ const char *jk_get_worker_secret(jk_map_t *m, const char *wname)
     return jk_map_get_string(m, buf, NULL);
 }
 
-/* [V] I suggest that the following general purpose functions be used.       */
-/*     More should be added (double etc.), but now these were enough for me. */
-/*     Functions that can be simulated with these should be "deprecated".    */
-
-int jk_get_worker_str_prop(jk_map_t *m,
-                           const char *wname, const char *pname, const char **prop)
-{
-    char buf[PARAM_BUFFER_SIZE];
-
-    if (m && prop && wname && pname) {
-        MAKE_WORKER_PARAM(pname);
-        *prop = jk_map_get_string(m, buf, NULL);
-        if (*prop) {
-            return JK_TRUE;
-        }
-    }
-    return JK_FALSE;
-}
-
-int jk_get_worker_int_prop(jk_map_t *m,
-                           const char *wname, const char *pname, int *prop)
-{
-    char buf[PARAM_BUFFER_SIZE];
-
-    if (m && prop && wname && pname) {
-        int i;
-        MAKE_WORKER_PARAM(pname);
-        i = jk_map_get_int(m, buf, -1);
-        if (-1 != i) {
-            *prop = i;
-            return JK_TRUE;
-        }
-    }
-    return JK_FALSE;
-}
-
 const char *jk_get_worker_host(jk_map_t *m, const char *wname, const char *def)
 {
     char buf[PARAM_BUFFER_SIZE];
