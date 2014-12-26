@@ -50,7 +50,7 @@ void ajp14_compute_md5(jk_login_service_t *s, jk_logger_t *l)
  * Build the Login Init Command
  *
  * +-------------------------+---------------------------+---------------------------+
- * | LOGIN INIT CMD (1 byte) | NEGOCIATION DATA (32bits) | WEB SERVER INFO (CString) |
+ * | LOGIN INIT CMD (1 byte) | NEGOTIATION DATA (32bits) | WEB SERVER INFO (CString) |
  * +-------------------------+---------------------------+---------------------------+
  *
  */
@@ -70,9 +70,9 @@ int ajp14_marshal_login_init_into_msgb(jk_msg_buf_t *msg,
         return JK_FALSE;
     }
     /*
-     * NEGOCIATION FLAGS
+     * NEGOTIATION FLAGS
      */
-    if (jk_b_append_long(msg, s->negociation)) {
+    if (jk_b_append_long(msg, s->negotiation)) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }

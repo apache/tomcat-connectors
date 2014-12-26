@@ -120,7 +120,7 @@ extern "C"
 
 
 /*
- * Negociation flags 
+ * Negotiation flags 
  */
 
 /*
@@ -240,7 +240,7 @@ struct jk_login_service
     /*
      *  What we want to negociate
      */
-    unsigned long negociation;
+    unsigned long negotiation;
 
     /*
      * What we received from servlet engine 
