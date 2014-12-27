@@ -2982,7 +2982,7 @@ static void jk_init(server_rec * s, ap_pool * p)
     remain = jk_check_buffer_size();
     if (remain < 0) {
         jk_error_exit(APLOG_MARK, APLOG_EMERG, srv, p,
-                      "mod_jk: JK_MAX_ATTRIBUTE_NAME_SIZE in jk_util.c is too small, "
+                      "mod_jk: JK_MAX_ATTRIBUTE_NAME_LEN in jk_util.c is too small, "
                       "increase by %d", -1 * remain);
     }
     if (!jk_worker_properties)

@@ -42,7 +42,7 @@ extern "C"
 
 #define JK_SHM_MAJOR    '1'
 #define JK_SHM_MINOR    '3'
-#define JK_SHM_STR_SIZ  (JK_ALIGN(JK_MAX_NAME_SIZE + 1, 8) - 1)
+#define JK_SHM_STR_SIZ  (JK_ALIGN(JK_MAX_NAME_LEN + 1, 8) - 1)
 #define JK_SHM_MAGIC    '!', 'J', 'K', 'S', 'H', 'M', JK_SHM_MAJOR, JK_SHM_MINOR
 #define JK_SHM_MAGIC_SIZ  8
 

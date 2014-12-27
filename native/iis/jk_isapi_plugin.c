@@ -2949,7 +2949,7 @@ static int read_registry_init_data(void)
     remain = jk_check_buffer_size();
     if (remain < 0) {
         jk_log(logger, JK_LOG_ERROR,
-               "mod_jk: JK_MAX_ATTRIBUTE_NAME_SIZE in jk_util.c is too small, "
+               "mod_jk: JK_MAX_ATTRIBUTE_NAME_LEN in jk_util.c is too small, "
                "increase by %d", -1 * remain);
     }
     if (jk_map_alloc(&map)) {

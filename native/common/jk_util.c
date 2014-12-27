@@ -133,8 +133,8 @@
  * Add space for "worker.", another ".", the
  * worker name and the final '\0'.
  */
-#define JK_MAX_ATTRIBUTE_NAME_SIZE (30)
-#define PARAM_BUFFER_SIZE (JK_MAX_NAME_SIZE + 8 + JK_MAX_ATTRIBUTE_NAME_SIZE + 1)
+#define JK_MAX_ATTRIBUTE_NAME_LEN (30)
+#define PARAM_BUFFER_SIZE (JK_MAX_NAME_LEN + 8 + JK_MAX_ATTRIBUTE_NAME_LEN + 1)
 #define MAKE_WORKER_PARAM(P) \
         { \
             size_t remain = PARAM_BUFFER_SIZE; \
@@ -1863,7 +1863,7 @@ int jk_check_buffer_size()
             max_len = len;
         props++;
     }
-    return JK_MAX_ATTRIBUTE_NAME_SIZE - max_len;
+    return JK_MAX_ATTRIBUTE_NAME_LEN - max_len;
 }
 
 /*
