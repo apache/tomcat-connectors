@@ -1099,7 +1099,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
 {
     int address_change = JK_FALSE;
     int port = 0;
-    char host[JK_SHM_STR_SIZ+1];
+    char host[JK_SHM_STR_SIZ];
     jk_sockaddr_t inet_addr;
     JK_TRACE_ENTER(l);
 

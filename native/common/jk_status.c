@@ -3279,7 +3279,7 @@ static int commit_member(jk_ws_service_t *s,
     int i;
     int old;
     int resolve = JK_FALSE;
-    char host[JK_SHM_STR_SIZ+1];
+    char host[JK_SHM_STR_SIZ];
     int  port = 0;
 
     JK_TRACE_ENTER(l);
@@ -3314,11 +3314,11 @@ static int commit_member(jk_ws_service_t *s,
             *side_effect |= JK_STATUS_NEEDS_UPDATE_MULT | JK_STATUS_NEEDS_PUSH;
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_ROUTE,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
+            if (strncmp(wr->route, arg, JK_SHM_STR_SIZ )) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->route, arg);
-                strncpy(wr->route, arg, JK_SHM_STR_SIZ);
+                strncpy(wr->route, arg, JK_SHM_STR_SIZ );
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
                 if (!wr->domain[0]) {
                     char * id_domain = strchr(wr->route, '.');
@@ -3332,17 +3332,17 @@ static int commit_member(jk_ws_service_t *s,
         }
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_REDIRECT,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
+            if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ )) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->redirect, arg);
-                strncpy(wr->redirect, arg, JK_SHM_STR_SIZ);
+                strncpy(wr->redirect, arg, JK_SHM_STR_SIZ );
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
             }
         }
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_DOMAIN,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
+            if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ )) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->domain, arg);

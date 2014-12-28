@@ -140,18 +140,18 @@ struct lb_sub_worker
     /* Shared memory worker data */
     jk_shm_lb_sub_worker_t *s;
 
-    char         name[JK_SHM_STR_SIZ+1];
+    char         name[JK_SHM_STR_SIZ];
     /* Sequence counter starting at 0 and increasing
      * every time we change the config
      */
     volatile unsigned int sequence;
 
     /* route */
-    char    route[JK_SHM_STR_SIZ+1];
+    char    route[JK_SHM_STR_SIZ];
     /* worker domain */
-    char    domain[JK_SHM_STR_SIZ+1];
+    char    domain[JK_SHM_STR_SIZ];
     /* worker redirect route */
-    char    redirect[JK_SHM_STR_SIZ+1];
+    char    redirect[JK_SHM_STR_SIZ];
     /* worker distance */
     int distance;
     /* current activation state (config) of the worker */
@@ -171,7 +171,7 @@ struct lb_worker
     /* Shared memory worker data */
     jk_shm_lb_worker_t *s;
 
-    char         name[JK_SHM_STR_SIZ+1];
+    char         name[JK_SHM_STR_SIZ];
     /* Sequence counter starting at 0 and increasing
      * every time we change the config
      */
@@ -197,11 +197,11 @@ struct lb_worker
     unsigned int max_packet_size;
     unsigned int next_offset;
     /* Session cookie */
-    char         session_cookie[JK_SHM_STR_SIZ+1];
+    char         session_cookie[JK_SHM_STR_SIZ];
     /* Session path */
-    char         session_path[JK_SHM_STR_SIZ+1];
+    char         session_path[JK_SHM_STR_SIZ];
     int          set_session_cookie;
-    char         session_cookie_path[JK_SHM_STR_SIZ+1];
+    char         session_cookie_path[JK_SHM_STR_SIZ];
 };
 typedef struct lb_worker lb_worker_t;
 

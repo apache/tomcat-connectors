@@ -42,7 +42,7 @@ extern "C"
 
 #define JK_SHM_MAJOR    '1'
 #define JK_SHM_MINOR    '3'
-#define JK_SHM_STR_SIZ  (JK_ALIGN(JK_MAX_NAME_LEN + 1, 8) - 1)
+#define JK_SHM_STR_SIZ  (JK_ALIGN(JK_MAX_NAME_LEN + 1, 8))
 #define JK_SHM_MAGIC    '!', 'J', 'K', 'S', 'H', 'M', JK_SHM_MAJOR, JK_SHM_MINOR
 #define JK_SHM_MAGIC_SIZ  8
 
@@ -62,7 +62,7 @@ struct jk_shm_worker_header
     /* JK_XXX_WORKER_TYPE */
     int     type;
     /* worker name */
-    char    name[JK_SHM_STR_SIZ+1];
+    char    name[JK_SHM_STR_SIZ];
     /* parent slot id.
      * Zero in case worker does not belong to balancer.
      */
@@ -78,7 +78,7 @@ typedef struct jk_shm_worker_header jk_shm_worker_header_t;
 struct jk_shm_ajp_worker
 {
     jk_shm_worker_header_t h;
-    char host[JK_SHM_STR_SIZ+1];
+    char host[JK_SHM_STR_SIZ];
     int port;
     volatile int addr_sequence;
 
@@ -130,11 +130,11 @@ struct jk_shm_lb_sub_worker
     jk_shm_worker_header_t h;
 
     /* route */
-    char    route[JK_SHM_STR_SIZ+1];
+    char    route[JK_SHM_STR_SIZ];
     /* worker domain */
-    char    domain[JK_SHM_STR_SIZ+1];
+    char    domain[JK_SHM_STR_SIZ];
     /* worker redirect route */
-    char    redirect[JK_SHM_STR_SIZ+1];
+    char    redirect[JK_SHM_STR_SIZ];
     /* Number of currently busy channels */
     volatile int busy;
     /* worker distance */
