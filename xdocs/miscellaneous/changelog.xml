@@ -141,6 +141,12 @@
         <bug>52483</bug>: Apache: Add debug logging for result
         of JkOptions configuration processing. (rjung)
       </add>
+      <fix>
+        <bug>54177</bug>: Status: Use numeric time stamps instead of
+        textual ones to avoid non-well-formed XML output. Textual
+        timestamps are formatted according to locale settings and
+        reencoding them to UTF-8 would be cumbersome. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

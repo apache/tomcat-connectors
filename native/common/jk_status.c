@@ -204,10 +204,10 @@
 #define JK_STATUS_WAIT_AFTER_UPDATE        "3"
 #define JK_STATUS_REFRESH_DEF              "10"
 #define JK_STATUS_ESC_CHARS                ("<>?\"")
-#define JK_STATUS_TIME_FMT_HTML            "%a, %d %b %Y %X %Z"
+#define JK_STATUS_TIME_FMT_HTML            "%Y-%m-%d %H:%M:%S %z"
 #define JK_STATUS_TIME_FMT_TEXT            "%Y%m%d%H%M%S"
-#define JK_STATUS_TIME_FMT_TZ              "%Z"
-#define JK_STATUS_TIME_BUF_SZ              (80)
+#define JK_STATUS_TIME_FMT_TZ              "%z"
+#define JK_STATUS_TIME_BUF_SZ              (30)
 
 #define JK_STATUS_HEAD                     "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" \
                                            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"" \
