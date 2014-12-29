@@ -1693,6 +1693,10 @@ static int JK_METHOD validate(jk_worker_t *pThis,
             }
             memset(p->lb_workers, 0, num_of_workers * sizeof(lb_sub_worker_t));
             for (i = 0; i < num_of_workers; i++) {
+                if (jk_check_attribute_length("host name", worker_names[i], l) == JK_FALSE) {
+                    JK_TRACE_EXIT(l);
+                    return JK_FALSE;
+                }
                 p->lb_workers[i].s = jk_shm_alloc_lb_sub_worker(&p->p, p->s->h.id, worker_names[i], l);
                 if (p->lb_workers[i].s == NULL) {
                     jk_log(l, JK_LOG_ERROR,
@@ -1739,14 +1743,29 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                     p->max_packet_size = ms;
                 p->lb_workers[i].distance =
                     jk_get_distance(props, worker_names[i]);
-                if ((s = jk_get_worker_route(props, worker_names[i], NULL)))
+                if ((s = jk_get_worker_route(props, worker_names[i], NULL))) {
+                    if (jk_check_attribute_length("route", s, l) == JK_FALSE) {
+                        JK_TRACE_EXIT(l);
+                        return JK_FALSE;
+                    }
                     strncpy(p->lb_workers[i].route, s, JK_SHM_STR_SIZ);
+                }
                 else
                     strncpy(p->lb_workers[i].route, worker_names[i], JK_SHM_STR_SIZ);
-                if ((s = jk_get_worker_domain(props, worker_names[i], NULL)))
+                if ((s = jk_get_worker_domain(props, worker_names[i], NULL))) {
+                    if (jk_check_attribute_length("domain", s, l) == JK_FALSE) {
+                        JK_TRACE_EXIT(l);
+                        return JK_FALSE;
+                    }
                     strncpy(p->lb_workers[i].domain, s, JK_SHM_STR_SIZ);
-                if ((s = jk_get_worker_redirect(props, worker_names[i], NULL)))
+                }
+                if ((s = jk_get_worker_redirect(props, worker_names[i], NULL))) {
+                    if (jk_check_attribute_length("redirect", s, l) == JK_FALSE) {
+                        JK_TRACE_EXIT(l);
+                        return JK_FALSE;
+                    }
                     strncpy(p->lb_workers[i].redirect, s, JK_SHM_STR_SIZ);
+                }
 
                 p->lb_workers[i].s->lb_value = 0;
                 p->lb_workers[i].s->state = JK_LB_STATE_IDLE;
@@ -1836,6 +1855,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
                           jk_worker_env_t *we, jk_logger_t *log)
 {
     int i;
+    const char *s;
 
     lb_worker_t *p = (lb_worker_t *)pThis->worker_private;
     JK_TRACE_ENTER(log);
@@ -1862,16 +1882,25 @@ static int JK_METHOD init(jk_worker_t *pThis,
 
     p->lbmethod = jk_get_lb_method(props, p->name);
     p->lblock   = jk_get_lb_lock(props, p->name);
-    strncpy(p->session_cookie,
-            jk_get_lb_session_cookie(props, p->name, JK_SESSION_IDENTIFIER),
-            JK_SHM_STR_SIZ);
-    strncpy(p->session_path,
-            jk_get_lb_session_path(props, p->name, JK_PATH_SESSION_IDENTIFIER),
-            JK_SHM_STR_SIZ);
+    s = jk_get_lb_session_cookie(props, p->name, JK_SESSION_IDENTIFIER);
+    if (jk_check_attribute_length("session_cookie", s, log) == JK_FALSE) {
+        JK_TRACE_EXIT(log);
+        return JK_FALSE;
+    }
+    strncpy(p->session_cookie, s, JK_SHM_STR_SIZ);
+    s = jk_get_lb_session_path(props, p->name, JK_PATH_SESSION_IDENTIFIER);
+    if (jk_check_attribute_length("session_path", s, log) == JK_FALSE) {
+        JK_TRACE_EXIT(log);
+        return JK_FALSE;
+    }
+    strncpy(p->session_path, s, JK_SHM_STR_SIZ);
     p->set_session_cookie = jk_get_lb_set_session_cookie(props, p->name, JK_FALSE);
-    strncpy(p->session_cookie_path,
-            jk_get_lb_session_cookie_path(props, p->name, "/"),
-            JK_SHM_STR_SIZ);
+    s = jk_get_lb_session_cookie_path(props, p->name, "/");
+    if (jk_check_attribute_length("session_cookie_path", s, log) == JK_FALSE) {
+        JK_TRACE_EXIT(log);
+        return JK_FALSE;
+    }
+    strncpy(p->session_cookie_path, s, JK_SHM_STR_SIZ);
 
     JK_INIT_CS(&(p->cs), i);
     if (i == JK_FALSE) {

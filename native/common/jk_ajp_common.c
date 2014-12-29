@@ -2795,13 +2795,19 @@ int ajp_validate(jk_worker_t *pThis,
     }
 
     if (pThis && pThis->worker_private) {
+        const char *tmp;
         ajp_worker_t *p = pThis->worker_private;
         p->worker.we = we;
         p->port = jk_get_worker_port(props, p->name, port);
         if (!host) {
             host = "undefined";
         }
-        strncpy(p->host, jk_get_worker_host(props, p->name, host), JK_SHM_STR_SIZ);
+        tmp = jk_get_worker_host(props, p->name, host);
+        if (jk_check_attribute_length("host name", tmp, l) == JK_FALSE) {
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+        strncpy(p->host, tmp, JK_SHM_STR_SIZ);
         p->prefer_ipv6 = jk_get_worker_prefer_ipv6(props, p->name, JK_FALSE);
         if (p->s->h.sequence == 0) {
             /* Initial setup.

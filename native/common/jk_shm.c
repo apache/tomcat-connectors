@@ -811,6 +811,10 @@ jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
     unsigned int i;
     jk_shm_worker_header_t *w = 0;
 
+    if (jk_check_attribute_length("name", name, l) == JK_FALSE) {
+        return NULL;
+    }
+
     if (jk_shmem.hdr) {
         jk_shm_lock();
         for (i = 0; i < jk_shmem.hdr->h.data.pos; i += JK_SHM_SLOT_SIZE) {

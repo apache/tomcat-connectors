@@ -816,6 +816,20 @@ int jk_log(jk_logger_t *l,
     return rc;
 }
 
+int jk_check_attribute_length(const char *name, const char *value,
+                              jk_logger_t *l)
+{
+    size_t len = strlen(value);
+    if (len > JK_MAX_NAME_LEN) {
+        jk_log(l, JK_LOG_ERROR,
+               "Worker %s '%s' is %d bytes too long, "
+               "a maximum of %d bytes is supported",
+               name, value, len - JK_MAX_NAME_LEN, JK_MAX_NAME_LEN);
+        return JK_FALSE;
+    }
+    return JK_TRUE;
+}
+
 const char *jk_get_worker_type(jk_map_t *m, const char *wname)
 {
     char buf[PARAM_BUFFER_SIZE];

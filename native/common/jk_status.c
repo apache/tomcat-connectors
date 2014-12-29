@@ -2818,18 +2818,22 @@ static void form_member(jk_ws_service_t *s,
         jk_printf(s, l, "value=\"%d\"/></td></tr>\n", wr->lb_factor);
         jk_putv(s, "<tr><td>", JK_STATUS_ARG_LBM_TEXT_ROUTE,
                 ":</td><td><input name=\"",
-                JK_STATUS_ARG_LBM_ROUTE, "\" type=\"text\" ", NULL);
-        jk_printf(s, l, "value=\"%s\"/></td></tr>\n", wr->route);
+                JK_STATUS_ARG_LBM_ROUTE, "\" type=\"text\" ",
+                "value=\"", wr->route, NULL);
+        jk_printf(s, l, "\" maxlength=\"%d\"/></td></tr>\n",
+                  JK_MAX_NAME_LEN);
         jk_putv(s, "<tr><td>", JK_STATUS_ARG_LBM_TEXT_REDIRECT,
                 ":</td><td><input name=\"",
-                JK_STATUS_ARG_LBM_REDIRECT, "\" type=\"text\" ", NULL);
-        jk_putv(s, "value=\"", wr->redirect, NULL);
-        jk_puts(s, "\"/></td></tr>\n");
+                JK_STATUS_ARG_LBM_REDIRECT, "\" type=\"text\" ",
+                "value=\"", wr->redirect, NULL);
+        jk_printf(s, l, "\" maxlength=\"%d\"/></td></tr>\n",
+                  JK_MAX_NAME_LEN);
         jk_putv(s, "<tr><td>", JK_STATUS_ARG_LBM_TEXT_DOMAIN,
                 ":</td><td><input name=\"",
-                JK_STATUS_ARG_LBM_DOMAIN, "\" type=\"text\" ", NULL);
-        jk_putv(s, "value=\"", wr->domain, NULL);
-        jk_puts(s, "\"/></td></tr>\n");
+                JK_STATUS_ARG_LBM_DOMAIN, "\" type=\"text\" ",
+                "value=\"", wr->domain, NULL);
+        jk_printf(s, l, "\" maxlength=\"%d\"/></td></tr>\n",
+                  JK_MAX_NAME_LEN);
         jk_putv(s, "<tr><td>", JK_STATUS_ARG_LBM_TEXT_DISTANCE,
                 ":</td><td><input name=\"",
                 JK_STATUS_ARG_LBM_DISTANCE, "\" type=\"text\" ", NULL);
@@ -2841,8 +2845,10 @@ static void form_member(jk_ws_service_t *s,
     jk_puts(s, "<table>\n");
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_HOST_STR,
             ":</td><td><input name=\"",
-            JK_STATUS_ARG_AJP_HOST_STR, "\" type=\"text\" ", NULL);
-    jk_printf(s, l, "value=\"%s\"/></td></tr>\n", aw->host);
+            JK_STATUS_ARG_AJP_HOST_STR, "\" type=\"text\" ",
+            "value=\"", aw->host, NULL);
+    jk_printf(s, l, "\" maxlength=\"%d\"/></td></tr>\n",
+              JK_MAX_NAME_LEN);
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_PORT,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_PORT, "\" type=\"text\" ", NULL);
@@ -3015,15 +3021,18 @@ static void form_all_members(jk_ws_service_t *s,
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_LBM_ROUTE)) {
                 jk_printf(s, l, "<input name=\"" JK_STATUS_ARG_MULT_VALUE_BASE "%d\" type=\"text\"", i);
-                jk_putv(s, "value=\"", wr->route, "\"/>\n", NULL);
+                jk_putv(s, "value=\"", wr->route, NULL);
+                jk_printf(s, l, "\" maxlength=\"%d\"/>\n", JK_MAX_NAME_LEN);
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_LBM_REDIRECT)) {
                 jk_printf(s, l, "<input name=\"" JK_STATUS_ARG_MULT_VALUE_BASE "%d\" type=\"text\"", i);
-                jk_putv(s, "value=\"", wr->redirect, "\"/>\n", NULL);
+                jk_putv(s, "value=\"", wr->redirect, NULL);
+                jk_printf(s, l, "\" maxlength=\"%d\"/>\n", JK_MAX_NAME_LEN);
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_LBM_DOMAIN)) {
                 jk_printf(s, l, "<input name=\"" JK_STATUS_ARG_MULT_VALUE_BASE "%d\" type=\"text\"", i);
-                jk_putv(s, "value=\"", wr->domain, "\"/>\n", NULL);
+                jk_putv(s, "value=\"", wr->domain, NULL);
+                jk_printf(s, l, "\" maxlength=\"%d\"/>\n", JK_MAX_NAME_LEN);
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_LBM_DISTANCE)) {
                 jk_printf(s, l, "<input name=\"" JK_STATUS_ARG_MULT_VALUE_BASE "%d\" type=\"text\"", i);
@@ -3314,7 +3323,15 @@ static int commit_member(jk_ws_service_t *s,
             *side_effect |= JK_STATUS_NEEDS_UPDATE_MULT | JK_STATUS_NEEDS_PUSH;
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_ROUTE,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (strncmp(wr->route, arg, JK_SHM_STR_SIZ )) {
+            if (jk_check_attribute_length("route", arg, l) == JK_FALSE) {
+                const char *msg = "Update failed (at least partially): new route '%s' "
+                                  "too long for sub worker '%s', see log file for details.";
+                size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
+                p->msg = jk_pool_alloc(s->pool, size);
+                snprintf(p->msg, size, msg, arg, aw->name);
+                rc = JK_FALSE;
+            }
+            else if (strncmp(wr->route, arg, JK_SHM_STR_SIZ )) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->route, arg);
@@ -3332,7 +3349,15 @@ static int commit_member(jk_ws_service_t *s,
         }
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_REDIRECT,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ )) {
+            if (jk_check_attribute_length("redirect", arg, l) == JK_FALSE) {
+                const char *msg = "Update failed (at least partially): new redirect '%s' "
+                                  "too long for sub worker '%s', see log file for details.";
+                size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
+                p->msg = jk_pool_alloc(s->pool, size);
+                snprintf(p->msg, size, msg, arg, aw->name);
+                rc = JK_FALSE;
+            }
+            else if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ )) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->redirect, arg);
@@ -3342,7 +3367,15 @@ static int commit_member(jk_ws_service_t *s,
         }
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_DOMAIN,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ )) {
+            if (jk_check_attribute_length("domain", arg, l) == JK_FALSE) {
+                const char *msg = "Update failed (at least partially): new domain '%s' "
+                                  "too long for sub worker '%s', see log file for details.";
+                size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
+                p->msg = jk_pool_alloc(s->pool, size);
+                snprintf(p->msg, size, msg, arg, aw->name);
+                rc = JK_FALSE;
+            }
+            else if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ )) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->domain, arg);
@@ -3375,7 +3408,15 @@ static int commit_member(jk_ws_service_t *s,
     }
     if ((rv = status_get_string(p, JK_STATUS_ARG_AJP_HOST_STR,
                                 NULL, &arg, l)) == JK_TRUE) {
-        if (strncmp(aw->host, arg, JK_SHM_STR_SIZ)) {
+        if (jk_check_attribute_length("host name", arg, l) == JK_FALSE) {
+            const char *msg = "Update failed (at least partially): new host name '%s' "
+                              "too long for sub worker '%s', see log file for details.";
+            size_t size = strlen(msg) + strlen(arg) + strlen(aw->name) + 1;
+            p->msg = jk_pool_alloc(s->pool, size);
+            snprintf(p->msg, size, msg, arg, aw->name);
+            rc = JK_FALSE;
+        }
+        else if (strncmp(aw->host, arg, JK_SHM_STR_SIZ)) {
             jk_log(l, JK_LOG_INFO,
                     "Status worker '%s' changing 'host' for sub worker '%s' from '%s' to '%s'",
                     w->name, aw->name, aw->host, arg);
@@ -3622,7 +3663,15 @@ static void commit_all_members(jk_ws_service_t *s,
                 }
                 else if (!strcmp(attribute, JK_STATUS_ARG_LBM_ROUTE)) {
                     if (rv == JK_TRUE) {
-                        if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
+                        if (jk_check_attribute_length("route", arg, l) == JK_FALSE) {
+                            const char *msg = "Update failed (at least partially): new route '%s' "
+                                              "too long for sub worker '%s', see log file for details.";
+                            size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
+                            p->msg = jk_pool_alloc(s->pool, size);
+                            snprintf(p->msg, size, msg, arg, aw->name);
+                            rc = JK_FALSE;
+                        }
+                        else if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
                             jk_log(l, JK_LOG_INFO,
                                    "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                                    w->name, wr->name, name, wr->route, arg);
@@ -3641,7 +3690,15 @@ static void commit_all_members(jk_ws_service_t *s,
                 }
                 else if (!strcmp(attribute, JK_STATUS_ARG_LBM_REDIRECT)) {
                     if (rv == JK_TRUE) {
-                        if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
+                        if (jk_check_attribute_length("redirect", arg, l) == JK_FALSE) {
+                            const char *msg = "Update failed (at least partially): new redirect '%s' "
+                                              "too long for sub worker '%s', see log file for details.";
+                            size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
+                            p->msg = jk_pool_alloc(s->pool, size);
+                            snprintf(p->msg, size, msg, arg, aw->name);
+                            rc = JK_FALSE;
+                        }
+                        else if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
                             jk_log(l, JK_LOG_INFO,
                                    "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                                    w->name, wr->name, name, wr->redirect, arg);
@@ -3652,7 +3709,15 @@ static void commit_all_members(jk_ws_service_t *s,
                 }
                 else if (!strcmp(attribute, JK_STATUS_ARG_LBM_DOMAIN)) {
                     if (rv == JK_TRUE) {
-                        if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
+                        if (jk_check_attribute_length("domain", arg, l) == JK_FALSE) {
+                            const char *msg = "Update failed (at least partially): new domain '%s' "
+                                              "too long for sub worker '%s', see log file for details.";
+                            size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
+                            p->msg = jk_pool_alloc(s->pool, size);
+                            snprintf(p->msg, size, msg, arg, aw->name);
+                            rc = JK_FALSE;
+                        }
+                        else if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
                             jk_log(l, JK_LOG_INFO,
                                    "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                                    w->name, wr->name, name, wr->domain, arg);

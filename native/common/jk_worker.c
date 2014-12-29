@@ -124,6 +124,10 @@ int wc_create_worker(const char *name, int use_map,
 {
     JK_TRACE_ENTER(l);
 
+    if (jk_check_attribute_length("name", name, l) == JK_FALSE) {
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
     if (rc) {
         const char *type = jk_get_worker_type(init_data, name);
         worker_factory fac = get_factory_for(type);

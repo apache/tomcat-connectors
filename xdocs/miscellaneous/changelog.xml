@@ -130,6 +130,13 @@
         Replace fixed allocation of 32 entries for fail_on_status by
         dynamic allocation. (rjung)
       </update>
+      <add>
+        Enforce implementation restriction on maximal length "60" of worker
+        attributes "name", "host", "route", "domain", "redirect",
+        "session_cookie", "session_path" and "set_session_cookie". Checks were
+        added to configuration file processing and configuration
+        updates via the status worker. (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>
