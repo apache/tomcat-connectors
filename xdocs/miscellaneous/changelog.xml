@@ -137,6 +137,10 @@
         added to configuration file processing and configuration
         updates via the status worker. (rjung)
       </add>
+      <add>
+        <bug>52483</bug>: Apache: Add debug logging for result
+        of JkOptions configuration processing. (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

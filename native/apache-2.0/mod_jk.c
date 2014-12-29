@@ -653,6 +653,79 @@ static jk_uri_worker_map_t * JK_METHOD ws_vhost_to_uw_map(void *d)
 /* Utility functions                                                         */
 /* ========================================================================= */
 
+static void dump_options(server_rec *srv, apr_pool_t *p)
+{
+    char server_name[80];
+    jk_server_conf_t *conf = (jk_server_conf_t *)ap_get_module_config(srv->module_config,
+                                                                      &jk_module);
+    int options = conf->options;
+    ws_vhost_to_text(srv, server_name, 80);
+    if (options & JK_OPT_FWDURICOMPAT)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardURICompat", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDURICOMPAT ? " (default)" : "");
+    if (options & JK_OPT_FWDURICOMPATUNPARSED)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardURICompatUnparsed", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDURICOMPATUNPARSED ? " (default)" : "");
+    if (options & JK_OPT_FWDURIESCAPED)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardURIEscaped", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDURIESCAPED ? " (default)" : "");
+    if (options & JK_OPT_FWDURIPROXY)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardURIProxy", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDURIPROXY ? " (default)" : "");
+    if (options & JK_OPT_FWDDIRS)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardDirectories", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDDIRS ? " (default)" : "");
+    if (options & JK_OPT_FWDLOCAL)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardLocalAddress", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDLOCAL ? " (default)" : "");
+    if (options & JK_OPT_FWDPHYSICAL)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardPhysicalAddress", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDPHYSICAL ? " (default)" : "");
+    if (options & JK_OPT_FWDCERTCHAIN)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardSSLCertChain", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDCERTCHAIN ? " (default)" : "");
+    if (options & JK_OPT_FWDKEYSIZE)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "ForwardKeySize", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FWDKEYSIZE ? " (default)" : "");
+    if (options & JK_OPT_FLUSHPACKETS)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "FlushPackets", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FLUSHPACKETS ? " (default)" : "");
+    if (options & JK_OPT_FLUSHEADER)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "FlushHeader", server_name,
+               JK_OPT_DEFAULT & JK_OPT_FLUSHEADER ? " (default)" : "");
+    if (options & JK_OPT_DISABLEREUSE)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "DisableReuse", server_name,
+               JK_OPT_DEFAULT & JK_OPT_DISABLEREUSE ? " (default)" : "");
+    if (options & JK_OPT_REJECTUNSAFE)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "RejectUnsafeURI", server_name,
+               JK_OPT_DEFAULT & JK_OPT_REJECTUNSAFE ? " (default)" : "");
+    if (options & JK_OPT_COLLAPSEALL)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "CollapseSlashesAll", server_name,
+               JK_OPT_DEFAULT & JK_OPT_COLLAPSEALL ? " (default)" : "");
+    if (options & JK_OPT_COLLAPSENONE)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "CollapseSlashesNone", server_name,
+               JK_OPT_DEFAULT & JK_OPT_COLLAPSENONE ? " (default)" : "");
+    if (options & JK_OPT_COLLAPSEUNMOUNT)
+        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+               "CollapseSlashesUnmount", server_name,
+               JK_OPT_DEFAULT & JK_OPT_COLLAPSEUNMOUNT ? " (default)" : "");
+}
+
 /* ========================================================================= */
 /* Log something to Jk log file then exit */
 static void jk_error_exit(const char *file,
@@ -3497,6 +3570,7 @@ static int jk_post_config(apr_pool_t * pconf,
                     if (open_jklog(srv, pconf))
                         return HTTP_INTERNAL_SERVER_ERROR;
                     sconf->options &= ~sconf->exclude_options;
+                    dump_options(srv, pconf);
                     if (sconf->uri_to_context) {
                         if (!uri_worker_map_alloc(&(sconf->uw_map),
                                                   sconf->uri_to_context, sconf->log))
