@@ -58,7 +58,7 @@ behaviour with the new "error_escalation_time" attribute
 The status worker now allows you to change the address and the port
 of an AJP13 worker on the fly. You can e.g. provision dummy workers with a port
 equal to "0", which will be automatically put into stopped mode during startup.
-Later, when you want to actually use thse workers, you set their address and
+Later, when you want to actually use these workers, you set their address and
 port to the final values.
 </p>
 <p>
