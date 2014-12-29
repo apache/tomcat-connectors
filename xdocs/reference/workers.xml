@@ -222,10 +222,12 @@ be unavailable or will misbehave. Those directives will be marked with a <strong
 <directive name="type" default="ajp13" required="true">
 Type of the worker (can be one of ajp13, ajp14, jni, lb or status). The type of the worker
 defines the directives that can be applied to the worker.
-<p>AJP13 worker is the preferred worker type that JK uses for communication
+<p>Type <b>ajp13</b> is the preferred worker type that JK uses for communication
 between web server and Tomcat. This type of worker uses sockets as communication
 channel. For detailed description of the AJP13 protocol stack browse to
 <a href="../ajp/ajpv13a.html">AJPv13 protocol specification</a>
+</p>
+<p>Type <b>ajp14</b> is experimental and not recommended.
 </p>
 <warn>JNI workers have been deprecated. They will likely not work. Do not use them.</warn>
 </directive>
@@ -241,14 +243,14 @@ the connections pool of persistent connections between JK and remote Tomcat.
 
 <directive name="host" default="localhost" required="false">
 Host name or IP address of the backend Tomcat instance. The remote Tomcat must
-support the ajp13 protocol stack. The host name can have a <b>port</b> number
+support the AJP13 protocol stack. The host name can have a <b>port</b> number
 embedded separated by the colon (':') character.
 </directive>
 
 <directive name="port" default="8009" required="false">
 Port number of the remote Tomcat instance listening for defined protocol requests.
-The default value depends on the worker type. For AJP13 workers the default port is
-<b>8009</b>, while for AJP14 type of worker that value is <b>8011</b>.
+The default value depends on the worker type. For ajp13 workers the default port is
+<b>8009</b>, while for ajp14 type of worker that value is <b>8011</b>.
 </directive>
 
 <directive name="socket_timeout" default="0" required="false">
