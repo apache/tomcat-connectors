@@ -145,13 +145,11 @@ Response Packet Structures below for details.
 <p>
 There is a bit of an XDR heritage to this protocol, but it differs in
 lots of ways (no 4 byte alignment, for example).
-</p><p>
-Byte order: I am not clear about the endian-ness of the individual
-bytes.  I'm guessing the bytes are little-endian, because that's what XDR
-specifies, and I'm guessing that sys/socket library is magically making
-that so (on the C side).  If anyone with a better knowledge of socket calls
-can step in, that would be great.
-</p><p>
+</p>
+<p>
+  AJP13 uses network byte order for all data types.
+</p>
+<p>
 There are four data types in the protocol: bytes, booleans, integers and
 strings.
 
@@ -489,7 +487,7 @@ additional methods, even if they are not in this list.
   two-byte integer is the length of a string, which is then read in.
 </p><p>
   This works on the assumption that no header names will have length
-  greater than 0x9999 (==0xA000 - 1), which is perfectly reasonable, though
+  greater than 0x9FFF (==0xA000 - 1), which is perfectly reasonable, though
   somewhat arbitrary. (If you, like me, started to think about the cookie
   spec here, and about how long headers can get, fear not -- this limit is
   on header <b>names</b> not header <b>values</b>.  It seems unlikely that
@@ -509,7 +507,7 @@ additional methods, even if they are not in this list.
   The attributes prefixed with a <code>?</code>
   (e.g. <code>?context</code>) are all optional.  For each, there is a
   single byte code to indicate the type of attribute, and then a string to
-  give its value.  They can be sent in any order (thogh the C code always
+  give its value.  They can be sent in any order (though the C code always
   sends them in the order listed below).  A special terminating code is
   sent to signal the end of the list of optional attributes. The list of
   byte codes is:
@@ -654,8 +652,8 @@ Details:
 <p>
   Signals the end of this request-handling cycle.  If the
   <code>reuse</code> flag is true (==1), this TCP connection can now be used to
-  handle new incoming requests.  If <code>reuse</code> is false (anything
-  other than 1 in the actual C code), the connection should be closed.
+  handle new incoming requests.  If <code>reuse</code> is true (anything
+  other than 0 in the actual C code), the connection should be closed.
 </p>
 </subsection>
 
