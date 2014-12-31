@@ -1160,13 +1160,12 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                                                   NULL, NULL);
         }
         else {
-            DWORD status_str_len = lstrlenA(status_str);
             /* Old style response - forces Connection: close if Tomcat response doesn't
                specify necessary details to allow keep alive */
             rc = p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
                                                   HSE_REQ_SEND_RESPONSE_HEADER,
                                                   status_str,
-                                                  &status_str_len,
+                                                  0,
                                                   (LPDWORD)headers_str);
         }
 
