@@ -174,7 +174,7 @@ static const char *list_properties[] = {
     GOOD_RATING_OF_WORKER,
     BAD_RATING_OF_WORKER,
     STATUS_FAIL_OF_WORKER,
-    "list",
+    LIST_PROPERTY_NAME,
     NULL
 };
 
