@@ -35,6 +35,7 @@
 #include "jk_ajp14_worker.h"
 #include "jk_connect.h"
 #include "jk_uri_worker_map.h"
+#include "jk_url.h"
 
 #define HUGE_BUFFER_SIZE (8*1024)
 
@@ -1232,7 +1233,7 @@ static int status_parse_uri(jk_ws_service_t *s,
         return JK_FALSE;
     }
 
-    /* XXX We simply mask special chars n the query string with '@' to prevent cross site scripting */
+    /* XXX We simply mask special chars in the query string with '@' to prevent cross site scripting */
     query = p->query_string;
     while ((query = strpbrk(query, JK_STATUS_ESC_CHARS)))
         query[0] = '@';
@@ -1263,6 +1264,7 @@ static int status_parse_uri(jk_ws_service_t *s,
 #endif
         char *key = jk_pool_strdup(s->pool, param);
         char *value;
+        char *tmp;
         if (!key) {
             jk_log(l, JK_LOG_ERROR,
                    "Status worker '%s' could not copy string",
@@ -1274,12 +1276,29 @@ static int status_parse_uri(jk_ws_service_t *s,
         if (value) {
             *value = '\0';
             value++;
-            /* XXX Depending on the params values, we might need to trim and decode */
+
             if (strlen(key)) {
+                /* percent decoding */
+                if (jk_unescape_url(value, value, -1, NULL, NULL, 1, NULL) != JK_TRUE) {
+                    jk_log(l, JK_LOG_ERROR,
+                           "Status worker '%s' could not decode query string "
+                           "param '%s' with value '%s'",
+                           w->name, key, value);
+                    JK_TRACE_EXIT(l);
+                    return JK_FALSE;
+                }
+
+                /* XXX We simply mask special chars in the query string with '@'
+                 * to prevent cross site scripting */
+                tmp = value;
+                while ((tmp = strpbrk(tmp, JK_STATUS_ESC_CHARS)))
+                    tmp[0] = '@';
+
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
                            "Status worker '%s' adding request param '%s' with value '%s'",
                            w->name, key, value);
+                /* XXX Depending on the params values, we might need to trim */
                 jk_map_put(m, key, value, NULL);
             }
         }

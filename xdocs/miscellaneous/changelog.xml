@@ -147,6 +147,12 @@
         timestamps are formatted according to locale settings and
         reencoding them to UTF-8 would be cumbersome. (rjung)
       </fix>
+      <fix>
+        <bug>56618</bug>: Status: Use percent decoding when reading
+        query string parameters. For example this fixes editing IPv6
+        addresses via the status worker if the client encodes
+        ":" as "%3A". Patch contributed by Christopher Schultz. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
