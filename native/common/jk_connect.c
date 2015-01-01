@@ -59,6 +59,17 @@ static apr_pool_t *jk_apr_pool = NULL;
 #define USE_SOCK_CLOEXEC
 #endif
 
+#ifndef INET6_ADDRSTRLEN
+/* Maximum size of an IPv6 address in ASCII */
+#define INET6_ADDRSTRLEN 46
+#endif
+
+/* 2 IPv6 adresses of length (INET6_ADDRSTRLEN-1)
+ * each suffixed with a ":" and a port (5 digits)
+ * plus " -> " plus terminating "\0"
+ */
+#define DUMP_SINFO_BUF_SZ (2 * (INET6_ADDRSTRLEN - 1 + 1 + 5) + 4 + 1)
+
 #ifndef IN6ADDRSZ
 #define IN6ADDRSZ   16
 #endif
@@ -573,7 +584,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
                          int timeout, int connect_timeout,
                          int sock_buf, jk_logger_t *l)
 {
-    char buf[64];
+    char buf[DUMP_SINFO_BUF_SZ];
     jk_sock_t sd;
     int set = 1;
     int ret = 0;
@@ -753,7 +764,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                 "trying to connect socket %d to %s", sd,
-                jk_dump_hinfo(addr, buf));
+                jk_dump_hinfo(addr, buf, sizeof(buf)));
 
 /* Need more infos for BSD 4.4 and Unix 98 defines, for now only
 iSeries when Unix98 is required at compil time */
@@ -771,14 +782,14 @@ iSeries when Unix98 is required at compil time */
     if (ret) {
         jk_log(l, JK_LOG_INFO,
                "connect to %s failed (errno=%d)",
-               jk_dump_hinfo(addr, buf), errno);
+               jk_dump_hinfo(addr, buf, sizeof(buf)), errno);
         jk_close_socket(sd, l);
         sd = JK_INVALID_SOCKET;
     }
     else {
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG, "socket %d [%s] connected",
-                   sd, jk_dump_sinfo(sd, buf));
+                   sd, jk_dump_sinfo(sd, buf, sizeof(buf)));
     }
     JK_TRACE_EXIT(l);
     return sd;
@@ -855,7 +866,7 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
 int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 {
     char dummy[512];
-    char buf[64];
+    char buf[DUMP_SINFO_BUF_SZ];
     char *sb = NULL;
     int rc = 0;
     size_t rd = 0;
@@ -873,7 +884,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 
     save_errno = errno;
     if (JK_IS_DEBUG_LEVEL(l)) {
-        sb = jk_dump_sinfo(sd, buf);
+        sb = jk_dump_sinfo(sd, buf, sizeof(buf));
         jk_log(l, JK_LOG_DEBUG, "About to shutdown socket %d [%s]",
                sd, sb);
     }
@@ -1124,7 +1135,7 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
      * Keep this in mind if you think this function should have been coded
      * to use pointer overlays.  All the world's not a VAX.
      */
-    char tmp[sizeof "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"], *tp;
+    char tmp[INET6_ADDRSTRLEN], *tp;
     struct { int base, len; } best = {-1, 0}, cur = {-1, 0};
     unsigned int words[IN6ADDRSZ / INT16SZ];
     int i;
@@ -1224,25 +1235,25 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
  * dump a jk_sockaddr_t in A.B.C.D:P in ASCII buffer
  *
  */
-char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf)
+char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf, size_t size)
 {
     char pb[8];
 
     if (saddr->family == JK_INET) {
-        inet_ntop4(saddr->ipaddr_ptr, buf, 16);
+        inet_ntop4(saddr->ipaddr_ptr, buf, size);
     }
 #if JK_HAVE_IPV6
     else {
-        inet_ntop6(saddr->ipaddr_ptr, buf, 64);
+        inet_ntop6(saddr->ipaddr_ptr, buf, size);
     }
 #endif
     sprintf(pb, ":%d", saddr->port);
 
-    strcat(buf, pb);
+    strncat(buf, pb, size - strlen(buf) - 1);
     return buf;
 }
 
-char *jk_dump_sinfo(jk_sock_t sd, char *buf)
+char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
 {
     struct sockaddr rsaddr;
     struct sockaddr lsaddr;
@@ -1256,36 +1267,38 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf)
             size_t ps;
             if (lsaddr.sa_family == JK_INET) {
                 struct sockaddr_in  *sa = (struct sockaddr_in  *)&lsaddr;
-                inet_ntop4((unsigned char *)&sa->sin_addr,  buf, 16);
+                inet_ntop4((unsigned char *)&sa->sin_addr, buf, size);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
             }
 #if JK_HAVE_IPV6
             else {
                 struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&lsaddr;
-                inet_ntop6((unsigned char *)&sa->sin6_addr, buf, 64);
+                inet_ntop6((unsigned char *)&sa->sin6_addr, buf, size);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin6_port));
             }
 #endif
-            strcat(buf, pb);
-            strcat(buf, " -> ");
+            ps = strlen(buf);
+            strncat(buf, pb, size - ps - 1);
+            ps = strlen(buf);
+            strncat(buf, " -> ", size - ps - 1);
             ps = strlen(buf);
             if (rsaddr.sa_family == JK_INET) {
                 struct sockaddr_in  *sa = (struct sockaddr_in  *)&rsaddr;
-                inet_ntop4((unsigned char *)&sa->sin_addr,  buf + ps, 16);
+                inet_ntop4((unsigned char *)&sa->sin_addr,  buf + ps, size - ps);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
             }
 #if JK_HAVE_IPV6
             else {
                 struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&rsaddr;
-                inet_ntop6((unsigned char *)&sa->sin6_addr, buf + ps, 64);
+                inet_ntop6((unsigned char *)&sa->sin6_addr, buf + ps, size - ps);
                 sprintf(pb, ":%d", (unsigned int)htons(sa->sin6_port));
             }
 #endif
-            strcat(buf, pb);
+            strncat(buf, pb, size - strlen(buf) - 1);
             return buf;
         }
     }
-    sprintf(buf, "errno=%d", errno);
+    snprintf(buf, size, "errno=%d", errno);
     return buf;
 }
 
@@ -1306,7 +1319,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     struct pollfd fds;
     int rc;
     int save_errno;
-    char buf[64];
+    char buf[DUMP_SINFO_BUF_SZ];
 
     JK_TRACE_ENTER(l);
 
@@ -1323,7 +1336,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
                    "timeout during poll on socket %d [%s] (timeout=%d)",
-                   sd, jk_dump_sinfo(sd, buf), timeout);
+                   sd, jk_dump_sinfo(sd, buf, sizeof(buf)), timeout);
         }
         /* Timeout. Set the errno to timeout */
         errno = ETIMEDOUT;
@@ -1335,7 +1348,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
                    "error during poll on socket %d [%s] (errno=%d)",
-                   sd, jk_dump_sinfo(sd, buf), errno);
+                   sd, jk_dump_sinfo(sd, buf, sizeof(buf)), errno);
         }
         errno = save_errno;
         JK_TRACE_EXIT(l);
@@ -1346,7 +1359,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
                    "error event during poll on socket %d [%s] (event=%d)",
-                   sd, jk_dump_sinfo(sd, buf), save_errno);
+                   sd, jk_dump_sinfo(sd, buf, sizeof(buf)), save_errno);
         }
         errno = save_errno;
         JK_TRACE_EXIT(l);
@@ -1363,7 +1376,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     struct timeval tv;
     int rc;
     int save_errno;
-    char buf[64];
+    char buf[DUMP_SINFO_BUF_SZ];
 
     JK_TRACE_ENTER(l);
 
@@ -1381,7 +1394,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
                    "timeout during select on socket %d [%s] (timeout=%d)",
-                   sd, jk_dump_sinfo(sd, buf), timeout);
+                   sd, jk_dump_sinfo(sd, buf, sizeof(buf)), timeout);
         }
         /* Timeout. Set the errno to timeout */
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
@@ -1397,7 +1410,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG,
                    "error during select on socket %d [%s] (errno=%d)",
-                   sd, jk_dump_sinfo(sd, buf), errno);
+                   sd, jk_dump_sinfo(sd, buf, sizeof(buf)), errno);
         }
         errno = save_errno;
         JK_TRACE_EXIT(l);

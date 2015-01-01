@@ -55,9 +55,9 @@ int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_log
 
 int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t *l);
 
-char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf);
+char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf, size_t size);
 
-char *jk_dump_sinfo(jk_sock_t sd, char *buf);
+char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size);
 
 int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l);
 

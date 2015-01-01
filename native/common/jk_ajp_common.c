@@ -1050,7 +1050,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         ae->last_errno = errno;
         jk_log(l, JK_LOG_INFO,
                "(%s) Failed opening socket to (%s) (errno=%d)",
-               ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
+               ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)),
                ae->last_errno);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
@@ -1323,7 +1323,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_log(l, JK_LOG_INFO,
                    "(%s) can't receive the response header message from tomcat, "
                    "tomcat (%s) has forced a connection close for socket %d",
-                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
+                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)),
                    ae->sd);
         }
         else {
@@ -1331,7 +1331,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_log(l, JK_LOG_INFO,
                    "(%s) can't receive the response header message from tomcat, "
                    "network problems or tomcat (%s) is down (errno=%d)",
-                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
+                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)),
                    ae->last_errno);
         }
         ajp_abort_endpoint(ae, JK_FALSE, l);
@@ -1347,13 +1347,13 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             if (header == AJP14_SW_HEADER) {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) received AJP14 reply on an AJP13 connection from %s",
-                       ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
+                       ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)));
             }
             else {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) wrong message format 0x%04x from %s",
                        ae->worker->name, header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
-                                             buf));
+                                             buf, sizeof(buf)));
             }
             /* We've got a protocol error.
              * We can't trust this connection any more.
@@ -1369,13 +1369,13 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             if (header == AJP13_SW_HEADER) {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) received AJP13 reply on an AJP14 connection from %s",
-                       ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
+                       ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)));
             }
             else {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) wrong message format 0x%04x from %s",
                        ae->worker->name, header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
-                                             buf));
+                                             buf, sizeof(buf)));
             }
             /* We've got a protocol error.
              * We can't trust this connection any more.
@@ -1393,7 +1393,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
         jk_log(l, JK_LOG_ERROR,
                "(%s) wrong message size %d %d from %s",
                ae->worker->name, msglen, msg->maxlen,
-               jk_dump_hinfo(&ae->worker->worker_inet_addr, buf));
+               jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)));
         /* We've got a protocol error.
          * We can't trust this connection any more.
          */
@@ -1418,7 +1418,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_log(l, JK_LOG_ERROR,
                    "(%s) can't receive the response body message from tomcat, "
                    "tomcat (%s) has forced a connection close for socket %d",
-                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
+                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)),
                    ae->sd);
         }
         else {
@@ -1426,7 +1426,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
             jk_log(l, JK_LOG_ERROR,
                    "(%s) can't receive the response body message from tomcat, "
                    "network problems or tomcat (%s) is down (errno=%d)",
-                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf),
+                   ae->worker->name, jk_dump_hinfo(&ae->worker->worker_inet_addr, buf, sizeof(buf)),
                    ae->last_errno);
         }
         ajp_abort_endpoint(ae, JK_FALSE, l);

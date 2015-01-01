@@ -153,6 +153,10 @@
         addresses via the status worker if the client encodes
         ":" as "%3A". Patch contributed by Christopher Schultz. (rjung)
       </fix>
+      <fix>
+        <bug>56452</bug>: Fix crash in debug logging for IPv6 adresses.
+        Patch contributed by Christopher Schultz. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

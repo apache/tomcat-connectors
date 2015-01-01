@@ -1732,10 +1732,10 @@ static void display_maps(jk_ws_service_t *s,
     JK_TRACE_EXIT(l);
 }
 
-static const char *dump_ajp_addr(ajp_worker_t *aw, char *buf)
+static const char *dump_ajp_addr(ajp_worker_t *aw, char *buf, size_t size)
 {
     if (aw->port > 0)
-        return jk_dump_hinfo(&aw->worker_inet_addr, buf);
+        return jk_dump_hinfo(&aw->worker_inet_addr, buf, size);
     else {
         if (aw->addr_sequence != aw->s->addr_sequence)
             return "unresolved";
@@ -1760,7 +1760,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                   aw->name,
                   status_worker_type(type),
                   aw->host,
-                  dump_ajp_addr(aw, buf),
+                  dump_ajp_addr(aw, buf, sizeof(buf)),
                   aw->cache_timeout,
                   aw->connect_timeout,
                   aw->prepost_timeout,
@@ -1772,7 +1772,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
         jk_printf(s, l, JK_STATUS_SHOW_AJP_CONF_ROW,
                   status_worker_type(type),
                   aw->host,
-                  dump_ajp_addr(aw, buf),
+                  dump_ajp_addr(aw, buf, sizeof(buf)),
                   aw->cache_timeout,
                   aw->connect_timeout,
                   aw->prepost_timeout,
@@ -1919,7 +1919,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         }
         jk_print_xml_att_string(s, l, off+2, "host", aw->host);
         jk_print_xml_att_int(s, l, off+2, "port", aw->port);
-        jk_print_xml_att_string(s, l, off+2, "address", dump_ajp_addr(aw, buf));
+        jk_print_xml_att_string(s, l, off+2, "address", dump_ajp_addr(aw, buf, sizeof(buf)));
         jk_print_xml_att_int(s, l, off+2, "connection_pool_timeout", aw->cache_timeout);
         jk_print_xml_att_int(s, l, off+2, "ping_timeout", aw->ping_timeout);
         jk_print_xml_att_int(s, l, off+2, "connect_timeout", aw->connect_timeout);
@@ -1987,7 +1987,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         }
         jk_printf(s, l, " host=%s", aw->host);
         jk_printf(s, l, " port=%d", aw->port);
-        jk_printf(s, l, " address=%s", dump_ajp_addr(aw, buf));
+        jk_printf(s, l, " address=%s", dump_ajp_addr(aw, buf, sizeof(buf)));
         jk_printf(s, l, " connection_pool_timeout=%d", aw->cache_timeout);
         jk_printf(s, l, " ping_timeout=%d", aw->ping_timeout);
         jk_printf(s, l, " connect_timeout=%d", aw->connect_timeout);
@@ -2052,7 +2052,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         }
         jk_print_prop_att_string(s, l, w, ajp_name, "host", aw->host);
         jk_print_prop_att_int(s, l, w, ajp_name, "port", aw->port);
-        jk_print_prop_att_string(s, l, w, ajp_name, "address", dump_ajp_addr(aw, buf));
+        jk_print_prop_att_string(s, l, w, ajp_name, "address", dump_ajp_addr(aw, buf, sizeof(buf)));
         jk_print_prop_att_int(s, l, w, ajp_name, "connection_pool_timeout", aw->cache_timeout);
         jk_print_prop_att_int(s, l, w, ajp_name, "ping_timeout", aw->ping_timeout);
         jk_print_prop_att_int(s, l, w, ajp_name, "connect_timeout", aw->connect_timeout);
