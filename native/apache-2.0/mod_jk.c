@@ -770,10 +770,7 @@ static void jk_error_exit(const char *file,
 
 static jk_uint64_t get_content_length(request_rec * r)
 {
-    if (r->clength > 0) {
-        return (jk_uint64_t)r->clength;
-    }
-    else if (r->main == NULL || r->main == r) {
+    if (r->main == NULL || r->main == r) {
         char *lenp = (char *)apr_table_get(r->headers_in, "Content-Length");
 
         if (lenp) {
