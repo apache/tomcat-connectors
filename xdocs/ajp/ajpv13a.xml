@@ -651,9 +651,10 @@ Details:
 <subsection name="End Response">
 <p>
   Signals the end of this request-handling cycle.  If the
-  <code>reuse</code> flag is true (==1), this TCP connection can now be used to
-  handle new incoming requests.  If <code>reuse</code> is true (anything
-  other than 0 in the actual C code), the connection should be closed.
+  <code>reuse</code> flag is true (anything other than 0 in the actual
+  C code), this TCP connection can now be used to handle new incoming
+  requests.  If <code>reuse</code> is false (==0), the connection
+  should be closed.
 </p>
 </subsection>
 
