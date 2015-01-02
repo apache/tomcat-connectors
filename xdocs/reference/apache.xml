@@ -369,6 +369,16 @@ The default value is "JK_LOCAL_NAME".
 <br/>
 This directive has been added in version 1.2.28 of mod_jk.
 </p></attribute>
+<attribute name="JkIgnoreCLIndicator" required="false"><p>
+Name of the Apache environment variable which forces to
+ignore an existing Content-Length request header. This can be
+used to make mod_jk conpatible with mod_deflate request body
+inflation (see <a href="#Advanced Environment Variables">below</a>).
+<br/>
+The default value is "JK_IGNORE_CL".
+<br/>
+This directive has been added in version 1.2.41 of mod_jk.
+</p></attribute>
 <attribute name="JkLocalAddrIndicator" required="false"><p>
 Name of the Apache environment variable which can be used to overwrite
 the forwarded local IP address.
@@ -1245,6 +1255,29 @@ If you set the environment variable <b>JK_STATELESS</b> for a request,
 then the request will not count as a new session, even if it does not
 come with a session id.
 This is available since version 1.2.33.
+</p>
+<p>
+The environment variable
+<b>JK_IGNORE_CL</b> can be set to force ignoring the request
+Content-Length header (if it exists). mod_jk will then stream
+the request body until the web server indicates that the full body
+was read. No Content-Length header will be send to the backend.
+This is available since version 1.2.41.
+</p>
+<p>
+This feature can be used to make mod_jk compatible with filters
+which change the size of the request body. One such filter is
+mod_deflate when used to inflate the body of a request with gzip
+encoded body. In this case mod_jk will by default forward a truncated
+body, because it gets the wrong body size from the web server.
+Telling mod_jk to ignore the Content-Length header will result
+in streaming all request body data it can read from the web server
+to the backend.
+</p>
+<p>
+You should only set the <b>JK_IGNORE_CL</b> environment variables
+for requests that actually need it. Unfortunately there's no way
+for mod_jk to detect the need automatically.
 </p>
 </subsection>
  </section>

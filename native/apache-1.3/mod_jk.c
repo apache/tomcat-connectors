@@ -73,6 +73,7 @@
 #define JK_ENV_LOCAL_NAME           ("JK_LOCAL_NAME")
 #define JK_ENV_LOCAL_ADDR           ("JK_LOCAL_ADDR")
 #define JK_ENV_LOCAL_PORT           ("JK_LOCAL_PORT")
+#define JK_ENV_IGNORE_CL            ("JK_IGNORE_CL")
 #define JK_ENV_HTTPS                ("HTTPS")
 #define JK_ENV_CERTS                ("SSL_CLIENT_CERT")
 #define JK_ENV_CIPHER               ("SSL_CIPHER")
@@ -184,6 +185,14 @@ typedef struct
     char *local_name_indicator;
     char *local_addr_indicator;
     char *local_port_indicator;
+
+    /*
+     * Configurable environment variable to force
+     * ignoring a request Content-Length header
+     * (useful to make mod_deflate request inflation
+     * compatible with mod_jk).
+     */
+    char *ignore_cl_indicator;
 
     /*
      * SSL Support
@@ -914,6 +923,11 @@ static int init_ws_service(apache_private_data_t * private_data,
     s->method = (char *)r->method;
     s->content_length = get_content_length(r);
     s->is_chunked = r->read_chunked;
+    if (s->content_length > 0 &&
+        get_env_string(r, NULL, conf->ignore_cl_indicator, 0) != NULL) {
+        s->content_length = 0;
+        s->is_chunked = 1;
+    }
     s->no_more_chunks = 0;
     s->query_string = r->args;
 
@@ -1063,6 +1077,7 @@ static int init_ws_service(apache_private_data_t * private_data,
         array_header *t = ap_table_elts(r->headers_in);
         if (t && t->nelts) {
             int i;
+            int off = 0;
             table_entry *elts = (table_entry *) t->elts;
             s->num_headers = t->nelts;
             /* allocate an extra header slot in case we need to add a content-length header */
@@ -1074,12 +1089,17 @@ static int init_ws_service(apache_private_data_t * private_data,
                 return JK_FALSE;
             for (i = 0; i < t->nelts; i++) {
                 char *hname = ap_pstrdup(r->pool, elts[i].key);
-                s->headers_values[i] = ap_pstrdup(r->pool, elts[i].val);
-                s->headers_names[i] = hname;
-                if (need_content_length_header &&
-                    !strcasecmp(s->headers_names[i], "content-length")) {
-                    need_content_length_header = JK_FALSE;
+                if (!strcasecmp(hname, "content-length")) {
+                    if (need_content_length_header) {
+                        need_content_length_header = JK_FALSE;
+                    } else if (s->is_chunked) {
+                        s->num_headers--;
+                        off++;
+                        continue;
+                    }
                 }
+                s->headers_values[i - off] = ap_pstrdup(r->pool, elts[i].val);
+                s->headers_names[i - off] = hname;
             }
             /* Add a content-length = 0 header if needed.
              * Ajp13 assumes an absent content-length header means an unknown,
@@ -2002,6 +2022,16 @@ static const char *jk_set_local_port_indicator(cmd_parms * cmd,
     return NULL;
 }
 
+static const char *jk_set_ignore_cl_indicator(cmd_parms * cmd,
+                                              void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->ignore_cl_indicator = ap_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
 /*
  * JkExtractSSL Directive Handling
  *
@@ -2419,6 +2449,9 @@ static const command_rec jk_cmds[] = {
      "Name of the Apache environment that contains the local IP address"},
     {"JkLocalPortIndicator", jk_set_local_port_indicator, NULL, RSRC_CONF, TAKE1,
      "Name of the Apache environment that contains the local port"},
+    {"JkIgnoreCLIndicator", jk_set_ignore_cl_indicator, NULL, RSRC_CONF, TAKE1,
+     "Name of the Apache environment that forces to ignore a request "
+     "Content-Length header"},
 
     /*
      * Apache has multiple SSL modules (for example apache_ssl, stronghold
@@ -2772,6 +2805,8 @@ static void *create_jk_config(ap_pool * p, server_rec * s)
         c->local_addr_indicator = JK_ENV_LOCAL_ADDR;
         c->local_port_indicator = JK_ENV_LOCAL_PORT;
 
+        c->ignore_cl_indicator = JK_ENV_IGNORE_CL;
+
         /*
          * By default we will try to gather SSL info.
          * Disable this functionality through JkExtractSSL
@@ -2850,6 +2885,9 @@ static void *merge_jk_config(ap_pool * p, void *basev, void *overridesv)
         overrides->local_name_indicator = base->local_name_indicator;
     if (!overrides->local_port_indicator)
         overrides->local_port_indicator = base->local_port_indicator;
+
+    if (!overrides->ignore_cl_indicator)
+        overrides->ignore_cl_indicator = base->ignore_cl_indicator;
 
     if (overrides->ssl_enable == JK_UNSET)
         overrides->ssl_enable = base->ssl_enable;

@@ -157,6 +157,13 @@
         <bug>56452</bug>: Fix crash in debug logging for IPv6 adresses.
         Patch contributed by Christopher Schultz. (rjung)
       </fix>
+      <fix>
+        <bug>34526</bug>: Apache: Improve compatibility with mod_deflate
+        request body inflation. An automatic detection of mod_deflate
+        inflation is not implemented. Use the new Apache environment variable
+        JK_IGNORE_CL instead, to let mod_jk ignore an existing Content-Length
+        request header. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
