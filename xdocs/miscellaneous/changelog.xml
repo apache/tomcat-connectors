@@ -164,6 +164,10 @@
         JK_IGNORE_CL instead, to let mod_jk ignore an existing Content-Length
         request header. (rjung)
       </fix>
+      <update>
+        <bug>44454</bug>: LB: Add warning to docs about problems with
+        "busyness" load balancing method. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>

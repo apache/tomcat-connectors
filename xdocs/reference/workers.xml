@@ -590,7 +590,8 @@ pick the worker with the lowest current load, based on how many requests the
 worker is currently serving. This number is divided by the workers lbfactor,
 and the lowest value (least busy) worker is picked. This method is especially
 interesting, if your request take a long time to process, like for a download
-application.
+application. The method is not recommended for general use, because under high
+load on some hardware architectures the busy counter can become wrong.
 </p>
 <p>
 This feature has been added in version <b>1.2.9</b>.
