@@ -168,6 +168,9 @@
         <bug>44454</bug>: LB: Add warning to docs about problems with
         "busyness" load balancing method. (rjung)
       </update>
+      <fix>
+        <bug>44454</bug>: Improve busy counter by using atomics. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

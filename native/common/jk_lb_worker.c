@@ -1310,6 +1310,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 int service_stat = JK_UNSET;
                 jk_uint64_t rd = 0;
                 jk_uint64_t wr = 0;
+                int busy;
                 /* Reset endpoint read and write sizes for
                  * this request.
                  */
@@ -1319,10 +1320,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     jk_shm_lock();
 
                 /* Increment the number of workers serving request */
-                p->worker->s->busy++;
-                rec->s->busy++;
-                if (p->worker->s->busy > p->worker->s->max_busy)
-                    p->worker->s->max_busy = p->worker->s->busy;
+                busy = JK_ATOMIC_INCREMENT(&(rec->s->busy));
+                busy = JK_ATOMIC_INCREMENT(&(p->worker->s->busy));
+                if (busy > p->worker->s->max_busy)
+                    p->worker->s->max_busy = busy;
                 if (p->worker->lbmethod == JK_LB_METHOD_REQUESTS ||
                     p->worker->lbmethod == JK_LB_METHOD_BUSYNESS ||
                     (!sessionid &&
@@ -1419,10 +1420,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                  * Check if the busy was reset to zero by graceful
                  * restart of the server.
                  */
-                if (p->worker->s->busy)
-                    p->worker->s->busy--;
-                if (rec->s->busy)
-                    rec->s->busy--;
+                JK_ATOMIC_DECREMENT(&(p->worker->s->busy));
+                JK_ATOMIC_DECREMENT(&(rec->s->busy));
                 if (service_stat == JK_TRUE) {
                     /*
                      * Successful request.

@@ -65,6 +65,7 @@
 #ifdef HAVE_APR
 #include "apr_lib.h"
 #include "apr_strings.h"
+#include "apr_atomic.h"
 #endif
 
 #include <stdio.h>
@@ -411,6 +412,36 @@ typedef int jk_sock_t;
 
 #ifdef AS400_UTF8
 #define strcasecmp(a,b) apr_strnatcasecmp(a,b)
+#endif
+
+/* Atomics */
+#if defined(WIN32)
+#define JK_ATOMIC_INCREMENT(x) InterlockedIncrement(x)
+#define JK_ATOMIC_DECREMENT(x) \
+    do {\
+        if (InterlockedDecrement(x) < 0) InterlockedIncrement(x);\
+    } while (0)
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1))
+#define JK_ATOMIC_INCREMENT(x) __sync_add_and_fetch(x, 1)
+#define JK_ATOMIC_DECREMENT(x) \
+    do {\
+        if (__sync_sub_and_fetch(x, 1) < 0) __sync_add_and_fetch(x, 1);\
+    } while (0)
+#elif defined(HAVE_APR)
+#define JK_ATOMIC_INCREMENT(x) ((int)apr_atomic_inc32((volatile apr_uint32_t *)x) + 1)
+#define JK_ATOMIC_DECREMENT(x) \
+    do {\
+        /* apr_atomic_add32 returns the *old* value */\
+        apr_uint32_t y;\
+        y = apr_atomic_add32((volatile apr_uint32_t *)x, -1);\
+        if (y == 0 || y > INT_MAX) apr_atomic_inc32((volatile apr_uint32_t *)x);\
+    } while (0)
+#else
+#define JK_ATOMIC_INCREMENT(x) (++(*x))
+#define JK_ATOMIC_DECREMENT(x) \
+    do {\
+        if (--(*x) < 0) (++(*x));\
+    } while (0)
 #endif
 
 /* IPV6 support */

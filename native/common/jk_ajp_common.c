@@ -2397,8 +2397,7 @@ static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_logg
 {
     aw->s->readed += e->rd;
     aw->s->transferred += e->wr;
-    if (aw->s->busy)
-        aw->s->busy--;
+    JK_ATOMIC_DECREMENT(&(aw->s->busy));
     if (rc == JK_TRUE) {
         aw->s->state = JK_AJP_STATE_OK;
     }
@@ -2464,6 +2463,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     int rc = JK_UNSET;
     char *msg = "";
     int retry_interval;
+    int busy;
 
     JK_TRACE_ENTER(l);
 
@@ -2561,11 +2561,11 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
         jk_log(l, JK_LOG_DEBUG, "processing %s with %d retries",
                aw->name, aw->retries);
     }
-    aw->s->busy++;
+    busy = JK_ATOMIC_INCREMENT(&(aw->s->busy));
     if (aw->s->state == JK_AJP_STATE_ERROR)
         aw->s->state = JK_AJP_STATE_PROBE;
-    if (aw->s->busy > aw->s->max_busy)
-        aw->s->max_busy = aw->s->busy;
+    if (busy > aw->s->max_busy)
+        aw->s->max_busy = busy;
     retry_interval = p->worker->retry_interval;
     for (i = 0; i < aw->retries; i++) {
         /* Reset reply message buffer for each retry
