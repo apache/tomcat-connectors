@@ -265,6 +265,7 @@ typedef struct dir_config_struct
 
 static server_rec *main_server = NULL;
 static jk_logger_t *main_log = NULL;
+static int main_log_is_piped = JK_FALSE;
 static table *jk_log_fds = NULL;
 static jk_worker_env_t worker_env;
 static char *jk_shm_file = NULL;
@@ -2968,6 +2969,15 @@ static int JK_METHOD jk_log_to_file(jk_logger_t *l, int level,
                              used, what);
             }
         }
+        else {
+            /* Can't use mod_jk log any more, log to error log instead.
+             * Choose APLOG_ERR, since we already checked above, that if
+             * the mod_jk log file would still be open, we would have
+             * actually logged the message there
+             */
+            ap_log_error(APLOG_MARK, APLOG_ERR | APLOG_NOERRNO, NULL,
+                         "%.*s", used, what);
+        }
 
         return JK_TRUE;
     }
@@ -2995,6 +3005,7 @@ static void open_jk_log(server_rec *s, pool *p)
     const char *fname;
     int jklogfd;
     piped_log *pl;
+    int is_piped = JK_FALSE;
     jk_logger_t *jkl;
     jk_file_logger_t *flp;
     jk_server_conf_t *conf =
@@ -3036,6 +3047,7 @@ static void open_jk_log(server_rec *s, pool *p)
                 exit(1);
             }
             jklogfd = ap_piped_log_write_fd(pl);
+            is_piped = JK_TRUE;
         }
         else {
             fname = ap_server_root_relative(p, conf->log_file);
@@ -3070,6 +3082,7 @@ static void open_jk_log(server_rec *s, pool *p)
         jk_set_time_fmt(conf->log, conf->stamp_format_string);
         if (main_log == NULL)
             main_log = conf->log;
+            main_log_is_piped = is_piped;
         return;
     }
 
@@ -3568,6 +3581,17 @@ static void jk_server_cleanup(void *data)
 static void jk_generic_cleanup(server_rec *s)
 {
 
+    /* If the main log is piped, we need to make sure
+     * it is no longer used. The external log process
+     * (e.g.  rotatelogs) will be gone now and the pipe will
+     * block, once the buffer gets full
+     */
+    if (main_log && main_log_is_piped && main_log->logger_private) {
+        jk_file_logger_t *p = main_log->logger_private;
+        if (p) {
+            p->log_fd = -1;
+        }
+    }
     if (jk_worker_properties) {
         jk_map_free(&jk_worker_properties);
         jk_worker_properties = NULL;
