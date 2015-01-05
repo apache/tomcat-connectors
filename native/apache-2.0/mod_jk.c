@@ -2888,6 +2888,7 @@ static int jk_handler(request_rec * r)
                            " for worker=%s",
                            worker_name);
                     rc = 0;       /* just to make sure that we know we've failed */
+                    is_error = HTTP_SERVICE_UNAVAILABLE;
                 }
             }
             else {

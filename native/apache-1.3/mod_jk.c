@@ -2682,6 +2682,13 @@ static int jk_handler(request_rec * r)
                         }
                     }
                 }
+                else {
+                    jk_log(conf->log, JK_LOG_ERROR, "Could not get endpoint"
+                           " for worker=%s",
+                           STRNULL_FOR_NULL(worker_name));
+                    rc = 0;       /* just to make sure that we know we've failed */
+                    is_error = HTTP_SERVICE_UNAVAILABLE;
+                }
 #ifndef NO_GETTIMEOFDAY
                 gettimeofday(&tv_end, NULL);
                 if (tv_end.tv_usec < tv_begin.tv_usec) {

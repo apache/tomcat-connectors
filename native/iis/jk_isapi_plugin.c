@@ -2337,9 +2337,12 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
             e->done(&e, logger);
         }
         else {
+            int is_error = JK_HTTP_SERVER_BUSY;
             jk_log(logger, JK_LOG_ERROR,
                 "Failed to obtain an endpoint to service request - "
                 "your connection_pool_size is probably less than the threads in your web server!");
+            lpEcb->dwHttpStatusCode = is_error;
+            write_error_message(lpEcb, is_error, private_data.err_hdrs);
         }
     }
     else {

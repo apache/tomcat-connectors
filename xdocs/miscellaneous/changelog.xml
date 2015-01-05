@@ -176,6 +176,10 @@
         and for mod_jk (Apache) currectly count down connections closed
         by child processes that are stopped. (rjung)
       </fix>
+      <fix>
+        <bug>44571</bug>: Ensure that we return with status 503 if we
+        can not get and endpoint for a worker. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
