@@ -2638,9 +2638,17 @@ static const command_rec jk_cmds[] = {
 /* The JK module handlers                                                    */
 /* ========================================================================= */
 
-/** Util - cleanup shmem.
+/** Util - cleanup for all processes.
  */
-static apr_status_t jk_cleanup_shmem(void *data)
+static apr_status_t jk_cleanup_proc(void *data)
+{
+    jk_shm_close(main_log);
+    return APR_SUCCESS;
+}
+
+/** Util - cleanup for child processes.
+ */
+static apr_status_t jk_cleanup_child(void *data)
 {
     /* Force the watchdog thread exit */
     if (jk_watchdog_interval > 0) {
@@ -2648,8 +2656,7 @@ static apr_status_t jk_cleanup_shmem(void *data)
         while (jk_watchdog_running)
             apr_sleep(apr_time_from_sec(1));
     }
-    jk_shm_close(main_log);
-    return APR_SUCCESS;
+    return jk_cleanup_proc(data);
 }
 
 /** Main service method, called to forward a request to tomcat
@@ -3386,7 +3393,7 @@ static void jk_child_init(apr_pool_t * pconf, server_rec * s)
     }
 
     if ((rc = jk_shm_attach(jk_shm_file, jk_shm_size, conf->log)) == 0) {
-        apr_pool_cleanup_register(pconf, conf->log, jk_cleanup_shmem,
+        apr_pool_cleanup_register(pconf, conf->log, jk_cleanup_child,
                                   apr_pool_cleanup_null);
     }
     else {
@@ -3490,7 +3497,7 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
     }
     if ((rc = jk_shm_open(jk_shm_file, jk_shm_size, conf->log)) == 0) {
         apr_pool_cleanup_register(pconf, conf->log,
-                                  jk_cleanup_shmem,
+                                  jk_cleanup_proc,
                                   apr_pool_cleanup_null);
     }
     else {
