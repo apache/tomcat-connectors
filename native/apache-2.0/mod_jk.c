@@ -3200,8 +3200,8 @@ static int JK_METHOD jk_log_to_file(jk_logger_t *l, int level,
                 char error[256];
                 apr_strerror(rv, error, 254);
                 ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL,
-                             "mod_jk: jk_log_to_file %s failed: %s",
-                             what, error);
+                             "mod_jk: jk_log_to_file %.*s failed: %s",
+                             used, what, error);
             }
             rv = apr_global_mutex_unlock(jk_log_lock);
             if (rv != APR_SUCCESS) {

@@ -2964,8 +2964,8 @@ static int JK_METHOD jk_log_to_file(jk_logger_t *l, int level,
             what[used++] = '\n';
             if (write(log_fd, what, used) < 0 ) {
                 ap_log_error(APLOG_MARK, APLOG_ERR | APLOG_NOERRNO, NULL,
-                             "mod_jk: jk_log_to_file %s failed",
-                             what);
+                             "mod_jk: jk_log_to_file %.*s failed",
+                             used, what);
             }
         }
 
