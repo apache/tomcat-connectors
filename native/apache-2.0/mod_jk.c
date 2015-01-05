@@ -2668,6 +2668,7 @@ static apr_status_t jk_cleanup_child(void *data)
         while (jk_watchdog_running)
             apr_sleep(apr_time_from_sec(1));
     }
+    wc_shutdown(main_log);
     return jk_cleanup_proc(data);
 }
 

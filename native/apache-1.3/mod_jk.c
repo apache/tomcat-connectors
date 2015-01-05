@@ -3543,6 +3543,7 @@ static int jk_fixups(request_rec * r)
 
 static void child_exit_handler(server_rec * s, ap_pool * p)
 {
+    wc_shutdown(main_log);
     /* srevilak - refactor cleanup body to jk_generic_cleanup() */
     jk_generic_cleanup(s);
     jk_shm_close(main_log);

@@ -777,6 +777,29 @@ static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, jk_logger_t *l
     return JK_TRUE;
 }
 
+static int JK_METHOD shutdown_workers(jk_worker_t *p, jk_logger_t *l)
+{
+    unsigned int i = 0;
+
+    JK_TRACE_ENTER(l);
+    if (p && p->worker_private) {
+        lb_worker_t *lb = (lb_worker_t *)p->worker_private;
+
+        for (i = 0; i < lb->num_of_workers; i++) {
+            if (lb->lb_workers[i].worker->shutdown) {
+                lb->lb_workers[i].worker->shutdown(lb->lb_workers[i].worker, l);
+            }
+        }
+
+    }
+    else {
+        JK_LOG_NULL_PARAMS(l);
+    }
+
+    JK_TRACE_EXIT(l);
+    return JK_TRUE;
+}
+
 static int find_by_session(jk_ws_service_t *s,
                            lb_worker_t *p,
                            const char *session_route,
@@ -2005,6 +2028,7 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
         private_data->worker.get_endpoint = get_endpoint;
         private_data->worker.destroy = destroy;
         private_data->worker.maintain = maintain_workers;
+        private_data->worker.shutdown = shutdown_workers;
         private_data->recover_wait_time = WAIT_BEFORE_RECOVER;
         private_data->error_escalation_time = private_data->recover_wait_time / 2;
         private_data->max_reply_timeouts = 0;

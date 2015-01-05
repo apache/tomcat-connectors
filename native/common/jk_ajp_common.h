@@ -468,6 +468,8 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
 
 int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t now, jk_logger_t *l);
 
+int JK_METHOD ajp_shutdown(jk_worker_t *pThis, jk_logger_t *l);
+
 void jk_ajp_get_cping_text(int mode, char *buf);
 int jk_ajp_get_cping_mode(const char *m, int def);
 

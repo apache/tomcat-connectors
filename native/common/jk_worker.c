@@ -28,6 +28,9 @@
 #include "jk_util.h"
 #include "jk_mt.h"
 
+#define JK_WORKER_SHUTDOWN_WAIT 100
+#define JK_WORKER_SHUTDOWN_COUNT 10
+
 static void close_workers(jk_logger_t *l);
 
 static worker_factory get_factory_for(const char *type);
@@ -39,6 +42,7 @@ static int build_worker_map(jk_map_t *init_data,
 
 /* Global worker list */
 static jk_map_t *worker_map;
+static int running_maintain = 0;
 #if _MT_CODE
 static JK_CRIT_SEC worker_lock;
 #endif
@@ -311,7 +315,6 @@ const char *wc_get_name_for_type(int type, jk_logger_t *l)
 void wc_maintain(jk_logger_t *l)
 {
     static time_t last_maintain = 0;
-    static int    running_maintain = 0;
     int sz = jk_map_size(worker_map);
 
     JK_TRACE_ENTER(l);
@@ -352,6 +355,40 @@ void wc_maintain(jk_logger_t *l)
         last_maintain = time(NULL);
         running_maintain = 0;
         JK_LEAVE_CS(&worker_lock);
+    }
+    JK_TRACE_EXIT(l);
+}
+
+void wc_shutdown(jk_logger_t *l)
+{
+    int sz = jk_map_size(worker_map);
+
+    JK_TRACE_ENTER(l);
+
+    if (sz > 0) {
+        int i;
+
+        i = JK_WORKER_SHUTDOWN_COUNT;
+        while (running_maintain && i > 0) {
+            jk_sleep(JK_WORKER_SHUTDOWN_WAIT);
+            i--;
+        }
+        if (running_maintain)
+            jk_log(l, JK_LOG_WARNING,
+                   "Worker maintain still running while shutting down worker %s",
+                   jk_map_name_at(worker_map, i));
+        running_maintain = 1;
+
+        for (i = 0; i < sz; i++) {
+            jk_worker_t *w = jk_map_value_at(worker_map, i);
+            if (w && w->shutdown) {
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
+                           "Shutting down worker %s",
+                           jk_map_name_at(worker_map, i));
+                w->shutdown(w, l);
+            }
+        }
     }
     JK_TRACE_EXIT(l);
 }

@@ -49,6 +49,8 @@ int wc_create_worker(const char *name, int use_map,
 
 void wc_maintain(jk_logger_t *l);
 
+void wc_shutdown(jk_logger_t *l);
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

@@ -546,6 +546,11 @@ struct jk_worker
      */
     int (JK_METHOD * maintain) (jk_worker_t *w, time_t now, jk_logger_t *l);
 
+    /*
+     * Shut this worker down.
+     */
+    int (JK_METHOD * shutdown) (jk_worker_t *w, jk_logger_t *l);
+
 };
 
 /*

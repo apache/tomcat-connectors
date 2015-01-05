@@ -3124,6 +3124,7 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
     aw->worker.worker_private = aw;
 
     aw->worker.maintain = ajp_maintain;
+    aw->worker.shutdown = ajp_shutdown;
 
     aw->logon = NULL;
 
@@ -3458,6 +3459,49 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
                    "(%s) pinged %u sockets in %d seconds from %u pool slots",
                    aw->name, k, (int)(difftime(time(NULL), mstarted)),
                    aw->ep_cache_sz);
+        JK_TRACE_EXIT(l);
+        return JK_TRUE;
+    }
+    else {
+        JK_LOG_NULL_PARAMS(l);
+    }
+
+    JK_TRACE_EXIT(l);
+    return JK_FALSE;
+}
+
+int JK_METHOD ajp_shutdown(jk_worker_t *pThis, jk_logger_t *l)
+{
+    JK_TRACE_ENTER(l);
+
+    if (pThis && pThis->worker_private) {
+        ajp_worker_t *aw = pThis->worker_private;
+        int i;
+        unsigned int n = 0;
+
+        JK_ENTER_CS(&aw->cs);
+        for (i = (int)aw->ep_cache_sz - 1;
+                i >= 0; i--) {
+            /* Skip the closed sockets
+             */
+            if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
+                IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
+                n++;
+                aw->ep_cache[i]->reuse = JK_FALSE;
+                aw->ep_cache[i]->hard_close = JK_TRUE;
+                ajp_reset_endpoint(aw->ep_cache[i], l);
+                aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
+                           "(%s) shut down pool slot=%d",
+                           aw->name, i);
+            }
+        }
+        JK_LEAVE_CS(&aw->cs);
+        if (n && JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
+                   "(%s) shut down %u sockets from %u pool slots",
+                   aw->name, n, aw->ep_cache_sz);
         JK_TRACE_EXIT(l);
         return JK_TRUE;
     }
