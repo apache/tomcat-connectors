@@ -818,7 +818,7 @@ static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_logger_t *l
                 jk_shutdown_socket(ae->sd, l);
             }
         }
-        ae->worker->s->connected--;
+        JK_ATOMIC_DECREMENT(&(ae->worker->s->connected));
         ae->sd = JK_INVALID_SOCKET;
     }
     ae->last_op = JK_AJP13_END_RESPONSE;
@@ -856,9 +856,9 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
                ae->worker->name, ae->sd, ae->reuse ? "" : " (socket shutdown)");
     if (IS_VALID_SOCKET(ae->sd)) {
         jk_shutdown_socket(ae->sd, l);
-        ae->worker->s->connected--;
+        JK_ATOMIC_DECREMENT(&(ae->worker->s->connected));
+        ae->sd = JK_INVALID_SOCKET;
     }
-    ae->sd = JK_INVALID_SOCKET;
     jk_close_pool(&(ae->pool));
     free(ae);
     JK_TRACE_EXIT(l);
@@ -884,11 +884,9 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
      */
     if (IS_VALID_SOCKET(ae->sd)) {
         jk_shutdown_socket(ae->sd, l);
-        ae->worker->s->connected--;
+        JK_ATOMIC_DECREMENT(&(ae->worker->s->connected));
+        ae->sd = JK_INVALID_SOCKET;
     }
-    /* Mark existing endpoint socket as closed
-     */
-    ae->sd = JK_INVALID_SOCKET;
     JK_ENTER_CS(&aw->cs);
     for (i = 0; i < aw->ep_cache_sz; i++) {
         /* Find cache slot with usable socket
@@ -1036,6 +1034,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 {
     char buf[64];
     int rc = JK_TRUE;
+    int connected;
 
     JK_TRACE_ENTER(l);
 
@@ -1055,11 +1054,11 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    ae->worker->s->connected++;
+    connected = JK_ATOMIC_INCREMENT(&(ae->worker->s->connected));
     /* Update maximum number of connections
     */
-    if (ae->worker->s->connected > ae->worker->s->max_connected)
-        ae->worker->s->max_connected = ae->worker->s->connected;  
+    if (connected > ae->worker->s->max_connected)
+        ae->worker->s->max_connected = connected;  
     /* set last_access only if needed
      */
     if (ae->worker->cache_timeout > 0)
@@ -1153,7 +1152,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
                     aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                     aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
                     jk_shutdown_socket(sd, l);
-                    aw->s->connected--;
+                    JK_ATOMIC_DECREMENT(&(aw->s->connected));
                 }
             }
             jk_clone_sockaddr(&(aw->worker_inet_addr), &inet_addr);
@@ -1215,7 +1214,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
                 aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                 aw->ep_cache[i]->addr_sequence = aw->addr_sequence;
                 jk_shutdown_socket(sd, l);
-                aw->s->connected--;
+                JK_ATOMIC_DECREMENT(&(aw->s->connected));
             }
         }
         JK_LEAVE_CS(&aw->cs);
@@ -3443,9 +3442,9 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
          * called from the watchdog thread.
          */
         for (m = 0; m < m_count; m++) {
-            if (m_sock[m] != JK_INVALID_SOCKET) {
+            if (IS_VALID_SOCKET(m_sock[m])) {
                 jk_shutdown_socket(m_sock[m], l);
-                aw->s->connected--;
+                JK_ATOMIC_DECREMENT(&(aw->s->connected));
             }
         }
         free(m_sock);

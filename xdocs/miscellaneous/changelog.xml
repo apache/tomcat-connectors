@@ -171,6 +171,11 @@
       <fix>
         <bug>44454</bug>: Improve busy counter by using atomics. (rjung)
       </fix>
+      <fix>
+        <bug>56703</bug>: Status: Improve connected counter. Use atomics
+        and for mod_jk (Apache) currectly count down connections closed
+        by child processes that are stopped. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
