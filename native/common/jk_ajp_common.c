@@ -3321,7 +3321,6 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
 
     if (pThis && pThis->worker_private) {
         ajp_worker_t *aw = pThis->worker_private;
-        time_t now = mstarted;
         int i;
         long delta;
         unsigned int n = 0, k = 0, cnt = 0;
@@ -3409,7 +3408,7 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
                  */
                 if (IS_SLOT_AVAIL(aw->ep_cache[i]) &&
                     IS_VALID_SOCKET(aw->ep_cache[i]->sd)) {
-                    int elapsed = (int)difftime(now, aw->ep_cache[i]->last_access);
+                    int elapsed = (int)difftime(mstarted, aw->ep_cache[i]->last_access);
                     if (elapsed > aw->conn_ping_interval) {
                         k++;
                         /* handle cping/cpong.
@@ -3427,10 +3426,6 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
                             m_sock[m_count++] = aw->ep_cache[i]->sd;
                             aw->ep_cache[i]->sd = JK_INVALID_SOCKET;
                             ajp_reset_endpoint(aw->ep_cache[i], l);
-                        }
-                        else {
-                            now = time(NULL);
-                            aw->ep_cache[i]->last_access = now;
                         }
                     }
                 }

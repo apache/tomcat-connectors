@@ -184,6 +184,11 @@
         Apache: Improve log handling during graceful or normal restart.
         (rjung)
       </fix>
+      <fix>
+        Don't update last access time of worker connections during optional
+        checking of idle connections using CPing. Updating the time stamp
+        breaks closing idle connections. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
