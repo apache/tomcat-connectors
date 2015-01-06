@@ -3443,15 +3443,10 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
             }
         }
         free(m_sock);
-        if (n && JK_IS_DEBUG_LEVEL(l))
+        if ((k + n) && JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                   "(%s) recycled %u sockets in %d seconds from %u pool slots",
-                   aw->name, n, (int)(difftime(time(NULL), mstarted)),
-                   aw->ep_cache_sz);
-        if (k && JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG,
-                   "(%s) pinged %u sockets in %d seconds from %u pool slots",
-                   aw->name, k, (int)(difftime(time(NULL), mstarted)),
+                   "(%s) pinged %u and recycled %u sockets in %d seconds from %u pool slots",
+                   aw->name, k, n, (int)(difftime(time(NULL), mstarted)),
                    aw->ep_cache_sz);
         JK_TRACE_EXIT(l);
         return JK_TRUE;

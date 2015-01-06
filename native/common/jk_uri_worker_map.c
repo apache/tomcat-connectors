@@ -1074,6 +1074,8 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     int reject_unsafe;
     int collapse_slashes;
     int rv = -1;
+    size_t uri_len;
+    size_t remain;
     char  url[JK_MAX_URI_LEN+1];
 
     JK_TRACE_ENTER(l);
@@ -1142,11 +1144,13 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     /* Make the copy of the provided uri and strip
      * everything after the first ';' char.
      */
-    for (i = 0; i < strlen(uri); i++) {
-        if (i == JK_MAX_URI_LEN) {
+    uri_len = strlen(uri);
+    remain = JK_MAX_URI_LEN - vhost_len;
+    for (i = 0; i < uri_len; i++) {
+        if (i == remain) {
             jk_log(l, JK_LOG_WARNING,
                    "URI %s is invalid. URI must be smaller than %d chars",
-                   uri, JK_MAX_URI_LEN);
+                   uri, remain);
             JK_TRACE_EXIT(l);
             return NULL;
         }
