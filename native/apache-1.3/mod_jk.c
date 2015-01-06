@@ -137,7 +137,6 @@ typedef struct
      * Log stuff
      */
     char *log_file;
-    int log_fd;
     int log_level;
     jk_logger_t *log;
 
@@ -265,7 +264,6 @@ typedef struct dir_config_struct
 
 static server_rec *main_server = NULL;
 static jk_logger_t *main_log = NULL;
-static int main_log_is_piped = JK_FALSE;
 static table *jk_log_fds = NULL;
 static jk_worker_env_t worker_env;
 static char *jk_shm_file = NULL;
@@ -2778,7 +2776,6 @@ static void *create_jk_config(ap_pool * p, server_rec * s)
     jk_server_conf_t *c =
         (jk_server_conf_t *) ap_pcalloc(p, sizeof(jk_server_conf_t));
 
-    c->log_fd = -1;
     c->mountcopy = JK_FALSE;
     c->was_initialized = JK_FALSE;
 
@@ -3012,7 +3009,6 @@ static void open_jk_log(server_rec *s, pool *p)
     const char *fname;
     int jklogfd;
     piped_log *pl;
-    int is_piped = JK_FALSE;
     jk_logger_t *jkl;
     jk_file_logger_t *flp;
     jk_server_conf_t *conf =
@@ -3054,7 +3050,6 @@ static void open_jk_log(server_rec *s, pool *p)
                 exit(1);
             }
             jklogfd = ap_piped_log_write_fd(pl);
-            is_piped = JK_TRUE;
         }
         else {
             fname = ap_server_root_relative(p, conf->log_file);
@@ -3077,19 +3072,21 @@ static void open_jk_log(server_rec *s, pool *p)
         }
         log_fd_set(p, conf->log_file, jklogfd);
     }
-    conf->log_fd = jklogfd;
     jkl = (jk_logger_t *)ap_palloc(p, sizeof(jk_logger_t));
     flp = (jk_file_logger_t *)ap_palloc(p, sizeof(jk_file_logger_t));
     if (jkl && flp) {
         jkl->log = jk_log_to_file;
         jkl->level = conf->log_level;
         jkl->logger_private = flp;
-        flp->log_fd = conf->log_fd;
+        flp->log_fd = jklogfd;
+        if (*conf->log_file == '|')
+            flp->is_piped = JK_TRUE;
+        else
+            flp->is_piped = JK_FALSE;
         conf->log = jkl;
         jk_set_time_fmt(conf->log, conf->stamp_format_string);
         if (main_log == NULL)
             main_log = conf->log;
-            main_log_is_piped = is_piped;
         return;
     }
 
@@ -3550,10 +3547,27 @@ static int jk_fixups(request_rec * r)
 
 static void child_exit_handler(server_rec * s, ap_pool * p)
 {
-    wc_shutdown(main_log);
+    /* If the main log is piped, we need to make sure
+     * it is no longer used. The external log process
+     * (e.g. rotatelogs) will be gone now and the pipe will
+     * block, once the buffer gets full. Setting
+     * log_fd to -1 makes logging switch to error log.
+     */
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config,
+                                                  &jk_module);
+    jk_logger_t *l = conf->log;
+    if (l && l->logger_private) {
+        jk_file_logger_t *p = l->logger_private;
+        if (p && p->is_piped == JK_TRUE) {
+            p->log_fd = -1;
+            p->is_piped = JK_FALSE;
+        }
+    }
+    wc_shutdown(l);
     /* srevilak - refactor cleanup body to jk_generic_cleanup() */
     jk_generic_cleanup(s);
-    jk_shm_close(main_log);
+    jk_shm_close(l);
 }
 
 static void child_init_handler(server_rec * s, ap_pool * p)
@@ -3578,8 +3592,26 @@ static void child_init_handler(server_rec * s, ap_pool * p)
 /** srevilak -- registered as a cleanup handler in jk_init */
 static void jk_server_cleanup(void *data)
 {
-    jk_generic_cleanup((server_rec *) data);
-    jk_shm_close(main_log);
+    /* If the main log is piped, we need to make sure
+     * it is no longer used. The external log process
+     * (e.g. rotatelogs) will be gone now and the pipe will
+     * block, once the buffer gets full. Setting
+     * log_fd to -1 makes logging switch to error log.
+     */
+    server_rec *s = (server_rec *) data;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config,
+                                                  &jk_module);
+    jk_logger_t *l = conf->log;
+    if (l && l->logger_private) {
+        jk_file_logger_t *p = l->logger_private;
+        if (p && p->is_piped == JK_TRUE) {
+            p->log_fd = -1;
+            p->is_piped = JK_FALSE;
+        }
+    }
+    jk_generic_cleanup(s);
+    jk_shm_close(l);
 }
 
 
@@ -3589,17 +3621,6 @@ static void jk_server_cleanup(void *data)
 static void jk_generic_cleanup(server_rec *s)
 {
 
-    /* If the main log is piped, we need to make sure
-     * it is no longer used. The external log process
-     * (e.g.  rotatelogs) will be gone now and the pipe will
-     * block, once the buffer gets full
-     */
-    if (main_log && main_log_is_piped && main_log->logger_private) {
-        jk_file_logger_t *p = main_log->logger_private;
-        if (p) {
-            p->log_fd = -1;
-        }
-    }
     if (jk_worker_properties) {
         jk_map_free(&jk_worker_properties);
         jk_worker_properties = NULL;

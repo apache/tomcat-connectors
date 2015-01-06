@@ -57,6 +57,7 @@ struct jk_file_logger_t
     void *jklogfp;
     /* For Apache 1.3 piped logging */
     int log_fd;
+    int is_piped;
 };
 
 /* Level like Java tracing, but available only

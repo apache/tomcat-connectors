@@ -169,7 +169,6 @@ typedef struct
     char *log_file;
     int log_level;
     jk_logger_t *log;
-    apr_file_t *jklogfp;
 
     /*
      * Mount stuff
@@ -276,7 +275,6 @@ typedef struct apache_private_data apache_private_data_t;
 
 static server_rec *main_server = NULL;
 static jk_logger_t *main_log = NULL;
-static int main_log_is_piped = JK_FALSE;
 static apr_hash_t *jk_log_fps = NULL;
 static jk_worker_env_t worker_env;
 static apr_global_mutex_t *jk_log_lock = NULL;
@@ -2645,16 +2643,19 @@ static apr_status_t jk_cleanup_proc(void *data)
 {
     /* If the main log is piped, we need to make sure
      * it is no longer used. The external log process
-     * (e.g.  rotatelogs) will be gone now and the pipe will
-     * block, once the buffer gets full
+     * (e.g. rotatelogs) will be gone now and the pipe will
+     * block, once the buffer gets full. NULLing
+     * jklogfp makes logging switch to error log.
      */
-    if (main_log && main_log_is_piped && main_log->logger_private) {
-        jk_file_logger_t *p = main_log->logger_private;
-        if (p) {
+    jk_logger_t *l = (jk_logger_t *)data;
+    if (l && l->logger_private) {
+        jk_file_logger_t *p = l->logger_private;
+        if (p && p->is_piped == JK_TRUE) {
             p->jklogfp = NULL;
+            p->is_piped = JK_FALSE;
         }
     }
-    jk_shm_close(main_log);
+    jk_shm_close(l);
     return APR_SUCCESS;
 }
 
@@ -2662,13 +2663,27 @@ static apr_status_t jk_cleanup_proc(void *data)
  */
 static apr_status_t jk_cleanup_child(void *data)
 {
+    /* If the main log is piped, we need to make sure
+     * it is no longer used. The external log process
+     * (e.g. rotatelogs) will be gone now and the pipe will
+     * block, once the buffer gets full. NULLing
+     * jklogfp makes logging switch to error log.
+     */
+    jk_logger_t *l = (jk_logger_t *)data;
+    if (l && l->logger_private) {
+        jk_file_logger_t *p = l->logger_private;
+        if (p && p->is_piped == JK_TRUE) {
+            p->jklogfp = NULL;
+            p->is_piped = JK_FALSE;
+        }
+    }
     /* Force the watchdog thread exit */
     if (jk_watchdog_interval > 0) {
         jk_watchdog_interval = 0;
         while (jk_watchdog_running)
             apr_sleep(apr_time_from_sec(1));
     }
-    wc_shutdown(main_log);
+    wc_shutdown(l);
     return jk_cleanup_proc(data);
 }
 
@@ -3272,7 +3287,6 @@ static int open_jklog(server_rec * s, apr_pool_t * p)
     apr_status_t rc;
     apr_file_t *jklogfp;
     piped_log *pl;
-    int is_piped = JK_FALSE;
     jk_logger_t *jkl;
     jk_file_logger_t *flp;
     int jklog_flags = (APR_WRITE | APR_APPEND | APR_CREATE);
@@ -3305,7 +3319,6 @@ static int open_jklog(server_rec * s, apr_pool_t * p)
                 return -1;
             }
             jklogfp = (void *)ap_piped_log_write_fd(pl);
-            is_piped = JK_TRUE;
         }
         else {
             fname = ap_server_root_relative(p, conf->log_file);
@@ -3325,19 +3338,21 @@ static int open_jklog(server_rec * s, apr_pool_t * p)
         apr_file_inherit_set(jklogfp);
         apr_hash_set(jk_log_fps, conf->log_file, APR_HASH_KEY_STRING, jklogfp);
     }
-    conf->jklogfp = jklogfp;
     jkl = (jk_logger_t *)apr_palloc(p, sizeof(jk_logger_t));
     flp = (jk_file_logger_t *) apr_palloc(p, sizeof(jk_file_logger_t));
     if (jkl && flp) {
         jkl->log = jk_log_to_file;
         jkl->level = conf->log_level;
         jkl->logger_private = flp;
-        flp->jklogfp = conf->jklogfp;
+        flp->jklogfp = jklogfp;
+        if (*conf->log_file == '|')
+            flp->is_piped = JK_TRUE;
+        else
+            flp->is_piped = JK_FALSE;
         conf->log = jkl;
         jk_set_time_fmt(conf->log, conf->stamp_format_string);
         if (main_log == NULL) {
             main_log = conf->log;
-            main_log_is_piped = is_piped;
 
             /* hgomez@20070425 */
             /* Shouldn't we clean both conf->log and main_log ?                   */
