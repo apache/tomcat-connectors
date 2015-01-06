@@ -1402,15 +1402,16 @@ int jk_get_worker_fail_on_status(jk_map_t *m, const char *wname,
                                  int **list, unsigned int *list_size)
 {
     char buf[PARAM_BUFFER_SIZE];
+    int *ar;
 
     if (!m || !wname || !list || !list_size) {
         return 0;
     }
     MAKE_WORKER_PARAM(STATUS_FAIL_OF_WORKER);
-    int *ar = jk_map_get_int_list(m,
-                                  buf,
-                                  list_size,
-                                  NULL);
+    ar = jk_map_get_int_list(m,
+                             buf,
+                             list_size,
+                             NULL);
     if (ar) {
         *list = ar;
         return JK_TRUE;
