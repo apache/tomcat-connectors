@@ -180,6 +180,10 @@
         <bug>44571</bug>: Ensure that we return with status 503 if we
         can not get and endpoint for a worker. (rjung)
       </fix>
+      <fix>
+        Apache: Improve log handling during graceful or normal restart.
+        (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
