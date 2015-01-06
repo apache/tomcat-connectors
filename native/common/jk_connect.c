@@ -831,8 +831,18 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
 #ifndef MAX_SECS_TO_LINGER
 #define MAX_SECS_TO_LINGER 2
 #endif
-#define MS_TO_LINGER  500
-#define MS_TO_LINGER_LAST 2
+
+#ifndef MS_TO_LINGER
+#define MS_TO_LINGER  100
+#endif
+
+#ifndef MS_TO_LINGER_LAST
+#define MS_TO_LINGER_LAST 20
+#endif
+
+#ifndef MAX_READ_RETRY
+#define MAX_READ_RETRY 10
+#endif
 
 #ifndef MAX_LINGER_BYTES
 #define MAX_LINGER_BYTES 32768
@@ -908,7 +918,9 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
             /* Do a restartable read on the socket
              * draining out all the data currently in the socket buffer.
              */
+            int num = 0;
             do {
+                num++;
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
                 rc = recv(sd, &dummy[0], sizeof(dummy), 0);
                 if (JK_IS_SOCKET_ERROR(rc))
@@ -918,7 +930,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
 #endif
                 if (rc > 0)
                     rp += rc;
-            } while (JK_IS_SOCKET_ERROR(rc) && (errno == EINTR || errno == EAGAIN));
+            } while (JK_IS_SOCKET_ERROR(rc) && (errno == EINTR || errno == EAGAIN) && num < MAX_READ_RETRY);
 
             if (rc < 0) {
                 /* Read failed.

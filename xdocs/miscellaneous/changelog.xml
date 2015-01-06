@@ -189,6 +189,9 @@
         checking of idle connections using CPing. Updating the time stamp
         breaks closing idle connections. (rjung)
       </fix>
+      <fix>
+        Adjust linger parameters used during connection shutdown. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
