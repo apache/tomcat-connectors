@@ -4397,6 +4397,7 @@ static int reset_worker(jk_ws_service_t *s,
                 aw->s->transferred      = 0;
                 aw->s->readed           = 0;
                 aw->s->max_busy         = 0;
+                aw->s->max_connected    = 0;
                 aw->s->last_reset       = now;
             }
             JK_TRACE_EXIT(l);
@@ -4426,6 +4427,7 @@ static int reset_worker(jk_ws_service_t *s,
             aw->s->transferred      = 0;
             aw->s->readed           = 0;
             aw->s->max_busy         = 0;
+            aw->s->max_connected    = 0;
             aw->s->last_reset       = now;
             JK_TRACE_EXIT(l);
             return JK_TRUE;
@@ -4446,6 +4448,7 @@ static int reset_worker(jk_ws_service_t *s,
             aw->s->transferred      = 0;
             aw->s->readed           = 0;
             aw->s->max_busy         = 0;
+            aw->s->max_connected    = 0;
             aw->s->last_reset       = now;
             JK_TRACE_EXIT(l);
             return JK_TRUE;
