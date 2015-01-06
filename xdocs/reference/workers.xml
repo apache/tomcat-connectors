@@ -527,7 +527,7 @@ Specifies whether requests with SESSION ID's for workers that are in error state
 should be rejected. If sticky_session_force is set to <b>true</b>
 and the worker that matches that SESSION ID is in error state, client will
 receive 500 (Server Error). If set to <b>false</b> failover on
-another worker will be issued with loosing client session. This directive is
+another worker will be issued with losing client session. This directive is
 used only when you set <b>sticky_session=true</b>.
 <p>
 This feature has been added in <b>jk 1.2.9</b>.
@@ -982,7 +982,7 @@ Using this directive, a balanced worker of a load balancer
 can be configured as disabled or stopped. A disabled worker only gets
 requests, which belong to sessions for that worker. A stopped
 worker does not get any requests. Users of a stopped worker will
-loose their sessions, unless session replication via clustering is used.
+lose their sessions, unless session replication via clustering is used.
 <p>
 Use <b>d</b> or <b>D</b> to disable and <b>s</b> or <b>S</b> to stop.
 If this directive is not present the deprecated directives
