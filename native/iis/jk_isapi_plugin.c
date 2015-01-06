@@ -3833,7 +3833,8 @@ static char *relative_path(char *path, int* remain)
 
 static char *path_merge(const char *root, const char *path)
 {
-    char  merge[8192];
+    char merge[8192];
+    char dir[MAX_PATH];
     char *rel;
     char *out = 0;
     size_t sz;
@@ -3844,20 +3845,24 @@ static char *path_merge(const char *root, const char *path)
         SetLastError(ERROR_INVALID_PARAMETER );
         return 0;
     }
+    if (FAILED(StringCbCopy(dir, MAX_PATH, root))) {
+        SetLastError(ERROR_FILENAME_EXCED_RANGE);
+        return 0;
+    }
     if (FAILED(StringCbCopy(merge, 8190, path))) {
         /* TODO: Use dynamic buffer with larger size */
         SetLastError(ERROR_FILENAME_EXCED_RANGE);
         return 0;
     }
     sz = strlen(merge);
-    rsz = strlen(root);
+    rsz = strlen(dir);
     /* Normalize path */
     if ((rel = relative_path(merge, &remain))) {
         size_t bl;
         if (remain > 0) {
-            char *skip = root + rsz - 1;
+            char *skip = dir + rsz - 1;
             char *spr;
-            char *start = skip_prefix(root, &spr);
+            char *start = skip_prefix(dir, &spr);
             if (*skip == '/')
                 skip--;
             while (remain > 0 && skip >= start) {
@@ -3877,13 +3882,13 @@ static char *path_merge(const char *root, const char *path)
         }
         /* one additional byte for trailing '\0',
          * one additional byte for eventual path
-         * separator between root and merge */
-        bl = strlen(root) + sz + 2;
+         * separator between dir and merge */
+        bl = strlen(dir) + sz + 2;
         out = malloc(bl);
         if (out == 0)
             return 0;
-        /* Prepend root */
-        StringCbCopy(out, bl, root);
+        /* Prepend dir */
+        StringCbCopy(out, bl, dir);
         sz = strlen(out);
         BS2FSA(out);
         _INS_TRAILING_PATH_SEP(out, sz);
