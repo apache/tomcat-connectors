@@ -3853,6 +3853,7 @@ static char *path_merge(const char *root, const char *path)
     rsz = strlen(root);
     /* Normalize path */
     if ((rel = relative_path(merge, &remain))) {
+        size_t bl;
         if (remain > 0) {
             char *skip = root + rsz - 1;
             char *spr;
@@ -3877,7 +3878,7 @@ static char *path_merge(const char *root, const char *path)
         /* one additional byte for trailing '\0',
          * one additional byte for eventual path
          * separator between root and merge */
-        size_t bl = strlen(root) + sz + 2;
+        bl = strlen(root) + sz + 2;
         out = malloc(bl);
         if (out == 0)
             return 0;
