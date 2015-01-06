@@ -1186,6 +1186,7 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
 
     /* In case we found a match, check for the unmounts. */
     if (rv >= 0 && IND_THIS(uw_map->nosize)) {
+        int rc;
         if (collapse_slashes == JK_COLLAPSE_UNMOUNT) {
             /* Remove multiple slashes when looking for
              * unmount to prevent trivial unmount bypass attack.
@@ -1194,7 +1195,7 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
             jk_no2slash(url);
         }
         /* Again first including vhost. */
-        int rc = is_nomatch(uw_map, url, rv, l);
+        rc = is_nomatch(uw_map, url, rv, l);
         /* If no unmount was found, try without vhost. */
         if (!rc && vhost_len)
             rc = is_nomatch(uw_map, &url[vhost_len], rv, l);
