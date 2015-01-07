@@ -192,6 +192,10 @@
       <fix>
         Adjust linger parameters used during connection shutdown. (rjung)
       </fix>
+      <fix>
+        Fix annoying redefine warnings for the autoconf PACKAGE defines
+        during configure based builds. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

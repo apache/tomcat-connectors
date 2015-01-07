@@ -26,6 +26,18 @@
 #define JK_GLOBAL_H
 
 #if defined(HAVE_CONFIG_H)
+
+/* Undefine autoconf defines also existing
+ * in Apache web server includes, and which
+ * will be redefined in our config.h */
+#undef PACKAGE
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_URL
+
 #include "config.h"
 #endif
 
