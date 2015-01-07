@@ -50,6 +50,7 @@ extern "C"
 #define JK_STATUS_FATAL_ERROR       (-9)
 #define JK_REPLY_TIMEOUT            (-10)
 #define JK_AJP_PROTOCOL_ERROR       (-11)
+#define JK_BUSY_ERROR               (-12)
 
 #define AJP13_DEF_TIMEOUT           (0) /* Idle timout for pooled connections */
 

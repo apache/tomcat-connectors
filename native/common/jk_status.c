@@ -135,6 +135,7 @@
 #define JK_STATUS_ARG_AJP_RETRIES          "var"
 #define JK_STATUS_ARG_AJP_RETRY_INT        "vari"
 #define JK_STATUS_ARG_AJP_REC_OPTS         "varo"
+#define JK_STATUS_ARG_AJP_BUSY_LIMIT       "vabl"
 #define JK_STATUS_ARG_AJP_MAX_PK_SZ        "vamps"
 #define JK_STATUS_ARG_AJP_CPING_INT        "vacpi"
 #define JK_STATUS_ARG_AJP_HOST_STR         "vahst"
@@ -148,6 +149,7 @@
 #define JK_STATUS_ARG_AJP_TEXT_RETRIES     "Retries"
 #define JK_STATUS_ARG_AJP_TEXT_RETRY_INT   "Retry Interval"
 #define JK_STATUS_ARG_AJP_TEXT_REC_OPTS    "Recovery Options"
+#define JK_STATUS_ARG_AJP_TEXT_BUSY_LIMIT  "Busy Limit"
 #define JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ   "Max Packet Size"
 #define JK_STATUS_ARG_AJP_TEXT_CPING_INT   "Connection Ping Interval"
 #define JK_STATUS_ARG_AJP_TEXT_HOST_STR    "Hostname"
@@ -162,6 +164,7 @@
 #define JK_STATUS_ARG_AJP_HEAD_RETRIES     "Retries"
 #define JK_STATUS_ARG_AJP_HEAD_RETRY_INT   "Retry<br/>Interval"
 #define JK_STATUS_ARG_AJP_HEAD_REC_OPTS    "Recovery<br/>Options"
+#define JK_STATUS_ARG_AJP_HEAD_BUSY_LIMIT  "Busy<br/>Limit"
 #define JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ   "Max Packet<br/>Size"
 #define JK_STATUS_ARG_AJP_HEAD_CPING_INT   "Connection<br/>Ping Interval"
 #define JK_STATUS_ARG_AJP_HEAD_HOST_STR    "Hostname"
@@ -277,6 +280,7 @@
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_REPLY_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_RETRIES "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_REC_OPTS "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_BUSY_LIMIT "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_AJP_CONF_ROW        "<tr>" \
@@ -288,6 +292,7 @@
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%u</td>" \
+                                           "<td>%d</td>" \
                                            "<td>%u</td>" \
                                            "<td></td>" \
                                            "</tr>\n"
@@ -380,6 +385,7 @@
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_REPLY_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_RETRIES "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_REC_OPTS "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_BUSY_LIMIT "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_MEMBER_CONF_ROW     "<tr>" \
@@ -393,6 +399,7 @@
                                            "<td>%d</td>" \
                                            "<td>%d</td>" \
                                            "<td>%u</td>" \
+                                           "<td>%d</td>" \
                                            "<td>%u</td>" \
                                            "<td></td>" \
                                            "</tr>\n"
@@ -1798,6 +1805,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                   aw->reply_timeout,
                   aw->retries,
                   aw->recovery_opts,
+                  aw->busy_limit,
                   aw->max_packet_size);
     else
         jk_printf(s, l, JK_STATUS_SHOW_AJP_CONF_ROW,
@@ -1810,6 +1818,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                   aw->reply_timeout,
                   aw->retries,
                   aw->recovery_opts,
+                  aw->busy_limit,
                   aw->max_packet_size);
     JK_TRACE_EXIT(l);
 
@@ -1959,6 +1968,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_print_xml_att_int(s, l, off+2, "connection_ping_interval", aw->conn_ping_interval);
         jk_print_xml_att_int(s, l, off+2, "retries", aw->retries);
         jk_print_xml_att_uint(s, l, off+2, "recovery_options", aw->recovery_opts);
+        jk_print_xml_att_int(s, l, off+2, "busy_limit", aw->busy_limit);
         jk_print_xml_att_uint(s, l, off+2, "max_packet_size", aw->max_packet_size);
         if (lb) {
             jk_print_xml_att_string(s, l, off+2, "activation", jk_lb_get_activation(wr, l));
@@ -2027,6 +2037,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_printf(s, l, " retries=%d", aw->retries);
         jk_printf(s, l, " connection_ping_interval=%d", aw->conn_ping_interval);
         jk_printf(s, l, " recovery_options=%u", aw->recovery_opts);
+        jk_printf(s, l, " busy_limit=%d", aw->busy_limit);
         jk_printf(s, l, " max_packet_size=%u", aw->max_packet_size);
         if (lb) {
             jk_printf(s, l, " activation=%s", jk_lb_get_activation(wr, l));
@@ -2092,6 +2103,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_print_prop_att_int(s, l, w, ajp_name, "retries", aw->retries);
         jk_print_prop_att_int(s, l, w, ajp_name, "connection_ping_interval", aw->conn_ping_interval);
         jk_print_prop_att_uint(s, l, w, ajp_name, "recovery_options", aw->recovery_opts);
+        jk_print_prop_att_int(s, l, w, ajp_name, "busy_limit", aw->busy_limit);
         jk_print_prop_att_uint(s, l, w, ajp_name, "max_packet_size", aw->max_packet_size);
         if (lb) {
             jk_print_prop_att_string(s, l, w, ajp_name, "activation", jk_lb_get_activation(wr, l));
@@ -2535,6 +2547,7 @@ static void display_worker_lb(jk_ws_service_t *s,
                 jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_RETRY_INT, "\">", JK_STATUS_ARG_AJP_TEXT_RETRY_INT, "</option>\n", NULL);
                 jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_CPING_INT, "\">", JK_STATUS_ARG_AJP_TEXT_CPING_INT, "</option>\n", NULL);
                 jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_REC_OPTS, "\">", JK_STATUS_ARG_AJP_TEXT_REC_OPTS, "</option>\n", NULL);
+                jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_BUSY_LIMIT, "\">", JK_STATUS_ARG_AJP_TEXT_BUSY_LIMIT, "</option>\n", NULL);
                 jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_MAX_PK_SZ, "\">", JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ, "</option>\n", NULL);
                 jk_puts(s, "</select></td><td><input type=\"submit\" value=\"Go\"/></td></tr></table></form>\n");
             }
@@ -2940,6 +2953,10 @@ static void form_member(jk_ws_service_t *s,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_REC_OPTS, "\" type=\"text\" ", NULL);
     jk_printf(s, l, "value=\"%d\"/></td></tr>\n", aw->recovery_opts);
+    jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_BUSY_LIMIT,
+            ":</td><td><input name=\"",
+            JK_STATUS_ARG_AJP_BUSY_LIMIT, "\" type=\"text\" ", NULL);
+    jk_printf(s, l, "value=\"%d\"/></td></tr>\n", aw->busy_limit);
     jk_putv(s, "<tr><td>", JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ,
             ":</td><td><input name=\"",
             JK_STATUS_ARG_AJP_MAX_PK_SZ, "\" type=\"text\" ", NULL);
@@ -3002,6 +3019,8 @@ static void form_all_members(jk_ws_service_t *s,
             aname=JK_STATUS_ARG_AJP_TEXT_CPING_INT;
         else if (!strcmp(attribute, JK_STATUS_ARG_AJP_REC_OPTS))
             aname=JK_STATUS_ARG_AJP_TEXT_REC_OPTS;
+        else if (!strcmp(attribute, JK_STATUS_ARG_AJP_BUSY_LIMIT))
+            aname=JK_STATUS_ARG_AJP_TEXT_BUSY_LIMIT;
         else if (!strcmp(attribute, JK_STATUS_ARG_AJP_MAX_PK_SZ))
             aname=JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ;
         else {
@@ -3123,6 +3142,10 @@ static void form_all_members(jk_ws_service_t *s,
             else if (!strcmp(attribute, JK_STATUS_ARG_AJP_REC_OPTS)) {
                 jk_printf(s, l, "<input name=\"" JK_STATUS_ARG_MULT_VALUE_BASE "%d\" type=\"text\"", i);
                 jk_printf(s, l, "value=\"%d\"/>\n", aw->recovery_opts);
+            }
+            else if (!strcmp(attribute, JK_STATUS_ARG_AJP_BUSY_LIMIT)) {
+                jk_printf(s, l, "<input name=\"" JK_STATUS_ARG_MULT_VALUE_BASE "%d\" type=\"text\"", i);
+                jk_printf(s, l, "value=\"%d\"/>\n", aw->busy_limit);
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_AJP_MAX_PK_SZ)) {
                 jk_printf(s, l, "<input name=\"" JK_STATUS_ARG_MULT_VALUE_BASE "%d\" type=\"text\"", i);
@@ -3519,6 +3542,9 @@ static int commit_member(jk_ws_service_t *s,
     if (set_uint_if_changed(p, aw->name, "recovery_options", JK_STATUS_ARG_AJP_REC_OPTS,
                            0, INT_MAX, 1, &aw->recovery_opts, lb_name, l))
         *side_effect |= JK_STATUS_NEEDS_PUSH;
+    if (set_int_if_changed(p, aw->name, "busy_limit", JK_STATUS_ARG_AJP_BUSY_LIMIT,
+                           0, INT_MAX, &aw->busy_limit, lb_name, l))
+        *side_effect |= JK_STATUS_NEEDS_PUSH;
     if (set_uint_if_changed(p, aw->name, "max_packet_size", JK_STATUS_ARG_AJP_MAX_PK_SZ,
                            AJP13_DEF_PACKET_SIZE, AJP13_MAX_PACKET_SIZE, AJP13_PACKET_SIZE_ALIGN,
                            &aw->max_packet_size, lb_name, l)) {
@@ -3585,6 +3611,8 @@ static void commit_all_members(jk_ws_service_t *s,
             aname=JK_STATUS_ARG_AJP_TEXT_CPING_INT;
         else if (!strcmp(attribute, JK_STATUS_ARG_AJP_REC_OPTS))
             aname=JK_STATUS_ARG_AJP_TEXT_REC_OPTS;
+        else if (!strcmp(attribute, JK_STATUS_ARG_AJP_BUSY_LIMIT))
+            aname=JK_STATUS_ARG_AJP_TEXT_BUSY_LIMIT;
         else if (!strcmp(attribute, JK_STATUS_ARG_AJP_MAX_PK_SZ))
             aname=JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ;
         else {
@@ -3684,6 +3712,11 @@ static void commit_all_members(jk_ws_service_t *s,
             else if (!strcmp(attribute, JK_STATUS_ARG_AJP_REC_OPTS)) {
                 if (set_uint_if_changed(p, aw->name, "recovery_options", vname,
                                        0, INT_MAX, 1, &aw->recovery_opts, name, l))
+                    sync_needed = JK_TRUE;
+            }
+            else if (!strcmp(attribute, JK_STATUS_ARG_AJP_BUSY_LIMIT)) {
+                if (set_int_if_changed(p, aw->name, "busy_limit", vname,
+                                       0, INT_MAX, &aw->busy_limit, name, l))
                     sync_needed = JK_TRUE;
             }
             else if (!strcmp(attribute, JK_STATUS_ARG_AJP_MAX_PK_SZ)) {

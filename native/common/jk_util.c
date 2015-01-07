@@ -92,6 +92,7 @@
 #define WORKER_ERROR_ESCALATION_TIME "error_escalation_time"
 #define MAX_REPLY_TIMEOUTS_OF_WORKER "max_reply_timeouts"
 #define RETRY_INTERVAL_OF_WORKER    "retry_interval"
+#define BUSY_LIMIT_OF_WORKER        "busy_limit"
 #define WORKER_MAX_PACKET_SIZE      "max_packet_size"
 #define STYLE_SHEET_OF_WORKER       "css"
 #define NAMESPACE_OF_WORKER         "ns"
@@ -224,6 +225,7 @@ static const char *unique_properties[] = {
     WORKER_ERROR_ESCALATION_TIME,
     MAX_REPLY_TIMEOUTS_OF_WORKER,
     RETRY_INTERVAL_OF_WORKER,
+    BUSY_LIMIT_OF_WORKER,
     WORKER_MAX_PACKET_SIZE,
     STYLE_SHEET_OF_WORKER,
     READ_ONLY_OF_WORKER,
@@ -323,6 +325,7 @@ static const char *supported_properties[] = {
     WORKER_ERROR_ESCALATION_TIME,
     MAX_REPLY_TIMEOUTS_OF_WORKER,
     RETRY_INTERVAL_OF_WORKER,
+    BUSY_LIMIT_OF_WORKER,
     WORKER_MAX_PACKET_SIZE,
     STYLE_SHEET_OF_WORKER,
     NAMESPACE_OF_WORKER,
@@ -1060,6 +1063,19 @@ int jk_get_worker_retry_interval(jk_map_t *m, const char *wname, int def)
     }
 
     MAKE_WORKER_PARAM(RETRY_INTERVAL_OF_WORKER);
+
+    return jk_map_get_int(m, buf, def);
+}
+
+int jk_get_worker_busy_limit(jk_map_t *m, const char *wname, int def)
+{
+    char buf[PARAM_BUFFER_SIZE];
+
+    if (!m || !wname) {
+        return def;
+    }
+
+    MAKE_WORKER_PARAM(BUSY_LIMIT_OF_WORKER);
 
     return jk_map_get_int(m, buf, def);
 }

@@ -887,6 +887,18 @@ For example: <code>worker.xxx.fail_on_status=-404,-500,503</code>
 </p>
 </directive>
 
+<directive name="busy_limit" workers="AJP,SUB" default="0" required="false">
+If set to a positive number, the worker will only be used for a request,
+if it is currently working on less than this number of concurrent requests.
+<p>
+Note that this is not related to the <b>Busyness</b> load balancing
+<b>method</b>.
+</p>
+<p>
+This feature is experimental and has been added in <b>jk 1.2.41</b>.
+</p>
+</directive>
+
 <directive name="max_packet_size" workers="AJP,SUB" default="8192" required="false">
 This attribute sets the maximal AJP packet size in Bytes.
 The maximum value is 65536. If you change it from the default,

@@ -541,6 +541,9 @@ Finally the list of parameters you can use to change settings for ajp workers an
 <b>varo</b>: recovery_options (number)
 </li>
 <li>
+<b>vabl</b>: busy_limit (number)
+</li>
+<li>
 <b>vamps</b>: max_packet_size (number)
 </li>
 </ul>
@@ -569,7 +572,7 @@ will be triggered by the parameter <b>att</b>. The value of the parameter indica
 which aspect you want to edit. The list is the same as in the previous section,
 except for "vahst" and "vaprt":
 "vwa", "vwf", "vwn", "vwr", "vwc", "vwd", "vacpt", "vact", "vapt", "vart", "var",
-"varo" and "vamps". But here you
+"varo", "vabl" and "vamps". But here you
 need to put the name into the parameter <b>att</b>, instead of using it as a request
 parameter name.
 </p>

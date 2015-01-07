@@ -50,7 +50,7 @@
  *       activation is none of JK_LB_ACTIVATION_STOPPED, JK_LB_ACTIVATION_DISABLED
  */
 #define JK_WORKER_USABLE(s, activation)   ((s) <= JK_LB_STATE_FORCE && activation == JK_LB_ACTIVATION_ACTIVE)
-#define JK_WORKER_USABLE_STICKY(s, activation)   ((s) <= JK_LB_STATE_BUSY && activation != JK_LB_ACTIVATION_STOPPED)
+#define JK_WORKER_USABLE_STICKY(s, activation)   ((s) <= JK_LB_STATE_FORCE && activation != JK_LB_ACTIVATION_STOPPED)
 
 static const char *lb_locking_type[] = {
     JK_LB_LOCK_TEXT_OPTIMISTIC,
@@ -1213,8 +1213,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
         jk_lb_pull(p->worker, JK_FALSE, l);
     for (i = 0; i < num_of_workers; i++) {
         lb_sub_worker_t *rec = &(p->worker->lb_workers[i]);
+        ajp_worker_t *aw = (ajp_worker_t *)rec->worker->worker_private;
         if (rec->s->state == JK_LB_STATE_BUSY) {
-            if (ajp_has_endpoint(rec->worker, l)) {
+            if ((aw->busy_limit <= 0 || aw->s->busy < aw->busy_limit) &&
+                ajp_has_endpoint(rec->worker, l)) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
                            "worker %s busy state ended",
@@ -1497,6 +1499,16 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     p->states[rec->i] = JK_LB_STATE_ERROR;
                     rec->s->first_error_time = 0;
                     rec->s->last_error_time = 0;
+                    rc = JK_FALSE;
+                }
+                else if (service_stat == JK_BUSY_ERROR) {
+                    /*
+                     * Node was busy.
+                     * Do not try to reuse the same node for the same request.
+                     * Failing over to another node could help.
+                     */
+                    rec->s->state  = JK_LB_STATE_BUSY;
+                    p->states[rec->i] = JK_LB_STATE_BUSY;
                     rc = JK_FALSE;
                 }
                 else if (service_stat == JK_STATUS_FATAL_ERROR) {

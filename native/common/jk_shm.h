@@ -91,6 +91,7 @@ struct jk_shm_ajp_worker
     unsigned int recovery_opts;
     int retries;
     int retry_interval;
+    int busy_limit;
     unsigned int max_packet_size;
     /* current error state (runtime) of the worker */
     volatile int state;

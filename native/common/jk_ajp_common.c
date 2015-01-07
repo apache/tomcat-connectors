@@ -1118,6 +1118,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
     aw->recovery_opts = aw->s->recovery_opts;
     aw->retries = aw->s->retries;
     aw->retry_interval = aw->s->retry_interval;
+    aw->busy_limit = aw->s->busy_limit;
     aw->max_packet_size = aw->s->max_packet_size;
     aw->sequence = aw->s->h.sequence;
     if (aw->addr_sequence != aw->s->addr_sequence) {
@@ -1187,6 +1188,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
     aw->s->recovery_opts = aw->recovery_opts;
     aw->s->retries = aw->retries;
     aw->s->retry_interval = aw->retry_interval;
+    aw->s->busy_limit = aw->busy_limit;
     aw->s->max_packet_size = aw->max_packet_size;
     /* Force squence update on push
      */
@@ -2561,6 +2563,20 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
                aw->name, aw->retries);
     }
     busy = JK_ATOMIC_INCREMENT(&(aw->s->busy));
+    if (aw->busy_limit > 0 && busy > aw->busy_limit) {
+        JK_ATOMIC_DECREMENT(&(aw->s->busy));
+        e->recoverable = JK_TRUE;
+        aw->s->errors++;
+        aw->s->error_time = time(NULL);
+        *is_error = JK_HTTP_SERVER_BUSY;
+        rc = JK_BUSY_ERROR;
+        jk_log(l, JK_LOG_ERROR,
+               "(%s) sending request to tomcat failed (unrecoverable), "
+               "busy limit %d reached (rc=%d, errors=%d, client_errors=%d).",
+               aw->name, aw->busy_limit, rc, aw->s->errors, aw->s->client_errors);
+        JK_TRACE_EXIT(l);
+        return rc;
+    }
     if (aw->s->state == JK_AJP_STATE_ERROR)
         aw->s->state = JK_AJP_STATE_PROBE;
     if (busy > aw->s->max_busy)
@@ -2995,6 +3011,8 @@ int ajp_init(jk_worker_t *pThis,
                                          JK_SLEEP_DEF);
         p->cache_acquire_timeout = jk_get_worker_cache_acquire_timeout(props,
                                      p->name, p->retries * p->retry_interval);
+        p->busy_limit =
+            jk_get_worker_busy_limit(props, p->name, 0);
         jk_get_worker_fail_on_status(props, p->name,
                                      &(p->http_status_fail),
                                      &(p->http_status_fail_num));
@@ -3066,6 +3084,10 @@ int ajp_init(jk_worker_t *pThis,
             jk_log(l, JK_LOG_DEBUG,
                    "retry interval:         %d",
                     p->retry_interval);
+
+            jk_log(l, JK_LOG_DEBUG,
+                   "busy limit:         %d",
+                    p->busy_limit);
         }
         /*
          *  Need to initialize secret here since we could return from inside

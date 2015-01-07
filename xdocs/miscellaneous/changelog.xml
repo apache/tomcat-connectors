@@ -200,6 +200,11 @@
         Status: Use multi-line table headers and fix invalid xml output.
         (rjung)
       </fix>
+      <fix>
+        <bug>44571</bug>: Implement an optional limit on concurrent requests
+        allowed for a worker (attribute "busy_limit"). Original patch
+        contributed by zealot0630 at gmail dot com. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

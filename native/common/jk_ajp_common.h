@@ -371,6 +371,8 @@ struct ajp_worker
 
     int retry_interval;            /*  Number of milliseconds to sleep before doing a retry */
 
+    int busy_limit;                /*  Maximum allowed number of concurrent requests (if > 0) */
+
     /*
      * HTTP status that will cause failover (0 means disabled)
      */
