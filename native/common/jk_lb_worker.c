@@ -1217,7 +1217,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
             if (ajp_has_endpoint(rec->worker, l)) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                           "worker %s busy count fixed",
+                           "worker %s busy state ended",
                            rec->name);
                 rec->s->state = JK_LB_STATE_OK;
             }
