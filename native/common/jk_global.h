@@ -449,6 +449,7 @@ typedef int jk_sock_t;
         if (y == 0 || y > INT_MAX) apr_atomic_inc32((volatile apr_uint32_t *)x);\
     } while (0)
 #else
+#define JK_ATOMIC_MISSING
 #define JK_ATOMIC_INCREMENT(x) (++(*x))
 #define JK_ATOMIC_DECREMENT(x) \
     do {\

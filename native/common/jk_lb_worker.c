@@ -1903,6 +1903,12 @@ static int JK_METHOD init(jk_worker_t *pThis,
     p->s->last_reset = p->s->last_maintain_time;
 
     p->lbmethod = jk_get_lb_method(props, p->name);
+#ifdef JK_ATOMIC_MISSING
+    if (p->lbmethod == JK_LB_METHOD_BUSYNESS) {
+        jk_log(log, JK_LOG_WARNING, "Missing support for atomics: "
+               "LB method 'busyness' not recommended");
+    }
+#endif
     p->lblock   = jk_get_lb_lock(props, p->name);
     s = jk_get_lb_session_cookie(props, p->name, JK_SESSION_IDENTIFIER);
     if (jk_check_attribute_length("session_cookie", s, log) == JK_FALSE) {
