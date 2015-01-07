@@ -903,11 +903,14 @@ This feature has been added in <b>jk 1.2.19</b>.
 </p>
 </directive>
 
-<directive name="mount" workers="AJP,LB" default="" required="false">
-Space delimited list of uri maps the worker should handle. It is only used,
-if the worker is included in worker.list.
+<directive name="prefer_ipv6" workers="AJP,SUB" default="false" required="false">
+When compiled with IPV6 support, this directive forces IPV6 address
+resolution for host names which have both IPV6 and IPV4 addresses. In case there is
+no IPV6 address defined for the given hostname this directive in ineffective. This directive will
+be also ineffective if there is only IPV6 address defined or if IP address is used for "host",
+either in IPV4 or IPV6 notation.
 <p>
-This directive can be used multiple times for the same worker.
+This feature has been added in <b>jk 1.2.38</b>.
 </p>
 </directive>
 
@@ -924,6 +927,14 @@ If you set a secret on a load balancer, all its members will inherit this secret
 </p>
 <p>
 This feature has been added in <b>jk 1.2.12</b>.
+</p>
+</directive>
+
+<directive name="mount" workers="AJP,LB" default="" required="false">
+Space delimited list of uri maps the worker should handle. It is only used,
+if the worker is included in worker.list.
+<p>
+This directive can be used multiple times for the same worker.
 </p>
 </directive>
 
@@ -974,6 +985,57 @@ will the node be put into error state.
 </p>
 <p>
 This features has been added in <b>jk 1.2.28</b>.
+</p>
+</directive>
+
+<directive name="session_cookie" workers="LB" default="JSESSIONID" required="false">
+The name of the cookie that contains the routing identifier needed for session stickyness.
+The routing identifier is everything after a "." character in the value of the cookie.
+<p>
+This feature has been added in <b>jk 1.2.27</b>.
+</p>
+</directive>
+
+<directive name="session_path" workers="LB" default=";jsessionid" required="false">
+The name of the path parameter that contains the routing identifier needed for
+session stickyness. The routing identifier is everything after a "." character in the value
+of the path parameter.
+<p>
+This feature has been added in <b>jk 1.2.27</b>.
+</p>
+</directive>
+
+<directive name="set_session_cookie" workers="LB" default="false" required="false">
+Activates generation of session stickyness cookies. Typically you don't need this.
+<p>
+Some web frameworks replace Tomcat session management and use a different way
+of generating session IDs. As a consequence the routing ID added by Tomcat to the
+end of the session ID is lost and we no longer can do sticky load balancing.
+As a workaround you can use the following steps:
+<ul>
+<li>Choose a non-standard cookie name using the "session_cookie" attribute.</li>
+<li>Activate cookie sending by setting the attribute "set_session_cookie" to <b>true</b>.</li>
+<li>Set the attribute "session_cookie_path" to the correct application URI, like
+e.g. "/myapp/".</li>
+</ul>
+</p>
+<p>
+The cookie will only be send if the request does not already contain
+a cookie of the same name, or that cookie does not contain a routing
+ID which the load balancer can fulfill. Especially after a node failover
+we will send a new cookie to switch stickyness to the new node.
+</p>
+<p>
+This feature has been added in <b>jk 1.2.38</b>.
+</p>
+</directive>
+
+<directive name="session_cookie_path" workers="LB" default="" required="false">
+This attribute is only used if "set_session_cookie" is set to <b>true</b>.
+See "set_session_cookie" for a description. If the value of "session_cookie_path"
+is empty (default), then the send cookie will not contain a PATH information.
+<p>
+This feature has been added in <b>jk 1.2.38</b>.
 </p>
 </directive>
 
@@ -1060,68 +1122,6 @@ to this route of the preferred failover worker and not to its name.
 </p>
 <p>
 This feature has been added in <b>jk 1.2.9</b>.
-</p>
-</directive>
-
-<directive name="session_cookie" workers="LB" default="JSESSIONID" required="false">
-The name of the cookie that contains the routing identifier needed for session stickyness.
-The routing identifier is everything after a "." character in the value of the cookie.
-<p>
-This feature has been added in <b>jk 1.2.27</b>.
-</p>
-</directive>
-
-<directive name="session_path" workers="LB" default=";jsessionid" required="false">
-The name of the path parameter that contains the routing identifier needed for
-session stickyness. The routing identifier is everything after a "." character in the value
-of the path parameter.
-<p>
-This feature has been added in <b>jk 1.2.27</b>.
-</p>
-</directive>
-
-<directive name="set_session_cookie" workers="LB" default="false" required="false">
-Activates generation of session stickyness cookies. Typically you don't need this.
-<p>
-Some web frameworks replace Tomcat session management and use a different way
-of generating session IDs. As a consequence the routing ID added by Tomcat to the
-end of the session ID is lost and we no longer can do sticky load balancing.
-As a workaround you can use the following steps:
-<ul>
-<li>Choose a non-standard cookie name using the "session_cookie" attribute.</li>
-<li>Activate cookie sending by setting the attribute "set_session_cookie" to <b>true</b>.</li>
-<li>Set the attribute "session_cookie_path" to the correct application URI, like
-e.g. "/myapp/".</li>
-</ul>
-</p>
-<p>
-The cookie will only be send if the request does not already contain
-a cookie of the same name, or that cookie does not contain a routing
-ID which the load balancer can fulfill. Especially after a node failover
-we will send a new cookie to switch stickyness to the new node.
-</p>
-<p>
-This feature has been added in <b>jk 1.2.38</b>.
-</p>
-</directive>
-
-<directive name="session_cookie_path" workers="LB" default="" required="false">
-This attribute is only used if "set_session_cookie" is set to <b>true</b>.
-See "set_session_cookie" for a description. If the value of "session_cookie_path"
-is empty (default), then the send cookie will not contain a PATH information.
-<p>
-This feature has been added in <b>jk 1.2.38</b>.
-</p>
-</directive>
-
-<directive name="prefer_ipv6" workers="AJP,SUB" default="false" required="false">
-When compiled with IPV6 support, this directive forces IPV6 address
-resolution for host names which have both IPV6 and IPV4 addresses. In case there is
-no IPV6 address defined for the given hostname this directive in ineffective. This directive will
-be also ineffective if there is only IPV6 address defined or if IP address is used for "host",
-either in IPV4 or IPV6 notation.
-<p>
-This feature has been added in <b>jk 1.2.38</b>.
 </p>
 </directive>
 
