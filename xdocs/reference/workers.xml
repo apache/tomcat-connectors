@@ -911,7 +911,7 @@ This directive can be used multiple times for the same worker.
 </p>
 </directive>
 
-<directive name="secret" workers="AJP,LB,SUB" default="" required="false">
+<directive name="secret" workers="AJP,SUB,LB" default="" required="false">
 You can set a secret keyword on the Tomcat AJP Connector. Then only requests
 from workers with the same secret keyword will be accepted.
 <p>
@@ -1114,7 +1114,7 @@ This feature has been added in <b>jk 1.2.38</b>.
 </p>
 </directive>
 
-<directive name="prefer_ipv6" workers="AJP" default="false" required="false">
+<directive name="prefer_ipv6" workers="AJP,SUB" default="false" required="false">
 When compiled with IPV6 support, this directive forces IPV6 address
 resolution for host names which have both IPV6 and IPV4 addresses. In case there is
 no IPV6 address defined for the given hostname this directive in ineffective. This directive will
