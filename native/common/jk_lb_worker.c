@@ -1343,7 +1343,6 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     jk_shm_lock();
 
                 /* Increment the number of workers serving request */
-                busy = JK_ATOMIC_INCREMENT(&(rec->s->busy));
                 busy = JK_ATOMIC_INCREMENT(&(p->worker->s->busy));
                 if (busy > p->worker->s->max_busy)
                     p->worker->s->max_busy = busy;
@@ -1444,7 +1443,6 @@ static int JK_METHOD service(jk_endpoint_t *e,
                  * restart of the server.
                  */
                 JK_ATOMIC_DECREMENT(&(p->worker->s->busy));
-                JK_ATOMIC_DECREMENT(&(rec->s->busy));
                 if (service_stat == JK_TRUE) {
                     /*
                      * Successful request.
@@ -1549,7 +1547,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      */
                     time_t now = time(NULL);
                     rec->s->errors++;
-                    if (rec->s->busy == 0 ||
+                    if (aw->s->busy == 0 ||
                         p->worker->error_escalation_time == 0 ||
                         (rec->s->first_error_time > 0 &&
                          (int)difftime(now, rec->s->first_error_time) >= p->worker->error_escalation_time)) {
