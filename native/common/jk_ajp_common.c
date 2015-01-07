@@ -2571,7 +2571,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
         *is_error = JK_HTTP_SERVER_BUSY;
         rc = JK_BUSY_ERROR;
         jk_log(l, JK_LOG_ERROR,
-               "(%s) sending request to tomcat failed (unrecoverable), "
+               "(%s) sending request to tomcat failed (recoverable), "
                "busy limit %d reached (rc=%d, errors=%d, client_errors=%d).",
                aw->name, aw->busy_limit, rc, aw->s->errors, aw->s->client_errors);
         JK_TRACE_EXIT(l);
