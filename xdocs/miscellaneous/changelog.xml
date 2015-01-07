@@ -196,6 +196,10 @@
         Fix annoying redefine warnings for the autoconf PACKAGE defines
         during configure based builds. (rjung)
       </fix>
+      <fix>
+        Status: Use multi-line table headers and fix invalid xml output.
+        (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

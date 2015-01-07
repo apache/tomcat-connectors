@@ -96,6 +96,16 @@
 #define JK_STATUS_ARG_LB_TEXT_METHOD       "LB Method"
 #define JK_STATUS_ARG_LB_TEXT_LOCK         "Locking"
 
+#define JK_STATUS_ARG_LB_HEAD_RETRIES      "Retries"
+#define JK_STATUS_ARG_LB_HEAD_RETRY_INT    "Retry<br/>Interval"
+#define JK_STATUS_ARG_LB_HEAD_RECOVER_TIME "Recover<br/>Wait Time"
+#define JK_STATUS_ARG_LB_HEAD_ERROR_ESCALATION_TIME "Error<br/>Escalation Time"
+#define JK_STATUS_ARG_LB_HEAD_MAX_REPLY_TIMEOUTS "Max Reply<br/>Timeouts"
+#define JK_STATUS_ARG_LB_HEAD_STICKY       "Sticky<br/>Sessions"
+#define JK_STATUS_ARG_LB_HEAD_STICKY_FORCE "Force Sticky<br/>Sessions"
+#define JK_STATUS_ARG_LB_HEAD_METHOD       "LB<br/>Method"
+#define JK_STATUS_ARG_LB_HEAD_LOCK         "Locking"
+
 #define JK_STATUS_ARG_LBM_ACTIVATION       ("vwa")
 #define JK_STATUS_ARG_LBM_FACTOR           ("vwf")
 #define JK_STATUS_ARG_LBM_ROUTE            ("vwn")
@@ -109,6 +119,13 @@
 #define JK_STATUS_ARG_LBM_TEXT_REDIRECT    "Redirect Route"
 #define JK_STATUS_ARG_LBM_TEXT_DOMAIN      "Cluster Domain"
 #define JK_STATUS_ARG_LBM_TEXT_DISTANCE    "Distance"
+
+#define JK_STATUS_ARG_LBM_HEAD_ACTIVATION  "Activation"
+#define JK_STATUS_ARG_LBM_HEAD_FACTOR      "LB<br/>Factor"
+#define JK_STATUS_ARG_LBM_HEAD_ROUTE       "Route"
+#define JK_STATUS_ARG_LBM_HEAD_REDIRECT    "Redirect<br/>Route"
+#define JK_STATUS_ARG_LBM_HEAD_DOMAIN      "Cluster<br/>Domain"
+#define JK_STATUS_ARG_LBM_HEAD_DISTANCE    "Distance"
 
 #define JK_STATUS_ARG_AJP_CACHE_TO         "vacpt"
 #define JK_STATUS_ARG_AJP_PING_TO          "vapng"
@@ -136,6 +153,20 @@
 #define JK_STATUS_ARG_AJP_TEXT_HOST_STR    "Hostname"
 #define JK_STATUS_ARG_AJP_TEXT_PORT        "Port"
 #define JK_STATUS_ARG_AJP_TEXT_ADDR_STR    "Address:Port"
+
+#define JK_STATUS_ARG_AJP_HEAD_CACHE_TO    "Connection<br/>Pool Timeout"
+#define JK_STATUS_ARG_AJP_HEAD_PING_TO     "Ping<br/>Timeout"
+#define JK_STATUS_ARG_AJP_HEAD_CONNECT_TO  "Connect<br/>Timeout"
+#define JK_STATUS_ARG_AJP_HEAD_PREPOST_TO  "Prepost<br/>Timeout"
+#define JK_STATUS_ARG_AJP_HEAD_REPLY_TO    "Reply<br/>Timeout"
+#define JK_STATUS_ARG_AJP_HEAD_RETRIES     "Retries"
+#define JK_STATUS_ARG_AJP_HEAD_RETRY_INT   "Retry<br/>Interval"
+#define JK_STATUS_ARG_AJP_HEAD_REC_OPTS    "Recovery<br/>Options"
+#define JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ   "Max Packet<br/>Size"
+#define JK_STATUS_ARG_AJP_HEAD_CPING_INT   "Connection<br/>Ping Interval"
+#define JK_STATUS_ARG_AJP_HEAD_HOST_STR    "Hostname"
+#define JK_STATUS_ARG_AJP_HEAD_PORT        "Port"
+#define JK_STATUS_ARG_AJP_HEAD_ADDR_STR    "Address:Port"
 
 #define JK_STATUS_CMD_UNKNOWN              (0)
 #define JK_STATUS_CMD_LIST                 (1)
@@ -232,21 +263,21 @@
 #define JK_STATUS_FORM_START               "<form method=\"%s\" action=\"%s\">\n"
 #define JK_STATUS_FORM_HIDDEN_INT          "<input type=\"hidden\" name=\"%s\" value=\"%d\"/>\n"
 #define JK_STATUS_FORM_HIDDEN_STRING       "<input type=\"hidden\" name=\"%s\" value=\"%s\"/>\n"
-#define JK_STATUS_URI_MAP_TABLE_HEAD       "<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n"
+#define JK_STATUS_URI_MAP_TABLE_HEAD       "<tr valign=\"bottom\"><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n"
 #define JK_STATUS_URI_MAP_TABLE_ROW        "<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n"
-#define JK_STATUS_URI_MAP_TABLE_HEAD2      "<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n"
+#define JK_STATUS_URI_MAP_TABLE_HEAD2      "<tr valign=\"bottom\"><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n"
 #define JK_STATUS_URI_MAP_TABLE_ROW2       "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n"
-#define JK_STATUS_SHOW_AJP_CONF_HEAD       "<tr>" \
+#define JK_STATUS_SHOW_AJP_CONF_HEAD       "<tr valign=\"bottom\">" \
                                            "<th>Type</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_HOST_STR "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_ADDR_STR "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_CACHE_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_CONNECT_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_PREPOST_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_REPLY_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_RETRIES "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_REC_OPTS "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_HOST_STR "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_ADDR_STR "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_CACHE_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_CONNECT_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_PREPOST_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_REPLY_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_RETRIES "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_REC_OPTS "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_AJP_CONF_ROW        "<tr>" \
                                            "<td>%s</td>" \
@@ -260,7 +291,7 @@
                                            "<td>%u</td>" \
                                            "<td></td>" \
                                            "</tr>\n"
-#define JK_STATUS_SHOW_AJP_HEAD            "<tr>" \
+#define JK_STATUS_SHOW_AJP_HEAD            "<tr valign=\"bottom\">" \
                                            "<th>State</th>" \
                                            "<th>Acc</th>" \
                                            "<th>Err</th><th>CE</th><th>RE</th>" \
@@ -281,16 +312,16 @@
                                            "<td>%d</td>" \
                                            "<td>%s</td>" \
                                            "</tr>\n"
-#define JK_STATUS_SHOW_LB_HEAD             "<tr>" \
+#define JK_STATUS_SHOW_LB_HEAD             "<tr valign=\"bottom\">" \
                                            "<th>Type</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_STICKY "</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_STICKY_FORCE "</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_RETRIES "</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_METHOD "</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_LOCK "</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_RECOVER_TIME "</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_ERROR_ESCALATION_TIME "</th>" \
-                                           "<th>" JK_STATUS_ARG_LB_TEXT_MAX_REPLY_TIMEOUTS "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_STICKY "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_STICKY_FORCE "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_RETRIES "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_METHOD "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_LOCK "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_RECOVER_TIME "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_ERROR_ESCALATION_TIME "</th>" \
+                                           "<th>" JK_STATUS_ARG_LB_HEAD_MAX_REPLY_TIMEOUTS "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_LB_ROW              "<tr>" \
                                            "<td>%s</td>" \
@@ -304,14 +335,14 @@
                                            "<td>%d</td>" \
                                            "<td></td>" \
                                            "</tr>\n"
-#define JK_STATUS_SHOW_MEMBER_HEAD         "<tr>" \
+#define JK_STATUS_SHOW_MEMBER_HEAD         "<tr valign=\"bottom\">" \
                                            "<th>&nbsp;</th><th>Name</th>" \
                                            "<th>Act</th><th>State</th>" \
                                            "<th>D</th><th>F</th><th>M</th>" \
                                            "<th>V</th><th>Acc</th><th>Sess</th>" \
                                            "<th>Err</th><th>CE</th><th>RE</th>" \
                                            "<th>Wr</th><th>Rd</th><th>Busy</th><th>MaxBusy</th><th>Con</th><th>MaxCon</th>" \
-                                           "<th>" JK_STATUS_ARG_LBM_TEXT_ROUTE "</th>" \
+                                           "<th>" JK_STATUS_ARG_LBM_HEAD_ROUTE "</th>" \
                                            "<th>RR</th><th>Cd</th><th>Rs</th><th>LR</th><th>LE</th>" \
                                            "</tr>\n"
 #define JK_STATUS_SHOW_MEMBER_ROW          "<td>%s</td>" \
@@ -339,17 +370,17 @@
                                            "<td>%d</td>" \
                                            "<td>%s</td>" \
                                            "</tr>\n"
-#define JK_STATUS_SHOW_MEMBER_CONF_HEAD    "<tr>" \
+#define JK_STATUS_SHOW_MEMBER_CONF_HEAD    "<tr valign=\"bottom\">" \
                                            "<th>Name</th><th>Type</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_HOST_STR "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_ADDR_STR "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_CACHE_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_CONNECT_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_PREPOST_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_REPLY_TO "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_RETRIES "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_REC_OPTS "</th>" \
-                                           "<th>" JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_HOST_STR "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_ADDR_STR "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_CACHE_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_CONNECT_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_PREPOST_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_REPLY_TO "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_RETRIES "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_REC_OPTS "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_MEMBER_CONF_ROW     "<tr>" \
                                            "<td>%s</td>" \
@@ -1694,10 +1725,10 @@ static void display_maps(jk_ws_service_t *s,
             jk_puts(s, "]</h3><table>\n");
             if (has_server_iterator)
                 jk_printf(s, l, JK_STATUS_URI_MAP_TABLE_HEAD2,
-                          "Server", "URI", "Match Type", "Source", "Reply Timeout", "Sticky Ignore", "Stateless", "Fail on Status", "Active", "Disabled", "Stopped", "Use Server Errors");
+                          "Server", "URI", "Match<br/>Type", "Source", "Reply<br/>Timeout", "Sticky<br/>Ignore", "Stateless", "Fail on<br/>Status", "Active", "Disabled", "Stopped", "Use Server<br/>Errors");
             else
                 jk_printf(s, l, JK_STATUS_URI_MAP_TABLE_HEAD,
-                          "URI", "Match Type", "Source", "Reply Timeout", "Sticky Ignore", "Stateless", "Fail on Status", "Active", "Disabled", "Stopped", "Use Server Errors");
+                          "URI", "Match<br/>Type", "Source", "Reply<br/>Timeout", "Sticky<br/>Ignore", "Stateless", "Fail on<br/>Status", "Active", "Disabled", "Stopped", "Use Server<br/>Errors");
         }
         count = 0;
         if (has_server_iterator) {
@@ -2404,7 +2435,7 @@ static void display_worker_lb(jk_ws_service_t *s,
                 jk_puts(s, "[");
                 status_write_uri(s, p, "Hide", JK_STATUS_CMD_UNKNOWN, JK_STATUS_MIME_UNKNOWN,
                                  NULL, NULL, JK_STATUS_ARG_OPTION_NO_AJP_CONF, 0, NULL, l);
-                jk_puts(s, "]</td></tr>");
+                jk_puts(s, "]</th></tr>");
                 if (swr) {
                     jk_worker_t *jw = (jk_worker_t *)swr->worker;
                     ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
@@ -2505,7 +2536,7 @@ static void display_worker_lb(jk_ws_service_t *s,
                 jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_CPING_INT, "\">", JK_STATUS_ARG_AJP_TEXT_CPING_INT, "</option>\n", NULL);
                 jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_REC_OPTS, "\">", JK_STATUS_ARG_AJP_TEXT_REC_OPTS, "</option>\n", NULL);
                 jk_putv(s, "<option value=\"", JK_STATUS_ARG_AJP_MAX_PK_SZ, "\">", JK_STATUS_ARG_AJP_TEXT_MAX_PK_SZ, "</option>\n", NULL);
-                jk_puts(s, "</select></td><td><input type=\"submit\" value=\"Go\"/></tr></table></form>\n");
+                jk_puts(s, "</select></td><td><input type=\"submit\" value=\"Go\"/></td></tr></table></form>\n");
             }
 
         }
@@ -2584,7 +2615,7 @@ static void display_worker_ajp(jk_ws_service_t *s,
             jk_puts(s, "[");
             status_write_uri(s, p, "Hide", JK_STATUS_CMD_UNKNOWN, JK_STATUS_MIME_UNKNOWN,
                              NULL, NULL, JK_STATUS_ARG_OPTION_NO_AJP_CONF, 0, NULL, l);
-            jk_puts(s, "]</td></tr>");
+            jk_puts(s, "]</th></tr>");
             display_worker_ajp_conf_details(s, p, aw, 0, type, l);
             jk_puts(s, "</table>\n<br/>\n");
         }
@@ -2915,7 +2946,7 @@ static void form_member(jk_ws_service_t *s,
     jk_printf(s, l, "value=\"%d\"/></td></tr>\n", aw->max_packet_size);
     jk_puts(s, "</table>\n");
     if (wr)
-        jk_puts(s, "</td></tr></table>\n");
+        jk_puts(s, "</td></tr></tbody></table>\n");
     jk_puts(s, "<br/><input type=\"submit\" value=\"Update Worker\"/>\n</form>\n");
     JK_TRACE_EXIT(l);
 }
@@ -4978,7 +5009,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     jk_puts(s, "</select></form>\n");
                     jk_puts(s, "</td>\n");
                 }
-                jk_puts(s, "</tr></table>\n");
+                jk_puts(s, "</tr></tbody></table>\n");
                 jk_puts(s, "<table><tbody valign=\"baseline\"><tr>\n");
                 if (cmd_props & JK_STATUS_CMD_PROP_BACK_LINK) {
                     int from;
@@ -5033,7 +5064,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     jk_puts(s, "]<br/>\n");
                     jk_puts(s, "</td>\n");
                 }
-                jk_puts(s, "</tr></table>\n");
+                jk_puts(s, "</tr></tbody></table>\n");
                 if (cmd == JK_STATUS_CMD_LIST) {
                     /* Step 2: Display configuration */
                     if (list_workers(s, p, l) != JK_TRUE) {
