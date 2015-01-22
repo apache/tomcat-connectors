@@ -205,6 +205,11 @@
         allowed for a worker (attribute "busy_limit"). Original patch
         contributed by zealot0630 at gmail dot com. (rjung)
       </fix>
+      <fix>
+        Correct log message "all endpoints are disconnected" to
+        "no usable connection found, will create a new one". Tone done
+        from info log level to debug for the common case. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

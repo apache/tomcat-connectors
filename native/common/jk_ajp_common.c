@@ -1687,16 +1687,22 @@ static int ajp_send_request(jk_endpoint_t *e,
      */
     if (!IS_VALID_SOCKET(ae->sd)) {
         /* Could not steal any connection from an endpoint - backend
-         * is disconnected
+         * is disconnected or all connections are in use
          */
         if (err_conn + err_cping + err_send > 0)
-            jk_log(l, JK_LOG_INFO,
-                   "(%s) all endpoints are disconnected, "
-                   "detected by connect check (%d), cping (%d), send (%d)",
-                   ae->worker->name, err_conn, err_cping, err_send);
+            if (err_cping + err_send > 0)
+                jk_log(l, JK_LOG_INFO,
+                       "(%s) no usable connection found, will create a new one, "
+                       "detected by connect check (%d), cping (%d), send (%d).",
+                       ae->worker->name, err_conn, err_cping, err_send);
+            else
+                jk_log(l, JK_LOG_DEBUG,
+                       "(%s) no usable connection found, will create a new one, "
+                       "detected by connect check (%d), cping (%d), send (%d).",
+                       ae->worker->name, err_conn, err_cping, err_send);
         else if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                   "(%s) all endpoints are disconnected.",
+                   "(%s) no usable connection found, will create a new one.",
                    ae->worker->name);
         /* Connect to the backend.
          */
