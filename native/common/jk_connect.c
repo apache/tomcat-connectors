@@ -163,6 +163,7 @@ static int sononblock(jk_sock_t sd)
 /** Non-blocking socket connect
  * @param sd       socket to connect
  * @param addr     address to connect to
+ * @param source   optional source address
  * @param timeout  connect timeout in seconds
  *                 (<=0: no timeout=blocking)
  * @param l        logger
@@ -171,12 +172,22 @@ static int sononblock(jk_sock_t sd)
  *                               during blocking connect
  *                 0: success
  */
-static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_t *l)
+static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
+                      int timeout, jk_logger_t *l)
 {
     int rc;
+    char buf[64];
 
     JK_TRACE_ENTER(l);
 
+    if (source != NULL) {
+        if (bind(sd, (const struct sockaddr *)&source->sa.sin, source->salen)) {
+            JK_GET_SOCKET_ERRNO();
+            jk_log(l, JK_LOG_ERROR,
+                   "error during source bind on socket %d [%s] (errno=%d)",
+                   sd, jk_dump_hinfo(source, buf, sizeof(buf)), errno);
+        }
+    }
     if (timeout <= 0) {
         rc = connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen);
         JK_TRACE_EXIT(l);
@@ -237,18 +248,29 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_
 /** Non-blocking socket connect
  * @param sd       socket to connect
  * @param addr     address to connect to
+ * @param source   optional source address
  * @param timeout  connect timeout in seconds
  *                 (<=0: no timeout=blocking)
  * @param l        logger
  * @return         -1: some kind of error occured
  *                 0: success
  */
-static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_t *l)
+static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
+                      int timeout, jk_logger_t *l)
 {
     int rc = 0;
+    char buf[64];
 
     JK_TRACE_ENTER(l);
 
+    if (source != NULL) {
+        if (bind(sd, (const struct sockaddr *)&source->sa.sin, source->salen)) {
+            JK_GET_SOCKET_ERRNO();
+            jk_log(l, JK_LOG_ERROR,
+                   "error during source bind on socket %d [%s] (errno=%d)",
+                   sd, jk_dump_hinfo(source, buf, sizeof(buf)), errno);
+        }
+    }
     if (timeout > 0) {
         if (sononblock(sd)) {
             JK_TRACE_EXIT(l);
@@ -301,17 +323,28 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_
 /** Non-blocking socket connect
  * @param sd       socket to connect
  * @param addr     address to connect to
+ * @param source   optional source address
  * @param timeout  connect timeout in seconds (ignored!)
  * @param l        logger
  * @return         -1: some kind of error occured
  *                 0: success
  */
-static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, int timeout, jk_logger_t *l)
+static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
+                      int timeout, jk_logger_t *l)
 {
     int rc;
+    char buf[64];
 
     JK_TRACE_ENTER(l);
 
+    if (source != NULL) {
+        if (bind(sd, (const struct sockaddr *)&source->sa.sin, source->salen)) {
+            JK_GET_SOCKET_ERRNO();
+            jk_log(l, JK_LOG_ERROR,
+                   "error during source bind on socket %d [%s] (errno=%d)",
+                   sd, jk_dump_hinfo(source, buf, sizeof(buf)), errno);
+        }
+    }
     rc = connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen);
     JK_TRACE_EXIT(l);
     return rc;
@@ -580,7 +613,8 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
  *                  created socket: success
  * @remark          Cares about errno
  */
-jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
+jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
+                         int keepalive,
                          int timeout, int connect_timeout,
                          int sock_buf, jk_logger_t *l)
 {
@@ -767,11 +801,11 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
                 jk_dump_hinfo(addr, buf, sizeof(buf)));
 
 /* Need more infos for BSD 4.4 and Unix 98 defines, for now only
-iSeries when Unix98 is required at compil time */
+iSeries when Unix98 is required at compile time */
 #if (_XOPEN_SOURCE >= 520) && defined(AS400)
     ((struct sockaddr *)addr)->sa.sin.sa_len = sizeof(struct sockaddr_in);
 #endif
-    ret = nb_connect(sd, addr, connect_timeout, l);
+    ret = nb_connect(sd, addr, source, connect_timeout, l);
 #if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
     if (JK_IS_SOCKET_ERROR(ret)) {
         JK_GET_SOCKET_ERRNO();

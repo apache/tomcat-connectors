@@ -43,7 +43,8 @@ void jk_clone_sockaddr(jk_sockaddr_t *out, jk_sockaddr_t *in);
 int jk_resolve(const char *host, int port, jk_sockaddr_t *rc, void *pool,
                int prefer_ipv6, jk_logger_t *l);
 
-jk_sock_t jk_open_socket(jk_sockaddr_t *addr, int keepalive,
+jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
+                         int keepalive,
                          int timeout, int connect_timeout,
                          int sock_buf, jk_logger_t *l);
 

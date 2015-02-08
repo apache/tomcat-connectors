@@ -299,9 +299,11 @@ struct ajp_worker
     JK_CRIT_SEC cs;
 
     jk_sockaddr_t worker_inet_addr;    /* Contains host and port */
+    jk_sockaddr_t worker_source_inet_addr; /* Contains source ip */
     unsigned connect_retry_attempts;
     char host[JK_SHM_STR_SIZ];
     int port;
+    char source[JK_SHM_STR_SIZ];
     int addr_sequence;  /* Whether the address is resolved */
     int maintain_time;
     int prefer_ipv6;

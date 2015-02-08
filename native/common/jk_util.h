@@ -63,6 +63,8 @@ int jk_check_attribute_length(const char *name, const char *value,
     
 const char *jk_get_worker_host(jk_map_t *m, const char *wname, const char *def);
 
+const char *jk_get_worker_source(jk_map_t *m, const char *wname, const char *def);
+
 const char *jk_get_worker_type(jk_map_t *m, const char *wname);
 
 int jk_get_worker_port(jk_map_t *m, const char *wname, int def);

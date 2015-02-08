@@ -253,6 +253,14 @@ The default value depends on the worker type. For ajp13 workers the default port
 <b>8009</b>, while for ajp14 type of worker that value is <b>8011</b>.
 </directive>
 
+<directive name="source" default="" required="false">
+Name or IP address used for the connection source (outgoing address).
+It should only be used on multi-homed hosts.
+<p>
+This feature is experimental and has been added in <b>jk 1.2.41</b>.
+</p>
+</directive>
+
 <directive name="socket_timeout" default="0" required="false">
 Socket timeout in seconds used for the communication channel between JK and remote host.
 If the remote host does not respond inside the timeout specified, JK will generate an error,

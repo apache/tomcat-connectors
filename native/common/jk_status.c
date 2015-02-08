@@ -155,6 +155,7 @@
 #define JK_STATUS_ARG_AJP_TEXT_HOST_STR    "Hostname"
 #define JK_STATUS_ARG_AJP_TEXT_PORT        "Port"
 #define JK_STATUS_ARG_AJP_TEXT_ADDR_STR    "Address:Port"
+#define JK_STATUS_ARG_AJP_TEXT_SOURCE_STR  "Source"
 
 #define JK_STATUS_ARG_AJP_HEAD_CACHE_TO    "Connection<br/>Pool Timeout"
 #define JK_STATUS_ARG_AJP_HEAD_PING_TO     "Ping<br/>Timeout"
@@ -170,6 +171,7 @@
 #define JK_STATUS_ARG_AJP_HEAD_HOST_STR    "Hostname"
 #define JK_STATUS_ARG_AJP_HEAD_PORT        "Port"
 #define JK_STATUS_ARG_AJP_HEAD_ADDR_STR    "Address:Port"
+#define JK_STATUS_ARG_AJP_HEAD_SOURCE_STR  "Source"
 
 #define JK_STATUS_CMD_UNKNOWN              (0)
 #define JK_STATUS_CMD_LIST                 (1)
@@ -274,6 +276,7 @@
                                            "<th>Type</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_HOST_STR "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_ADDR_STR "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_SOURCE_STR "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_CACHE_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_CONNECT_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_PREPOST_TO "</th>" \
@@ -284,6 +287,7 @@
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_AJP_CONF_ROW        "<tr>" \
+                                           "<td>%s</td>" \
                                            "<td>%s</td>" \
                                            "<td>%s</td>" \
                                            "<td>%s</td>" \
@@ -379,6 +383,7 @@
                                            "<th>Name</th><th>Type</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_HOST_STR "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_ADDR_STR "</th>" \
+                                           "<th>" JK_STATUS_ARG_AJP_HEAD_SOURCE_STR "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_CACHE_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_CONNECT_TO "</th>" \
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_PREPOST_TO "</th>" \
@@ -389,6 +394,7 @@
                                            "<th>" JK_STATUS_ARG_AJP_HEAD_MAX_PK_SZ "</th>" \
                                            "<th>\n"
 #define JK_STATUS_SHOW_MEMBER_CONF_ROW     "<tr>" \
+                                           "<td>%s</td>" \
                                            "<td>%s</td>" \
                                            "<td>%s</td>" \
                                            "<td>%s</td>" \
@@ -1799,6 +1805,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                   status_worker_type(type),
                   aw->host,
                   dump_ajp_addr(aw, buf, sizeof(buf)),
+                  aw->source && *aw->source ? aw->source : "undefined",
                   aw->cache_timeout,
                   aw->connect_timeout,
                   aw->prepost_timeout,
@@ -1812,6 +1819,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                   status_worker_type(type),
                   aw->host,
                   dump_ajp_addr(aw, buf, sizeof(buf)),
+                  aw->source && *aw->source ? aw->source : "undefined",
                   aw->cache_timeout,
                   aw->connect_timeout,
                   aw->prepost_timeout,
@@ -1960,6 +1968,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_print_xml_att_string(s, l, off+2, "host", aw->host);
         jk_print_xml_att_int(s, l, off+2, "port", aw->port);
         jk_print_xml_att_string(s, l, off+2, "address", dump_ajp_addr(aw, buf, sizeof(buf)));
+        jk_print_xml_att_string(s, l, off+2, "source", aw->source && *aw->source ? aw->source : "undefined");
         jk_print_xml_att_int(s, l, off+2, "connection_pool_timeout", aw->cache_timeout);
         jk_print_xml_att_int(s, l, off+2, "ping_timeout", aw->ping_timeout);
         jk_print_xml_att_int(s, l, off+2, "connect_timeout", aw->connect_timeout);
@@ -2029,6 +2038,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_printf(s, l, " host=%s", aw->host);
         jk_printf(s, l, " port=%d", aw->port);
         jk_printf(s, l, " address=%s", dump_ajp_addr(aw, buf, sizeof(buf)));
+        jk_printf(s, l, " source=%s", aw->source && *aw->source ? aw->source : "undefined");
         jk_printf(s, l, " connection_pool_timeout=%d", aw->cache_timeout);
         jk_printf(s, l, " ping_timeout=%d", aw->ping_timeout);
         jk_printf(s, l, " connect_timeout=%d", aw->connect_timeout);
@@ -2095,6 +2105,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
         jk_print_prop_att_string(s, l, w, ajp_name, "host", aw->host);
         jk_print_prop_att_int(s, l, w, ajp_name, "port", aw->port);
         jk_print_prop_att_string(s, l, w, ajp_name, "address", dump_ajp_addr(aw, buf, sizeof(buf)));
+        jk_print_prop_att_string(s, l, w, ajp_name, "source", aw->source && *aw->source ? aw->source : "undefined");
         jk_print_prop_att_int(s, l, w, ajp_name, "connection_pool_timeout", aw->cache_timeout);
         jk_print_prop_att_int(s, l, w, ajp_name, "ping_timeout", aw->ping_timeout);
         jk_print_prop_att_int(s, l, w, ajp_name, "connect_timeout", aw->connect_timeout);

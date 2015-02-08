@@ -45,6 +45,7 @@
 #define NATIVE_LIB_OF_WORKER        "native_lib"
 #define REFERENCE_OF_WORKER         "reference"
 #define HOST_OF_WORKER              "host"
+#define SOURCE_OF_WORKER            "source"
 #define PORT_OF_WORKER              "port"
 #define TYPE_OF_WORKER              "type"
 #define CACHE_OF_WORKER_DEPRECATED  "cachesize"
@@ -183,6 +184,7 @@ static const char *unique_properties[] = {
     SECRET_OF_WORKER,
     REFERENCE_OF_WORKER,
     HOST_OF_WORKER,
+    SOURCE_OF_WORKER,
     PORT_OF_WORKER,
     TYPE_OF_WORKER,
     CACHE_OF_WORKER_DEPRECATED,
@@ -279,6 +281,7 @@ static const char *supported_properties[] = {
     NATIVE_LIB_OF_WORKER,
     REFERENCE_OF_WORKER,
     HOST_OF_WORKER,
+    SOURCE_OF_WORKER,
     PORT_OF_WORKER,
     TYPE_OF_WORKER,
     CACHE_OF_WORKER_DEPRECATED,
@@ -903,6 +906,19 @@ const char *jk_get_worker_host(jk_map_t *m, const char *wname, const char *def)
     }
 
     MAKE_WORKER_PARAM(HOST_OF_WORKER);
+
+    return jk_map_get_string(m, buf, def);
+}
+
+const char *jk_get_worker_source(jk_map_t *m, const char *wname, const char *def)
+{
+    char buf[PARAM_BUFFER_SIZE];
+
+    if (!m || !wname) {
+        return NULL;
+    }
+
+    MAKE_WORKER_PARAM(SOURCE_OF_WORKER);
 
     return jk_map_get_string(m, buf, def);
 }

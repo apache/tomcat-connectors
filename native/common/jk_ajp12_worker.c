@@ -41,6 +41,7 @@
 struct ajp12_worker
 {
     jk_sockaddr_t worker_inet_addr;
+    jk_sockaddr_t worker_source_inet_addr;
     unsigned connect_retry_attempts;
     char *name;
     jk_worker_t worker;
@@ -127,6 +128,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
          attempt++) {
         p->sd =
             jk_open_socket(&p->worker->worker_inet_addr,
+                           p->worker->worker_source_inet_addr.ipaddr_ptr != NULL ?
+                               &p->worker->worker_source_inet_addr :
+                               NULL,
                            JK_FALSE, 0, 0, 0, l);
 
         jk_log(l, JK_LOG_DEBUG, "In jk_endpoint_t::service, sd = %d",
@@ -187,19 +191,34 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                                         p->name,
                                         AJP_DEF_HOST);
 
+        const char *source = jk_get_worker_host(props,
+                                                p->name,
+                                                "");
+
         jk_log(l, JK_LOG_DEBUG,
-               "In jk_worker_t::validate for worker %s contact is %s:%d",
+               "In jk_worker_t::validate for worker %s target is %s:%d",
                p->name, host, port);
 
         if (host) {
-            if (jk_resolve(host, port, &p->worker_inet_addr, we->pool, JK_FALSE, l)) {
-                return JK_TRUE;
+            if (!jk_resolve(host, port, &p->worker_inet_addr, we->pool, JK_FALSE, l)) {
+                jk_log(l, JK_LOG_ERROR,
+                       "In jk_worker_t::validate, host '%s:%d' resolve failed",
+                       host, port);
+                return JK_FALSE;
             }
+        } else {
             jk_log(l, JK_LOG_ERROR,
-                   "In jk_worker_t::validate, resolve failed");
+                   "In jk_worker_t::validate, Error no host name given");
+            return JK_FALSE;
         }
-        jk_log(l, JK_LOG_ERROR, "In jk_worker_t::validate, Error %s %d",
-               host, port);
+        if (source && *source) {
+            if (!jk_resolve(source, 0, &p->worker_source_inet_addr, we->pool, JK_FALSE, l)) {
+                p->worker_source_inet_addr.ipaddr_ptr = NULL;
+                jk_log(l, JK_LOG_WARNING,
+                       "In jk_worker_t::validate, source addr '%s' resolve failed - ignored",
+                       source);
+            }
+        }
     }
     else {
         jk_log(l, JK_LOG_ERROR,

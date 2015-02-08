@@ -210,6 +210,11 @@
         "no usable connection found, will create a new one". Tone done
         from info log level to debug for the common case. (rjung)
       </fix>
+      <add>
+        <bug>57536</bug>: AJP: Allow to configure connection source address.
+        This should only be used on multi-homed hosts. The feature is
+        experimental. (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

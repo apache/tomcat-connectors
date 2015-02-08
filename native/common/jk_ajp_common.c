@@ -1040,6 +1040,9 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 
     ae->last_errno = 0;
     ae->sd = jk_open_socket(&ae->worker->worker_inet_addr,
+                            ae->worker->worker_source_inet_addr.ipaddr_ptr != NULL ?
+                                &ae->worker->worker_source_inet_addr :
+                                NULL,
                             ae->worker->keepalive,
                             ae->worker->socket_timeout,
                             ae->worker->socket_connect_timeout,
@@ -2830,12 +2833,18 @@ int ajp_validate(jk_worker_t *pThis,
         }
         strncpy(p->host, tmp, JK_SHM_STR_SIZ);
         p->prefer_ipv6 = jk_get_worker_prefer_ipv6(props, p->name, JK_FALSE);
+        tmp = jk_get_worker_source(props, p->name, "");
+        if (jk_check_attribute_length("source address", tmp, l) == JK_FALSE) {
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+        strncpy(p->source, tmp, JK_SHM_STR_SIZ);
         if (p->s->h.sequence == 0) {
             /* Initial setup.
              */
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
-                       "worker %s contact is '%s:%d'",
+                       "worker %s target is '%s:%d'",
                        p->name, p->host, p->port);
             if (p->port > 0) {
                 if (!jk_resolve(p->host, p->port, &p->worker_inet_addr,
@@ -2848,6 +2857,15 @@ int ajp_validate(jk_worker_t *pThis,
                         jk_log(l, JK_LOG_DEBUG,
                                "worker %s contact is disabled",
                                p->name);
+                }
+            }
+            if (p->source && *p->source) {
+                if (!jk_resolve(p->source, 0, &p->worker_source_inet_addr,
+                                we->pool, p->prefer_ipv6, l)) {
+                    p->worker_source_inet_addr.ipaddr_ptr = NULL;
+                    jk_log(l, JK_LOG_WARNING,
+                           "worker %s can't resolve source address '%s'",
+                           p->name, p->source);
                 }
             }
             p->addr_sequence    = 0;
