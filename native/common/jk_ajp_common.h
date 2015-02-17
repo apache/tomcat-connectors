@@ -75,6 +75,11 @@ extern "C"
  */
 /*
  * The following request attribute is recognized by Tomcat
+ * to contain the name of the ssl protocol used
+ */
+#define SC_A_SSL_PROTOCOL       ("AJP_SSL_PROTOCOL")
+/*
+ * The following request attribute is recognized by Tomcat
  * to contain the forwarded remote port.
  */
 #define SC_A_REQ_REMOTE_PORT    ("AJP_REMOTE_PORT")

@@ -215,6 +215,10 @@
         This should only be used on multi-homed hosts. The feature is
         experimental. (rjung)
       </add>
+      <add>
+        <bug>57540</bug>: AJP: Forward name of SSL protocol used for handling
+        the request (SSLv3, TLSv1, TLSv1.1, TLSv1.2). (rjung)
+      </add>
     </changelog>
   </subsection>
 </section>

@@ -110,6 +110,7 @@
 #define JK_ENV_LOCAL_PORT           ("JK_LOCAL_PORT")
 #define JK_ENV_IGNORE_CL            ("JK_IGNORE_CL")
 #define JK_ENV_HTTPS                ("HTTPS")
+#define JK_ENV_SSL_PROTOCOL         ("SSL_PROTOCOL")
 #define JK_ENV_CERTS                ("SSL_CLIENT_CERT")
 #define JK_ENV_CIPHER               ("SSL_CIPHER")
 #define JK_ENV_SESSION              ("SSL_SESSION_ID")
@@ -228,6 +229,7 @@ typedef struct
      */
     int ssl_enable;
     char *https_indicator;
+    char *ssl_protocol_indicator;
     char *certs_indicator;
     char *cipher_indicator;
     char *session_indicator;    /* Servlet API 2.3 requirement */
@@ -1077,6 +1079,9 @@ static int init_ws_service(apache_private_data_t * private_data,
                                s->ssl_cert_len, s->ssl_cert);
                     }
                 }
+                s->ssl_protocol =
+                    (char *)apr_table_get(r->subprocess_env,
+                                          conf->ssl_protocol_indicator);
                 /* Servlet 2.3 API */
                 s->ssl_cipher =
                     (char *)apr_table_get(r->subprocess_env,
@@ -2158,6 +2163,25 @@ static const char *jk_set_https_indicator(cmd_parms * cmd,
 }
 
 /*
+ * JkSSLPROTOCOLIndicator Directive Handling
+ *
+ * JkSSLPROTOCOLIndicator SSL_PROTOCOL
+ */
+
+static const char *jk_set_ssl_protocol_indicator(cmd_parms * cmd,
+                                                 void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config,
+                                                  &jk_module);
+
+    conf->ssl_protocol_indicator = apr_pstrdup(cmd->pool, indicator);
+
+    return NULL;
+}
+
+/*
  * JkCERTSIndicator Directive Handling
  *
  * JkCERTSIndicator SSL_CLIENT_CERT
@@ -2588,6 +2612,8 @@ static const command_rec jk_cmds[] = {
      */
     AP_INIT_TAKE1("JkHTTPSIndicator", jk_set_https_indicator, NULL, RSRC_CONF,
                   "Name of the Apache environment that contains SSL indication"),
+    AP_INIT_TAKE1("JkSSLPROTOCOLIndicator", jk_set_ssl_protocol_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the SSL protocol name"),
     AP_INIT_TAKE1("JkCERTSIndicator", jk_set_certs_indicator, NULL, RSRC_CONF,
                   "Name of the Apache environment that contains SSL client certificates"),
     AP_INIT_TAKE1("JkCIPHERIndicator", jk_set_cipher_indicator, NULL,
@@ -3075,6 +3101,7 @@ static void *create_jk_config(apr_pool_t * p, server_rec * s)
          * to be in more use).
          */
         c->https_indicator = JK_ENV_HTTPS;
+        c->ssl_protocol_indicator = JK_ENV_SSL_PROTOCOL;
         c->certs_indicator = JK_ENV_CERTS;
         c->cipher_indicator = JK_ENV_CIPHER;
         c->certchain_prefix = JK_ENV_CERTCHAIN_PREFIX;
@@ -3154,6 +3181,8 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
         overrides->ssl_enable = base->ssl_enable;
     if (!overrides->https_indicator)
         overrides->https_indicator = base->https_indicator;
+    if (!overrides->ssl_protocol_indicator)
+        overrides->ssl_protocol_indicator = base->ssl_protocol_indicator;
     if (!overrides->certs_indicator)
         overrides->certs_indicator = base->certs_indicator;
     if (!overrides->cipher_indicator)

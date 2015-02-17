@@ -591,6 +591,21 @@ static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
         }
     }
 
+    /* Forward the SSL protocol name.
+     * Modern Tomcat versions know how to retrieve
+     * the protocol name from this attribute.
+     */
+    if (s->ssl_protocol && *s->ssl_protocol) {
+        if (jk_b_append_byte(msg, SC_A_REQ_ATTRIBUTE) ||
+            jk_b_append_string(msg, SC_A_SSL_PROTOCOL) ||
+            jk_b_append_string(msg, s->ssl_protocol)) {
+            jk_log(l, JK_LOG_ERROR,
+                   "(%s) failed appending the ssl protocol name %s",
+                   ae->worker->name, s->ssl_protocol);
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+    }
     /* Forward the remote port information, which was forgotten
      * from the builtin data of the AJP 13 protocol.
      * Since the servlet spec allows to retrieve it via getRemotePort(),

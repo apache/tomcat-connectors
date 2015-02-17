@@ -181,6 +181,7 @@ struct jk_ws_service
      * SSL information
      *
      * is_ssl       - True if request is in ssl connection
+     * ssl_protocol-  Name of the SSL protocol (SSLv3, TLSv1, TLSv1.1, TLSv1.2)
      * ssl_cert     - If available, base64 ASN.1 encoded client certificates.
      * ssl_cert_len - Length of ssl_cert, 0 if certificates are not available.
      * ssl_cipher   - The ssl cipher suite in use.
@@ -190,6 +191,7 @@ struct jk_ws_service
      * case, we are passing NULL.
      */
     int is_ssl;
+    char *ssl_protocol;
     char *ssl_cert;
     unsigned ssl_cert_len;
     char *ssl_cipher;
