@@ -42,7 +42,7 @@ JSP requests to Tomcat (and this way, serve them to clients).
 
 <p>
 It is recommended that you also read the
-<a href="../generic_howto/workers.html">Workers HowTo</a> document
+<a href="../common_howto/workers.html">Workers HowTo</a> document
 to learn how to setup the working entities between your web server and Tomcat Engines.
 For more detailed configuration information consult the Reference Guide for
 <a href="../reference/workers.html">workers.properties</a>,
@@ -452,7 +452,7 @@ As you can see the <b>examples</b> context is served by <b>worker1</b> while the
 </p>
 
 <p>
-More information on using and configuring workers in the <a href="../generic_howto/workers.html">Workers HowTo</a>
+More information on using and configuring workers in the <a href="../common_howto/workers.html">Workers HowTo</a>
 and in the <a href="../reference/workers.html">worker.properties configuration reference</a>.
 </p>
 

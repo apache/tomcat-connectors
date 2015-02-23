@@ -1000,7 +1000,7 @@
       </fix>
       <update>
         Documentation: Remove JNI parameters from sample configuration
-        in the workers generic howto. (rjung)
+        in the workers common howto. (rjung)
       </update>
       <fix>
         <bug>45026</bug>: For Apache httpd 2.x add "Unknown Reason"

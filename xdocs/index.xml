@@ -239,29 +239,29 @@ Apache web server.
 </ul>
 </section>
 
-<section name="Generic HowTo">
+<section name="Common HowTo">
 <br />
 <ul>
 
-<li><a href="generic_howto/quick.html"><b>Quick Start</b></a>
+<li><a href="common_howto/quick.html"><b>Quick Start</b></a>
 <p>This page describes the configuration files used by JK on the
 Web Server side for the 'impatients'.
 </p>
 </li>
-<li><a href="generic_howto/workers.html"><b>All about workers</b></a>
+<li><a href="common_howto/workers.html"><b>All about workers</b></a>
 <p>This page contains an overview about the various aspects of defining
 and using workers.
 </p>
 </li>
-<li><a href="generic_howto/timeouts.html"><b>Timeouts</b></a>
+<li><a href="common_howto/timeouts.html"><b>Timeouts</b></a>
 <p>This page describes the possible timeout settings you can use.
 </p>
 </li>
-<li><a href="generic_howto/loadbalancers.html"><b>Load Balancing</b></a>
+<li><a href="common_howto/loadbalancers.html"><b>Load Balancing</b></a>
 <p>This page contains an introduction on load balancing with JK.
 </p>
 </li>
-<li><a href="generic_howto/proxy.html"><b>Reverse Proxy</b></a>
+<li><a href="common_howto/proxy.html"><b>Reverse Proxy</b></a>
 <p>This page contains an introduction to reverse proxies, how JK
 handles this situation and how you can influence the JK proxying behaviour.
 </p>

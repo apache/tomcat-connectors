@@ -243,7 +243,7 @@ It overrides any <code>reply_timeout</code> defined for the worker. The extensio
 to set a reasonable default reply timeout to the worker, and a more relaxed
 reply timeout to URLs, which are known to start time intensive tasks.
 For a general description of reply timeouts see the
-<a href="../generic_howto/timeouts.html#Reply Timeout">timeouts</a> documentation.
+<a href="../common_howto/timeouts.html#Reply Timeout">timeouts</a> documentation.
 </p>
 </subsection>
 <subsection name="Extension sticky_ignore">

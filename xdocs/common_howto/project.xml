@@ -15,18 +15,32 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project name="Apache Tomcat Connector Documentation - Generic HowTo"
+<project name="Apache Tomcat Connector Documentation - Common HowTo"
         href="http://tomcat.apache.org/">
 
-    <title>The Apache Tomcat Connector - Generic HowTo</title>
+    <title>The Apache Tomcat Connector - Common HowTo</title>
 
     <logo href="/images/tomcat.gif">
-      The Apache Tomcat Connector - Generic HowTo
+      The Apache Tomcat Connector - Common HowTo
     </logo>
 <body>
 
     <menu name="Links">
         <item name="Docs Home"                  href="../index.html"/>
+    </menu>
+
+    <menu name="Common HowTo">
+        <item name="For the impatient"          href="../common_howto/quick.html"/>
+        <item name="All about workers"          href="../common_howto/workers.html"/>
+        <item name="Timeouts"                   href="../common_howto/timeouts.html"/>
+        <item name="Load Balancing"             href="../common_howto/loadbalancers.html"/>
+        <item name="Reverse Proxy"              href="../common_howto/proxy.html"/>
+    </menu>
+
+    <menu name="Webserver HowTo">
+        <item name="Apache HTTP Server"         href="../webserver_howto/apache.html"/>
+        <item name="IIS"                        href="../webserver_howto/iis.html"/>
+        <item name="Netscape/SunOne/Sun"        href="../webserver_howto/nes.html"/>
     </menu>
 
     <menu name="Reference Guide">
@@ -35,20 +49,6 @@
         <item name="Status Worker"              href="../reference/status.html"/>
         <item name="Apache HTTP Server"         href="../reference/apache.html"/>
         <item name="IIS"                        href="../reference/iis.html"/>
-    </menu>
-
-    <menu name="Generic HowTo">
-        <item name="For the impatient"          href="../generic_howto/quick.html"/>
-        <item name="All about workers"          href="../generic_howto/workers.html"/>
-        <item name="Timeouts"                   href="../generic_howto/timeouts.html"/>
-        <item name="Load Balancing"             href="../generic_howto/loadbalancers.html"/>
-        <item name="Reverse Proxy"              href="../generic_howto/proxy.html"/>
-    </menu>
-
-    <menu name="Webserver HowTo">
-        <item name="Apache HTTP Server"         href="../webserver_howto/apache.html"/>
-        <item name="IIS"                        href="../webserver_howto/iis.html"/>
-        <item name="Netscape/SunOne/Sun"        href="../webserver_howto/nes.html"/>
     </menu>
 
     <menu name="AJP Protocol Reference">

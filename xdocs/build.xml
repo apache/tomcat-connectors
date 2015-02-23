@@ -101,18 +101,18 @@
       <param name="project-menu" expression="nomenu"/>
     </style>
 
-    <!-- Generic Howto -->
-    <style basedir="generic_howto"
-           destdir="${build.dir}/${dist.name}/generic_howto"
+    <!-- Common Howto -->
+    <style basedir="common_howto"
+           destdir="${build.dir}/${dist.name}/common_howto"
          extension=".html"
              style="style.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
     </style>
-    <mkdir     dir="${build.dir}/${dist.name}/generic_howto/printer"/>
-    <style basedir="generic_howto"
-           destdir="${build.dir}/${dist.name}/generic_howto/printer"
+    <mkdir     dir="${build.dir}/${dist.name}/common_howto/printer"/>
+    <style basedir="common_howto"
+           destdir="${build.dir}/${dist.name}/common_howto/printer"
          extension=".html"
              style="style.xsl"
           excludes="project.xml"

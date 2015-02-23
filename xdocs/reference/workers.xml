@@ -146,7 +146,7 @@ Each worker configuration directive consists of three words separated by a dot:
 The first word is always <b>worker</b>. 
 The second word is the worker name you can choose. In the case of load-balancing,
 the worker name has an additional meaning. Please consult the
-<a href="../generic_howto/loadbalancers.html">Load Balancer HowTo</a>.
+<a href="../common_howto/loadbalancers.html">Load Balancer HowTo</a>.
 </p>
 <warn>
 The name of the worker can contain only the alphanumeric characters

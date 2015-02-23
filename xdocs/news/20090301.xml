@@ -51,7 +51,7 @@ The most important new features in this version are:
 <p>
 Local and global error states have been improved. You can fine tune the
 behaviour with the new "error_escalation_time" attribute
-(see the <a href="../generic_howto/timeouts.html">timeouts documentation</a>).
+(see the <a href="../common_howto/timeouts.html">timeouts documentation</a>).
 </p>
 <h3>Dynamic Address and Port Change Using the Status Worker</h3>
 <p>
@@ -74,7 +74,7 @@ worker errors.
 <p>
 You can now overwrite more request metadata before the request gets send to the backend.
 This is helpful in case there are other reverse proxies in front of your web server.
-A new <a href="../generic_howto/proxy.html">documentation page</a> explains this in detail.
+A new <a href="../common_howto/proxy.html">documentation page</a> explains this in detail.
 </p>
 <h3>Improved IIS Support</h3>
 <p>

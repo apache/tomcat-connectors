@@ -166,7 +166,7 @@ the ajp12 worker properties are :
 
 <p>
 <b>lbfactor</b> property is used when working with a load balancer worker, this is the load-balancing factor for the worker.
-We'll see more on this in the <a href="../generic_howto/loadbalancers.html">lb worker</a> section.
+We'll see more on this in the <a href="../common_howto/loadbalancers.html">lb worker</a> section.
 </p>
 
 <source>
