@@ -242,7 +242,7 @@ It is available only for httpd 2.x and above using APR libraries
 including thread support.
 </p></attribute>
 <attribute name="JkLogFile" required="false"><p>
-Full or server relative path to the Tomcat Connector module log file.
+Full or server relative path to the mod_jk log file.
 It will also work with pipe, by using a value of the form "| ...".
 <br/>
 The default value is logs/mod_jk.log.
@@ -251,13 +251,13 @@ Pipes are supported for Apache 1.3 only since version 1.2.16.
 The default value exists only since version 1.2.20.
 </p></attribute>
 <attribute name="JkLogLevel" required="false"><p>
-The Tomcat Connector module log level, can be debug, info, warn
+The mod_jk log level, can be debug, info, warn
 error or trace.
 <br/>
 The default value is info.
 </p></attribute>
 <attribute name="JkLogStampFormat" required="false"><p>
-The Tomcat Connector module <b>date</b> log format, using an
+The mod_jk <b>date</b> log format, using an
 extended strftime syntax.
 This format will be used for the time stamps in the JkLogFile.
 The maximum length of the format is 63 characters.
