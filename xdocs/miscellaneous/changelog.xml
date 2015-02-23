@@ -34,7 +34,7 @@
 
 <section name="Preface">
   <p>
-  This is the Changelog for Tomcat Connectors. This changelog
+  This is the Changelog for Apache Tomcat Connectors. This changelog
   does not contain all updates and fixes to the Tomcat connectors (yet).
   It should contain fixes made only after November 10th 2004, when the
   new documentation project for JK was started.
@@ -258,7 +258,7 @@
   <subsection name="Native">
     <changelog>
       <update>
-        Deprecate nt_service from Tomcat Connectors. (mturk) 
+        Deprecate nt_service from Apache Tomcat Connectors. (mturk) 
       </update>
       <fix>
         <bug>56133</bug>: Fix possible crash when a request fails during

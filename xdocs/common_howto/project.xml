@@ -15,13 +15,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project name="Apache Tomcat Connector Documentation - Common HowTo"
+<project name="Apache Tomcat Connectors Documentation - Common HowTo"
         href="http://tomcat.apache.org/">
 
-    <title>The Apache Tomcat Connector - Common HowTo</title>
+    <title>The Apache Tomcat Connectors - Common HowTo</title>
 
     <logo href="/images/tomcat.gif">
-      The Apache Tomcat Connector - Common HowTo
+      The Apache Tomcat Connectors - Common HowTo
     </logo>
 <body>
 

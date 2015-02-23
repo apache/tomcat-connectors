@@ -15,13 +15,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project name="Apache Tomcat Connector Documentation - News"
+<project name="Apache Tomcat Connectors Documentation - News"
         href="http://tomcat.apache.org/">
 
-    <title>The Apache Tomcat Connector - News</title>
+    <title>The Apache Tomcat Connectors - News</title>
 
     <logo href="/images/tomcat.gif">
-      The Apache Tomcat Connector - News
+      The Apache Tomcat Connectors - News
     </logo>
 <body>
 

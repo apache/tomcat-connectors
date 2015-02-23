@@ -15,13 +15,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project name="Apache Tomcat Connector Documentation - AJP Protocol Reference"
+<project name="Apache Tomcat Connectors Documentation - AJP Protocol Reference"
         href="http://tomcat.apache.org/">
 
-    <title>The Apache Tomcat Connector - AJP Protocol Reference</title>
+    <title>The Apache Tomcat Connectors - AJP Protocol Reference</title>
 
     <logo href="/images/tomcat.gif">
-      The Apache Tomcat Connector - AJP Protocol Reference
+      The Apache Tomcat Connectors - AJP Protocol Reference
     </logo>
 <body>
 

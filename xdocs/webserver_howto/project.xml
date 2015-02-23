@@ -15,13 +15,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project name="Apache Tomcat Connector Documentation - Webserver HowTo"
+<project name="Apache Tomcat Connectors Documentation - Webserver HowTo"
         href="http://tomcat.apache.org/">
 
-    <title>The Apache Tomcat Connector - Webserver HowTo</title>
+    <title>The Apache Tomcat Connectors - Webserver HowTo</title>
 
     <logo href="/images/tomcat.gif">
-      The Apache Tomcat Connector - Webserver HowTo
+      The Apache Tomcat Connectors - Webserver HowTo
     </logo>
 <body>
 
