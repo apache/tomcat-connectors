@@ -71,7 +71,7 @@
         <include name="RUNNING.txt"/>
       </fileset>
     </copy>
-    <style basedir="."
+    <xslt basedir="."
            destdir="${build.dir}/${dist.name}/printer"
          extension=".html"
              style="style.xsl"
@@ -79,19 +79,19 @@
           includes="*.xml">
       <param name="relative-path" expression="./.."/>
       <param name="project-menu" expression="nomenu"/>
-    </style>
+    </xslt>
 
     <!-- Reference Guide -->
-    <style basedir="reference"
+    <xslt basedir="reference"
            destdir="${build.dir}/${dist.name}/reference"
          extension=".html"
              style="style.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
-    </style>
+    </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/reference/printer"/>
-    <style basedir="reference"
+    <xslt basedir="reference"
            destdir="${build.dir}/${dist.name}/reference/printer"
          extension=".html"
              style="style.xsl"
@@ -99,19 +99,19 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
-    </style>
+    </xslt>
 
     <!-- Common Howto -->
-    <style basedir="common_howto"
+    <xslt basedir="common_howto"
            destdir="${build.dir}/${dist.name}/common_howto"
          extension=".html"
              style="style.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
-    </style>
+    </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/common_howto/printer"/>
-    <style basedir="common_howto"
+    <xslt basedir="common_howto"
            destdir="${build.dir}/${dist.name}/common_howto/printer"
          extension=".html"
              style="style.xsl"
@@ -119,87 +119,87 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
-    </style>
+    </xslt>
 
-        <!-- Webserver Howto -->
-        <style basedir="webserver_howto"
-               destdir="${build.dir}/${dist.name}/webserver_howto"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression=".."/>
-        </style>
-        <mkdir     dir="${build.dir}/${dist.name}/webserver_howto/printer"/>
-        <style basedir="webserver_howto"
-               destdir="${build.dir}/${dist.name}/webserver_howto/printer"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression="../.."/>
-          <param name="project-menu" expression="nomenu"/>
-        </style>
+    <!-- Webserver Howto -->
+    <xslt basedir="webserver_howto"
+           destdir="${build.dir}/${dist.name}/webserver_howto"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+    </xslt>
+    <mkdir     dir="${build.dir}/${dist.name}/webserver_howto/printer"/>
+    <xslt basedir="webserver_howto"
+           destdir="${build.dir}/${dist.name}/webserver_howto/printer"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression="../.."/>
+      <param name="project-menu" expression="nomenu"/>
+    </xslt>
 
-        <!-- AJP Protocol Reference -->
-        <style basedir="ajp"
-               destdir="${build.dir}/${dist.name}/ajp"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression=".."/>
-        </style>
-        <mkdir     dir="${build.dir}/${dist.name}/ajp/printer"/>
-        <style basedir="ajp"
-               destdir="${build.dir}/${dist.name}/ajp/printer"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression="../.."/>
-          <param name="project-menu" expression="nomenu"/>
-        </style>
+    <!-- AJP Protocol Reference -->
+    <xslt basedir="ajp"
+           destdir="${build.dir}/${dist.name}/ajp"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+    </xslt>
+    <mkdir     dir="${build.dir}/${dist.name}/ajp/printer"/>
+    <xslt basedir="ajp"
+           destdir="${build.dir}/${dist.name}/ajp/printer"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression="../.."/>
+      <param name="project-menu" expression="nomenu"/>
+    </xslt>
 
-        <!-- Miscellaneous Documentation -->
-        <style basedir="miscellaneous"
-               destdir="${build.dir}/${dist.name}/miscellaneous"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression=".."/>
-        </style>
-        <mkdir     dir="${build.dir}/${dist.name}/miscellaneous/printer"/>
-        <style basedir="miscellaneous"
-               destdir="${build.dir}/${dist.name}/miscellaneous/printer"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression="../.."/>
-          <param name="project-menu" expression="nomenu"/>
-        </style>
+    <!-- Miscellaneous Documentation -->
+    <xslt basedir="miscellaneous"
+           destdir="${build.dir}/${dist.name}/miscellaneous"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+    </xslt>
+    <mkdir     dir="${build.dir}/${dist.name}/miscellaneous/printer"/>
+    <xslt basedir="miscellaneous"
+           destdir="${build.dir}/${dist.name}/miscellaneous/printer"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression="../.."/>
+      <param name="project-menu" expression="nomenu"/>
+    </xslt>
 
-        <!-- News -->
-        <style basedir="news"
-               destdir="${build.dir}/${dist.name}/news"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression=".."/>
-        </style>
-        <mkdir     dir="${build.dir}/${dist.name}/news/printer"/>
-        <style basedir="news"
-               destdir="${build.dir}/${dist.name}/news/printer"
-             extension=".html"
-                 style="style.xsl"
-              excludes="project.xml"
-              includes="*.xml">
-          <param name="relative-path" expression="../.."/>
-          <param name="project-menu" expression="nomenu"/>
-        </style>
+    <!-- News -->
+    <xslt basedir="news"
+           destdir="${build.dir}/${dist.name}/news"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+    </xslt>
+    <mkdir     dir="${build.dir}/${dist.name}/news/printer"/>
+    <xslt basedir="news"
+           destdir="${build.dir}/${dist.name}/news/printer"
+         extension=".html"
+             style="style.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression="../.."/>
+      <param name="project-menu" expression="nomenu"/>
+    </xslt>
  
   </target>
 
@@ -208,14 +208,14 @@
   <target name="build-main" depends="build-static">
 
     <!-- Top Level Directory -->
-    <style basedir="."
+    <xslt basedir="."
            destdir="${build.dir}/${dist.name}"
          extension=".html"
              style="style.xsl"
           excludes="build.xml project.xml empty.xml"
           includes="*.xml">
       <param name="relative-path" expression="."/>
-    </style>
+    </xslt>
 
   </target>
 
