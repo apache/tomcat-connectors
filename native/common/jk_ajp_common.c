@@ -3376,37 +3376,16 @@ int ajp_get_endpoint(jk_worker_t *pThis,
     return JK_FALSE;
 }
 
-int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, jk_logger_t *l)
+int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, int global, jk_logger_t *l)
 {
     JK_TRACE_ENTER(l);
 
     if (pThis && pThis->worker_private) {
         ajp_worker_t *aw = pThis->worker_private;
         int i;
-        long delta;
         unsigned int n = 0, k = 0, cnt = 0;
         unsigned int m, m_count = 0;
         jk_sock_t   *m_sock;
-
-        jk_shm_lock();
-
-        /* Now we check for global maintenance (once for all processes).
-         * Checking workers for idleness.
-         * Therefore we globally sync and we use a global timestamp.
-         * Since it's possible that we come here a few milliseconds
-         * before the interval has passed, we allow a little tolerance.
-         */
-        delta = (long)difftime(mstarted, aw->s->last_maintain_time) +
-                JK_AJP_MAINTAIN_TOLERANCE;
-        if (delta >= aw->maintain_time) {
-            aw->s->last_maintain_time = mstarted;
-            if (aw->s->state == JK_AJP_STATE_OK &&
-                aw->s->used == aw->s->used_snapshot)
-                aw->s->state = JK_AJP_STATE_IDLE;
-            aw->s->used_snapshot = aw->s->used;
-        }
-
-        jk_shm_unlock();
 
         /* Do connection pool maintenance only if timeouts or keepalives are set
          */

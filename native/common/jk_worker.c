@@ -25,6 +25,7 @@
 #define _PLACE_WORKER_LIST_HERE
 #include "jk_worker_list.h"
 #include "jk_worker.h"
+#include "jk_shm.h"
 #include "jk_util.h"
 #include "jk_mt.h"
 
@@ -315,6 +316,7 @@ const char *wc_get_name_for_type(int type, jk_logger_t *l)
 void wc_maintain(jk_logger_t *l)
 {
     static time_t last_maintain = 0;
+    int needs_global_maintenance;
     int sz = jk_map_size(worker_map);
 
     JK_TRACE_ENTER(l);
@@ -325,7 +327,8 @@ void wc_maintain(jk_logger_t *l)
      * - time since last maintenance is big enough
      */
     if (sz > 0 && worker_maintain_time > 0 &&
-        difftime(time(NULL), last_maintain) >= worker_maintain_time) {
+        difftime(time(NULL), last_maintain) >= worker_maintain_time &&
+        !running_maintain) {
         int i;
         JK_ENTER_CS(&worker_lock);
         if (running_maintain ||
@@ -339,8 +342,10 @@ void wc_maintain(jk_logger_t *l)
          * the maintain until we are finished.
          */
         running_maintain = 1;
+        last_maintain = time(NULL);
         JK_LEAVE_CS(&worker_lock);
 
+        needs_global_maintenance = jk_shm_check_maintain(last_maintain - worker_maintain_time);
         for (i = 0; i < sz; i++) {
             jk_worker_t *w = jk_map_value_at(worker_map, i);
             if (w && w->maintain) {
@@ -348,11 +353,10 @@ void wc_maintain(jk_logger_t *l)
                     jk_log(l, JK_LOG_DEBUG,
                            "Maintaining worker %s",
                            jk_map_name_at(worker_map, i));
-                w->maintain(w, time(NULL), l);
+                w->maintain(w, time(NULL), needs_global_maintenance, l);
             }
         }
         JK_ENTER_CS(&worker_lock);
-        last_maintain = time(NULL);
         running_maintain = 0;
         JK_LEAVE_CS(&worker_lock);
     }

@@ -728,23 +728,14 @@ static jk_uint64_t decay_load(lb_worker_t *p,
     return curmax;
 }
 
-static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, jk_logger_t *l)
+static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, int global, jk_logger_t *l)
 {
     unsigned int i = 0;
     jk_uint64_t curmax = 0;
-    long delta;
 
     JK_TRACE_ENTER(l);
     if (p && p->worker_private) {
         lb_worker_t *lb = (lb_worker_t *)p->worker_private;
-
-        for (i = 0; i < lb->num_of_workers; i++) {
-            if (lb->lb_workers[i].worker->maintain) {
-                lb->lb_workers[i].worker->maintain(lb->lb_workers[i].worker, now, l);
-            }
-        }
-
-        jk_shm_lock();
 
         /* Now we check for global maintenance (once for all processes).
          * Checking workers for recovery and applying decay to the
@@ -753,20 +744,42 @@ static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, jk_logger_t *l
          * Since it's possible that we come here a few milliseconds
          * before the interval has passed, we allow a little tolerance.
          */
-        delta = (long)difftime(now, lb->s->last_maintain_time) + JK_LB_MAINTAIN_TOLERANCE;
-        if (delta >= lb->maintain_time) {
+        if (global == JK_TRUE) {
+            time_t exponent = JK_LB_DECAY_MULT * difftime(now, lb->s->last_maintain_time) / lb->maintain_time;
             lb->s->last_maintain_time = now;
+
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "decay with 2^%d",
-                       JK_LB_DECAY_MULT * delta / lb->maintain_time);
-            curmax = decay_load(lb, JK_LB_DECAY_MULT * delta / lb->maintain_time, l);
+                       exponent);
+
+            jk_shm_lock();
+
+            curmax = decay_load(lb, exponent, l);
+
             if (!recover_workers(lb, curmax, now, l)) {
                 force_recovery(lb, NULL, l);
             }
+
+            /*
+             * Checking workers for idleness.
+             */
+            for (i = 0; i < lb->num_of_workers; i++) {
+                ajp_worker_t *aw = lb->lb_workers[i].worker->worker_private;
+                if (aw->s->state == JK_AJP_STATE_OK &&
+                    aw->s->used == aw->s->used_snapshot)
+                    aw->s->state = JK_AJP_STATE_IDLE;
+                aw->s->used_snapshot = aw->s->used;
+            }
+
+            jk_shm_unlock();
         }
 
-        jk_shm_unlock();
+        for (i = 0; i < lb->num_of_workers; i++) {
+            if (lb->lb_workers[i].worker->maintain) {
+                lb->lb_workers[i].worker->maintain(lb->lb_workers[i].worker, now, global, l);
+            }
+        }
 
     }
     else {

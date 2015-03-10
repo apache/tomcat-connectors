@@ -127,9 +127,6 @@ extern "C"
 
 /* Time to wait before retry. */
 #define WAIT_BEFORE_RECOVER   (60)
-/* We accept doing global maintenance if we are */
-/* JK_LB_MAINTAIN_TOLERANCE seconds early. */
-#define JK_LB_MAINTAIN_TOLERANCE (2)
 /* We divide load values by 2^x during global maintenance. */
 /* The exponent x is JK_LB_DECAY_MULT*#MAINT_INTV_SINCE_LAST_MAINT */
 #define JK_LB_DECAY_MULT         (1)

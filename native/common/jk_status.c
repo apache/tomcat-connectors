@@ -2231,7 +2231,6 @@ static void display_worker_lb(jk_ws_service_t *s,
     map_count = count_maps(s, name, l);
     ms_min = lb->maintain_time - (int)difftime(now, lb->s->last_maintain_time);
     ms_max = ms_min + lb->maintain_time;
-    ms_min -= JK_LB_MAINTAIN_TOLERANCE;
     if (ms_min < 0) {
         ms_min = 0;
     }

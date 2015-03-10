@@ -42,6 +42,8 @@ struct jk_shm_header_data
     unsigned int pos;
     unsigned int childs;
     unsigned int workers;
+    unsigned int maintain_checking;
+    volatile time_t maintain_time;
 };
 
 typedef struct jk_shm_header_data jk_shm_header_data_t;
@@ -324,6 +326,8 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
                JK_SHM_MAGIC_SIZ);
         jk_shmem.hdr->h.data.size = sz;
         jk_shmem.hdr->h.data.childs = 1;
+        jk_shmem.hdr->h.data.maintain_checking = 0;
+        jk_shmem.hdr->h.data.maintain_time = time(NULL);
     }
     else {
         jk_shmem.hdr->h.data.childs++;
@@ -659,6 +663,8 @@ static int do_shm_open(const char *fname, int attached,
         memcpy(jk_shmem.hdr->h.data.magic, shm_signature, JK_SHM_MAGIC_SIZ);
         jk_shmem.hdr->h.data.size = sz;
         jk_shmem.hdr->h.data.childs = 1;
+        jk_shmem.hdr->h.data.maintain_checking = 0;
+        jk_shmem.hdr->h.data.maintain_time = time(NULL);
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
                    "Initialized shared memory %s size=%u free=%u addr=%#lx",
@@ -861,6 +867,23 @@ jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
 const char *jk_shm_name()
 {
     return jk_shmem.filename;
+}
+
+int jk_shm_check_maintain(time_t trigger)
+{
+    int rv = JK_FALSE;
+    int maintain_checking = JK_ATOMIC_INCREMENT(&(jk_shmem.hdr->h.data.maintain_checking));
+    /* Another process (or thread) is already checking */
+    if (maintain_checking > 1) {
+        JK_ATOMIC_DECREMENT(&(jk_shmem.hdr->h.data.maintain_checking));
+        return rv;
+    }
+    if (jk_shmem.hdr->h.data.maintain_time < trigger) {
+        jk_shmem.hdr->h.data.maintain_time = time(NULL);
+        rv = JK_TRUE;
+    }
+    JK_ATOMIC_DECREMENT(&(jk_shmem.hdr->h.data.maintain_checking));
+    return rv;
 }
 
 int jk_shm_lock()
