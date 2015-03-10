@@ -223,27 +223,6 @@ jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p,
 jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name,
                                            jk_logger_t *l);
 
-/* Return workers.properties last modified time
- */
-time_t jk_shm_get_workers_time(void);
-
-/* Set workers.properties last modified time
- */
-void jk_shm_set_workers_time(time_t t);
-
-/* Check if the shared memory has been modified
- * by some other process.
- */
-int jk_shm_is_modified(void);
-
-/* Synchronize access and modification time.
- * This function should be called when the shared memory
- * is modified and after we update the config acording
- * to the current shared memory data.
- */
-void jk_shm_sync_access_time(void);
-
-
 /* Lock shared memory for thread safe access */
 int jk_shm_lock(void);
 

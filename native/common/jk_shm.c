@@ -42,7 +42,6 @@ struct jk_shm_header_data
     unsigned int pos;
     unsigned int childs;
     unsigned int workers;
-    time_t       modified;
 };
 
 typedef struct jk_shm_header_data jk_shm_header_data_t;
@@ -81,8 +80,6 @@ typedef struct jk_shm jk_shm_t;
 
 static const char shm_signature[] = { JK_SHM_MAGIC };
 static jk_shm_t jk_shmem = { 0, 0, 0, 0, NULL, NULL, -1, -1, 0, NULL};
-static time_t jk_workers_modified_time = 0;
-static time_t jk_workers_access_time = 0;
 #if defined (WIN32)
 static HANDLE jk_shm_map = NULL;
 static HANDLE jk_shm_hlock = NULL;
@@ -864,40 +861,6 @@ jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
 const char *jk_shm_name()
 {
     return jk_shmem.filename;
-}
-
-
-time_t jk_shm_get_workers_time()
-{
-    if (jk_shmem.hdr)
-        return jk_shmem.hdr->h.data.modified;
-    else
-        return jk_workers_modified_time;
-}
-
-void jk_shm_set_workers_time(time_t t)
-{
-    jk_shm_lock();
-    if (jk_shmem.hdr)
-        jk_shmem.hdr->h.data.modified = t;
-    else
-        jk_workers_modified_time = t;
-    jk_workers_access_time = t;
-    jk_shm_unlock();
-}
-
-int jk_shm_is_modified()
-{
-    time_t m = jk_shm_get_workers_time();
-    if (m != jk_workers_access_time)
-        return 1;
-    else
-        return 0;
-}
-
-void jk_shm_sync_access_time()
-{
-    jk_workers_access_time = jk_shm_get_workers_time();
 }
 
 int jk_shm_lock()
