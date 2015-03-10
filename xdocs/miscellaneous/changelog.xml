@@ -47,7 +47,8 @@
       <fix>
         AJP, LB: Reduce lock contention during maintenance function.
         This was observable when using a big number of AJP13 and LB
-        workers. (rjung)
+        workers, especially in combination with the Apache httpd prefork
+        MPM. (rjung)
       </fix>
       <fix>
         <bug>57060</bug>: Allow building from outside of source tree.
