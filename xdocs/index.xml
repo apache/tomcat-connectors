@@ -43,8 +43,15 @@ manual is described in more detail below.</p>
 </section>
 
 <section name="Headlines">
-<br />
 <ul>
+0<li><a href="news/20150101.html#JK-1.2.41 released"><b>JK-1.2.41 released</b></a>
+<p>The Apache Tomcat team is proud to announce the immediate availability
+   of Tomcat Connectors 1.2.41 Stable. This release contains a security fix and
+   bug fixes for issues found in previous releases.</p>
+   
+<p>Download the <a href="//tomcat.apache.org/download-connectors.cgi">JK 1.2.41 release</a>.</p>
+</li>
+    
 <li><a href="news/20140201.html#15 April - JK-1.2.40 released">15 April 2014 - <b>JK-1.2.40 released</b></a>
 <p>The Apache Tomcat team is proud to announce the immediate availability
     of Tomcat Connectors 1.2.40 Stable. This release contains bug fixes found in previous releases.
