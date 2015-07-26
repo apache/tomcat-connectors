@@ -90,7 +90,8 @@
         unmount. Configuration is done via new JkOption for Apache
         ("CollapseSlashesAll", "CollapseSlashesNone" or
         "CollapseSlashesUnmount") and via property "collapse_slashes" for IIS
-        (values "all", "none", "unmount"). (rjung)
+        (values "all", "none", "unmount"). This is the fix for CVE-2014-8111.
+        (rjung)
       </add>
       <add>
         Add more checks for shared memory allocation. (rjung)
