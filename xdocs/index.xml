@@ -44,164 +44,21 @@ manual is described in more detail below.</p>
 
 <section name="Headlines">
 <ul>
-0<li><a href="news/20150101.html#JK-1.2.41 released"><b>JK-1.2.41 released</b></a>
+<li><a href="news/20150101.html#JK-1.2.41 released"><b>JK-1.2.41 released</b></a>
 <p>The Apache Tomcat team is proud to announce the immediate availability
    of Tomcat Connectors 1.2.41 Stable. This release contains a security fix and
    bug fixes for issues found in previous releases.</p>
    
-<p>Download the <a href="//tomcat.apache.org/download-connectors.cgi">JK 1.2.41 release</a>.</p>
-</li>
-    
-<li><a href="news/20140201.html#15 April - JK-1.2.40 released">15 April 2014 - <b>JK-1.2.40 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.40 Stable. This release contains bug fixes found in previous releases.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.40-src.tar.gz">JK 1.2.40 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.40-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-    
-<li><a href="news/20140201.html#2 March - JK-1.2.39 released">11 March 2014 - <b>JK-1.2.39 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.39 Stable. This release contains bug fixes found in previous releases
-    and few new features.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.39-src.tar.gz">JK 1.2.39 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.39-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
+<p>Download the <a href="//tomcat.apache.org/download-connectors.cgi">JK 1.2.41
+   release</a>.</p>
 </li>
 
-<li><a href="news/20120301.html#31 May - JK-1.2.37 released">31 May 2012 - <b>JK-1.2.37 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.37 Stable. This release contains bug fixes found in previous release.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.37-src.tar.gz">JK 1.2.37 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.37-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
+<li>
+<p>Download
+   <a href="//archive.apache.org/dist/tomcat/tomcat-connectors/">previous
+   releases</a> from the archives.</p>
 </li>
 
-<li><a href="news/20120301.html#14 May - JK-1.2.36 released">14 May 2012 - <b>JK-1.2.36 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.36 Stable. This release contains bug fixes found in previous release.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.36-src.tar.gz">JK 1.2.36 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.36-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-
-<li><a href="news/20120301.html#24 March - JK-1.2.35 released">24 March 2012 - <b>JK-1.2.35 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.35 Stable. This release contains bug fixes found in previous release.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.35-src.tar.gz">JK 1.2.35 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.35-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-
-<li><a href="news/20120301.html#19 March - JK-1.2.33 stability issue">19 March 2012 - <b>JK-1.2.33 stability issue</b></a>
-<p>The Apache Tomcat team wishes to draw your attention to stability issues
-    that have been identified with the recent mod_jk 1.2.33 release. If you
-    have not yet upgraded to mod_jk 1.2.33 we recommend that you wait for
-    the mod_jk 1.2.34 release which is currently in progress. If you have
-    upgraded and are experienced issues we recommend that you downgrade to
-    mod_jk 1.2.32 until mod_jk 1.2.34 is available.
-</p>
-<p>We apologise for any inconvenience.</p>
-</li>
-
-<li><a href="news/20120301.html#13 March - JK-1.2.33 released">13 March 2012 - <b>JK-1.2.33 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.33 Stable. This release contains mainly bug fixes
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.33-src.tar.gz">JK 1.2.33 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.33-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-
-<li><a href="news/20110701.html#8 July - JK-1.2.32 released">8 July 2011 - <b>JK-1.2.32 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.32 Stable. This release contains mainly bug fixes
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.32/tomcat-connectors-1.2.32-src.tar.gz">JK 1.2.32 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.32/tomcat-connectors-1.2.32-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-
-<li><a href="news/20100101.html#1 November - JK-1.2.31 released">1 November 2010 - <b>JK-1.2.31 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-    of Tomcat Connectors 1.2.31 Stable. This release contains mainly bug fixes
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.31/tomcat-connectors-1.2.31-src.tar.gz">JK 1.2.31 release sources</a>
-    | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.31/tomcat-connectors-1.2.31-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-
-<li><a href="news/20100101.html#1 March - JK-1.2.30 released">1 March 2010 - <b>JK-1.2.30 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-of Tomcat Connectors 1.2.30 Stable. This release contains mainly bug fixes
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.30/tomcat-connectors-1.2.30-src.tar.gz">JK 1.2.30 release sources</a>
- | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.30/tomcat-connectors-1.2.30-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-<li><a href="news/20090301.html#22 March - JK-1.2.28 released">22 March 2009 - <b>JK-1.2.28 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-of Tomcat Connectors 1.2.28 Stable. This release contains mainly bug fixes and some small <a href="news/20090301.html#22 March - JK-1.2.28 released">improvements</a>.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.28/tomcat-connectors-1.2.28-src.tar.gz">JK 1.2.28 release sources</a>
- | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.28/tomcat-connectors-1.2.28-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-<li><a href="news/20081001.html#28 October - JK-1.2.27 released">28 October 2008 - <b>JK-1.2.27 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-of Tomcat Connectors 1.2.27 Stable. This release contains interesting <a href="news/20081001.html#28 October - JK-1.2.27 released">improvements</a>.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.27/tomcat-connectors-1.2.27-src.tar.gz">JK 1.2.27 release sources</a>
- | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.27/tomcat-connectors-1.2.27-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-<li><a href="news/20070301.html#20071221.1">21 December 2007 - <b>JK-1.2.26 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-of Tomcat Connectors 1.2.26 Stable.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.26/tomcat-connectors-1.2.26-src.tar.gz">JK 1.2.26 release sources</a>
- | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.26/tomcat-connectors-1.2.26-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
-<li><a href="news/20070301.html#20070807.1">7 August 2007 - <b>JK-1.2.25 released</b></a>
-<p>The Apache Tomcat team is proud to announce the immediate availability
-of Tomcat Connectors 1.2.25 Stable.
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.25/tomcat-connectors-1.2.25-src.tar.gz">JK 1.2.25 release sources</a>
- | <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-1.2.25/tomcat-connectors-1.2.25-src.tar.gz.asc">PGP signature</a>
-</p>
-<p>Download the <a href="http://www.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/">binaries</a> for selected platforms.
-</p>
-</li>
 </ul>
 </section>
 
