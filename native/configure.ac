@@ -439,6 +439,29 @@ JK_CHECK_SASTORAGE
 AC_CHECK_FUNC(getaddrinfo, AC_DEFINE(HAVE_GETADDRINFO,1,[Have getaddrinfo()]))
 AC_CHECK_FUNC(gethostbyname_r, AC_DEFINE(HAVE_GETHOSTBYNAME_R,1,[Have gethostbyname_r()]))
 
+AC_DEFUN([JK_CHECK_ATOMICS], [
+AC_MSG_CHECKING(whether the compiler provides atomic builtins)
+AC_TRY_RUN([
+int main()
+{
+    unsigned long val = 1010;
+
+    if (__sync_add_and_fetch(&val, 1010) != 2020 || val != 2020)
+        return 1;
+
+    if (__sync_sub_and_fetch(&val, 1010) != 1010 || val != 1010)
+        return 1;
+
+    return 0;
+}
+]
+, [ AC_MSG_RESULT([yes]) AC_DEFINE(HAVE_ATOMIC_BUILTINS, 1, [Define to 1 if the compiler provides atomic builtins]) ]
+, [ AC_MSG_RESULT([no]) ]
+)
+])dnl
+
+JK_CHECK_ATOMICS
+
 dnl Apache-2.0 needs the os subdirectory to include os.h
 dnl this include is copy from os/config.m4
 sinclude(../support/os_apache.m4)

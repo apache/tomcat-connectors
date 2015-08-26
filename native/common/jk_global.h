@@ -433,7 +433,7 @@ typedef int jk_sock_t;
     do {\
         if (InterlockedDecrement(x) < 0) InterlockedIncrement(x);\
     } while (0)
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1))
+#elif defined(HAVE_ATOMIC_BUILTINS)
 #define JK_ATOMIC_INCREMENT(x) __sync_add_and_fetch(x, 1)
 #define JK_ATOMIC_DECREMENT(x) \
     do {\
