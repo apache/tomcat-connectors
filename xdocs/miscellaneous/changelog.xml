@@ -46,7 +46,9 @@
     <changelog>
       <fix>
         <bug>58285</bug>: Don't use GCC atomics on platforms, for which
-        GCC doesn't provide an atomics implementation. (rjung)
+        GCC doesn't provide an atomics implementation. This regression
+        was introduced by the fix to <bug>44454</bug> and <bug>56703</bug>.
+        (rjung)
       </fix>
     </changelog>
   </subsection>
