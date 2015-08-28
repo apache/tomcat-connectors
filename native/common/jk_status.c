@@ -241,9 +241,18 @@
 #define JK_STATUS_WAIT_AFTER_UPDATE        "3"
 #define JK_STATUS_REFRESH_DEF              "10"
 #define JK_STATUS_ESC_CHARS                ("<>?\"")
+
+#ifdef WIN32
+/* See also windows_strftime_preprocess() */
+#define JK_WINDOWS_TIMEZONE_PLACEHOLDER    "+????"
+#define JK_STATUS_TIME_FMT_HTML            "%Y-%m-%d %H:%M:%S " JK_WINDOWS_TIMEZONE_PLACEHOLDER
+#define JK_STATUS_TIME_FMT_TZ              JK_WINDOWS_TIMEZONE_PLACEHOLDER
+#else
 #define JK_STATUS_TIME_FMT_HTML            "%Y-%m-%d %H:%M:%S %z"
-#define JK_STATUS_TIME_FMT_TEXT            "%Y%m%d%H%M%S"
 #define JK_STATUS_TIME_FMT_TZ              "%z"
+#endif
+
+#define JK_STATUS_TIME_FMT_TEXT            "%Y%m%d%H%M%S"
 #define JK_STATUS_TIME_BUF_SZ              (30)
 
 #define JK_STATUS_HEAD                     "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" \
@@ -764,10 +773,43 @@ static char *status_strfsize(jk_uint64_t size, char *buf)
     } while (1);
 }
 
+#ifdef WIN32
+/* Handle time formatting aspects which are not implemented by strftime
+ * on Windows.
+ * Currently only handles numeric time zone formatting
+ * which needs to be requested using JK_WINDOWS_TIMEZONE_PLACEHOLDER
+ * in the pattern.
+ */
+static const char *windows_strftime_preprocess(const char *pattern,
+                                               char *buf, size_t sz) {
+    char *found = strstr(pattern, JK_WINDOWS_TIMEZONE_PLACEHOLDER);
+    if (found != NULL && sz > strlen(pattern)) {
+        TIME_ZONE_INFORMATION tz;
+
+        strcpy(buf, pattern);
+        found = buf + (found - pattern);
+
+        if (GetTimeZoneInformation(&tz) != TIME_ZONE_ID_INVALID) {
+            tz.Bias *= -1;
+            snprintf(found, strlen(JK_WINDOWS_TIMEZONE_PLACEHOLDER), "%c%02d%02d",
+                     (tz.Bias >= 0 ? '+' : '-'), tz.Bias / 60, tz.Bias % 60);
+        }
+        return buf;
+    } else {
+        return pattern;
+    }
+}
+#else
+#define windows_strftime_preprocess(x, y, z) (x)
+#endif
+
 static int status_strftime(time_t clock, int mime, char *buf_time, char *buf_tz,
                            jk_logger_t *l)
 {
     size_t rc_time;
+#ifdef WIN32
+    char buf[JK_STATUS_TIME_BUF_SZ];
+#endif
 #ifdef _MT_CODE_PTHREAD
     struct tm res;
     struct tm *tms = localtime_r(&clock, &res);
@@ -778,11 +820,21 @@ static int status_strftime(time_t clock, int mime, char *buf_time, char *buf_tz,
     JK_TRACE_ENTER(l);
 
     if (mime == JK_STATUS_MIME_HTML)
-        rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_HTML, tms);
+        rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ,
+                           windows_strftime_preprocess(JK_STATUS_TIME_FMT_HTML,
+                                                       buf, JK_STATUS_TIME_BUF_SZ),
+                           tms);
     else {
-        rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_TEXT, tms);
+        rc_time = strftime(buf_time, JK_STATUS_TIME_BUF_SZ,
+                           windows_strftime_preprocess(JK_STATUS_TIME_FMT_TEXT,
+                                                       buf, JK_STATUS_TIME_BUF_SZ),
+                           tms);
     }
-    strftime(buf_tz, JK_STATUS_TIME_BUF_SZ, JK_STATUS_TIME_FMT_TZ, tms);
+
+    strftime(buf_tz, JK_STATUS_TIME_BUF_SZ,
+             windows_strftime_preprocess(JK_STATUS_TIME_FMT_TZ,
+                                         buf, JK_STATUS_TIME_BUF_SZ),
+             tms);
 
     JK_TRACE_EXIT(l);
     return (int)rc_time;

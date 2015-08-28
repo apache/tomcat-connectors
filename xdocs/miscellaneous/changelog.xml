@@ -45,6 +45,12 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>58286</bug>: Fix crash in mod_jk and in the ISAPI Redirector.
+        The crash only happens on Windows when retrieving the jk-status
+        for the HTML format (which is the default format). This regression
+        was introduced by the fix to <bug>54177</bug>. (rjung)
+      </fix>
+      <fix>
         <bug>58285</bug>: Don't use GCC atomics on platforms, for which
         GCC doesn't provide an atomics implementation. This regression
         was introduced by the fix to <bug>44454</bug> and <bug>56703</bug>.
