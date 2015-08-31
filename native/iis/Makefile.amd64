@@ -111,7 +111,7 @@ LINK32_OBJS= \
 	IF EXIST $(OUTDIR)\$(TARGET).manifest \
 		mt -nologo -manifest $(OUTDIR)\$(TARGET).manifest -outputresource:$(OUTDIR)\$(TARGET).dll;2
 
-CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "pcre" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /D "JK_ISAPI" /D "ISAPI_EXPORTS" $(CFLAGS) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "pcre" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /D "PCRE_STATIC" /D "JK_ISAPI" /D "ISAPI_EXPORTS" $(CFLAGS) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
