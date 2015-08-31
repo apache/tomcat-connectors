@@ -1,3 +1,12 @@
+/-- This set of tests checks local-specific features, using the "fr_FR" locale. 
+    It is not Perl-compatible. When run via RunTest, the locale is edited to
+    be whichever of "fr_FR", "french", or "fr" is found to exist. There is
+    different version of this file called wintestinput3 for use on Windows,
+    where the locale is called "french" and the tests are run using
+    RunTest.bat. --/
+
+< forbid 8W 
+
 /^[\w]+/
     *** Failers
     École
@@ -62,4 +71,30 @@
     *** Failers 
     école
 
-/ End of testinput3 /
+/\W+/Lfr_FR
+    >>>\xaa<<<
+    >>>\xba<<< 
+
+/[\W]+/Lfr_FR
+    >>>\xaa<<<
+    >>>\xba<<< 
+
+/[^[:alpha:]]+/Lfr_FR
+    >>>\xaa<<<
+    >>>\xba<<< 
+
+/\w+/Lfr_FR
+    >>>\xaa<<<
+    >>>\xba<<< 
+
+/[\w]+/Lfr_FR
+    >>>\xaa<<<
+    >>>\xba<<< 
+
+/[[:alpha:]]+/Lfr_FR
+    >>>\xaa<<<
+    >>>\xba<<< 
+    
+/[[:alpha:]][[:lower:]][[:upper:]]/DZLfr_FR 
+
+/-- End of testinput3 --/

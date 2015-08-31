@@ -40,8 +40,8 @@ RSC=rc.exe
 # PROP Output_Dir "LibR"
 # PROP Intermediate_Dir "LibR"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /O2 /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "PCRE_STATIC" /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O2 /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "PCRE_STATIC" /Fd"LibR/pcre_src" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /O2 /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "HAVE_CONFIG_H" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O2 /D "_WIN32" /D "NDEBUG" /D "_WINDOWS" /D "HAVE_CONFIG_H" /Fd"LibR/pcre_src" /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -63,8 +63,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "LibD"
 # PROP Intermediate_Dir "LibD"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /EHsc /Zi /Od /D "_WIN32" /D "_DEBUG" /D "_WINDOWS" /D "PCRE_STATIC" /FD /c
-# ADD CPP /nologo /MDd /W3 /EHsc /Zi /Od /D "_WIN32" /D "_DEBUG" /D "_WINDOWS" /D "PCRE_STATIC" /Fd"LibD/pcre_src" /FD /c
+# ADD BASE CPP /nologo /MDd /W3 /EHsc /Zi /Od /D "_WIN32" /D "_DEBUG" /D "_WINDOWS" /D "HAVE_CONFIG_H" /FD /c
+# ADD CPP /nologo /MDd /W3 /EHsc /Zi /Od /D "_WIN32" /D "_DEBUG" /D "_WINDOWS" /D "HAVE_CONFIG_H" /Fd"LibD/pcre_src" /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -83,48 +83,133 @@ LIB32=link.exe -lib
 # Begin Group "Source Files"
 
 # PROP Default_Filter "*.c"
+
 # Begin Source File
 
-SOURCE=.\dftables.exe
+SOURCE=.\pcre_byte_order.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_compile.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_config.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_dfa_exec.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_exec.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_fullinfo.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_get.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_globals.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_jit_compile.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_maketables.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_newline.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_ord2utf8.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_refcount.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_string_utils.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_study.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_tables.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_ucd.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_valid_utf8.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_version.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_xclass.c
+# End Source File
+
+# Begin Source File
+
+SOURCE=.\pcre_chartables.c.dist
 
 !IF  "$(CFG)" == "pcre - Win32 Release"
 
-# Begin Custom Build - Creating pcre chartables.c from dftables 
-InputPath=.\dftables.exe
+# Begin Custom Build - Creating pcre_chartables.c from pcre_chartables.c.dist
+InputPath=.\pcre_chartables.c.dist
 
-".\chartables.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	.\dftables.exe chartables.c 
+".\pcre_chartables.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	type .\pcre_chartables.c.dist > .\pcre_chartables.c
 	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "pcre - Win32 Debug"
 
-# Begin Custom Build - Creating pcre chartables.c from dftables 
-InputPath=.\dftables.exe
+# Begin Custom Build - Creating pcre_chartables.c from pcre_chartables.c.dist
+InputPath=.\pcre_chartables.c.dist
 
-".\chartables.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	.\dftables.exe chartables.c 
+".\pcre_chartables.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	type .\pcre_chartables.c.dist > .\pcre_chartables.c
 	
 # End Custom Build
 
 !ENDIF 
 
-# End Source File
-# Begin Source File
-
-SOURCE=.\get.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\maketables.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\pcre.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\study.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -159,29 +244,29 @@ InputPath=.\config.hw
 # End Source File
 # Begin Source File
 
-SOURCE=.\internal.h
+SOURCE=.\pcre_internal.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\pcre.hw
+SOURCE=.\pcre.h.generic
 
 !IF  "$(CFG)" == "pcre - Win32 Release"
 
-# Begin Custom Build - Creating pcre.h from pcre.hw 
-InputPath=.\pcre.hw
+# Begin Custom Build - Creating pcre.h from pcre.h.generic 
+InputPath=.\pcre.h.generic
 
 ".\pcre.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	type .\pcre.hw > .\pcre.h
+	type .\pcre.h.generic > .\pcre.h
 	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "pcre - Win32 Debug"
 
-# Begin Custom Build - Creating pcre.h from pcre.hw 
-InputPath=.\pcre.hw
+# Begin Custom Build - Creating pcre.h from pcre.h.generic 
+InputPath=.\pcre.h.generic
 
 ".\pcre.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	type .\pcre.hw > .\pcre.h
+	type .\pcre.h.generic > .\pcre.h
 	
 # End Custom Build
 

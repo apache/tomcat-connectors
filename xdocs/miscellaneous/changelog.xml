@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <update>
+        <bug>58309</bug>: ISAPI: Update bundled pcre from version 5.0
+        to 8.37. (rjung)
+      </update>
       <fix>
         <bug>58286</bug>: Fix crash in mod_jk and in the ISAPI Redirector.
         The crash only happens on Windows when retrieving the jk-status
