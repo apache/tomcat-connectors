@@ -52,12 +52,12 @@ send to servlet engine many info from web server (like SSL certs)
 </li>
 </ul>
 <p>
-But ajp13 lacks support for : 
+But ajp13 lacks support for: 
 </p>
 <ul>
 <li>
   security between web server and servlet engine.
-  Anybody can connect to an ajp13 port (no login mecanism used)
+  Anybody can connect to an ajp13 port (no login mechanism used)
   You could connect, for example with telnet, and keep the remote thread
   up by not sending any data (no timeout in connection)
 </li>
@@ -161,7 +161,7 @@ crypto, context info (at start up), context update at
 run-time (up/down), level of SSL env vars, AJP protocol
 level supported (level1/level2/level3...)
 
-The Web server info will contain web server info and
+The web server info will contain web server info and
 connector name (ie Apache 1.3.26 + mod_ssl 2.8.8 + mod_jk 1.2.41 + mod_perl 1.25).
 
 The servlet engine will mask the negociation mask with it's own
@@ -220,8 +220,8 @@ WEB SERVER INFO, SERVLET ENGINE INFO are CString.
 </li>
 </ul>
 
-The secret key will be set by a new propertie in
-workers.properties : secretkey
+The secret key will be set by a new property in
+workers.properties: secretkey
 <source>
 worker.ajp13.port=8009
 worker.ajp13.host=localhost
@@ -233,7 +233,7 @@ worker.ajp13.secretkey=myverysecretkey
 
 <subsection name="Shutdown feature">
 <p>
-AJP13 miss a functionnality of AJP12, which is shutdown command.
+AJP13 miss a functionality of AJP12, which is shutdown command.
 A logout will tell servlet engine to shutdown itself.
 <source>
 +--------------+----------------------------+
@@ -281,10 +281,10 @@ passed to their servlet engine.
 To reduce the network traffic, the web-servlet will send a 
 table to describing the external vars in a shorter fashion.
 
-We'll use there a functionnality allready present in AJP13,
-attributes list :
+We'll use there a functionality allready present in AJP13,
+attributes list:
 
-In the AJP13, we've got :
+In the AJP13, we've got:
 
 <source>
 AJP13_FORWARD_REQUEST :=
@@ -323,7 +323,7 @@ network traffic.
 +-------------------+---------------------------+-------------------------------+----+
 </source>
 
-ie :
+ie:
 
 <source>
 JkExtVars S1 SSL_CLIENT_V_START javax.servlet.request.ssl_start_cert_date
@@ -347,7 +347,7 @@ containing S1, S2, S3 and attributes values of
 2001/01/03, 2002/01/03, 0123AFE56.
  
 This example showed the use of extended SSL vars but 
-any 'personnal' web-server vars like custom authentification
+any 'personal' web-server vars like custom authentification
 vars could be reused in the servlet engine.
 The cost will be only some more bytes in the AJP traffic.
 
@@ -366,7 +366,7 @@ ES is an empty CString.
 </p>
 </subsection>
 
-<subsection name="Context informations forwarding for Servlet engine to Web Server">
+<subsection name="Context informations forwarding for Servlet engine to web server">
 <p>
 Just after the LOGON PHASE, the web server will ask for the list of contexts
 and URLs/URIs handled by the servlet engine.
@@ -378,13 +378,13 @@ This mode will be activated by a new directive JkAutoMount
 ie: JkAutoMount examples myworker1 /examples/
 
 If we want to get ALL the contexts handled by the servlet engine, willcard
-could be used :
+could be used:
 
 ie: JkAutoMount * myworker1 *
 
 A servlet engine could have many contexts, /examples, /admin, /test.
 We may want to use only some contexts for a given worker. It was
-done previously, in apache HTTP server for example, by setting by 
+done previously, in Apache HTTP Server for example, by setting by 
 hand the JkMount accordingly in each [virtual] area of Apache.
 
 If you web-server support virtual hosting, we'll forward also that
@@ -393,7 +393,7 @@ that virtual host.
 In that case the servlet engine will only return the URL/URI matching
 these particular virtual server (defined in server.xml). 
 This feature will help ISP and big sites which mutualize large farm
-of Tomcat in load-balancing configuration.
+of Tomcat in load balancing configuration.
 
 <source>
 +-----------------+-------------------+----------+----------+----+
@@ -430,7 +430,7 @@ In that case the servlet engine will send all contexts handled.
 </p>
 </subsection>
 
-<subsection name="Context informations updates from Servlet engine to Web Server">
+<subsection name="Context informations updates from Servlet engine to web server">
 <p>
 Context update are messages caming from the servlet engine each time a context 
 is desactivated/reactivated. The update will be in use when the directive JkUpdateMount.
@@ -544,7 +544,7 @@ We could use a buffering scheme but what happen when you use the servlet engine
 for upload operations with more than 8ko of datas ?
 
 The hack in the AJP13 protocol is to add some bytes to read after the end of the
-service :
+service:
 
 <source>
 EXAMPLE OF DISCUSSION BETWEEN WEB SERVER AND SERVLET ENGINE
@@ -566,7 +566,7 @@ More at that time the web server could also use OS dependants functions
 to read. And that datas could be CONTEXT Updates. 
 
 This will avoid the web server sending a request to a 
-desactivated context. In that case, if the load-balancing is used,
+desactivated context. In that case, if the load balancing is used,
 it will search for another servlet engine to handle the request.
 
 And that feature will help ISP and big sites with farm of tomcat, 
