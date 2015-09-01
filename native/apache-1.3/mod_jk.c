@@ -3412,13 +3412,13 @@ static int jk_translate(request_rec * r)
                     char *index = clean_uri;
                     char *suffix = strchr(index + 1, '/');
                     if (suffix != NULL) {
-                        int size = suffix - index;
+                        int size = (int)(suffix - index);
                         context_dir = ap_pstrndup(r->pool, index, size);
                         /* Get the context child directory name */
                         index = index + size + 1;
                         suffix = strchr(index, '/');
                         if (suffix != NULL) {
-                            size = suffix - index;
+                            size = (int)(suffix - index);
                             child_dir = ap_pstrndup(r->pool, index, size);
                         }
                         else {

@@ -3901,7 +3901,7 @@ static int jk_translate(request_rec * r)
                         index = index + size + 1;
                         suffix = strchr(index, '/');
                         if (suffix != NULL) {
-                            size = suffix - index;
+                            size = (int)(suffix - index);
                             child_dir = apr_pstrndup(r->pool, index, size);
                         }
                         else {
