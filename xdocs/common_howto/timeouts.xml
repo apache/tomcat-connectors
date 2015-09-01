@@ -216,17 +216,17 @@ Until version 1.2.26, the maintenance task only runs, if requests get
 processed. So if your web server has processes that do not receive any
 requests for a long time, there is no way to close the idle connections
 in its pool. Starting with version 1.2.27 you can configure an independent
-watchdog thread when using Apache 2.x with threaded APR or IIS.
+watchdog thread when using Apache HTTP Server 2.x with threaded APR or Microsoft IIS.
 </p>
 <p>
 The maximum connection pool size can be configured with the
 attribute <b>connection_pool_size</b>. We generally do not recommend
-to use this attribute in combination with Apache httpd. For
-Apache httpd we automatically detect the number of threads per
-process and set the maximum pool size to this value. For IIS we use
+to use this attribute in combination with Apache HTTP Server. For
+Apache we automatically detect the number of threads per
+process and set the maximum pool size to this value. For Microsoft IIS we use
 a default value of 250 (before version 1.2.20: 10),
-for the Sun Web Server the default is "1".
-We strongly recommend adjusting this value for IIS and the Sun Web Server
+for the iPlanet Web Server the default is "1".
+We strongly recommend adjusting this value for IIS and the iPlanet Web Server
 to the number of requests one web server process should
 be able to send to a backend in parallel. You should measure how many connections
 you need during peak hours without performance problems, and then add some
@@ -278,8 +278,8 @@ on good configuration values for the firewall and the platform TCP tuning.
 <p>
 In case none of our recommendations help and you are definitively having
 problems with idle connection drops, you can disable the use of persistent
-connections when using JK together with Apache httpd. For this you set
-"JkOptions +DisableReuse" in your Apache httpd configuration.
+connections when using JK together with Apache HTTP Server. For this you set
+"JkOptions +DisableReuse" in your Apache configuration.
 The amount of performance impact this will have depends on the details of
 your network and your firewall.
 </p>
@@ -314,8 +314,8 @@ The default value is "0" (timeout disabled) and you can set it to any
 millisecond value.
 </p>
 <p>
-In combination with Apache httpd, you can also set a more flexible reply_timeout
-using an httpd environment variable. If you set the variable JK_REPLY_TIMEOUT
+In combination with Apache HTTP Server, you can also set a more flexible reply_timeout
+using an Apache environment variable. If you set the variable JK_REPLY_TIMEOUT
 to some integer value, this value will be used instead of the value in
 the worker configuration. This way you can set reply timeouts more flexible
 with mod_setenvif and mod_rewrite depending on URI, query string etc.

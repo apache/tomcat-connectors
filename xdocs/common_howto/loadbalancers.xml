@@ -40,7 +40,7 @@ This management includes:
 Instantiating the workers in the web server.
 </li>
 <li>
-Using the worker's load-balancing factor, perform weighted load balancing
+Using the worker's load balancing factor, perform weighted load balancing
 (distributing load according to defined strengths of the targets).
 </li>
 <li>
@@ -49,19 +49,19 @@ Keeping requests belonging to the same session executing on the same Tomcat
 </li>
 <li>
 Identifying failed Tomcat workers, suspending requests to them and instead
-falling-back on other workers managed by the load balancer.
+failing over on other workers managed by the load balancer.
 </li>
 <li>
 Providing status and load metrics for the load balancer itself and all
 members via the status worker interface.
 </li>
 <li>
-Allowing to dynamically reconfigure load-balancing via the status worker
+Allowing to dynamically reconfigure load balancing via the status worker
 interface.
 </li>
 </ul>
 <p>
-Workers managed by the same load balancer worker are load-balanced
+Workers managed by the same load balancer worker are load balanced
 (based on their configured balancing factors and current request or session load)
 and also secured against failure by providing failover to other members of the same
 load balancer. So a single Tomcat process death will not "kill" the entire site.
@@ -212,7 +212,7 @@ especially useful when combined with load balancer workers.
   worker.jkstatus.type=status
 </source>
 <p>Next thing is to mount the requests to the jkstatus worker. For Apache
-web servers use the:</p>
+HTTP Servers use:</p>
 <source>
   # Add the jkstatus mount point
   JkMount /jkmanager/* jkstatus 

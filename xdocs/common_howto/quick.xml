@@ -30,14 +30,15 @@
 <section name="Introduction">
 <p>
   This document describes the configuration files used by JK on the
-  Web Server side for the 'impatient':
+  web server side for the 'impatient':
     <ul>
     <li>
-    <b>workers.properties</b> is a mandatory file used by the webserver and which
-    is the same for all JK implementations (Apache/IIS/NES).
+    <b>workers.properties</b> is a mandatory file used by the web server and which
+    is the same for all JK implementations (mod_jk for the Apache HTTP Server,
+    ISAPI for Microsoft IIS, NSAPI for the iPlanet Web Server).
     </li>
     <li>
-    <b>web server</b> add-ons to be set on the webserver side. 
+    <b>web server</b> add-ons to be set on the web server side. 
     </li>
     </ul>
 </p>
@@ -49,7 +50,7 @@
 
 <section name="Minimum workers.properties">
 <p>
-    Here is a minimum <b>workers.properties</b>, using just ajp13 to connect your Apache webserver
+    Here is a minimum <b>workers.properties</b>, using just ajp13 to connect your web server
     to the Tomcat engine, complete documentation is available in <a href="workers.html">Workers HowTo</a>. 
 </p>
 <p>
@@ -66,10 +67,10 @@
 </p>
 </section>
 
-<section name="Minimum Apache web server configuration">
+<section name="Minimum Apache HTTP Server configuration">
 <p>
-   Here is a minimum information about Apache configuration, a 
-   more complete <a href="../webserver_howto/apache.html">separate HowTo for Apache</a> is available.
+   Here is some very basic information about Apache configuration, a 
+   more complete <a href="../webserver_howto/apache.html">HowTo for Apache</a> is available.
 </p>
 <p>
   You should first have <b>mod_jk.so</b> (unix) or <b>mod_jk.dll</b> (Windows) installed
@@ -81,10 +82,11 @@
   <li>/usr/lib/apache/</li>
   <li>/usr/lib/apache2/</li>
   <li>/usr/local/apache/libexec/</li>
+  <li>/usr/local/apache/modules/</li>
   </ul>
 </p>
 <p>
-  Usual locations for modules directory on Windows :
+  Usual locations for modules directory on Windows:
   <ul>
   <li>C:\Program Files\Apache Group\Apache\modules\</li>
   <li>C:\Program Files\Apache Group\Apache2\modules\</li>
@@ -107,7 +109,7 @@
   </ul>
 </p>
 <p>
-  Usual locations for configuration directory on Windows :
+  Usual locations for configuration directory on Windows:
   <ul>
   <li>C:\Program Files\Apache Group\Apache\conf\</li>
   <li>C:\Program Files\Apache Group\Apache2\conf\</li>
@@ -118,8 +120,8 @@
 
   # Load mod_jk module
   # Update this path to match your modules location
-  LoadModule    jk_module  libexec/mod_jk.so
-  # Declare the module for &lt;IfModule directive&gt; (remove this line on Apache 2.x)
+  LoadModule    jk_module  modules/mod_jk.so
+  # Declare the module for &lt;IfModule directive&gt; (remove this line for Apache 2.x)
   AddModule     mod_jk.c
   # Where to find workers.properties
   # Update this path to match your conf directory location (put workers.properties next to httpd.conf)
@@ -141,18 +143,18 @@
 </p>
 </section>
 
-<section name="Minimum IIS web server configuration">
+<section name="Minimum Microsoft IIS configuration">
 <p>
-  A separate <a href="../webserver_howto/iis.html">HowTo for the IIS web server</a> is available.
+  A separate <a href="../webserver_howto/iis.html">HowTo for the Microsoft IIS web server</a> is available.
 </p>
 <todo>
 More information to be added!
 </todo>
 </section>
 
-<section name="Minimum NES/iPlanet/Sun web server configuration">
+<section name="Minimum iPlanet Web Server configuration">
 <p>
-  A separate <a href="../webserver_howto/nes.html">HowTo for the Netscape/iPlanet/Sun web server</a> is available.
+  A separate <a href="../webserver_howto/nes.html">HowTo for the iPlanet Web Server</a> is available.
 <todo>
 More information to be added?
 </todo>

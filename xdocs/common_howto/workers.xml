@@ -32,7 +32,7 @@
 <section name="Introduction">
 <p>
 A Tomcat worker is a Tomcat instance that is waiting to execute servlets on behalf of some web server. 
-For example, we can have a web server such as Apache forwarding servlet requests to a 
+For example, we can have a web server such as the Apache HTTP Server forwarding servlet requests to a 
 Tomcat process (the worker) running behind it.
 </p>
 <p>
@@ -92,7 +92,7 @@ When starting up, the web server plugin will instantiate the workers whose name 
 <b>worker.list</b> property, these are also the workers to whom you can map requests. The directive can be used multiple times.
 </p>
 
-<subsection name="Workers Type">
+<subsection name="Worker Types">
 <p>
 Each named worker should also have a few entries to provide additional information on his behalf.
 This information includes the worker's type and other related worker information. 
@@ -101,10 +101,11 @@ Currently the following worker types that exists are (JK 1.2.5):
 
 <table>
   <tr><th>Type</th><th>Description</th></tr>
-  <tr><td>ajp12</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajpv12 protocol.</td></tr>
-  <tr><td>ajp13</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajpv13 protocol.</td></tr>
-  <tr><td>lb</td><td>This is a load-balancing worker; it knows how to provide round-robin based sticky load balancing with a certain level of fault-tolerance.</td></tr>
+  <tr><td>ajp13</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp13 protocol.</td></tr>
+  <tr><td>lb</td><td>This is a load balancing worker; it knows how to provide flexible load balancing with a certain level of fault-tolerance.</td></tr>
   <tr><td>status</td><td>This is a status worker for managing load balancers.</td></tr>
+  <tr><td>ajp12</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp12 protocol. It is deprecated</td></tr>
+  <tr><td>ajp14</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp14 protocol. It is experimental</td></tr>
 </table>
 
 <p>
@@ -118,9 +119,9 @@ in the table (a worker name may only contain any space the characters [a-zA-Z0-9
 </p>
 
 <source>
-  # Defines a worker named "local" that uses the ajpv12 protocol to forward requests to a Tomcat process.
+  # Defines a worker named "local" that uses the ajp12 protocol to forward requests to a Tomcat process.
   worker.local.type=ajp12
-  # Defines a worker named "remote" that uses the ajpv13 protocol to forward requests to a Tomcat process.
+  # Defines a worker named "remote" that uses the ajp13 protocol to forward requests to a Tomcat process.
   worker.remote.type=ajp13
   # Defines a worker named "loadbalancer" that loadbalances several Tomcat processes transparently.
   worker.loadbalancer.type=lb
@@ -142,18 +143,18 @@ worker.&lt;worker name&gt;.&lt;property&gt;=&lt;property value&gt;
 
 Each worker has a set of properties that you can set as specified in the following subsections:
 
-<subsection name="ajp12 Worker properties">
+<subsection name="ajp12 Worker Properties">
 <p><warn>
-The <b>ajp12</b> has been <b>deprecated</b> with Tomcat 3.3.x and you should use instead 
-<b>ajp13</b> which is the only ajp protocol known by all Tomcat 4 and above.
+The worker type <b>ajp12</b> has been <b>deprecated</b> and you should use instead 
+<b>ajp13</b> instead.
 </warn></p> 
 <p>
 The ajp12 typed workers forward requests to out-of-process Tomcat workers 
-using the ajpv12 protocol over TCP/IP sockets.
+using the ajp12 protocol over TCP/IP sockets. It does not use persistent connections.
 </p>
 
 <p>
-the ajp12 worker properties are :
+The ajp12 worker properties are:
 </p>
 
 <p>
@@ -165,39 +166,39 @@ the ajp12 worker properties are :
 </p>
 
 <p>
-<b>lbfactor</b> property is used when working with a load balancer worker, this is the load-balancing factor for the worker.
-We'll see more on this in the <a href="../common_howto/loadbalancers.html">lb worker</a> section.
+<b>lbfactor</b> property is used when working with a load balancer worker, this is the load balancing factor for the worker.
+We'll see more on this in the <a href="../common_howto/loadbalancers.html">load balancer worker</a> section.
 </p>
 
 <source>
   # worker "worker1" will talk to Tomcat listening on machine www.x.com at port 8007 using 2 lb factor
+  worker.worker1.type=ajp12
   worker.worker1.host=www.x.com
   worker.worker1.port=8007
   worker.worker1.lbfactor=2
 </source>
 
 <p>
-Notes: In the ajpv12 protocol, connections are created, used and then closed at each request.
-The default port for ajp12 is 8007
+Note: The default port for ajp12 is 8007
 </p>
 
 </subsection>
 
-<subsection name="ajp13 Worker properties">
+<subsection name="ajp13 Worker Properties">
 <p>
-The ajp13 typed workers forward requests to out-of-process Tomcat workers using the ajpv13 protocol over TCP/IP sockets.
-The main difference between ajpv12 and ajpv13 are that:
+The ajp13 typed workers forward requests to out-of-process Tomcat workers using the ajp13 protocol over TCP/IP sockets.
+The main difference between ajp12 and ajp13 are that:
 <ul>
 <li>
-ajpv13 is a more binary protocol and it tries to compress some of the request data by coding 
+ajp13 is a more binary protocol and it tries to compress some of the request data by coding 
 frequently used strings as small integers.
 </li>
 <li>
-ajpv13 reuses open sockets and leaves them open for future requests (remember when you've got a Firewall between your 
+ajp13 reuses open sockets and leaves them open for future requests (remember when you've got a Firewall between your 
 web server and Tomcat).
 </li>
 <li>
-ajpv13 has special treatment for SSL information so that the container can implement 
+ajp13 has special treatment for SSL information so that the container can implement 
 SSL related methods such as isSecure().
 </li>
 </ul>
@@ -205,12 +206,13 @@ SSL related methods such as isSecure().
 </p>
 
 <p>
-You should note that Ajp13 is now the only out-process protocol supported by Tomcat 4 and above.
+You should note that ajp13 is the recommended protocol to connect to Tomcat.
 </p>
 
 
 <source>
   # worker "worker2" will talk to Tomcat listening on machine www2.x.com at port 8009 using 3 lb factor
+  worker.worker2.type=ajp13
   worker.worker2.host=www2.x.com
   worker.worker2.port=8009
   worker.worker2.lbfactor=3
@@ -223,14 +225,14 @@ You should note that Ajp13 is now the only out-process protocol supported by Tom
 </source>
 
 <p>
-Notes: In the ajpv13 protocol, the default port is 8009
+Notes: In the ajp13 protocol, the default port is 8009
 </p>
 
 </subsection>
 
-<subsection name="lb Worker properties">
+<subsection name="lb Worker Properties">
 <p>
-The load-balancing worker does not really communicate with Tomcat workers.
+The load balancing worker does not really communicate with Tomcat workers.
 Instead it is responsible for the management of several "real" workers. 
 This management includes:
 </p>
@@ -240,21 +242,22 @@ This management includes:
 Instantiating the workers in the web server.
 </li>
 <li>
-Using the worker's load-balancing factor, perform weighed-round-robin load balancing where 
-high lbfactor means stronger machine (that is going to handle more requests)
+Using the worker's load balancing factor, perform weighted round-robin load balancing where 
+a higher lbfactor means stronger machine (that is going to handle proportionally more requests)
 </li>
 <li>
-Keeping requests belonging to the same session executing on the same Tomcat worker.
+Keeping requests belonging to the same session executing on the same Tomcat worker
+(session stickyness).
 </li>
 <li>
-Identifying failed Tomcat workers, suspending requests to them and instead falling-back on 
+Identifying failed Tomcat workers, suspending requests to them and instead failing over on 
 other workers managed by the lb worker.
 </li>
 </ul>
 
 <p>
-The overall result is that workers managed by the same lb worker are load-balanced
-(based on their lbfactor and current user session) and also fall-backed so a single
+The overall result is that workers managed by the same lb worker are load balanced
+(based on their lbfactor and current user session) and also fail over so a single
 Tomcat process death will not "kill" the entire site.
 The following table specifies some properties that the lb worker can accept:
 <ul>
@@ -288,7 +291,7 @@ Instead it is responsible for the load balancer management.
   worker.jkstatus.type=status
 </source>
 <p>Next thing is to mount the requests to the jkstatus worker. For Apache
-web servers use the:</p>
+HTTP Servers use:</p>
 <source>
   # Add the jkstatus mount point
   JkMount /jkmanager/* jkstatus 
@@ -408,39 +411,36 @@ a sample worker.properties file is bundled along JK.
 </p>
 
 <p>
-You could also find here a sample workers.properties defining :
+You could also find here a sample workers.properties defining:
 </p>
 
 <ul>
 <li>
-An ajp12 worker that used the host localhost and the port 8007
+Two ajp13 workers that use the host localhost and the ports 8109 and 8209
 </li>
 <li>
-An ajp13 worker that used the host localhost and the port 8008
-</li>
-<li>
-An lb worker that load balance the ajp12 and ajp13 workers
+An lb worker that load balances over the two ajp13 workers
 </li>
 </ul>
 
 <source>
-  # Define 3 workers, 2 real workers using ajp12, ajp13, the last one being a loadbalancing worker 
-  worker.list=worker1, worker2, worker3
-  # Set properties for worker1 (ajp12)
-  worker.worker1.type=ajp12
-  worker.worker1.host=localhost
-  worker.worker1.port=8007
-  worker.worker1.lbfactor=1
-  # Set properties for worker2 (ajp13)
-  worker.worker2.type=ajp13
-  worker.worker2.host=localhost
-  worker.worker2.port=8009
-  worker.worker2.lbfactor=1
-  worker.worker2.connection_pool_timeout=600
-  worker.worker2.socket_keepalive=1
-  worker.worker2.socket_timeout=60
-  # Set properties for worker3 (lb) which use worker1 and worker2
-  worker.worker3.balance_workers=worker1,worker2
+  # Define 3 workers, 2 real workers using ajp13, and one being a load balancing worker 
+  worker.list=node1, node2, lbworker
+  # Set properties for node1 (ajp13)
+  worker.node1.type=ajp13
+  worker.node1.host=localhost
+  worker.node1.port=8109
+  worker.node1.connection_pool_timeout=600
+  worker.node1.socket_keepalive=1
+  # Set properties for node2 (ajp13)
+  worker.node2.type=ajp13
+  worker.node2.host=localhost
+  worker.node2.port=8209
+  worker.node2.connection_pool_timeout=600
+  worker.node2.socket_keepalive=1
+  # Set properties for lbworker which uses node1 and node2
+  worker.lbworker.type=lb
+  worker.lbworker.balance_workers=node1,node2
 </source>
 
 </section>
