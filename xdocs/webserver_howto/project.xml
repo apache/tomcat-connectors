@@ -15,13 +15,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project name="Apache Tomcat Connectors Documentation - Webserver HowTo"
+<project name="Apache Tomcat Connectors Documentation - Web Server HowTo"
         href="http://tomcat.apache.org/">
 
-    <title>The Apache Tomcat Connectors - Webserver HowTo</title>
+    <title>The Apache Tomcat Connectors - Web Server HowTo</title>
 
     <logo href="/images/tomcat.gif">
-      The Apache Tomcat Connectors - Webserver HowTo
+      The Apache Tomcat Connectors - Web Server HowTo
     </logo>
 <body>
 
@@ -37,23 +37,23 @@
         <item name="Reverse Proxy"              href="../common_howto/proxy.html"/>
     </menu>
 
-    <menu name="Webserver HowTo">
-        <item name="Apache HTTP Server"         href="../webserver_howto/apache.html"/>
-        <item name="IIS"                        href="../webserver_howto/iis.html"/>
-        <item name="Netscape/SunOne/Sun"        href="../webserver_howto/nes.html"/>
+    <menu name="Web Server HowTo">
+        <item name="Apache HTTP Server (mod_jk)"           href="../webserver_howto/apache.html"/>
+        <item name="Microsoft IIS (ISAPI redirector)"      href="../webserver_howto/iis.html"/>
+        <item name="iPlanet Web Server (NSAPI redirector)" href="../webserver_howto/nes.html"/>
     </menu>
 
     <menu name="Reference Guide">
-        <item name="workers.properties"         href="../reference/workers.html"/>
-        <item name="uriworkermap.properties"    href="../reference/uriworkermap.html"/>
-        <item name="Status Worker"              href="../reference/status.html"/>
-        <item name="Apache HTTP Server"         href="../reference/apache.html"/>
-        <item name="IIS"                        href="../reference/iis.html"/>
+        <item name="workers.properties"               href="../reference/workers.html"/>
+        <item name="uriworkermap.properties"          href="../reference/uriworkermap.html"/>
+        <item name="Status Worker"                    href="../reference/status.html"/>
+        <item name="Apache HTTP Server (mod_jk)"      href="../reference/apache.html"/>
+        <item name="Microsoft IIS (ISAPI redirector)" href="../reference/iis.html"/>
     </menu>
 
     <menu name="AJP Protocol Reference">
-        <item name="AJPv13"                     href="../ajp/ajpv13a.html"/>
-        <item name="AJPv13 Extension Proposal"  href="../ajp/ajpv13ext.html"/>
+        <item name="AJPv13 (ajp13)"                   href="../ajp/ajpv13a.html"/>
+        <item name="AJPv13 Extension Proposal"        href="../ajp/ajpv13ext.html"/>
     </menu>
 
     <menu name="Miscellaneous Documentation">
@@ -78,6 +78,6 @@
         <item name="2005"                       href="../news/20050101.html"/>
         <item name="2004"                       href="../news/20041100.html"/>
     </menu>
-    
+
 </body>
 </project>
