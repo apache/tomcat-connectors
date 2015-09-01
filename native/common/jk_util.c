@@ -1910,7 +1910,7 @@ int jk_check_buffer_size()
             max_len = len;
         props++;
     }
-    return JK_MAX_ATTRIBUTE_NAME_LEN - max_len;
+    return JK_MAX_ATTRIBUTE_NAME_LEN - (int)max_len;
 }
 
 /*
