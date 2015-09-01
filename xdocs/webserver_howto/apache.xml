@@ -1046,62 +1046,105 @@ However those locks does not work on NFS mounted volumes, so you can use
 
 </section>
 
-<section name="Building mod_jk for Apache on Windows NT/2K/XP">
+<section name="Building mod_jk for Apache on Windows">
 <p>
-The module was developed using Visual C++ version 6.0, so having this environment is a prerequisite
-if you want to perform a custom build.
+The module was developed using Microsoft Visual C++, so having Visual Studio installed
+is a prerequisite if you want to perform your own build.</p>
+<p>
+You can build the source using the IDE GUI, or using a pure
+commandline build based on nmake. The IDE build currently only
+supports building 32 Bit binaries. The nmake builds are available
+for 32 Bit and 64 Bit binaries.
 </p>
 <p>
-The steps that you need to take are:
-</p>
+The common steps for all build procedures are:
 <ul>
 <li>
-Change directory to the apache-1.3 or apache-2.0 source directory depending on your version of Apache.
+Set up your build environment for 32 Bits or 64 Bits.
+The IDE build only supports 32 Bits.
 </li>
 <li>
-If you want to build mod_jk for Apache 1.3, set an <b>APACHE1_HOME</b> environment variable which points
-to where your Apache 1.3 is installed.
-A mod_jk module for Apache 2.x build will require <b>APACHE2_HOME</b> environment variable to be set.
+Download the sources as a zip file and unpack it.
 </li>
 <li>
-Copy mod_jk.so to Apache's modules directory.
+Change directory to the ISAPI redirector source directory.
+</li>
+<li>
+Set your path to the Apache web server directory in your
+environment.
 </li>
 </ul>
-<p>
-An example on how to build mod_jk for Apache 1.3:
-</p>
 <screen>
-<note>Set location for Apache 1.3 sources</note>
-<typedos>set APACHE1_HOME=c:\apache13</typedos>
-<note>Change directory to the mod_jk module for Apache 1.3</note>
-<typedos>cd c:\tomcat-connectors-xxx-src\native\apache-1.3</typedos>
-<note>Build the sources using MSDEV</note>
-<typedos>MSDEV mod_jk.dsp /MAKE ALL</typedos>
-<note>Copy the dll to your Apache modules directory</note>
-<typedos>cp release\mod_jk.so c:\apache13\modules\</typedos>
+<note>Set up 32 or 64 Bit build environment</note>
+<typedos>setenv /Release /X86</typedos>
+<note>or (not available for IDE build)</note>
+<typedos>setenv /Release /X64</typedos>
+<note>Download tomcat-connectors-xxx-src.zip from</note>
+<note>https://tomcat.apache.org/download-connectors.cgi</note>
+<note>and unpack it</note>
+<typedos>unzip tomcat-connectors-xxx-src.zip</typedos>
+<note>Change directory to the mod_jk source directory.</note>
+<note>To build mod_jk for the Apache HTTP server 2.0, 2.2 or 2.4,</note>
+<note>use the "apache-2.0" directory, for the old</note>
+<note>Apache HTTP server 1.3, the "apache-1.3" directory.</note>
+<typedos>cd tomcat-connectors-xxx-src\native\apache-2.0</typedos>
+<note>Set the environment variable "APACHE1_HOME" resp.</note>
+<note>"APACHE2_HOME" resp. "APACHE22_HOME" resp. "APACHE24_HOME"</note>
+<note>to the installation path of your Apache web server.</note>
+<typedos>set APACHE24_HOME=D:\software\Apache\httpd-2.4.16</typedos>
 </screen>
-
-<p>
-An example on how to build mod_jk for Apache 2.x:
 </p>
-<screen>
-<note>Set location for Apache 2.x sources</note>
-<typedos>set APACHE2_HOME=c:\apache20</typedos>
-<note>Change directory to the mod_jk module for Apache 2.x</note>
-<typedos>cd c:\tomcat-connectors-xxx-src\native\apache-2.0</typedos>
-<note>Build the sources using MSDEV</note>
-<typedos>MSDEV mod_jk.dsp /MAKE ALL</typedos>
-<note>Copy the dll to your Apache modules directory</note>
-<typedos>cp release\mod_jk.so c:\apache20\modules\</typedos>
-</screen>
-
 <p>
-If msdev is not in your path, enter the full path to msdev.exe.
-Also, ApacheCore.lib is expected to exist in the <b>${APACHEX_HOME}\src\CoreD</b> and
-<b>${APACHEX_HOME}\src\CoreR</b> directories before linking will succeed.
-You will need to build enough of the Apache source to create these libraries.
-This will build both release and debug versions of the redirector plug-in (mod_jk).
-An alternative will be to open mod_jk.dsp in msdev and build it using the build menu.
+The steps for an IDE build are then:
+<ul>
+<li>
+Start Visual Studio using "start mod_jk.dsp"
+</li>
+<li>
+During IDE startup choose "Yes" in all conversion popups.
+</li>
+<li>
+Next choose a Configuration form the dropdown. There are pre-defined
+configurations for debug and release builds and in the
+"apache-2.0" directory each of them is available as a configuration
+to build against the web server versions 2.0, 2.2 and 2.4.
+</li>
+<li>
+Finally choose "Build Solution" in the "Build" menue.
+</li>
+</ul>
+The resulting file mod_jk.so (and the debug symbol file
+mod_jk.pdb) is located in the "Debug" resp. "Release" sub
+directory depending on the build Configuration chosen. For
+the "apache-2.0" module the directories are named "Debug_20",
+"Release_20", "Debug_22", "Release_22", "Debug_24" and "Release_24"
+depending on the chosen build configuration.
+</p>
+<p>
+Alternatively the steps for an nmake commandline build are:
+<ul>
+<li>
+Set your target architecture to X86 or X64 by editing the "ARCH="
+line in the file Makefile.vc.
+</li>
+<li>
+Issue "nmake -f Makefile.vc"
+</li>
+</ul>
+The resulting file mod_jk.so (and the debug symbol file
+mod_jk.pdb) is located in the "Debug" resp. "Release" sub
+directory depending on the build Configuration chosen. For
+the "apache-2.0" module the directories are named "Debug_20",
+"Release_20", "Debug_22", "Release_22", "Debug_24" and "Release_24"
+depending on the chosen build configuration.
+</p>
+<p>
+Finally you need to copy the file mod_jk.so to the modules directory
+of your Apache HTTP server (resp. the libexec directory for the old Apache 1.3).
+</p>
+<p>
+For Apache HTTP Server 1.3, ApacheCore.lib is expected to exist before
+linking mod_jk will succeed.
 </p>
 </section>
 

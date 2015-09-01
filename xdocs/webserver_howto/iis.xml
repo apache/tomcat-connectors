@@ -451,32 +451,83 @@ and in the <a href="../reference/workers.html">worker.properties configuration r
 
 </section>
 
-<section name="Building ISAPI redirector">
+<section name="Building the ISAPI redirector">
 <p>
-The redirector was developed using Visual C++ Ver.6.0, so having this environment is a prerequisite if you want 
-to perform a custom build. You should also have the IIS developer SDK.
-
-The steps that you need to take are:
+The redirector was developed using Microsoft Visual C++, so having Visual Studio installed
+is a prerequisite if you want to perform your own build.</p>
+<p>
+You can build the source using the IDE GUI, or using a pure
+commandline build based on nmake. The IDE build currently only
+supports building 32 Bit binaries. The  nmake builds are available
+for 32 Bit, 64 Bit and Itanium binaries.
+</p>
+<p>
+The common steps for all build procedures are:
 <ul>
+<li>
+Set up your build environment for 32 Bits or 64 Bits.
+The IDE build only supports 32 Bits.
+</li>
+<li>
+Download the sources as a zip file and unpack it.
+</li>
 <li>
 Change directory to the ISAPI redirector source directory.
 </li>
-<li>
-Make the source with MSDEV
-</li>
 </ul>
 <screen>
+<note>Set up 32 or 64 Bit build environment</note>
+<typedos>setenv /Release /X86</typedos>
+<note>or (not available for IDE build)</note>
+<typedos>setenv /Release /X64</typedos>
+<note>Download tomcat-connectors-xxx-src.zip from</note>
+<note>https://tomcat.apache.org/download-connectors.cgi</note>
+<note>and unpack it</note>
+<typedos>unzip tomcat-connectors-xxx-src.zip</typedos>
 <note>Change directory to the ISAPI redirector source directory</note>
-<typedos>cd c:\tomcat-connectors-xxx-src\native\iis</typedos>
-<note>Build the sources using MSDEV</note>
-<typedos>MSDEV isapi.dsp /MAKE ALL</typedos>
+<typedos>cd tomcat-connectors-xxx-src\native\iis</typedos>
 </screen>
 </p>
 <p>
-If msdev is not in your path, enter the full path to msdev.exe. 
-This will build both release and debug versions of the ISAPI redirector plugin.
-An alternative will be to open the ISAPI redirector workspace file (isapi.dsw) in msdev and 
-build it using the build menu.
+The steps for an IDE build are then:
+<ul>
+<li>
+Start Visual Studio using "start isapi.dsw"
+</li>
+<li>
+During IDE startup choose "Yes" in all conversion popups.
+</li>
+<li>
+Next choose "Debug" or "Release" in the Configuration dropdown.
+</li>
+<li>
+Finally choose "Build Solution" in the "Build" menue.
+</li>
+</ul>
+The resulting file isapi_redirect.dll (and the debug symbol file
+isapi_redirect.pdb) is located in the "Debug" resp. "Release" sub
+directory depending on the build Configuration chosen. As an
+intermediate step the build first creates a static PCRE library
+named pcre.lib in the sub directory "pcre/LibD" resp. "pcre/LibR".
+</p>
+<p>
+Alternatively the steps for an nmake commandline build are:
+<ul>
+<li>
+Issue "nmake -f Makefile.x86" for a 32 Bit build, or
+</li>
+<li>
+Issue "nmake -f Makefile.amd64" for a 64 Bit build, or
+</li>
+<li>
+Issue "nmake -f Makefile.i64" for a Itanium Bit build
+</li>
+</ul>
+The resulting file isapi_redirect.dll (and the debug symbol file
+isapi_redirect.pdb) is located in the "Release_x86" resp. "Release_amd64"
+resp. "Release_ia64" sub directory. As an intermediate step the build
+first creates a static PCRE library named pcre.lib in the sub directory
+"pcre/Release_x86" resp. "pcre/Release_amd64" resp. "pcre/Release_ia64.
 </p>
 </section>
 
