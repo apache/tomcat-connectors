@@ -24,14 +24,14 @@
 
     <properties>
         <author email="mturk@apache.org">Mladen Turk</author>
-        <title>Configuring Apache</title>
+        <title>Configuring mod_jk for the Apache HTTP Server</title>
     </properties>
 
 <body>
 
 <section name="Configuration Directives">
 <p>
-Most of the directives are allowed once in the global part of the Apache httpd
+Most of the directives are allowed once in the global part of the Apache HTTP Server
 configuration and once in every &lt;VirtualHost&gt; elements. Exceptions from this rule are
 explicitly listed in the table below.
 </p>
@@ -42,15 +42,15 @@ Exceptions from this rule are again explicitly listed in the table below.
 See especially JkMountCopy.
 </p>
 <warn>
-Warning: If Apache httpd and Tomcat are configured to serve content from
-the same filing system location then care must be taken to ensure that httpd is
+Warning: If Apache and Tomcat are configured to serve content from
+the same file system location then care must be taken to ensure that Apache is
 not able to serve inappropriate content such as the contents of the WEB-INF
 directory or JSP source code.
 </warn>
 <p>
-This could occur if the httpd DocumentRoot
+This could occur if the Apache DocumentRoot
 overlaps with a Tomcat Host's appBase or the docBase of any Context. It could
-also occur when using the httpd Alias directive with a Tomcat Host's appBase or
+also occur when using the Apache Alias directive with a Tomcat Host's appBase or
 the docBase of any Context.
 </p>
 <p>
@@ -71,7 +71,7 @@ value.
 Enables setting worker properties inside Apache configuration file.
 The syntax is the same as in the JkWorkersFile (usually workers.properties).
 Simply prefix each line with "JkWorkerProperty" to put it directly into
-the Apache httpd config files.
+the Apache config files.
 <br/>
 This directive is allowed multiple times.
 It must be put into the global part of the configuration.
@@ -95,7 +95,7 @@ drive and not an NFS share.
 </p>
 <p>
 The shared memory contains configuration and runtime information for load balancer
-workers and their members. It is need in order that all apache children
+workers and their members. It is need in order that all Apache children
 <ul>
 <li>share the same status information for load balancing members (OK, ERROR, ...),</li>
 <li>share the information about load taken by the individual workers,</li>
@@ -181,8 +181,8 @@ This directive is available in jk1.2.7 version and later.
 Automatically Alias webapp context directories into the Apache
 document space.
 <br/>
-Care should be taken to ensure that only static content is served via httpd as a
-result of using this directive. Any static content served by httpd will bypass any
+Care should be taken to ensure that only static content is served via Apache as a
+result of using this directive. Any static content served by Apache will bypass any
 security constraints defined in the application's web.xml.
 <br/>
 For inheritance rules, see: JkMountCopy.
@@ -238,7 +238,7 @@ This directive is only allowed once. It must be put into
 the global part of the configuration.
 <br/>
 This directive has been added in version 1.2.27 of mod_jk.
-It is available only for httpd 2.x and above using APR libraries
+It is available only for Apache 2.x and above using APR libraries
 including thread support.
 </p></attribute>
 <attribute name="JkLogFile" required="false"><p>
@@ -290,7 +290,7 @@ to add <code>SSLOptions +ExportCertData</code>.
 </p>
 <p>
   Specifically, mod_jk will export the following environment variables from
-  Apache httpd to Tomcat under these request attributes as per the
+  Apache to Tomcat under these request attributes as per the
   Servlet Specification 3.0, section 3.8:
 </p>
 <table>
@@ -554,7 +554,7 @@ be used for piped logging:
 
 <p>
 <b>JkLogLevel</b>
-set the log level between :
+set the log level between:
 </p>
 
 <ul>
@@ -601,7 +601,7 @@ See above for details.
 
 <p>
 You can log mod_jk information using the Apache standard module <b>mod_log_config</b>.
-The module sets several notes in the Apache httpd notes table.
+The module sets several notes in the Apache notes table.
 Most of them are are only useful in combination with a load balancer worker.
 </p>
 
@@ -613,26 +613,26 @@ Most of them are are only useful in combination with a load balancer worker.
                                                          Before version 1.2.26 only available if JkRequestLogFormat is set.</attribute>
   <attribute name="JK_REQUEST_DURATION" required="false">Request duration in seconds and microseconds.<br/>
                                                          Before version 1.2.26 only available if JkRequestLogFormat is set.</attribute>
-  <attribute name="JK_LB_FIRST_NAME" required="false">Load-Balancer: Name of the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_TYPE" required="false">Load-Balancer: Type of the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_ACCESSED" required="false">Load-Balancer: Access count for the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_SESSIONS" required="false">Load-Balancer: Count of created sessions for the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_READ" required="false">Load-Balancer: Bytes read for the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_TRANSFERRED" required="false">Load-Balancer: Bytes transferred for the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_ERRORS" required="false">Load-Balancer: Error count for the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_BUSY" required="false">Load-Balancer: Busy count for the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_ACTIVATION" required="false">Load-Balancer: Activation state for the first worker tried</attribute>
-  <attribute name="JK_LB_FIRST_STATE" required="false">Load-Balancer: Error state for the first worker tried</attribute>
-  <attribute name="JK_LB_LAST_NAME" required="false">Load-Balancer: Name of the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_TYPE" required="false">Load-Balancer: Type of the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_ACCESSED" required="false">Load-Balancer: Access count for the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_SESSIONS" required="false">Load-Balancer: Count of created sessions for the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_READ" required="false">Load-Balancer: Bytes read for the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_TRANSFERRED" required="false">Load-Balancer: Bytes transferred for the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_ERRORS" required="false">Load-Balancer: Error count for the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_BUSY" required="false">Load-Balancer: Busy count for the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_ACTIVATION" required="false">Load-Balancer: Activation state for the last worker tried</attribute>
-  <attribute name="JK_LB_LAST_STATE" required="false">Load-Balancer: Error state for the last worker tried</attribute>
+  <attribute name="JK_LB_FIRST_NAME" required="false">Load balancer: Name of the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_TYPE" required="false">Load balancer: Type of the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_ACCESSED" required="false">Load balancer: Access count for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_SESSIONS" required="false">Load balancer: Count of created sessions for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_READ" required="false">Load balancer: Bytes read for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_TRANSFERRED" required="false">Load balancer: Bytes transferred for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_ERRORS" required="false">Load balancer: Error count for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_BUSY" required="false">Load balancer: Busy count for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_ACTIVATION" required="false">Load balancer: Activation state for the first worker tried</attribute>
+  <attribute name="JK_LB_FIRST_STATE" required="false">Load balancer: Error state for the first worker tried</attribute>
+  <attribute name="JK_LB_LAST_NAME" required="false">Load balancer: Name of the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_TYPE" required="false">Load balancer: Type of the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_ACCESSED" required="false">Load balancer: Access count for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_SESSIONS" required="false">Load balancer: Count of created sessions for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_READ" required="false">Load balancer: Bytes read for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_TRANSFERRED" required="false">Load balancer: Bytes transferred for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_ERRORS" required="false">Load balancer: Error count for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_BUSY" required="false">Load balancer: Busy count for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_ACTIVATION" required="false">Load balancer: Activation state for the last worker tried</attribute>
+  <attribute name="JK_LB_LAST_STATE" required="false">Load balancer: Error state for the last worker tried</attribute>
 </attributes>
 
 <source>
@@ -717,7 +717,7 @@ options(vhost) = plus_options(global) - minus_options(global) + plus_options(vho
 
 <p>
 Using JkOptions <b>ForwardURIProxy</b>, the forwarded URI
-will be partially reencoded after processing inside Apache httpd and
+will be partially reencoded after processing inside Apache and
 before forwarding to Tomcat. This will be compatible with local
 URL manipulation by mod_rewrite and with URL encoded session ids.
 
@@ -746,7 +746,7 @@ will not work.
 
 <p>
 Using JkOptions <b>ForwardURICompat</b>, the forwarded URI will
-be decoded by Apache httpd. Encoded characters will be decoded and
+be decoded by Apache. Encoded characters will be decoded and
 explicit path components like ".." will already be resolved.
 This is less spec compliant and is <b>not safe</b> if you are using
 prefix JkMount. This option will allow to rewrite URIs with
@@ -835,7 +835,7 @@ bypassing your unmount rules.
 
 <p>
 JkOptions <b>ForwardDirectories</b> is used in conjunction with <b>DirectoryIndex</b>
-directive of Apache web server. As such mod_dir should be available to Apache,
+directive of Apache. As such mod_dir should be available to Apache,
 statically or dynamically (DSO)
 <br/>
 <br/>
@@ -876,9 +876,9 @@ file that Tomcat normally serves - for instance Velocity pages and JSP pages.
 
 <p>
 Setting JkOptions <b>ForwardLocalAddress</b>, you ask mod_jk to send the local address,
-of the Apache web server instead remote client address. This can be used by
-Tomcat remote address valve for allowing connections only from registered Apache
-web servers.
+of the Apache HTTP Server instead remote client address. This can be used by the
+Tomcat remote address valve for allowing connections only from configured Apache
+servers.
 
 <source>  
   JkOptions     +ForwardLocalAddress
@@ -950,7 +950,7 @@ TCP keepalive value in your OS.
 </p>
 
 <p>
-JkOptions <b>ForwardKeySize</b>,  you ask mod_jk, when using ajp13, to forward also the SSL Key Size  as 
+JkOptions <b>ForwardKeySize</b>, you ask mod_jk, when using ajp13, to forward also the SSL Key Size  as 
 required by Servlet API 2.3.
 This flag shouldn't be set when servlet engine is Tomcat 3.2.x (on by default).
 
@@ -963,7 +963,7 @@ This flag shouldn't be set when servlet engine is Tomcat 3.2.x (on by default).
 </p>
 
 <p>
-JkOptions <b>ForwardSSLCertChain</b>,  you ask mod_jk, when using ajp13,
+JkOptions <b>ForwardSSLCertChain</b>, you ask mod_jk, when using ajp13,
 to forward SSL certificate chain (off by default).
 Mod_jk only passes the <code>SSL_CLIENT_CERT</code> to the AJP connector. This is not a
 problem with self-signed certificates or certificates directly signed by the
@@ -1077,34 +1077,33 @@ More complex patterns in JkUnMount worker names are not allowed.
 <b>JkAutoAlias</b> directive automatically <b>Alias</b> webapp context directories into
 the Apache document space. It enables Apache to serve a static context while Tomcat
 serving dynamic context. This directive is used for convenience so that you don't
-have to put an apache Alias directive for each application directory inside Tomcat's
+have to put an Apache Alias directive for each application directory inside Tomcat's
 webapp directory. For security reasons it is strongly recommended that JkMount
 is used to pass all requests to Tomcat by default and JkUnMount is used to
-explicitly exclude static content to be served by httpd. It should also be noted
-that content served by httpd will bypass any security constraints defined in the
+explicitly exclude static content to be served by Apache. It should also be noted
+that content served by Apache will bypass any security constraints defined in the
 application's web.xml.
 </p>
 <source>
   # enter the full path to the tomcat webapps directory
-  JkAutoAlias /opt/tomtact/webapps
+  JkAutoAlias /opt/tomcat/webapps
 </source>
 <p>The following example shows how to serve a dynamic context by
 Tomcat and static using Apache. The webapps directory has to
-be accessible by apache.</p>
+be accessible by Apache.</p>
 
 <source>
   # enter the full path to the tomcat webapps directory
-  JkAutoAlias /opt/tomtact/webapps
+  JkAutoAlias /opt/tomcat/webapps
 
-  # Mount 'servlets-examples' directory. It's physical location
-  # is assumed to be in the /opt/tomtact/webapps/servlets-examples
+  # Mount 'examples' directory. It's physical location
+  # is assumed to be in the /opt/tomcat/webapps/examples
   # ajp13w is a worker defined in the workers.properties
-  JkMount /servlets-examples/* ajp13w
+  JkMount /examples/* ajp13w
 
-  # Unmount desired static content from servlets-examples webapp.
-  # This content will be served by the httpd directly.
-  JkUnMount /servlets-examples/*.gif ajp13w
-  JkUnMount /servlets-examples/*.jpg ajp13w
+  # Unmount desired static content from examples webapp.
+  # This content will be served by the Apache directly.
+  JkUnMount /*.gif ajp13w
 </source>
 <p>Note that you can have a single JkAutoAlias directive per virtual
 host inside your httpd.conf
@@ -1145,11 +1144,11 @@ An exclusion can be disabled by prefixing it with a minus sign.
 <source>
   # Sample uriworkermap.properties file
 
-  /servlets-examples/*=ajp13w
-  # Do not map .jpeg files
-  !/servlets-examples/*.jpeg=ajp13w
+  /examples/*=ajp13w
+  # Do not map .gif files
+  !/*.gif=ajp13w
   # Make jsp examples initially disabled  
-  -/jsp-examples/*=ajp13w
+  -/examples/jsp/*=ajp13w
 </source>
 <p>At run time you can change the content of this file. For example
 removing minus signs will enable the previously disabled uri mappings.

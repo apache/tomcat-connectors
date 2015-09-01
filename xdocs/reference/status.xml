@@ -175,7 +175,7 @@ The last three minimisation features have been added in version 1.2.27.
 <b>Note: </b>The following restriction has been removed starting with version 1.2.26.
 </p>
 <p>
-The Apache module mod_jk makes use of the internal Apache httpd infrastructure concerning
+The Apache module mod_jk makes use of the internal Apache HTTP Server infrastructure concerning
 virtual hosts. The downside of this is, that the status worker can only show URL maps, for
 the virtual host it is defined in. It is not able to reach the configuration objects
 for other virtual hosts. Of course you can define a status worker in any virtual host you
@@ -211,8 +211,8 @@ worker.mystatus.type=status
 Then we define a URL, which should be mapped to this worker, i.e. the URL we use
 to reach the functionality of the status worker. You can use any method mod_jk supports
 for the web server of your choice. Possibilities are maps inside uriworkermap.properties,
-an additional mount attribute in workers.properties, or in Apache JkMount. Here's an
-example for a uriworkermap.properties line:
+an additional mount attribute in workers.properties, or JkMount for the Apache HTTP Server.
+Here's an example for a uriworkermap.properties line:
 <source>
 /private/admin/mystatus=mystatus
 </source>

@@ -24,7 +24,7 @@
 
     <properties>
         <author email="mturk@apache.org">Mladen Turk</author>
-        <title>Configuring IIS</title>
+        <title>Configuring the ISAPI redirector for Microsoft IIS</title>
     </properties>
 
 <body>
@@ -35,7 +35,7 @@ The Tomcat redirector requires three entities:
 
 <ul>
 <li>
-<b>isapi_redirect.dll</b> - The IIS server plugin, either obtain a pre-built DLL or build it yourself (see the build section).
+<b>isapi_redirect.dll</b> - The IIS ISAPI redirector plugin, either obtain a pre-built DLL or build it yourself (see the build section).
 </li>
 <li>
 <b>workers.properties</b> - A file that describes the host(s) and port(s) used by the workers (Tomcat processes). 
@@ -70,7 +70,7 @@ because the library is not loadable into a 64 Bit IIS.
 </section>
 <section name="Registry settings">
 <p>
-ISAPI redirector reads configuration from the registry, create a new registry key named :
+ISAPI redirector reads configuration from the registry, create a new registry key named:
 </p>
 <p>
 <b>"HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0"</b>
@@ -94,7 +94,7 @@ A value pointing to location where log file will be created.
 <br/>If one of the log rotation settings (<b>log_rotationtime</b> or <b>log_filesize</b>) are specified then the actual log file name is based on this setting.
 If the log file name includes any '%' characters, then it is treated as a format string for <code>strftime(3)</code>, 
 e.g. <b>c:\tomcat\logs\isapi-%Y-%m-%d-%H_%M_%S.log</b>. Otherwise, the suffix <em>.nnnnnnnnnn</em> is automatically added and is the time in seconds.
-A full list of format string substitutions can be found in the <a href="http://httpd.apache.org/docs/2.0/programs/rotatelogs.html">Apache rotatelogs documentation</a>
+A full list of format string substitutions can be found in the <a href="http://httpd.apache.org/docs/2.4/programs/rotatelogs.html">Apache rotatelogs documentation</a>
 </p></attribute>
 <attribute name="log_level" required="false"><p>
 A string value for log level 
@@ -336,7 +336,7 @@ log_file=$(JKISAPI_PATH)\$(JKISAPI_NAME).log
 <section name="Log file rotation">
 <p>
 The ISAPI redirector with version 1.2.31 can perform log rotation, with configuration and behaviour similar to the 
-<a href="http://httpd.apache.org/docs/2.0/programs/rotatelogs.html">rotatelogs</a> program provided with Apache HTTP Server.
+<a href="http://httpd.apache.org/docs/2.4/programs/rotatelogs.html">rotatelogs</a> program provided with Apache HTTP Server.
 </p>
 <p>
 To configure log rotation, configure a <b>log_file</b>, and one of the <b>log_rotationtime</b> or <b>log_filesize</b> options.
@@ -380,7 +380,7 @@ log_filesize=5M
 The log will be rotated whenever the configured limit is reached, but only if the log file name would change. If you configure
  a log file name with <code>strftime(3)</code> format codes in it, then ensure it specifies the same granularity
  as the rotation time configured, e.g. <b>%Y-%m-%d</b> if rotating daily (<b>log_rotationtime=86400</b>).
-<br/>See the <a href="http://httpd.apache.org/docs/2.0/programs/rotatelogs.html">rotatelogs</a> documentation for more examples.
+<br/>See the <a href="http://httpd.apache.org/docs/2.4/programs/rotatelogs.html">rotatelogs</a> documentation for more examples.
 </p>
 
 </section>
@@ -388,24 +388,24 @@ The log will be rotated whenever the configured limit is reached, but only if th
 <section name="Using a simple rewrite rules">
 <p>
 The ISAPI redirector with version 1.2.16 can do a simple URL rewriting. Although not
-as powerful as Apache Httpd's mod_rewrite, it allows a simple exchange of request URIs
+as powerful as Apache HTTP Server's mod_rewrite, it allows a simple exchange of request URIs
 </p>
 <p>
 The rule is in the form original-url-prefix=forward-url-prefix. For example:
 </p>
 <source>
-# Simple rewrite rules, making /jsp-examples
-# and /servlets-examples available under shorter URLs
-/jsp/=/jsp-examples/
-/servlets/=/servlets-examples/
+# Simple rewrite rules, making examples
+# available under shorter URLs
+/jsp/=/examples/jsp/
+/servlets/=/examples/servlets/
 </source>
 <p>
 You can also use regular expressions, if you prefix the rule with a tilde <code>~</code>:
 </p>
 <source>
-# Complex rewrite rule, adding "-examples"
+# Complex rewrite rule, prefixing "/examples/"
 # to the first path component of all requests
-~/([^/]*)=/$1-examples
+~/([^/]*)=/examples/$1
 </source>
 <p>
 Note that uriworkermap.properties must use the URLs before rewriting.

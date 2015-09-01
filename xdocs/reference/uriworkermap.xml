@@ -192,8 +192,8 @@ rules with equal numbers are sorted by their string length (longest first).
 </p>
 <p>
 If both distinctions still do not suffice, then the defining source of the rule is considered.
-Rules defined in uriworkermap.properties come first, before rules defined by JkMount (Apache)
-and inside workers.properties using the mount attribute.
+Rules defined in uriworkermap.properties come first, before rules defined by JkMount
+(for the Apache HTTP Server) and inside workers.properties using the mount attribute.
 </p>
 <p>
 All disabled rules are ignored. Exclusion rules are applied after all normal rules
@@ -360,10 +360,11 @@ per mount. See their descriptions in the
 <section name="Virtual host integration">
 <br/>
 
-<subsection name="IIS">
+<subsection name="ISAPI redirector for Microsoft IIS">
 <br/>
 <p>
-When using IIS you can restrict individual rules to special virtual hosts
+When using the ISAPI redirector for Microsoft IIS you can restrict
+individual rules to special virtual hosts
 by prefixing the URI pattern with the virtual host information.
 The rules is that the url must be prefixed with the host name.
 <source>
@@ -388,10 +389,10 @@ the exclusion rule must be used
 </p>
 </subsection>
 
-<subsection name="Apache httpd">
+<subsection name="mod_jk for Apache HTTP Server">
 <br/>
 <p>
-For Apache you can define individual uriworkermap files per virtual host.
+For the Apache HTTP Server you can define individual uriworkermap files per virtual host.
 The directive JkMountFile can be used in the main server and in each virtual host.
 If a virtual host does not use JkMountfile, but JkMountCopy is set to 'On',
 then it inherits the JkMountFile from the main server. If you want all vhost to inherit
@@ -408,14 +409,14 @@ of the uriworkermap file. To keep the performance penalty low, this happens only
 if the last check happened at least n seconds ago.
 </p>
 <p>
-For Apache you can configure the interval "n" using the directive JkMountFileReload,
-for IIS you would use the attribute worker_mount_reload.
+For the Apache HTTP Server you can configure the interval "n" using the directive JkMountFileReload,
+for Microsoft IIS you would use the attribute worker_mount_reload.
 The default value is 60 seconds. A value of "0" turns off the reloading.
 </p>
 <p>
 If the file changed, it gets reloaded completely. If there exist rules coming
 from other sources than the uriworkermap file (e.g. the workers.properties mount
-attribute or JkMount with Apache httpd), the new uriworkermap file gets dynamically
+attribute or JkMount for the Apache HTTP Server), the new uriworkermap file gets dynamically
 merged with these ones exactly like when you do a web server restart.
 </p>
 <p>
@@ -444,14 +445,14 @@ the type of the rule: Exact or Wildchar
 </li>
 <li>
 and the source of the rule definition: 'worker definition' for the workers.properties file (mount attribute),
-'JkMount' for Apache httpd JkMount and it's relatives and finally 'uriworkermap' for the uriworkermap file.
+'JkMount' for the Apache HTTP Server JkMount and it's relatives and finally 'uriworkermap' for the uriworkermap file.
 </li>
 </ul>
 </p>
 <p>
 <b>Note: </b>The following restriction has been removed starting with version 1.2.26.
 <br/>
-For Apache httpd, there is an important subtlety: the request going to the status worker
+For the Apache HTTP Server, there is an important subtlety: the request going to the status worker
 gets executed in the context of some server (main or virtual). The status worker will only show the
 mapping rules, that are defined for this server (main or virtual).
 <br/>
@@ -465,7 +466,7 @@ the URI pattern
 </li>
 <li>
 and the source of the rule definition: 'worker definition' for the workers.properties file (mount attribute),
-'JkMount' for Apache httpd JkMount and it's relatives and finally 'uriworkermap' for the uriworkermap file.
+'JkMount' for the Apache HTTP Server JkMount and it's relatives and finally 'uriworkermap' for the uriworkermap file.
 </li>
 </ul>
 </p>
