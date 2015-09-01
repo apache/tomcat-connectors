@@ -25,18 +25,37 @@
   <properties>
     <author email="mturk@apache.org">Mladen Turk</author>
     <author email="rjung@apache.org">Rainer Jung</author>
-    <title>Documentation Index</title>
+    <title>Documentation Overview</title>
   </properties>
 
 <body>
 
 <section name="Introduction">
 
-<p>This is the top-level entry point of the documentation bundle for the
-<strong>Apache Tomcat Connectors</strong>
-
+<p>The <strong>Apache Tomcat Connectors</strong> project is part of the Tomcat project
+and provides web server plugins to connect web servers with Tomcat and other backends.
 </p>
-<p>Select one of the links from the navigation menu (to the left) to drill
+<p>The supported web servers are:</p>
+<ul>
+<li>the Apache HTTP Server with a plugin (module) named <strong>mod_jk</strong>.</li>
+<li>Microsoft IIS with a plugin (extension) named <strong>ISAPI redirector</strong>
+(or simply redirector).</li>
+<li>the iPlanet Web Server with a plugin named <strong>NSAPI redirector</strong>. The
+iPlanet Web Server was previously known under various names, including Netscape Enterprise Server,
+SunOne Web Server and Sun Enterprise System web server.</li>
+</ul>
+<p>In all cases the plugin uses a special protocol named <strong>Apache JServ Protocol</strong>
+or simply <strong>AJP</strong> to connect to the backend. Backends known to support AJP
+are Apache Tomcat, Jetty and JBoss. Although there exist 3 versions of the protocol,
+<strong>ajp12</strong>, <strong>ajp13</strong>, <strong>ajp14</strong>, most installations
+only use ajp13. The older ajp12 does not use persistent connections and is obsolete, the newer
+version ajp14 is still experimental. Sometimes ajp13 is called AJP 1.3 or AJPv13, but we
+will mostly use the name ajp13.
+</p>
+<p>Most features of the plugins are the same for all web servers. Some details vary
+on a per web server basis. The documentation and the configuration is split into common
+parts and web server specific parts.</p>
+<p>
 down to the more detailed documentation that is available. Each available
 manual is described in more detail below.</p>
 
@@ -89,14 +108,14 @@ and can also be used to dynamically reconfigure JK.
 </p>
 </li>
 
-<li><a href="reference/apache.html"><b>Apache</b></a>
-<p>This page contains detailed description of all directives related to
-Apache web server.
+<li><a href="reference/apache.html"><b>Apache HTTP Server (mod_jk)</b></a>
+<p>This page contains detailed description of all directives of mod_jk for the
+Apache HTTP Server.
 </p>
 </li>
 
-<li><a href="reference/iis.html"><b>IIS</b></a>
-<p>This page contains detailed description of all IIS directives.
+<li><a href="reference/iis.html"><b>Microsoft IIS (ISAPI redirector)</b></a>
+<p>This page contains detailed description of all directives of the ISAPI redirector for Microsoft IIS.
 </p>
 </li>
 
@@ -109,7 +128,7 @@ Apache web server.
 
 <li><a href="common_howto/quick.html"><b>Quick Start</b></a>
 <p>This page describes the configuration files used by JK on the
-Web Server side for the 'impatients'.
+web server side for the 'impatient'.
 </p>
 </li>
 <li><a href="common_howto/workers.html"><b>All about workers</b></a>
@@ -141,11 +160,11 @@ install JK for the various web servers.
 </p>
 <ul>
 
-<li><a href="webserver_howto/apache.html"><b>Apache HTTP Server</b></a>
+<li><a href="webserver_howto/apache.html"><b>Apache HTTP Server (mod_jk)</b></a>
 </li>
-<li><a href="webserver_howto/iis.html"><b>IIS</b></a>
+<li><a href="webserver_howto/iis.html"><b>Microsoft IIS (ISAPI redirector)</b></a>
 </li>
-<li><a href="webserver_howto/nes.html"><b>Netscape/SunOne/Sun</b></a>
+<li><a href="webserver_howto/nes.html"><b>iPlanet Web Server (NSAPI redirector)</b></a>
 </li>
 
 </ul>
