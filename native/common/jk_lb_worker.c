@@ -745,7 +745,7 @@ static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, int global, jk
          * before the interval has passed, we allow a little tolerance.
          */
         if (global == JK_TRUE) {
-            time_t exponent = JK_LB_DECAY_MULT * difftime(now, lb->s->last_maintain_time) / lb->maintain_time;
+            time_t exponent = JK_LB_DECAY_MULT * ((long)difftime(now, lb->s->last_maintain_time)) / lb->maintain_time;
             lb->s->last_maintain_time = now;
 
             if (JK_IS_DEBUG_LEVEL(l))

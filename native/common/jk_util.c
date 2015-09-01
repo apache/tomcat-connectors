@@ -747,7 +747,7 @@ int jk_log(jk_logger_t *l,
             used += rc;
             if (rc < 0 ) {
                 strcpy(buf, "Logging failed in pid/tid formatting");
-                l->log(l, level, strlen(buf), buf);
+                l->log(l, level, (int)strlen(buf), buf);
                 return 0;
             }
 
@@ -758,7 +758,7 @@ int jk_log(jk_logger_t *l,
             }
             else {
                 strcpy(buf, "Logging failed in log level formatting");
-                l->log(l, level, strlen(buf), buf);
+                l->log(l, level, (int)strlen(buf), buf);
                 return 0;           /* [V] not sure what to return... */
             }
 
@@ -772,7 +772,7 @@ int jk_log(jk_logger_t *l,
                 }
                 else {
                     strcpy(buf, "Logging failed in function name formatting");
-                    l->log(l, level, strlen(buf), buf);
+                    l->log(l, level, (int)strlen(buf), buf);
                     return 0;           /* [V] not sure what to return... */
                 }
             }
@@ -784,7 +784,7 @@ int jk_log(jk_logger_t *l,
             }
             else {
                 strcpy(buf, "Logging failed in source file name formatting");
-                l->log(l, level, strlen(buf), buf);
+                l->log(l, level, (int)strlen(buf), buf);
                 return 0;           /* [V] not sure what to return... */
             }
 
@@ -793,7 +793,7 @@ int jk_log(jk_logger_t *l,
             used += rc;
             if (rc < 0 || usable_size - used < 0) {
                 strcpy(buf, "Logging failed in line number formatting");
-                l->log(l, level, strlen(buf), buf);
+                l->log(l, level, (int)strlen(buf), buf);
                 return 0;           /* [V] not sure what to return... */
             }
         }
