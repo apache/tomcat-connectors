@@ -1110,7 +1110,7 @@ configurations for debug and release builds and in the
 to build against the web server versions 2.0, 2.2 and 2.4.
 </li>
 <li>
-Finally choose "Build Solution" in the "Build" menue.
+Finally choose "Build Solution" in the "Build" menu.
 </li>
 </ul>
 The resulting file mod_jk.so (and the debug symbol file

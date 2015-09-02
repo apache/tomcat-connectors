@@ -501,7 +501,7 @@ During IDE startup choose "Yes" in all conversion popups.
 Next choose "Debug" or "Release" in the Configuration dropdown.
 </li>
 <li>
-Finally choose "Build Solution" in the "Build" menue.
+Finally choose "Build Solution" in the "Build" menu.
 </li>
 </ul>
 The resulting file isapi_redirect.dll (and the debug symbol file
