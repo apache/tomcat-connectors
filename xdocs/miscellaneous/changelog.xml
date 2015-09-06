@@ -44,6 +44,10 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>57836</bug>: ISAPI: Empty REMOTE_USER should not be
+        translated to "". (rjung)
+      </fix>
       <update>
         <bug>58309</bug>: ISAPI: Update bundled pcre from version 5.0
         to 8.37. (rjung)

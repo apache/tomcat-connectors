@@ -3560,8 +3560,12 @@ static char *dup_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
     char buf[HDR_BUFFER_SIZE];
     char *dp;
 
-    if (lpEcb->GetServerVariable(lpEcb->ConnID, (LPSTR)name, buf, &sz))
+    if (lpEcb->GetServerVariable(lpEcb->ConnID, (LPSTR)name, buf, &sz)) {
+        if (sz == 0) {
+            return NULL;
+        }
         return jk_pool_strdup(p, buf);
+    }
     if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
         return NULL;
     if ((dp = jk_pool_alloc(p, sz))) {
