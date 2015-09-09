@@ -785,11 +785,18 @@ static const char *windows_strftime_preprocess(const char *pattern,
     char *found = strstr(pattern, JK_WINDOWS_TIMEZONE_PLACEHOLDER);
     if (found != NULL && sz > strlen(pattern)) {
         TIME_ZONE_INFORMATION tz;
+        DWORD rc;
 
         strcpy(buf, pattern);
         found = buf + (found - pattern);
 
-        if (GetTimeZoneInformation(&tz) != TIME_ZONE_ID_INVALID) {
+        rc = GetTimeZoneInformation(&tz);
+        if (rc != TIME_ZONE_ID_INVALID) {
+            if (rc == TIME_ZONE_ID_STANDARD) {
+                tz.Bias += tz.StandardBias;
+            } else if (rc == TIME_ZONE_ID_DAYLIGHT) {
+                tz.Bias += tz.DaylightBias;
+            }
             tz.Bias *= -1;
             snprintf(found, strlen(JK_WINDOWS_TIMEZONE_PLACEHOLDER), "%c%02d%02d",
                      (tz.Bias >= 0 ? '+' : '-'), tz.Bias / 60, tz.Bias % 60);
