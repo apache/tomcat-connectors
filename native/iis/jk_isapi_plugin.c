@@ -445,11 +445,12 @@ static struct error_reasons {
 
 #define ISIZEOF(X)      (int)sizeof(X)
 
-#define GET_SERVER_VARIABLE_VALUE(name, place)              \
+#define GET_SERVER_VARIABLE_VALUE(name, place, def)         \
   do {                                                      \
     (place) = dup_server_value(private_data->lpEcb,         \
                                (name),                      \
-                               &private_data->p);           \
+                               &private_data->p,            \
+                               def);                        \
   } while(0)
 
 #define GET_SERVER_VARIABLE_VALUE_INT(name, place, def)     \
@@ -593,7 +594,8 @@ static BOOL get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
                              char *buf, size_t bufsz);
 
 static char *dup_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
-                              const char *name, jk_pool_t *p);
+                              const char *name, jk_pool_t *p,
+                              const char *def);
 
 static int base64_encode_cert_len(int len);
 
@@ -3186,22 +3188,22 @@ static int init_ws_service(isapi_private_data_t * private_data,
     s->write = iis_write;
     s->done  = iis_done;
 
-    GET_SERVER_VARIABLE_VALUE(HTTP_URI_HEADER_NAME, s->req_uri);
+    GET_SERVER_VARIABLE_VALUE(HTTP_URI_HEADER_NAME, s->req_uri, NULL);
 
     if (s->req_uri == NULL) {
         if (JK_IS_DEBUG_LEVEL(logger))
             jk_log(logger, JK_LOG_DEBUG, "No URI header value provided. Defaulting to old behaviour" );
         s->query_string = private_data->lpEcb->lpszQueryString;
         *worker_name = DEFAULT_WORKER_NAME;
-        GET_SERVER_VARIABLE_VALUE("URL", s->req_uri);
+        GET_SERVER_VARIABLE_VALUE("URL", s->req_uri, "");
         if (unescape_url(s->req_uri) < 0) {
             JK_TRACE_EXIT(logger);
             return JK_FALSE;
         }
         getparents(s->req_uri);
     } else {
-        GET_SERVER_VARIABLE_VALUE(HTTP_QUERY_HEADER_NAME, s->query_string);
-        GET_SERVER_VARIABLE_VALUE(HTTP_WORKER_HEADER_NAME, (*worker_name));
+        GET_SERVER_VARIABLE_VALUE(HTTP_QUERY_HEADER_NAME, s->query_string, "");
+        GET_SERVER_VARIABLE_VALUE(HTTP_WORKER_HEADER_NAME, (*worker_name), "");
         GET_SERVER_VARIABLE_VALUE_INT(HTTP_WORKER_HEADER_INDEX, worker_index, -1);
     }
 
@@ -3212,16 +3214,16 @@ static int init_ws_service(isapi_private_data_t * private_data,
         jk_log(logger, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_QUERY_HEADER_NAME, s->query_string);
     }
 
-    GET_SERVER_VARIABLE_VALUE("AUTH_TYPE", s->auth_type);
-    GET_SERVER_VARIABLE_VALUE("REMOTE_USER", s->remote_user);
-    GET_SERVER_VARIABLE_VALUE("SERVER_PROTOCOL", s->protocol);
-    GET_SERVER_VARIABLE_VALUE("REMOTE_HOST", s->remote_host);
-    GET_SERVER_VARIABLE_VALUE("REMOTE_ADDR", s->remote_addr);
-    GET_SERVER_VARIABLE_VALUE("REMOTE_PORT", s->remote_port);
-    GET_SERVER_VARIABLE_VALUE("SERVER_NAME", s->server_name);
-    GET_SERVER_VARIABLE_VALUE("LOCAL_ADDR", s->local_addr);
+    GET_SERVER_VARIABLE_VALUE("AUTH_TYPE", s->auth_type, NULL);
+    GET_SERVER_VARIABLE_VALUE("REMOTE_USER", s->remote_user, NULL);
+    GET_SERVER_VARIABLE_VALUE("SERVER_PROTOCOL", s->protocol, "");
+    GET_SERVER_VARIABLE_VALUE("REMOTE_HOST", s->remote_host, "");
+    GET_SERVER_VARIABLE_VALUE("REMOTE_ADDR", s->remote_addr, "");
+    GET_SERVER_VARIABLE_VALUE("REMOTE_PORT", s->remote_port, "");
+    GET_SERVER_VARIABLE_VALUE("SERVER_NAME", s->server_name, "");
+    GET_SERVER_VARIABLE_VALUE("LOCAL_ADDR", s->local_addr, "");
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT", s->server_port, 80);
-    GET_SERVER_VARIABLE_VALUE("SERVER_SOFTWARE", s->server_software);
+    GET_SERVER_VARIABLE_VALUE("SERVER_SOFTWARE", s->server_software, "");
     GET_SERVER_VARIABLE_VALUE_INT("SERVER_PORT_SECURE", s->is_ssl, 0);
 
     s->method = private_data->lpEcb->lpszMethod;
@@ -3317,7 +3319,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
         unsigned int num_of_vars = 0;
 
         for (i = 0; i < 9; i++) {
-            GET_SERVER_VARIABLE_VALUE(ssl_env_names[i], ssl_env_values[i]);
+            GET_SERVER_VARIABLE_VALUE(ssl_env_names[i], ssl_env_values[i], NULL);
             if (ssl_env_values[i]) {
                 num_of_vars++;
             }
@@ -3373,7 +3375,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
         }
     }
 
-    GET_SERVER_VARIABLE_VALUE(ALL_HEADERS, all_headers);
+    GET_SERVER_VARIABLE_VALUE(ALL_HEADERS, all_headers, NULL);
     if (!all_headers) {
         JK_TRACE_EXIT(logger);
         return JK_FALSE;
@@ -3554,15 +3556,16 @@ static BOOL get_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
 }
 
 static char *dup_server_value(LPEXTENSION_CONTROL_BLOCK lpEcb,
-                              const char *name, jk_pool_t *p)
+                              const char *name, jk_pool_t *p,
+                              const char *def)
 {
     DWORD sz = HDR_BUFFER_SIZE;
     char buf[HDR_BUFFER_SIZE];
     char *dp;
 
     if (lpEcb->GetServerVariable(lpEcb->ConnID, (LPSTR)name, buf, &sz)) {
-        if (sz == 0) {
-            return NULL;
+        if (sz <= 1) {
+            return def == NULL ? NULL : jk_pool_strdup(p, def);
         }
         return jk_pool_strdup(p, buf);
     }
