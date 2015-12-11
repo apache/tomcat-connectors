@@ -2900,8 +2900,12 @@ static int jk_handler(request_rec * r)
                     rc = end->service(end, &s, xconf->log,
                                       &is_error);
                     end->done(&end, xconf->log);
-                    if (s.content_read < s.content_length ||
-                        (s.is_chunked && !s.no_more_chunks)) {
+                    if ((s.content_read < s.content_length ||
+                        (s.is_chunked && !s.no_more_chunks)) &&
+                        /* This case aborts the connection below and typically
+                         * means the request body reading already timed out,
+                         * so lets not try to read again here. */
+                        !(rc == JK_CLIENT_ERROR && is_error == HTTP_BAD_REQUEST)) {
                         /*
                          * If the servlet engine didn't consume all of the
                          * request data, consume and discard all further
