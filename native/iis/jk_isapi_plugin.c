@@ -1530,9 +1530,6 @@ enum {
 /* The structure representing a compiled regular expression. */
 typedef struct {
     void *re_pcre;
-    size_t re_nsub;
-    size_t re_erroffset;
-    const char *real;
     const char *fake;
 } ap_regex_t;
 
@@ -1545,43 +1542,6 @@ typedef struct {
 
 /* Table of error strings corresponding to POSIX error codes; must be
  * kept in synch with include/ap_regex.h's AP_REG_E* definitions. */
-
-static const char *const pstring[] = {
-  "",                                /* Dummy for value 0 */
-  "internal error",                  /* AP_REG_ASSERT */
-  "failed to get memory",            /* AP_REG_ESPACE */
-  "bad argument",                    /* AP_REG_INVARG */
-  "match failed"                     /* AP_REG_NOMATCH */
-};
-
-static size_t ap_regerror(int errcode, const ap_regex_t *preg,
-                          char *errbuf, size_t errbuf_size)
-{
-    const char *message, *addmessage;
-    size_t length, addlength;
-
-    message = (errcode >= (int)(sizeof(pstring)/sizeof(char *))) ?
-                                "unknown error code" : pstring[errcode];
-    length = strlen(message) + 1;
-
-    addmessage = " at offset ";
-    addlength = (preg != NULL && (int)preg->re_erroffset != -1)?
-                                        strlen(addmessage) + 6 : 0;
-
-    if (errbuf_size > 0) {
-        if (addlength > 0 && errbuf_size >= length + addlength) {
-            StringCbPrintf(errbuf, sizeof(errbuf), "%s%s%-6d",
-                          message, addmessage,
-                          (int)preg->re_erroffset);
-        }
-        else {
-            strncpy(errbuf, message, errbuf_size - 1);
-            errbuf[errbuf_size-1] = 0;
-        }
-    }
-
-    return length + addlength;
-}
 
 /*************************************************
  *           Free store held by a regex          *
@@ -1612,12 +1572,10 @@ static int ap_regcomp(ap_regex_t *preg, const char *pattern)
     int erroffset;
 
     preg->re_pcre = pcre_compile(pattern, 0, &errorptr, &erroffset, NULL);
-    preg->re_erroffset = erroffset;
 
     if (preg->re_pcre == NULL)
         return AP_REG_INVARG;
 
-    pcre_fullinfo((const pcre *)preg->re_pcre, NULL, PCRE_INFO_CAPTURECOUNT, &(preg->re_nsub));
     return 0;
 }
 
@@ -1639,8 +1597,6 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
     int *ovector = NULL;
     int small_ovector[POSIX_MALLOC_THRESHOLD * 3];
     int allocated_ovector = 0;
-
-    ((ap_regex_t *)preg)->re_erroffset = (size_t)(-1);  /* Only has meaning after compile */
 
     if (nmatch > 0) {
         if (nmatch <= POSIX_MALLOC_THRESHOLD) {
@@ -1816,7 +1772,7 @@ static char *rregex_rewrite(jk_pool_t *p, const char *uri)
             ap_regex_t *regexp = (ap_regex_t *)jk_map_value_at(rregexp_map, i);
             if (!ap_regexec(regexp, uri, AP_MAX_REG_MATCH, regm)) {
                 char *subs = ap_pregsub(regexp->fake, uri,
-                                       AP_MAX_REG_MATCH, regm);
+                                        AP_MAX_REG_MATCH, regm);
                 if (subs) {
                     char *buf, *ptr;
                     size_t orgsz = strlen(uri);
@@ -2748,20 +2704,20 @@ static int init_jk(char *serverName)
                     ap_regex_t *regexp = malloc(sizeof(ap_regex_t));
                     const char *val = jk_map_value_at(rewrite_map, i);
                     /* Skip leading tilde */
-                    regexp->real = src + 1;
+                    src++;
                     regexp->fake = val;
-                    if (!ap_regcomp(regexp, regexp->real) {
-                        jk_map_add(rregexp_map, regexp->real, regexp);
+                    if (!ap_regcomp(regexp, src) {
+                        jk_map_add(rregexp_map, src, regexp);
                         if (JK_IS_DEBUG_LEVEL(logger)) {
                             jk_log(logger, JK_LOG_DEBUG,
                                    "Added regular expression rule %s -> %s",
-                                   regexp->real, regexp->fake);
+                                   src, regexp->fake);
                         }
                     }
                     else {
                         jk_log(logger, JK_LOG_ERROR,
                                "Unable to compile regular expression %s",
-                               regexp->real);
+                               src);
                         free(regexp);
                     }
                 }
