@@ -1516,13 +1516,6 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
 }
 
 
-#define AP_REG_ICASE    0x01 /** use a case-insensitive match */
-#define AP_REG_NEWLINE  0x02 /** don't match newlines against '.' etc */
-#define AP_REG_NOTBOL   0x04 /** ^ will not match against start-of-string */
-#define AP_REG_NOTEOL   0x08 /** $ will not match against end-of-string */
-
-#define AP_REG_EXTENDED (0)  /** unused */
-#define AP_REG_NOSUB    (0)  /** unused */
 /** The max number of regex captures that can be expanded by ap_pregsub */
 #define AP_MAX_REG_MATCH 10
 
@@ -1600,8 +1593,6 @@ static void ap_regfree(ap_regex_t *preg)
 }
 
 
-
-
 /*************************************************
  *            Compile a regular expression       *
  *************************************************/
@@ -1610,24 +1601,17 @@ static void ap_regfree(ap_regex_t *preg)
 Arguments:
   preg        points to a structure for recording the compiled expression
   pattern     the pattern to compile
-  cflags      compilation flags
 
 Returns:      0 on success
               various non-zero codes on failure
 */
 
-static int ap_regcomp(ap_regex_t *preg, const char *pattern, int cflags)
+static int ap_regcomp(ap_regex_t *preg, const char *pattern)
 {
     const char *errorptr;
     int erroffset;
-    int options = 0;
 
-    if ((cflags & AP_REG_ICASE) != 0)
-        options |= PCRE_CASELESS;
-    if ((cflags & AP_REG_NEWLINE) != 0)
-        options |= PCRE_MULTILINE;
-
-    preg->re_pcre = pcre_compile(pattern, options, &errorptr, &erroffset, NULL);
+    preg->re_pcre = pcre_compile(pattern, 0, &errorptr, &erroffset, NULL);
     preg->re_erroffset = erroffset;
 
     if (preg->re_pcre == NULL)
@@ -1649,17 +1633,12 @@ block of store on the stack, to reduce the use of malloc/free. The threshold is
 in a macro that can be changed at configure time. */
 
 static int ap_regexec(const ap_regex_t *preg, const char *string,
-                      int nmatch, ap_regmatch_t pmatch[],
-                      int eflags)
+                      int nmatch, ap_regmatch_t pmatch[])
 {
     int rc;
-    int options = 0;
     int *ovector = NULL;
     int small_ovector[POSIX_MALLOC_THRESHOLD * 3];
     int allocated_ovector = 0;
-
-    if ((eflags & AP_REG_NOTBOL) != 0) options |= PCRE_NOTBOL;
-    if ((eflags & AP_REG_NOTEOL) != 0) options |= PCRE_NOTEOL;
 
     ((ap_regex_t *)preg)->re_erroffset = (size_t)(-1);  /* Only has meaning after compile */
 
@@ -1677,7 +1656,7 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
 
     rc = pcre_exec((const pcre *)preg->re_pcre, NULL, string,
                    lstrlenA(string),
-                    0, options, ovector, nmatch * 3);
+                    0, 0, ovector, nmatch * 3);
 
     if (rc == 0)
         rc = nmatch;    /* All captured slots were filled in */
@@ -1835,7 +1814,7 @@ static char *rregex_rewrite(jk_pool_t *p, const char *uri)
         int i;
         for (i = 0; i < jk_map_size(rregexp_map); i++) {
             ap_regex_t *regexp = (ap_regex_t *)jk_map_value_at(rregexp_map, i);
-            if (!ap_regexec(regexp, uri, AP_MAX_REG_MATCH, regm, 0)) {
+            if (!ap_regexec(regexp, uri, AP_MAX_REG_MATCH, regm)) {
                 char *subs = ap_pregsub(regexp->fake, uri,
                                        AP_MAX_REG_MATCH, regm);
                 if (subs) {
@@ -2771,7 +2750,7 @@ static int init_jk(char *serverName)
                     /* Skip leading tilde */
                     regexp->real = src + 1;
                     regexp->fake = val;
-                    if (!ap_regcomp(regexp, regexp->real, AP_REG_EXTENDED)) {
+                    if (!ap_regcomp(regexp, regexp->real) {
                         jk_map_add(rregexp_map, regexp->real, regexp);
                         if (JK_IS_DEBUG_LEVEL(logger)) {
                             jk_log(logger, JK_LOG_DEBUG,
