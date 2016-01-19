@@ -1519,14 +1519,6 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
 /** The max number of regex captures that can be expanded by ap_pregsub */
 #define AP_MAX_REG_MATCH 10
 
-/* Error values: */
-enum {
-    AP_REG_ASSERT = 1,  /** internal error ? */
-    AP_REG_ESPACE,      /** failed to get memory */
-    AP_REG_INVARG,      /** invalid argument */
-    AP_REG_NOMATCH      /** match failed */
-};
-
 /* The structure representing a compiled regular expression. */
 typedef struct {
     void *re_pcre;
@@ -1539,9 +1531,6 @@ typedef struct {
     int rm_eo;
 } ap_regmatch_t;
 
-
-/* Table of error strings corresponding to POSIX error codes; must be
- * kept in synch with include/ap_regex.h's AP_REG_E* definitions. */
 
 /*************************************************
  *           Free store held by a regex          *
@@ -1562,8 +1551,8 @@ Arguments:
   preg        points to a structure for recording the compiled expression
   pattern     the pattern to compile
 
-Returns:      0 on success
-              various non-zero codes on failure
+Returns:      JK_TRUE on success
+              JK_FALSE on failure
 */
 
 static int ap_regcomp(ap_regex_t *preg, const char *pattern)
@@ -1574,9 +1563,9 @@ static int ap_regcomp(ap_regex_t *preg, const char *pattern)
     preg->re_pcre = pcre_compile(pattern, 0, &errorptr, &erroffset, NULL);
 
     if (preg->re_pcre == NULL)
-        return AP_REG_INVARG;
+        return JK_FALSE;
 
-    return 0;
+    return JK_TRUE;
 }
 
 /*************************************************
@@ -1605,7 +1594,7 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
         else {
             ovector = (int *)malloc(sizeof(int) * nmatch * 3);
             if (ovector == NULL)
-                return AP_REG_ESPACE;
+                return -1;
             allocated_ovector = 1;
         }
     }
@@ -1622,45 +1611,12 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
             pmatch[i].rm_so = ovector[i*2];
             pmatch[i].rm_eo = ovector[i*2+1];
         }
-        if (allocated_ovector)
-            free(ovector);
         for (; i < nmatch; i++)
             pmatch[i].rm_so = pmatch[i].rm_eo = -1;
-        return 0;
     }
-    else {
-        if (allocated_ovector)
-            free(ovector);
-        switch(rc) {
-            case PCRE_ERROR_NOMATCH:
-                return AP_REG_NOMATCH;
-            case PCRE_ERROR_NULL:
-                return AP_REG_INVARG;
-            case PCRE_ERROR_BADOPTION:
-                return AP_REG_INVARG;
-            case PCRE_ERROR_BADMAGIC:
-                return AP_REG_INVARG;
-            case PCRE_ERROR_UNKNOWN_NODE:
-                return AP_REG_ASSERT;
-            case PCRE_ERROR_NOMEMORY:
-                return AP_REG_ESPACE;
-#ifdef PCRE_ERROR_MATCHLIMIT
-            case PCRE_ERROR_MATCHLIMIT:
-                return AP_REG_ESPACE;
-#endif
-#ifdef PCRE_ERROR_BADUTF8
-            case PCRE_ERROR_BADUTF8:
-                return AP_REG_INVARG;
-#endif
-#ifdef PCRE_ERROR_BADUTF8_OFFSET
-            case PCRE_ERROR_BADUTF8_OFFSET:
-                return AP_REG_INVARG;
-#endif
-            default:
-            break;
-        }
-    }
-    return AP_REG_ASSERT;
+    if (allocated_ovector)
+        free(ovector);
+    return rc;
 }
 
 /* This function substitutes for $0-$9, filling in regular expression
@@ -1678,13 +1634,13 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
  */
 
 static char *ap_pregsub(const char *input,
-                        const char *source, size_t nmatch,
+                        const char *source, int nmatch,
                         ap_regmatch_t pmatch[])
 {
     const char *src = input;
     char *dest, *dst;
     char c;
-    size_t no;
+    int no;
     int len;
 
     if (!source)
@@ -1764,15 +1720,20 @@ static char *simple_rewrite(jk_pool_t *p, const char *uri)
 
 static char *rregex_rewrite(jk_pool_t *p, const char *uri)
 {
+    int nmatch;
     ap_regmatch_t regm[AP_MAX_REG_MATCH];
 
     if (rregexp_map) {
         int i;
         for (i = 0; i < jk_map_size(rregexp_map); i++) {
             ap_regex_t *regexp = (ap_regex_t *)jk_map_value_at(rregexp_map, i);
-            if (!ap_regexec(regexp, uri, AP_MAX_REG_MATCH, regm)) {
-                char *subs = ap_pregsub(regexp->fake, uri,
-                                        AP_MAX_REG_MATCH, regm);
+            nmatch = ap_regexec(regexp, uri, AP_MAX_REG_MATCH, regm);
+            if (nmatch > 0) {
+                char *subs;
+                if (nmatch > AP_MAX_REG_MATCH) {
+                    nmatch = AP_MAX_REG_MATCH;
+                }
+                subs = ap_pregsub(regexp->fake, uri, nmatch, regm);
                 if (subs) {
                     char *buf, *ptr;
                     size_t orgsz = strlen(uri);
@@ -2706,7 +2667,7 @@ static int init_jk(char *serverName)
                     /* Skip leading tilde */
                     src++;
                     regexp->fake = val;
-                    if (!ap_regcomp(regexp, src) {
+                    if (ap_regcomp(regexp, src) == JK_TRUE) {
                         jk_map_add(rregexp_map, src, regexp);
                         if (JK_IS_DEBUG_LEVEL(logger)) {
                             jk_log(logger, JK_LOG_DEBUG,
