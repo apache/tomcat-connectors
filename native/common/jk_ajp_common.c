@@ -2500,6 +2500,11 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
         return JK_FALSE;
     }
 
+    /* Reset endpoint read and write sizes for
+     * this request.
+     */
+    e->rd = e->wr = 0;
+    e->recoverable = JK_TRUE;
     p = e->endpoint_private;
     aw = p->worker;
 

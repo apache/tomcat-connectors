@@ -1349,11 +1349,6 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 jk_uint64_t rd = 0;
                 jk_uint64_t wr = 0;
                 int busy;
-                /* Reset endpoint read and write sizes for
-                 * this request.
-                 */
-                end->rd = end->wr = 0;
-                end->recoverable = JK_TRUE;
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                     jk_shm_lock();
 

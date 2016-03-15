@@ -45,6 +45,11 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        Status: Fix displayed number of bytes read from and written
+        to the backend when an AJP worker is used without a load
+        balancer worker. (rjung)
+      </fix>
+      <fix>
         Apache: Don't try to read remaining request body parts during
         clean up if reading the request body from the client already
         failed during earlier processing phases. (rjung)
@@ -503,7 +508,7 @@
         environment variable JK_STATELESS. (rjung)
       </add>
       <update>
-        AJP: Improve logging when request does not fix into an AJP packet. (rjung)
+        AJP: Improve logging when request does not fit into an AJP packet. (rjung)
       </update>
     </changelog>
   </subsection>
