@@ -74,6 +74,12 @@
         was introduced by the fix to <bug>44454</bug> and <bug>56703</bug>.
         (rjung)
       </fix>
+      <fix>
+        <bug>58813</bug>: ISAPI: Correctly release a mutex allowing the plugin
+        to complete initialization. Prior to this fix, the incomplete
+        initialization was causing a hang on shutdown. Patch provided by Matthew
+        Reiter. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

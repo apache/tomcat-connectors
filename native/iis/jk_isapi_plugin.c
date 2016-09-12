@@ -2319,7 +2319,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             jk_close_file_logger(&logger);
         }
     }
-    ReleaseMutex(&init_cs);
+    ReleaseMutex(init_cs);
     LeaveCriticalSection(&log_cs);
     return TRUE;
 }
