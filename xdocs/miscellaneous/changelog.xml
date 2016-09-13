@@ -80,6 +80,10 @@
         initialization was causing a hang on shutdown. Patch provided by Matthew
         Reiter. (markt)
       </fix>
+      <fix>
+        <bug>59164</bug>: Fix crash on first connection if a host name is
+        specified for the worker that cannot be resolved to an IP address.
+        (markt)
     </changelog>
   </subsection>
 </section>

@@ -1285,17 +1285,22 @@ char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf, size_t size)
 {
     char pb[8];
 
-    if (saddr->family == JK_INET) {
-        inet_ntop4(saddr->ipaddr_ptr, buf, size);
-    }
+    if (saddr->ipaddr_ptr == NULL) {
+        strcpy(buf, "UnresolvedIP");
+    } else {
+        if (saddr->family == JK_INET) {
+            inet_ntop4(saddr->ipaddr_ptr, buf, size);
+        }
 #if JK_HAVE_IPV6
-    else {
-        inet_ntop6(saddr->ipaddr_ptr, buf, size);
-    }
+        else {
+            inet_ntop6(saddr->ipaddr_ptr, buf, size);
+        }
 #endif
+    }
+ 
     sprintf(pb, ":%d", saddr->port);
-
     strncat(buf, pb, size - strlen(buf) - 1);
+
     return buf;
 }
 
