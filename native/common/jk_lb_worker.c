@@ -1650,7 +1650,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     jk_log(l, JK_LOG_INFO,
                            "All tomcat instances failed, no more workers "
                            "left for recovery (attempt=%d, retry=%d)",
-                           attempt, retry);
+                           attempt + 1, retry);
                     *is_error = JK_HTTP_SERVER_BUSY;
                     rc = JK_FALSE;
                 }
@@ -1659,7 +1659,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 jk_log(l, JK_LOG_INFO,
                        "All tomcat instances failed, no more workers "
                        "left (attempt=%d, retry=%d)",
-                       attempt, retry);
+                       attempt + 1, retry);
                 *is_error = JK_HTTP_SERVER_BUSY;
                 rc = JK_FALSE;
             }

@@ -81,9 +81,15 @@
         Reiter. (markt)
       </fix>
       <fix>
+        <bug>58895</bug>: Correct an off-by-one error in the log messages for
+        the number of attempts made to communicate with the backend server.
+        Patch provided by Hiroto Shimizu. (markt)
+      </fix>
+      <fix>
         <bug>59164</bug>: Fix crash on first connection if a host name is
         specified for the worker that cannot be resolved to an IP address.
         (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
