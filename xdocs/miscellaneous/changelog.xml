@@ -75,6 +75,12 @@
         (rjung)
       </fix>
       <fix>
+        <bug>58608</bug>: ISAPI: Add a new registry option "flush_packets"
+        that allows the flushing behaviour of IIS7+ to be controlled. The
+        default is not to flush. Setting the option to "true" with cause IIS to
+        write data to the client as each AJP packet is received. (markt)
+      </fix>
+      <fix>
         <bug>58813</bug>: ISAPI: Correctly release a mutex allowing the plugin
         to complete initialization. Prior to this fix, the incomplete
         initialization was causing a hang on shutdown. Patch provided by Matthew

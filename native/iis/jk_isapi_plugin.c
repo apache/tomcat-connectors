@@ -51,6 +51,10 @@
 #define POSIX_MALLOC_THRESHOLD 10
 #endif
 
+#ifndef HSE_REQ_SET_FLUSH_FLAG
+#define HSE_REQ_SET_FLUSH_FLAG (HSE_REQ_END_RESERVED + 43)
+#endif
+
 #include <strsafe.h>
 
 #define VERSION_STRING "Tomcat/ISAPI/" JK_EXPOSED_VERSION
@@ -135,6 +139,7 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define WATCHDOG_INTERVAL_TAG         "watchdog_interval"
 #define ENABLE_CHUNKED_ENCODING_TAG   "enable_chunked_encoding"
 #define ERROR_PAGE_TAG                "error_page"
+#define FLUSH_PACKETS_TAG             "flush_packets"
 
 #define LOG_ROTATION_TIME_TAG         "log_rotationtime"
 #define LOG_FILESIZE_TAG              "log_filesize"
@@ -510,6 +515,7 @@ static volatile int  watchdog_interval = 0;
 static HANDLE watchdog_handle = NULL;
 static char error_page_buf[INTERNET_MAX_URL_LENGTH] = {0};
 static char *error_page = NULL;
+static int flush_packets = JK_FALSE;
 
 #define URI_SELECT_OPT_PARSED       0
 #define URI_SELECT_OPT_UNPARSED     1
@@ -2183,6 +2189,11 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     s.ws_private = &private_data;
     s.pool = &private_data.p;
 
+    if (flush_packets) {
+        lpEcb->ServerSupportFunction(lpEcb->ConnID, HSE_REQ_SET_FLUSH_FLAG,
+                (LPVOID) TRUE, NULL, NULL);
+    }
+    
     if (init_ws_service(&private_data, &s, &worker_name)) {
         jk_endpoint_t *e = NULL;
         jk_worker_t *worker = wc_get_worker_for_name(worker_name, logger);
@@ -2964,6 +2975,7 @@ static int read_registry_init_data(void)
     if (watchdog_interval < 0)
         watchdog_interval = 0;
     chunked_encoding_enabled = get_config_bool(src, ENABLE_CHUNKED_ENCODING_TAG, JK_FALSE);
+    flush_packets = get_config_bool(src, FLUSH_PACKETS_TAG, JK_FALSE);
     if (get_config_parameter(src, ERROR_PAGE_TAG, error_page_buf, sizeof(error_page_buf))) {
         error_page = error_page_buf;
     }

@@ -269,6 +269,16 @@ was considered experimental and only available when a special build containing
 chunking support was used. Starting with 1.2.30 it is no longer considered
 experimental.</p>
 </attribute>
+<attribute name="flush_packets" required="false"><p>
+A string value representing a boolean. If it is set to <b>true</b>,
+data is flushed immediately to the client as each AJP packet is received.
+Otherwise, IIS buffers the data and only writes to the client when the buffer
+is full or the response is complete.</p>
+<p>
+The default value is false.
+</p>
+<p>This directive has been added in version 1.2.42</p>
+</attribute>
 </attributes>
 </section> 
 <section name="Using a properties file for configuration">
