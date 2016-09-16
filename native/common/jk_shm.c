@@ -878,7 +878,7 @@ int jk_shm_check_maintain(time_t trigger)
         JK_ATOMIC_DECREMENT(&(jk_shmem.hdr->h.data.maintain_checking));
         return rv;
     }
-    if (jk_shmem.hdr->h.data.maintain_time < trigger) {
+    if (jk_shmem.hdr->h.data.maintain_time <= trigger) {
         jk_shmem.hdr->h.data.maintain_time = time(NULL);
         rv = JK_TRUE;
     }
