@@ -219,6 +219,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                        source);
             }
         }
+        return JK_TRUE;
     }
     else {
         jk_log(l, JK_LOG_ERROR,

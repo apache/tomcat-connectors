@@ -75,6 +75,11 @@
         (rjung)
       </fix>
       <fix>
+        <bug>58425</bug>: Fix regression in 1.4.41 that prevented  AJP 1.2
+        workers from initialising. Note that the AJP 1.2 protocol is deprecated.
+        Patch provided by yagisita. (markt)
+      </fix>
+      <fix>
         <bug>58504</bug>: If a background thread is used to perform worker
         maintenance, ensure that maintenance runs are not skipped. Patch
         provided by Hiroto Shimizu. (markt)
