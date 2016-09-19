@@ -101,6 +101,11 @@
         specified for the worker that cannot be resolved to an IP address.
         (markt)
       </fix>
+      <fix>
+        <bug>59184</bug>: HTTPD: Avoid segmentation fault if mod_jk is
+        configured with an invalid value for JkShmFile. This causes the server
+        startup to fail. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

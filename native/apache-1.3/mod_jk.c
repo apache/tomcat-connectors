@@ -3287,9 +3287,9 @@ static void jk_init(server_rec * s, ap_pool * p)
                "You can remove the JkShmSize directive if you want to use the optimal size.");
     }
     if ((rc = jk_shm_open(jk_shm_file, jk_shm_size, conf->log)) != 0) {
-        jk_log(conf->log, JK_LOG_ERROR,
-               "Initializing shm:%s errno=%d. Load balancing workers will not function properly.",
-               jk_shm_name(), rc);
+        jk_error_exit(APLOG_MARK, APLOG_EMERG | APLOG_NOERRNO, s, p,
+                      "Initializing shm:%s errno=%d. Unable to start due to shared memory failure.",
+                      jk_shm_name(), rc);
     }
 
     /* SREVILAK -- register cleanup handler to clear resources on restart,

@@ -3575,9 +3575,9 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
                                   apr_pool_cleanup_null);
     }
     else {
-        jk_log(conf->log, JK_LOG_ERROR,
-               "Initializing shm:%s errno=%d. Load balancing workers will not function properly.",
-               jk_shm_name(), rc);
+        jk_error_exit(JKLOG_MARK, APLOG_EMERG, s, s->process->pool,
+                      "Initializing shm:%s errno=%d. Unable to start due to shared memory failure.",
+                      jk_shm_name(), rc);
     }
     /* we add the URI->WORKER MAP since workers using AJP14
        will feed it */
