@@ -58,6 +58,11 @@
         <bug>57836</bug>: ISAPI: Empty REMOTE_USER should not be
         translated to "". (rjung)
       </fix>
+      <fix>
+        <bug>58249</bug>: Add a note the the documentation that max_packet_size
+        will be aligned to the next multiple of 1024 if a value is specified
+        that is not a multiple of 1024. (markt)
+      </fix>
       <update>
         <bug>58309</bug>: ISAPI: Update bundled pcre from version 5.0
         to 8.38. (rjung)

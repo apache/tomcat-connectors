@@ -912,11 +912,12 @@ This feature is experimental and has been added in <b>jk 1.2.41</b>.
 </directive>
 
 <directive name="max_packet_size" workers="AJP,SUB" default="8192" required="false">
-This attribute sets the maximal AJP packet size in Bytes.
-The maximum value is 65536. If you change it from the default,
-you <b>must</b> also change the packetSize attribute of your AJP
-connector on the Tomcat side! The attribute packetSize is only available
-in Tomcat 5.5.20+ and 6.0.2+.
+This attribute sets the maximal AJP packet size in Bytes. It should be a
+multiple of 1024. Configuration values that are not a multiple of 1024 will be
+aligned to the next multiple of 1024. The maximum value is 65536. If you change
+it from the default, you <b>must</b> also change the packetSize attribute of
+your AJP connector on the Tomcat side! The attribute packetSize is available in
+Tomcat 6.0.2 onwards.
 <p>
 Normally it is not necessary to change the maximum packet size. Problems
 with the default value have been reported when sending certificates or
