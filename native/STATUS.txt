@@ -19,7 +19,7 @@ Last modified at [$Date$]
 Release:
 
     1.2.42  : in development
-    1.2.41  : release vote in progress
+    1.2.41  : released August 11, 2015
     1.2.40  : released April 15, 2014
     1.2.39  : released March 11, 2014
     1.2.38  : not released
