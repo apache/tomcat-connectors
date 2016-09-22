@@ -463,7 +463,7 @@ static int JK_METHOD ws_read(jk_ws_service_t *s,
 #endif
 
             if ((rv = ap_get_client_block(p->r, b, len)) < 0) {
-                *actually_read = 0;
+                return JK_FALSE;
             }
             else {
                 *actually_read = (unsigned)rv;

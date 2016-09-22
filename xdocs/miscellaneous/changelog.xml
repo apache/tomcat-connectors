@@ -55,6 +55,11 @@
         failed during earlier processing phases. (rjung)
       </fix>
       <fix>
+        <bug>57485</bug>: Apache: Propagate errors reading the request body from
+        the client to mod_jk so Tomcat sees an error rather than a truncated
+        body. (markt) 
+      </fix>
+      <fix>
         <bug>57836</bug>: ISAPI: Empty REMOTE_USER should not be
         translated to "". (rjung)
       </fix>
