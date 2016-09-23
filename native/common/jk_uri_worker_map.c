@@ -429,6 +429,7 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
     unsigned int i;
     int j;
     int cnt = 1;
+    size_t status_len;
     char *status;
 #ifdef _MT_CODE_PTHREAD
     char *lasts;
@@ -436,7 +437,8 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
 
     JK_TRACE_ENTER(l);
 
-    for (i = 0; i < (unsigned int)strlen(extensions->fail_on_status_str); i++) {
+    status_len = strlen(extensions->fail_on_status_str);
+    for (i = 0; i < status_len; i++) {
         if (extensions->fail_on_status_str[i] == ',' ||
             extensions->fail_on_status_str[i] == ' ')
             cnt++;
@@ -1073,6 +1075,8 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     unsigned int vhost_len;
     int reject_unsafe;
     int collapse_slashes;
+    size_t uri_len;
+    size_t remain;
     int rv = -1;
     char  url[JK_MAX_URI_LEN+1];
 
@@ -1142,11 +1146,13 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     /* Make the copy of the provided uri and strip
      * everything after the first ';' char.
      */
-    for (i = 0; i < strlen(uri); i++) {
-        if (i == JK_MAX_URI_LEN) {
+    uri_len = strlen(uri);
+    remain = JK_MAX_URI_LEN - vhost_len;
+    for (i = 0; i < uri_len; i++) {
+        if (i == remain) {
             jk_log(l, JK_LOG_WARNING,
                    "URI %s is invalid. URI must be smaller than %d chars",
-                   uri, JK_MAX_URI_LEN);
+                   uri, remain);
             JK_TRACE_EXIT(l);
             return NULL;
         }

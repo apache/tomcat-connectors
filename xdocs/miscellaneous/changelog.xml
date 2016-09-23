@@ -121,6 +121,9 @@
         configured with an invalid value for JkShmFile. This causes the server
         startup to fail. (markt)
       </fix>
+      <fix>
+        Minor code clean-up and optimization. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
