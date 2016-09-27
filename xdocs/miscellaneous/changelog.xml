@@ -40,6 +40,14 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.42 and 1.2.43">
+  <br />
+  <subsection name="Native">
+    <changelog>
+      ISAPI: Align the make files for 32-bit and 64-bit builds. (markt)
+    </changelog>
+  </subsection>
+</section>
 <section name="Changes between 1.2.41 and 1.2.42">
   <br />
   <subsection name="Native">

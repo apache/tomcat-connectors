@@ -13,12 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Microsoft Developer Studio Generated NMAKE File, Based on isapi.dsp
-# Use Platform SDK:
-# SetEnv.cmd /X64 /RETAIL
-# nmake -f Makefile.amd64
-#
-
 TARGET=isapi_redirect$(SO_VERSION)
 
 CPP=cl.exe
@@ -30,7 +24,15 @@ INTDIR=.\Release_amd64
 OutDir=.\Release_amd64
 # End Custom Macros
 
+!IF "$(RECURSE)" == "0"
+
+ALL : "$(OUTDIR)\$(TARGET).dll"
+
+!ELSE
+
 ALL : "pcre_amd64" "$(OUTDIR)\$(TARGET).dll"
+
+!ENDIF
 
 !IF "$(RECURSE)" == "1"
 CLEAN :"pcre_amd64CLEAN"
@@ -111,7 +113,7 @@ LINK32_OBJS= \
 	IF EXIST $(OUTDIR)\$(TARGET).manifest \
 		mt -nologo -manifest $(OUTDIR)\$(TARGET).manifest -outputresource:$(OUTDIR)\$(TARGET).dll;2
 
-CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "pcre" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /D "PCRE_STATIC" /D "JK_ISAPI" /D "ISAPI_EXPORTS" $(CFLAGS) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c
+CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "pcre" $(CFLAGS) /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AMD64_=1" -DWIN64 /D "_WIN64" /D "PCRE_STATIC" /D "JK_ISAPI" /D "ISAPI_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\isapi_redirector_src" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
