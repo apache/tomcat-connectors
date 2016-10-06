@@ -44,7 +44,9 @@
   <br />
   <subsection name="Native">
     <changelog>
-      ISAPI: Align the make files for 32-bit and 64-bit builds. (markt)
+      <fix>
+        ISAPI: Align the make files for 32-bit and 64-bit builds. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
