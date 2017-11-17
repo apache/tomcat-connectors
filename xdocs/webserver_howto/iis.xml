@@ -276,7 +276,7 @@ If this does not work successfully, refer to the Troubleshooting section below f
 
 <subsection name="Registry configuration">
 
-As an alternative to useing the <b>isapi_redirector.properties</b> file, the
+As an alternative to using the <b>isapi_redirector.properties</b> file, the
 ISAPI redirector may be configured via the registry. To do this, follow these
 steps:
 <ol>
