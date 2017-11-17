@@ -327,7 +327,7 @@ static struct error_reasons {
     { 404,
       "Not Found",
       "The requested URL was not found on this server",
-      "If you entered the URL manually please check your"
+      "If you entered the URL manually please check your "
       "spelling and try again."
     },
     { 405,
@@ -346,7 +346,7 @@ static struct error_reasons {
     { 407,
       "Proxy Authentication Required",
       NULL,
-      "The client must first authenticate itself with the proxy"
+      "The client must first authenticate itself with the proxy."
     },
     { 408,
       "Request Timeout",
@@ -428,7 +428,7 @@ static struct error_reasons {
       "Gateway Timeout",
       NULL,
       "The server, while acting as a gateway or proxy, "
-      "did not receive a timely response from the upstream server"
+      "did not receive a timely response from the upstream server."
     },
     { 505,
       "HTTP Version Not Supported",
