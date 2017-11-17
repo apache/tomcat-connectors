@@ -200,7 +200,7 @@ Download the appropriate (32-bit or 64-bit) isapi_redirect.dll for your
 operating system and place it in <b>${tomcat_home}\isapi</b>
 </li>
 <li>
-Create <b>${tomcat_home}\isapi\isapi_redirect.properties</b> to configure the ISAPI
+Create <b>${tomcat_home}\isapi\isapi_redirect.properties</b> file to configure the ISAPI
 redirctor. Configuration can also be performed via registry settings - see
 below. The contents of this file should be:
 <source>
@@ -210,10 +210,10 @@ log_level=info
 worker_file=C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi\workers.properties
 worker_mount_file=C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi\uriworkermap.properties
 </source>
-Be careful Windows doesn't add a <b>.txt</b> extension to the file.
+Be careful so that Windows does not add a <b>.txt</b> extension to the file.
 </li>
 <li>
-Create <b>${tomcat_home}\isapi\workers.properties</b> to configure the Tomcat
+Create <b>${tomcat_home}\isapi\workers.properties</b> file to configure the Tomcat
 instances that requests will be passed to. For a single Tomcat instance on the
 local machine the contents of this file should be:
 <source>
@@ -224,7 +224,7 @@ worker.tomcat01.port=8009
 </source> 
 </li>
 <li>
-Create <b>${tomcat_home}\isapi\uriworkermap.properties</b> to configure which
+Create <b>${tomcat_home}\isapi\uriworkermap.properties</b> file to configure which
 requests will be passed to Tomcat. To expose the examples web application the
 contents of this file should be:
 <source>
@@ -238,7 +238,7 @@ the virtual directory must be <b>jakarta</b>.  Its physical path should be the
 directory where you placed <b>isapi_redirect.dll</b>.
 </li>
 <li>
-Select the newly created vitual directory in the management console and then
+Select the newly created virtual directory in the management console and then
 double-click <b>Handler Mappings</b>. Select the (currently disabled)
 <b>ISAPI-dll</b> entry and then click <b>Edit Feature Permissions</b> in the
 action pane. In the dialog box that opens, select <b>Execute</b> so all three
