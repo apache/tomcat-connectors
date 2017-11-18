@@ -171,10 +171,11 @@ Adding more contexts to the configuration.
 <subsection name="Configuring the ISAPI Redirector">
 
 <p><i>These instructions have been written based on Windows Server 2012 R2. The
-instructions have also been tested successfully with Windows 7 and Windows
-Server 2008. The steps for other supported operating systems should be broadly
-the same. As the installation process is tested on other Windows versions, these
-instructions will be updated to note any version specific information.</i>
+instructions have also been tested successfully with Windows 7, Windows 8.1 and
+Windows Server 2008. The steps for other supported operating systems should be
+broadly the same. As the installation process is tested on other Windows
+versions, these instructions will be updated to note any version specific
+information.</i>
 </p>
 
 <p>
