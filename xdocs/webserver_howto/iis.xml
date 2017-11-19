@@ -279,11 +279,26 @@ If this does not work successfully, refer to the Troubleshooting section below f
 </p>
 </subsection>
 
+<subsection name="IIS logging">
+
+<p>
+If the IIS access logs show entries such as <b>/jakarta/isapi_redirect.dll</b>
+rather than <b>/examples/servlets</b> then this can be corrected via the IIS
+management console. Select your server (not the web site) and then double-click
+on <b>Modules</b>. In the <b>Actions</b> pane, click
+<b>View Ordered List...</b>, select the <b>IsapiFilterModule</b> and move it up
+until it is above the <b>HttpLoggingModule</b>.
+</p>
+
+</subsection>
+
 <subsection name="Registry configuration">
 
+<p>
 As an alternative to using the <b>isapi_redirector.properties</b> file, the
 ISAPI redirector may be configured via the registry. To do this, follow these
 steps:
+</p>
 <ol>
 <li>
 In the registry, create a new registry key named
