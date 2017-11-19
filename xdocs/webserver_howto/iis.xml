@@ -191,14 +191,15 @@ document.
 Create a directory <b>${tomcat_home}\isapi</b>
 </li>
 <li>
-Allow the IIS process to create the ISAPI redirector log file. Enter the
-following at a command prompt:
+Allow the IIS process to create the ISAPI redirector log file. Modify the path
+as necessary if the log file is to be written to a different directory. Enter
+the following at a command prompt:
 <source>
 >icacls "C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi" /grant "IIS APPPOOL\DefaultAppPool":(OI)(CI)M
 </source>
 On client operating systems with User Account Control (UAC) enabled, the command
 prompt must be opened using <b>Run as administrator</b> for the above command to
-complete successfully. 
+complete successfully.
 </li>
 <li>
 Download the appropriate (32-bit or 64-bit) isapi_redirect.dll for your
