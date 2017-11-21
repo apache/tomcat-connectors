@@ -53,7 +53,7 @@
         (rjung)
       </update>
       <update>
-        Update PCRE bundled with the ISAPI redirector to 8.39. (rjung)
+        Update PCRE bundled with the ISAPI redirector to 8.41. (rjung)
       </update>
       <fix>
         Update the ISAPI redirector installation documentation to reflect the
