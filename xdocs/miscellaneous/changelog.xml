@@ -47,6 +47,18 @@
       <fix>
         ISAPI: Align the make files for 32-bit and 64-bit builds. (markt)
       </fix>
+      <update>
+        Update config.guess and config.sub from
+        <a href="http://git.savannah.gnu.org/cgit/config.git">http://git.savannah.gnu.org/cgit/config.git</a>.
+        (rjung)
+      </update>
+      <update>
+        Update PCRE bundled with the ISAPI redirector to 8.39. (rjung)
+      </update>
+      <fix>
+        Update the ISAPI redirector installation documentation to reflect the
+        currently supported versions of Windows. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
