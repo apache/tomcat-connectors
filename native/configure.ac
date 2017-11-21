@@ -23,7 +23,7 @@ AC_PREREQ(2.59)
 
 dnl package and version.
 dnl synchronization with common/jk_version.h ?
-AC_INIT([mod_jk], [1.2.42])
+AC_INIT([mod_jk], [1.2.43])
 
 AC_CONFIG_SRCDIR([common/jk_worker.h])
 AC_CONFIG_HEADER(common/config.h)
