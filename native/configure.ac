@@ -110,6 +110,9 @@ AC_ARG_WITH(apxs,
 
             dnl test apache version
             APA=`${GREP} STANDARD20 ${APXS}`
+            if ${TEST} -z "$APA" ; then
+                AC_MSG_ERROR(No Apache 2.x found)
+            fi
             WEBSERVER="apache-2.0"
             APRINCLUDEDIR=""
             INCTEMP="`$APXS -q APR_INCLUDEDIR` `$APXS -q APU_INCLUDEDIR`"
