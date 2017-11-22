@@ -581,17 +581,14 @@ Alternatively the steps for an nmake commandline build are:
 Issue "nmake -f Makefile.x86" for a 32 Bit build, or
 </li>
 <li>
-Issue "nmake -f Makefile.amd64" for a 64 Bit build, or
-</li>
-<li>
-Issue "nmake -f Makefile.i64" for a Itanium Bit build
+Issue "nmake -f Makefile.amd64" for a 64 Bit build
 </li>
 </ul>
 The resulting file isapi_redirect.dll (and the debug symbol file
-isapi_redirect.pdb) is located in the "Release_x86" resp. "Release_amd64"
-resp. "Release_ia64" sub directory. As an intermediate step the build
-first creates a static PCRE library named pcre.lib in the sub directory
-"pcre/Release_x86" resp. "pcre/Release_amd64" resp. "pcre/Release_ia64.
+isapi_redirect.pdb) is located in the "Release_x86" or "Release_amd64"
+sub directory. As an intermediate step the build first creates a static
+PCRE library named pcre.lib in the sub directory "pcre/Release_x86" or
+"pcre/Release_amd64".
 </p>
 </section>
 
