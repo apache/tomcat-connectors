@@ -44,7 +44,7 @@
 
   The resulting module file mod_jk.so of mod_jk will be
   located in the directory apache-2.0 (for any version
-  of Apache 2.x) respectively apache-1.3 (for Apache 1.3).
+  of Apache 2.x).
 
   Simply copy the file to your web server modules or libexec
   directory.

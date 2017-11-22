@@ -110,27 +110,19 @@ AC_ARG_WITH(apxs,
 
             dnl test apache version
             APA=`${GREP} STANDARD20 ${APXS}`
-            if ${TEST} -z "$APA" ; then
-                WEBSERVER="apache-1.3"
-                APXSCC="`$APXS -q CC`"
-                APXSCFLAGS="`$APXS -q CFLAGS` -DJK_PREFORK"
-                APXSCPPFLAGS=""
-                APXSLDFLAGS="`$APXS -q LDFLAGS_SHLIB`"
-            else
-                WEBSERVER="apache-2.0"
-                APRINCLUDEDIR=""
-                INCTEMP="`$APXS -q APR_INCLUDEDIR` `$APXS -q APU_INCLUDEDIR`"
-                for INC in ${INCTEMP}; do
-                    APRINCLUDEDIR="${APRINCLUDEDIR} -I${INC}"
-                done
-                AC_MSG_RESULT([APRINCLUDEDIR is $APRINCLUDEDIR])
-                APXSCC="`$APXS -q CC`"
-                APXSCFLAGS="`${APXS} -q CFLAGS` `${APXS} -q EXTRA_CFLAGS` -DHAVE_APR ${APRINCLUDEDIR}"
-                APXSCPPFLAGS="`${APXS} -q EXTRA_CPPFLAGS`"
-                APXSLDFLAGS="`$APXS -q LDFLAGS`"
-                APACHE_CONFIG_VARS="`${APXS} -q exp_installbuilddir`/config_vars.mk"
-                LIBTOOL=`$APXS -q LIBTOOL`
-            fi
+            WEBSERVER="apache-2.0"
+            APRINCLUDEDIR=""
+            INCTEMP="`$APXS -q APR_INCLUDEDIR` `$APXS -q APU_INCLUDEDIR`"
+            for INC in ${INCTEMP}; do
+                APRINCLUDEDIR="${APRINCLUDEDIR} -I${INC}"
+            done
+            AC_MSG_RESULT([APRINCLUDEDIR is $APRINCLUDEDIR])
+            APXSCC="`$APXS -q CC`"
+            APXSCFLAGS="`${APXS} -q CFLAGS` `${APXS} -q EXTRA_CFLAGS` -DHAVE_APR ${APRINCLUDEDIR}"
+            APXSCPPFLAGS="`${APXS} -q EXTRA_CPPFLAGS`"
+            APXSLDFLAGS="`$APXS -q LDFLAGS`"
+            APACHE_CONFIG_VARS="`${APXS} -q exp_installbuilddir`/config_vars.mk"
+            LIBTOOL=`$APXS -q LIBTOOL`
             AC_MSG_RESULT([building connector for \"$WEBSERVER\"])
             if ${TEST} -z "${CC}" ; then
                 CC="${APXSCC}"
@@ -705,8 +697,6 @@ dnl automake needs the path it does not work with $WEBSERVER
 dnl that why useless Makefiles are build.
 AC_OUTPUT([
     Makefile
-    apache-1.3/Makefile
-    apache-1.3/Makefile.apxs
     apache-2.0/Makefile
     apache-2.0/Makefile.apxs
     common/Makefile
