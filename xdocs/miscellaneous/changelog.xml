@@ -59,14 +59,6 @@
         Update the ISAPI redirector installation documentation to reflect the
         currently supported versions of Windows. (markt)
       </fix>
-      <add>
-        Add a make file to enable building mod_jk for Windows from the command
-        line. (markt)
-      </add>
-      <update>
-        Remove httpd 2.0 support and add httpd 2.4 support to the mod_jk Windows
-        build. (markt)
-      </update>
     </changelog>
   </subsection>
 </section>
