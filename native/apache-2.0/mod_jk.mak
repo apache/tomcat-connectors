@@ -1,22 +1,22 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on mod_jk.dsp
 !IF "$(CFG)" == ""
-CFG=mod_jk - Win32 Release httpd 2.
-!MESSAGE No configuration specified. Defaulting to mod_jk - Win32 Release httpd 2.0.
+CFG=mod_jk - Win32 Release httpd 2.4
+!MESSAGE No configuration specified. Defaulting to mod_jk - Win32 Release httpd 2.4
 !ENDIF 
 
-!IF "$(CFG)" != "mod_jk - Win32 Release httpd 2.0" && "$(CFG)" != "mod_jk - Win32 Debug httpd 2.0" && "$(CFG)" != "mod_jk - Win32 Release httpd 2.2" && "$(CFG)" != "mod_jk - Win32 Debug httpd 2.2"
+!IF "$(CFG)" != "mod_jk - Win32 Release httpd 2.2" && "$(CFG)" != "mod_jk - Win32 Debug httpd 2.2" && "$(CFG)" != "mod_jk - Win32 Release httpd 2.4" && "$(CFG)" != "mod_jk - Win32 Debug httpd 2.4"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "mod_jk.mak" CFG="mod_jk - Win32 Release httpd 2.0"
+!MESSAGE NMAKE /f "mod_jk.mak" CFG="mod_jk - Win32 Release httpd 2.4"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "mod_jk - Win32 Release httpd 2.0" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "mod_jk - Win32 Debug httpd 2.0" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "mod_jk - Win32 Release httpd 2.2" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "mod_jk - Win32 Debug httpd 2.2" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mod_jk - Win32 Release httpd 2.4" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "mod_jk - Win32 Debug httpd 2.4" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 !ERROR An invalid configuration is specified.
 !ENDIF 
@@ -27,12 +27,12 @@ NULL=
 NULL=nul
 !ENDIF 
 
-!IF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.0"
+!IF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.2"
 
-OUTDIR=.\Release
-INTDIR=.\Release
+OUTDIR=.\Release22
+INTDIR=.\Release22
 # Begin Custom Macros
-OutDir=.\Release
+OutDir=.\Release22
 # End Custom Macros
 
 ALL : "$(OUTDIR)\mod_jk.so"
@@ -143,12 +143,12 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.0"
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.2"
 
-OUTDIR=.\Debug
-INTDIR=.\Debug
+OUTDIR=.\Debug22
+INTDIR=.\Debug22
 # Begin Custom Macros
-OutDir=.\Debug
+OutDir=.\Debug22
 # End Custom Macros
 
 ALL : "$(OUTDIR)\mod_jk.so"
@@ -259,12 +259,12 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ELSEIF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.2"
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.4"
 
-OUTDIR=.\Release22
-INTDIR=.\Release22
+OUTDIR=.\Release24
+INTDIR=.\Release24
 # Begin Custom Macros
-OutDir=.\Release22
+OutDir=.\Release24
 # End Custom Macros
 
 ALL : "$(OUTDIR)\mod_jk.so"
@@ -375,12 +375,12 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.2"
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.4"
 
-OUTDIR=.\Debug22
-INTDIR=.\Debug22
+OUTDIR=.\Debug24
+INTDIR=.\Debug24
 # Begin Custom Macros
-OutDir=.\Debug22
+OutDir=.\Debug24
 # End Custom Macros
 
 ALL : "$(OUTDIR)\mod_jk.so"
@@ -503,7 +503,7 @@ LINK32_OBJS= \
 !ENDIF 
 
 
-!IF "$(CFG)" == "mod_jk - Win32 Release httpd 2.0" || "$(CFG)" == "mod_jk - Win32 Debug httpd 2.0" || "$(CFG)" == "mod_jk - Win32 Release httpd 2.2" || "$(CFG)" == "mod_jk - Win32 Debug httpd 2.2"
+!IF "$(CFG)" == "mod_jk - Win32 Release httpd 2.2" || "$(CFG)" == "mod_jk - Win32 Debug httpd 2.2" || "$(CFG)" == "mod_jk - Win32 Release httpd 2.4" || "$(CFG)" == "mod_jk - Win32 Debug httpd 2.4"
 SOURCE=..\common\jk_ajp12_worker.c
 
 "$(INTDIR)\jk_ajp12_worker.obj" : $(SOURCE) "$(INTDIR)"
@@ -631,21 +631,7 @@ SOURCE=.\mod_jk.c
 
 SOURCE=..\common\jk.rc
 
-!IF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.0"
-
-
-"$(INTDIR)\mod_jk.res" : $(SOURCE) "$(INTDIR)"
-	$(RSC) /l 0x409 /fo"$(INTDIR)\mod_jk.res" /i "..\common" /i "\mod_jk\jk-1.2.x\native\common" /d "NDEBUG" $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.0"
-
-
-"$(INTDIR)\mod_jk.res" : $(SOURCE) "$(INTDIR)"
-	$(RSC) /l 0x409 /fo"$(INTDIR)\mod_jk.res" /i "..\common" /i "\mod_jk\jk-1.2.x\native\common" /d "_DEBUG" $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.2"
+!IF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.2"
 
 
 "$(INTDIR)\mod_jk.res" : $(SOURCE) "$(INTDIR)"
@@ -653,6 +639,20 @@ SOURCE=..\common\jk.rc
 
 
 !ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.2"
+
+
+"$(INTDIR)\mod_jk.res" : $(SOURCE) "$(INTDIR)"
+	$(RSC) /l 0x409 /fo"$(INTDIR)\mod_jk.res" /i "..\common" /i "\mod_jk\jk-1.2.x\native\common" /d "_DEBUG" $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Release httpd 2.4"
+
+
+"$(INTDIR)\mod_jk.res" : $(SOURCE) "$(INTDIR)"
+	$(RSC) /l 0x409 /fo"$(INTDIR)\mod_jk.res" /i "..\common" /i "\mod_jk\jk-1.2.x\native\common" /d "NDEBUG" $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "mod_jk - Win32 Debug httpd 2.4"
 
 
 "$(INTDIR)\mod_jk.res" : $(SOURCE) "$(INTDIR)"
