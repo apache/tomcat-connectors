@@ -3350,7 +3350,7 @@ static void commit_worker(jk_ws_service_t *s,
     }
     if (sync_needed == JK_TRUE) {
         lb->sequence = -1;
-        jk_lb_push(lb, JK_TRUE, l);
+        jk_lb_push(lb, JK_TRUE, JK_FALSE, l);
     }
 }
 
@@ -3640,6 +3640,7 @@ static void commit_all_members(jk_ws_service_t *s,
     int i;
     int rc = 0;
     unsigned int j;
+    int push_all_members = JK_FALSE;
 
     JK_TRACE_ENTER(l);
     if (!attribute) {
@@ -3887,12 +3888,14 @@ static void commit_all_members(jk_ws_service_t *s,
         }
         if (rc == 1)
             reset_lb_values(lb, l);
-        else if (rc == 2)
+        else if (rc == 2) {
             /* Recalculate the load multiplicators wrt. lb_factor */
             update_mult(lb, l);
+            push_all_members = JK_TRUE;
+        }
         if (rc) {
             lb->sequence = -1;
-            jk_lb_push(lb, JK_TRUE, l);
+            jk_lb_push(lb, JK_TRUE, push_all_members, l);
         }
     }
     JK_TRACE_EXIT(l);
@@ -4395,16 +4398,16 @@ static int update_worker(jk_ws_service_t *s,
                 if (rv & JK_STATUS_NEEDS_ADDR_PUSH) {
                     aw->addr_sequence = -1;
                 }
-                if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
-                    wr->sequence = -1;
-                    lb->sequence = -1;
-                    jk_lb_push(lb, JK_TRUE, l);
-                }
                 if (rv & JK_STATUS_NEEDS_RESET_LB_VALUES)
                     reset_lb_values(lb, l);
                 if (rv & JK_STATUS_NEEDS_UPDATE_MULT)
                     /* Recalculate the load multiplicators wrt. lb_factor */
                     update_mult(lb, l);
+                if (rv & (JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH)) {
+                    wr->sequence = -1;
+                    lb->sequence = -1;
+                    jk_lb_push(lb, JK_TRUE, rv & JK_STATUS_NEEDS_UPDATE_MULT ? JK_TRUE: JK_FALSE, l);
+                }
                 if (rc == JK_FALSE) {
                     jk_log(l, JK_LOG_ERROR,
                            "Status worker '%s' failed updating sub worker '%s' (at least partially).%s",

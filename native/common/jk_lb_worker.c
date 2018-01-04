@@ -369,7 +369,7 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
 }
 
 /* Syncing config values to shm */
-void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
+void jk_lb_push(lb_worker_t *p, int locked, int push_all_members, jk_logger_t *l)
 {
     unsigned int i = 0;
 
@@ -394,7 +394,7 @@ void jk_lb_push(lb_worker_t *p, int locked, jk_logger_t *l)
 
     for (i = 0; i < p->num_of_workers; i++) {
         lb_sub_worker_t *w = &p->lb_workers[i];
-        if (w->sequence != w->s->h.sequence) {
+        if (push_all_members == JK_TRUE || w->sequence != w->s->h.sequence) {
             jk_worker_t *jw = w->worker;
             ajp_worker_t *aw = (ajp_worker_t *)jw->worker_private;
 
@@ -1959,7 +1959,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
     if (p->s->h.sequence == 0) {
         /* Set configuration data to shared memory
          */
-        jk_lb_push(p, JK_TRUE, log);
+        jk_lb_push(p, JK_TRUE, JK_FALSE, log);
     }
     else {
         /* Shared memory for this worker is already configured.

@@ -45,6 +45,11 @@
   <subsection name="Native">
     <changelog>
       <fix>
+        <bug>61733</bug>: LB: Propagate load factor changes applied by the status worker
+        to a load balancer sub worker correctly to all processes.
+        Based on a patch provided by Jonathan Oddy. (rjung)
+      </fix>
+      <fix>
         ISAPI: Align the make files for 32-bit and 64-bit builds. (markt)
       </fix>
       <update>
