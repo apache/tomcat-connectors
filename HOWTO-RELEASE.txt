@@ -57,7 +57,7 @@ native/configure.ac
 native/common/jk_version.h
 xdocs/miscellaneous/changelog.xml
 
-In native/STATUS.txt the current version stays labeled as "in development"
+In native/STATUS.txt the current version stays labelled as "in development"
 during release. It is updated with release date after release process is
 completed.
 
