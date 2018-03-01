@@ -256,7 +256,7 @@ and the executable should be the full path to <b>isapi_redirect.dll</b>. Once
 configured, click <b>OK</b>.
 </li>
 <li>
-Still using the IIS managament console, configure the ISAPI redirector as
+Still using the IIS management console, configure the ISAPI redirector as
 allowed. Select your server (not the web site) and then double-click on <b>ISAPI
 and CGI Restrictions</b>. From the action pane, click <b>Add...</b>. Select the
 isapi_redirect.dll, add a descripion (e.g. tomcat) and select the <b>Allow
