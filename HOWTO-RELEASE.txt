@@ -47,7 +47,6 @@ native/iis/README
 native/netscape/README
 xdocs/index.xml
 xdocs/news/<THISYEAR0101>.xml
-tools/dist/README.html
 tools/dist/binaries/windows/README.html
 
 Check version numbers in the files that are listed in the section
