@@ -172,10 +172,11 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define CHUNKED_ENCODING_TRAILER     "0\r\n\r\n"
 #define CHUNKED_ENCODING_TRAILER_LEN 5
 
-#define BAD_REQUEST     -1
-#define BAD_PATH        -2
-#define MAX_SERVERNAME  1024
-#define MAX_INSTANCEID  32
+#define BAD_REQUEST         -1
+#define BAD_PATH            -2
+#define BAD_NORMALIZATION   -3
+#define MAX_SERVERNAME      1024
+#define MAX_INSTANCEID      32
 
 char HTML_ERROR_HEAD[] =        "<!--\n"
                                 "  Licensed to the Apache Software Foundation (ASF) under one or more\n"
@@ -659,69 +660,88 @@ static int unescape_url(char *url)
         return 0;
 }
 
-static void getparents(char *name)
+static int getparents(char *name)
 {
     int l, w;
 
-    /* Four paseses, as per RFC 1808 */
-    /* a) remove ./ path segments */
+    jk_log(logger, JK_LOG_DEBUG, "URI on entering getparents: [%s]", name);
 
-    for (l = 0, w = 0; name[l] != '\0';) {
-        if (name[l] == '.' && name[l + 1] == '/'
-            && (l == 0 || name[l - 1] == '/'))
-            l += 2;
+    // This test allows the loops below to start at index 1 rather than 0.
+    if (name[0] != '/') {
+    	return BAD_PATH;
+    }
+
+    /*
+     * First pass.
+     * Collapse ///// sequences to /
+     */
+    for (l = 1, w = 1; name[l] != '\0';) {
+        if (name[w - 1] == '/' && (name[l] == '/')) {
+        	l++;
+        }
         else
             name[w++] = name[l++];
     }
-
-    /* b) remove trailing . path, segment */
-    if (w == 1 && name[0] == '.')
-        w--;
-    else if (w > 1 && name[w - 1] == '.' && name[w - 2] == '/')
-        w--;
     name[w] = '\0';
 
-    /* c) remove all xx/../ segments. (including leading ../ and /../) */
-    l = 0;
-
-    while (name[l] != '\0') {
-        if (name[l] == '.' && name[l + 1] == '.' && name[l + 2] == '/' &&
-            (l == 0 || name[l - 1] == '/')) {
-            register int m = l + 3, n;
-
-            l = l - 2;
-            if (l >= 0) {
-                while (l >= 0 && name[l] != '/')
-                    l--;
-                l++;
-            }
-            else
-                l = 0;
-            n = l;
-            while ((name[n] = name[m]) != '\0') {
-                n++;
-                m++;
-            }
+    /* Second pass.
+     * Remove /./ segments including those with path parameters such as
+     * /.;foo=bar/
+     * Both leading and trailing segments will be removed.
+     */
+    for (l = 1, w = 1; name[l] != '\0';) {
+        if (name[l] == '.' &&
+        		(name[l + 1] == '/' || name[l + 1] == ';' || name[l + 1] == '\0') &&
+				(l == 0 || name[l - 1] == '/')) {
+        	l++;
+        	while (name[l] != '/' && name[l] != '\0') {
+        		l++;
+        	}
+        	if (name[l] != '\0') {
+        		l++;
+        	}
         }
         else
-            ++l;
+            name[w++] = name[l++];
     }
+    name[w] = '\0';
 
-    /* d) remove trailing xx/.. segment. */
-    if (l == 2 && name[0] == '.' && name[1] == '.')
-        name[0] = '\0';
-    else if (l > 2 && name[l - 1] == '.' && name[l - 2] == '.'
-             && name[l - 3] == '/') {
-        l = l - 4;
-        if (l >= 0) {
-            while (l >= 0 && name[l] != '/')
-                l--;
-            l++;
+    /* Third pass.
+     * Remove /xx/../ segments including those with path parameters such as
+     * /xxx/..;foo=bar/
+     * Trailing segments will be removed but leading /../ segments are an error
+     * condition.
+     */
+    for (l = 1, w = 1; name[l] != '\0';) {
+        if (name[l] == '.' && name[l + 1] == '.' &&
+        		(name[l + 2] == '/' || name[l + 2] == ';' || name[l + 2] == '\0') &&
+				(l == 0 || name[l - 1] == '/')) {
+
+        	// Wind w back to remove the previous segment
+        	if (w == 1) {
+        		return BAD_NORMALIZATION;
+        	}
+        	do {
+        		w--;
+        	} while (w != 0 && name[w - 1] != '/');
+
+        	// Move l forward to the next segment
+        	l += 2;
+
+        	while (name[l] != '/' && name [l] != '\0') {
+        		l++;
+        	}
+        	if (name[l] != '\0') {
+        		l++;
+        	}
         }
         else
-            l = 0;
-        name[l] = '\0';
+            name[w++] = name[l++];
     }
+    name[w] = '\0';
+
+    jk_log(logger, JK_LOG_DEBUG, "URI on exiting getparents: [%s]", name);
+    return 0;
 }
 
 /* Apache code to escape a URL */
@@ -1870,7 +1890,23 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         rv = SF_STATUS_REQ_FINISHED;
         goto cleanup;
     }
-    getparents(uri);
+    rc = getparents(uri);
+    if (rc == BAD_PATH) {
+        jk_log(logger, JK_LOG_EMERG,
+               "[%s] does not start with '/'.",
+               uri);
+        write_error_response(pfc, 404);
+        rv = SF_STATUS_REQ_FINISHED;
+        goto cleanup;
+    }
+    if (rc == BAD_NORMALIZATION) {
+        jk_log(logger, JK_LOG_EMERG,
+               "[%s] contains a '/../' sequence that tries to escape above the root.",
+               uri);
+        write_error_response(pfc, 404);
+        rv = SF_STATUS_REQ_FINISHED;
+        goto cleanup;
+    }
     len = ISIZEOF(szHB) - 1;
     if (pfc->GetServerVariable(pfc, "SERVER_NAME", &szHB[1], &len) && len > 1) {
         len = ISIZEOF(szPB);

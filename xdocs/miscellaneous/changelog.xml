@@ -64,6 +64,10 @@
         Update the ISAPI redirector installation documentation to reflect the
         currently supported versions of Windows. (markt)
       </fix>
+      <fix>
+        Align the normalization performed by the ISAPI redirector with that
+        implemented by Tomcat. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
