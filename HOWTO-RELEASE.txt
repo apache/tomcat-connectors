@@ -47,7 +47,6 @@ native/iis/README
 native/netscape/README
 xdocs/index.xml
 xdocs/news/<THISYEAR0101>.xml
-tools/dist/README.html
 tools/dist/binaries/windows/README.html
 
 Check version numbers in the files that are listed in the section
@@ -56,7 +55,6 @@ Check version numbers in the files that are listed in the section
 native/STATUS.txt
 native/configure.ac
 native/common/jk_version.h
-native/iis/installer/isapi-redirector-win32-msi.ism
 xdocs/miscellaneous/changelog.xml
 
 In native/STATUS.txt the current version stays labeled as "in development"
