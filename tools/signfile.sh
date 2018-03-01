@@ -52,6 +52,13 @@ if [ -x "$sha1_bin" ]; then
 else
     SHA1SUM="echo 0000000000000000000000000000000000000000 "
 fi
+# Try to locate a SHA512 binary
+sha512_bin="`which sha512sum 2>/dev/null || type sha512sum 2>&1`"
+if [ -x "$sha512_bin" ]; then
+    SHA512SUM="$sha512_bin --binary "
+else
+    SHA512SUM="echo 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 "
+fi
 
 for o
 do
@@ -59,5 +66,6 @@ do
     gpg $gpgopts $o
     $MD5SUM $o > $o.md5 
     $SHA1SUM $o > $o.sha1
+    $SHA512SUM $o > $o.sha512
 done
 
