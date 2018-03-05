@@ -38,13 +38,6 @@ do
     esac
 done
 
-# Try to locate a MD5 binary
-md5_bin="`which md5sum 2>/dev/null || type md5sum 2>&1`"
-if [ -x "$md5_bin" ]; then
-    MD5SUM="$md5_bin --binary "
-else
-    MD5SUM="echo 00000000000000000000000000000000 "
-fi
 # Try to locate a SHA1 binary
 sha1_bin="`which sha1sum 2>/dev/null || type sha1sum 2>&1`"
 if [ -x "$sha1_bin" ]; then
@@ -64,7 +57,6 @@ for o
 do
     echo "Signing $o"
     gpg $gpgopts $o
-    $MD5SUM $o > $o.md5 
     $SHA1SUM $o > $o.sha1
     $SHA512SUM $o > $o.sha512
 done
