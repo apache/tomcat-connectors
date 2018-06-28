@@ -150,7 +150,7 @@ Build binaries and upload distributions to www.apache.org
 
 Build mod_jk for a specific web server and OS.  Package it as appropriate for
 the OS and sign the archive using PGP. Please include the ASF License, the
-generated docs, and the tools.  Please name the distribuiton as follows:
+generated docs, and the tools.  Please name the distribution as follows:
 
 tomcat-connectors-{version}-{os-version-cpu}-{web server-version}.(tar.gz|zip)
 
