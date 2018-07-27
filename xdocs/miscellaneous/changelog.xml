@@ -118,7 +118,7 @@
         (rjung)
       </fix>
       <fix>
-        <bug>58425</bug>: Fix regression in 1.4.41 that prevented  AJP 1.2
+        <bug>58425</bug>: Fix regression in 1.2.41 that prevented  AJP 1.2
         workers from initialising. Note that the AJP 1.2 protocol is deprecated.
         Patch provided by yagisita. (markt)
       </fix>
