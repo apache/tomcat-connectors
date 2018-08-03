@@ -55,7 +55,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jk_map.obj"
 	-@erase "$(INTDIR)\jk_md5.obj"
 	-@erase "$(INTDIR)\jk_msg_buff.obj"
-	-@erase "$(INTDIR)\jk_nwmain.obj"
 	-@erase "$(INTDIR)\jk_pool.obj"
 	-@erase "$(INTDIR)\jk_shm.obj"
 	-@erase "$(INTDIR)\jk_sockbuf.obj"
@@ -94,7 +93,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\jk_map.obj" \
 	"$(INTDIR)\jk_md5.obj" \
 	"$(INTDIR)\jk_msg_buff.obj" \
-	"$(INTDIR)\jk_nwmain.obj" \
 	"$(INTDIR)\jk_pool.obj" \
 	"$(INTDIR)\jk_shm.obj" \
 	"$(INTDIR)\jk_sockbuf.obj" \
@@ -228,12 +226,6 @@ SOURCE=..\common\jk_md5.c
 SOURCE=..\common\jk_msg_buff.c
 
 "$(INTDIR)\jk_msg_buff.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_nwmain.c
-
-"$(INTDIR)\jk_nwmain.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

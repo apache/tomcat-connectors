@@ -148,10 +148,6 @@ SOURCE=..\common\jk_msg_buff.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\jk_nwmain.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\common\jk_pool.c
 # End Source File
 # Begin Source File

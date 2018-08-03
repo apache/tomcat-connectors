@@ -45,10 +45,11 @@
   <subsection name="Native">
     <changelog>
       <update>
-        Remove the Novell Netware make files since there has not been a
-        supported version of Netware available for over five years. (markt)
+        Remove the Novell Netware make files and Netware specific source code
+        since there has not been a supported version of Netware available for
+        over five years. (markt)
       </update>
-    </changelog>
+   </changelog>
   </subsection>
 </section>
 <section name="Changes between 1.2.42 and 1.2.43">
