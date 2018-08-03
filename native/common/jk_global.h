@@ -142,24 +142,10 @@ extern char *strdup(const char *str);
 #include <ws2tcpip.h>
 #else /* WIN32 */
 #include <unistd.h>
-#if defined(NETWARE) && defined(__NOVELL_LIBC__)
-#include <novsock2.h>
-#define __sys_socket_h__
-#define __netdb_h__
-#define __netinet_in_h__
-#define HAVE_VSNPRINTF
-#define HAVE_SNPRINTF
-#endif
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <fcntl.h>
-#ifdef NETWARE
-#ifndef _SOCKLEN_T
-#define _SOCKLEN_T
-typedef int socklen_t;
-#endif
-#else
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <sys/un.h>
@@ -169,7 +155,6 @@ typedef int socklen_t;
 #if !defined(HPUX11) && !defined(AS400)
 #include <sys/select.h>
 #endif
-#endif /* NETWARE */
 
 #include <sys/time.h>
 #include <sys/ioctl.h>
@@ -206,7 +191,7 @@ extern "C"
 #define JK_SESSION_IDENTIFIER "JSESSIONID"
 #define JK_PATH_SESSION_IDENTIFIER ";jsessionid"
 
-#if defined(WIN32) || defined(NETWARE)
+#if defined(WIN32)
 #ifdef __GNUC__
 #define JK_METHOD
 #define C_LEVEL_TRY_START
@@ -228,7 +213,7 @@ extern "C"
 #ifndef strcasecmp
 #define strcasecmp stricmp
 #endif
-#else /* defined(WIN32) || defined(NETWARE) */
+#else /* defined(WIN32) */
 #define JK_METHOD
 #define C_LEVEL_TRY_START
 #define C_LEVEL_TRY_END
@@ -237,7 +222,7 @@ extern "C"
 #define PATH_SEPERATOR          (':')
 #define FILE_SEPERATOR          ('/')
 #define PATH_ENV_VARIABLE       ("LD_LIBRARY_PATH")
-#endif /* defined(WIN32) || defined(NETWARE) */
+#endif /* defined(WIN32) */
 
 /* HTTP Error codes
  */
@@ -343,7 +328,7 @@ extern "C"
 #define JK_UINT64_T_HEX_FMT "I64x"
 #define JK_PID_T_FMT "d"
 #define JK_PTHREAD_T_FMT "d"
-#elif defined(AS400) || defined(NETWARE)
+#elif defined(AS400)
     typedef unsigned int jk_uint32_t;
 #define JK_UINT32_T_FMT "u"
 #define JK_UINT32_T_HEX_FMT "x"
@@ -401,7 +386,7 @@ extern "C"
 #endif
 #endif
 
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
 typedef SOCKET jk_sock_t;
 #define IS_VALID_SOCKET(s) ((s) != INVALID_SOCKET)
 #define JK_INVALID_SOCKET  INVALID_SOCKET
@@ -409,13 +394,6 @@ typedef SOCKET jk_sock_t;
 typedef int jk_sock_t;
 #define IS_VALID_SOCKET(s) ((s) > 0)
 #define JK_INVALID_SOCKET  (-1)
-#endif
-#ifdef NETWARE
-#ifdef __NOVELL_LIBC__
-#define MAX_PATH 511
-#else
-#define MAX_PATH 255
-#endif
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
