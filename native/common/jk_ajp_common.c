@@ -32,9 +32,6 @@
 #if defined(AS400) && !defined(AS400_UTF8)
 #include "util_ebcdic.h"
 #endif
-#if defined(NETWARE) && defined(__NOVELL_LIBC__)
-#include "novsock2.h"
-#endif
 
 /* Macro for checking the availability of the cache slot
  */

@@ -29,8 +29,6 @@
 
 #if defined(WIN32)
 #define jk_gettid()    ((jk_uint32_t)GetCurrentThreadId())
-#elif defined(NETWARE) && !defined(__NOVELL_LIBC__)
-#define getpid()       ((int)GetThreadGroupID())
 #endif
 
 #ifdef JK_PREFORK 
@@ -66,9 +64,9 @@ typedef pthread_mutex_t JK_CRIT_SEC;
 #define JK_ENTER_CS(x)  pthread_mutex_lock(x)
 #define JK_LEAVE_CS(x)  pthread_mutex_unlock(x)
 
-#if defined(AS400) || defined(NETWARE)
+#if defined(AS400)
 #define jk_pthread_t   jk_uint32_t
-#endif /* AS400 || NETWARE */
+#endif /* AS400 */
 jk_pthread_t jk_gettid(void);
 #endif /* WIN32 */
 
@@ -82,7 +80,7 @@ typedef void *JK_CRIT_SEC;
 #define jk_gettid()         0
 #endif /* MT_CODE */
 
-#if !defined(WIN32) && !defined(NETWARE)
+#if !defined(WIN32)
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -139,7 +137,7 @@ typedef void *JK_CRIT_SEC;
 
 #endif /* USE_FLOCK_LK */
 
-#else  /* WIN32 || NETWARE */
+#else  /* WIN32 */
 #define JK_ENTER_LOCK(x, rc) rc = JK_TRUE
 #define JK_LEAVE_LOCK(x, rc) rc = JK_TRUE
 #endif

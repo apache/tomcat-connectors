@@ -29,9 +29,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
-#ifndef NETWARE
 #include <sys/types.h>
-#endif
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
