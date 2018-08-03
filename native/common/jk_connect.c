@@ -78,13 +78,6 @@ static apr_pool_t *jk_apr_pool = NULL;
 #define EAFNOSUPPORT WSAEAFNOSUPPORT
 #endif
 
-/* our compiler cant deal with char* <-> const char* ... */
-#if defined(NETWARE) && !defined(__NOVELL_LIBC__)
-typedef char* SET_TYPE;
-#else
-typedef const char* SET_TYPE;
-#endif
-
 /** Set socket to blocking
  * @param sd  socket to manipulate
  * @return    errno: fcntl returns -1 (!WIN32)
@@ -602,7 +595,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
 #endif
 
     /* Disable Nagle algorithm */
-    if (setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (SET_TYPE)&set,
+    if (setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (const char*)&set,
                    sizeof(set))) {
         JK_GET_SOCKET_ERRNO();
         jk_log(l, JK_LOG_ERROR,
@@ -639,7 +632,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
                    ka.keepalivetime / 1000);
 #else
         set = 1;
-        if (setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE, (SET_TYPE)&set,
+        if (setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&set,
                        sizeof(set))) {
             JK_GET_SOCKET_ERRNO();
             jk_log(l, JK_LOG_ERROR,
@@ -657,7 +650,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
     if (sock_buf > 0) {
         set = sock_buf;
         /* Set socket send buffer size */
-        if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, (SET_TYPE)&set,
+        if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, (const char*)&set,
                         sizeof(set))) {
             JK_GET_SOCKET_ERRNO();
             jk_log(l, JK_LOG_ERROR,
@@ -668,7 +661,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
         }
         set = sock_buf;
         /* Set socket receive buffer size */
-        if (setsockopt(sd, SOL_SOCKET, SO_RCVBUF, (SET_TYPE)&set,
+        if (setsockopt(sd, SOL_SOCKET, SO_RCVBUF, (const char*)&set,
                                 sizeof(set))) {
             JK_GET_SOCKET_ERRNO();
             jk_log(l, JK_LOG_ERROR,
@@ -724,7 +717,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
 #ifdef SO_LINGER
     /* Make hard closesocket by disabling lingering */
     li.l_linger = li.l_onoff = 0;
-    if (setsockopt(sd, SOL_SOCKET, SO_LINGER, (SET_TYPE)&li,
+    if (setsockopt(sd, SOL_SOCKET, SO_LINGER, (const char*)&li,
                    sizeof(li))) {
         JK_GET_SOCKET_ERRNO();
         jk_log(l, JK_LOG_ERROR,
