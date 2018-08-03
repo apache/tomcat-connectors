@@ -64,7 +64,7 @@
 # define JK_NEED_SET_MUTEX_PERMS AP_NEED_SET_MUTEX_PERMS
 #else
   /* A special case for httpd-2.0 */
-# if !defined(OS2) && !defined(WIN32) && !defined(BEOS) && !defined(NETWARE) && !defined(AS400)
+# if !defined(OS2) && !defined(WIN32) && !defined(BEOS) && !defined(AS400)
 #  define JK_NEED_SET_MUTEX_PERMS 1
 # else
 #  define JK_NEED_SET_MUTEX_PERMS 0
@@ -77,15 +77,6 @@
 /*
  * jk_ include files
  */
-#ifdef NETWARE
-#define __sys_types_h__
-#define __sys_socket_h__
-#define __netdb_h__
-#define __netinet_in_h__
-#define __arpa_inet_h__
-#define __sys_timeval_h__
-#endif
-
 #include "jk_global.h"
 #include "jk_ajp13.h"
 #include "jk_logger.h"
@@ -3509,7 +3500,7 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
 #if _MT_CODE
         /* _MT_CODE  */
         if (JK_IS_DEBUG_LEVEL(conf->log)) {
-#if !defined(WIN32) && !defined(NETWARE)
+#if !defined(WIN32)
 #if USE_FLOCK_LK
             jk_log(conf->log, JK_LOG_DEBUG,
                    "Using flock() for locking.");
@@ -3551,7 +3542,7 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
         return JK_FALSE;
     }
 
-#if !defined(WIN32) && !defined(NETWARE)
+#if !defined(WIN32)
     if (!jk_shm_file) {
         jk_shm_file = ap_server_root_relative(pconf, JK_SHM_DEF_FILE);
         if (jk_shm_file)
