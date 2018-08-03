@@ -47,17 +47,13 @@ static apr_pool_t *jk_apr_pool = NULL;
 #include <poll.h>
 #endif
 
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
 #define JK_IS_SOCKET_ERROR(x) ((x) == SOCKET_ERROR)
 #define JK_GET_SOCKET_ERRNO() errno = WSAGetLastError() - WSABASEERR
 #else
 #define JK_IS_SOCKET_ERROR(x) ((x) == -1)
 #define JK_GET_SOCKET_ERRNO() ((void)0)
 #endif /* WIN32 */
-
-#if defined(NETWARE) && defined(__NOVELL_LIBC__)
-#define USE_SOCK_CLOEXEC
-#endif
 
 #ifndef INET6_ADDRSTRLEN
 /* Maximum size of an IPv6 address in ASCII */
@@ -98,7 +94,7 @@ typedef const char* SET_TYPE;
 static int soblock(jk_sock_t sd)
 {
 /* BeOS uses setsockopt at present for non blocking... */
-#if defined (WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined (WIN32)
     u_long on = 0;
     if (JK_IS_SOCKET_ERROR(ioctlsocket(sd, FIONBIO, &on))) {
         JK_GET_SOCKET_ERRNO();
@@ -120,7 +116,7 @@ static int soblock(jk_sock_t sd)
     if (fcntl(sd, F_SETFL, fd_flags) == -1) {
         return errno;
     }
-#endif /* WIN32 || (NETWARE && __NOVELL_LIBC__) */
+#endif /* WIN32 */
     return 0;
 }
 
@@ -132,7 +128,7 @@ static int soblock(jk_sock_t sd)
  */
 static int sononblock(jk_sock_t sd)
 {
-#if defined (WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined (WIN32)
     u_long on = 1;
     if (JK_IS_SOCKET_ERROR(ioctlsocket(sd, FIONBIO, &on))) {
         JK_GET_SOCKET_ERRNO();
@@ -154,11 +150,11 @@ static int sononblock(jk_sock_t sd)
     if (fcntl(sd, F_SETFL, fd_flags) == -1) {
         return errno;
     }
-#endif /* WIN32 || (NETWARE && __NOVELL_LIBC__) */
+#endif /* WIN32 */
     return 0;
 }
 
-#if defined (WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined (WIN32)
 /* WIN32 implementation */
 /** Non-blocking socket connect
  * @param sd       socket to connect
@@ -243,7 +239,7 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
     return 0;
 }
 
-#elif !defined(NETWARE)
+#else
 /* POSIX implementation */
 /** Non-blocking socket connect
  * @param sd       socket to connect
@@ -318,58 +314,6 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
     JK_TRACE_EXIT(l);
     return rc;
 }
-#else
-/* NETWARE implementation - blocking for now */
-/** Non-blocking socket connect
- * @param sd       socket to connect
- * @param addr     address to connect to
- * @param source   optional source address
- * @param timeout  connect timeout in seconds (ignored!)
- * @param l        logger
- * @return         -1: some kind of error occured
- *                 0: success
- */
-static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
-                      int timeout, jk_logger_t *l)
-{
-    int rc;
-    char buf[64];
-
-    JK_TRACE_ENTER(l);
-
-    if (source != NULL) {
-        if (bind(sd, (const struct sockaddr *)&source->sa.sin, source->salen)) {
-            JK_GET_SOCKET_ERRNO();
-            jk_log(l, JK_LOG_ERROR,
-                   "error during source bind on socket %d [%s] (errno=%d)",
-                   sd, jk_dump_hinfo(source, buf, sizeof(buf)), errno);
-        }
-    }
-    rc = connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen);
-    JK_TRACE_EXIT(l);
-    return rc;
-}
-#endif
-
-
-#ifdef AS400_UTF8
-
-/*
- *  i5/OS V5R4 need EBCDIC for its runtime calls but APR/APACHE works in UTF
- */
-in_addr_t jk_inet_addr(const char * addrstr)
-{
-    in_addr_t addr;
-    char *ptr;
-
-    ptr = (char *)malloc(strlen(addrstr) + 1);
-    jk_ascii2ebcdic((char *)addrstr, ptr);
-    addr = inet_addr(ptr);
-    free(ptr);
-
-    return(addr);
-}
-
 #endif
 
 /** Clone a jk_sockaddr_t
@@ -564,11 +508,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 
         /* XXX : WARNING : We should really use gethostbyname_r in multi-threaded env */
         /* Fortunatly when APR is available, ie under Apache 2.0, we use it */
-#if defined(NETWARE) && !defined(__NOVELL_LIBC__)
-        hoste = gethostbyname((char*)host);
-#else
         hoste = gethostbyname(host);
-#endif
         if (!hoste) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
@@ -675,7 +615,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
         jk_log(l, JK_LOG_DEBUG,
                "socket TCP_NODELAY set to On");
     if (keepalive) {
-#if defined(WIN32) && !defined(NETWARE)
+#if defined(WIN32)
         DWORD dw;
         struct tcp_keepalive ka = { 0 }, ks = { 0 };
         if (timeout)
@@ -744,7 +684,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
     }
 
     if (timeout > 0) {
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
         int tmout = timeout * 1000;
         setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
                    (const char *) &tmout, sizeof(int));
@@ -806,7 +746,7 @@ iSeries when Unix98 is required at compile time */
     ((struct sockaddr *)addr)->sa.sin.sa_len = sizeof(struct sockaddr_in);
 #endif
     ret = nb_connect(sd, addr, source, connect_timeout, l);
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
     if (JK_IS_SOCKET_ERROR(ret)) {
         JK_GET_SOCKET_ERRNO();
     }
@@ -850,7 +790,7 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
     }
 
     save_errno = errno;
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
     rc = closesocket(sd) ? -1 : 0;
 #else
     do {
@@ -955,7 +895,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
             int num = 0;
             do {
                 num++;
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
                 rc = recv(sd, &dummy[0], sizeof(dummy), 0);
                 if (JK_IS_SOCKET_ERROR(rc))
                     JK_GET_SOCKET_ERRNO();
@@ -1045,7 +985,7 @@ int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_log
     errno = 0;
     while (sent < len) {
         do {
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
             wr = send(sd, (const char*)(b + sent),
                       len - sent, 0);
             if (JK_IS_SOCKET_ERROR(wr))
@@ -1096,7 +1036,7 @@ int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t 
     errno = 0;
     while (rdlen < len) {
         do {
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
             rd = recv(sd, (char *)b + rdlen,
                       len - rdlen, 0);
             if (JK_IS_SOCKET_ERROR(rd))
@@ -1448,7 +1388,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
                    sd, jk_dump_sinfo(sd, buf, sizeof(buf)), timeout);
         }
         /* Timeout. Set the errno to timeout */
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
         errno = WSAETIMEDOUT - WSABASEERR;
 #else
         errno = ETIMEDOUT;
@@ -1552,7 +1492,7 @@ int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
         return JK_TRUE;
     }
     else if (rc == 1) {
-#if defined(WIN32) || (defined(NETWARE) && defined(__NOVELL_LIBC__))
+#if defined(WIN32)
         u_long nr;
         rc = ioctlsocket(sd, FIONREAD, &nr);
         if (rc == 0) {
