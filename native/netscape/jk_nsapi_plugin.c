@@ -67,10 +67,6 @@ static jk_map_t *init_map = NULL;
 static jk_uri_worker_map_t *uw_map = NULL;
 static int jk_shm_size = 0;
 
-#ifdef NETWARE
-int (*PR_IsSocketSecure) (SYS_NETFD * csd);     /* pointer to PR_IsSocketSecure function */
-#endif
-
 static int JK_METHOD start_response(jk_ws_service_t *s,
                                     int status,
                                     const char *reason,
@@ -203,38 +199,11 @@ static int JK_METHOD ws_read(jk_ws_service_t *s,
             unsigned i;
             netbuf *inbuf = p->sn->inbuf;
 
-/* Until we get a service pack for NW5.1 and earlier that has the latest */
-/* Enterprise Server, we have to go through the else version of this code*/
-#if defined(netbuf_getbytes) && !defined(NETWARE)
             i = netbuf_getbytes(inbuf, b, l);
             if (NETBUF_EOF == i || NETBUF_ERROR == i) {
                 return JK_FALSE;
             }
 
-#else
-            char *buf = b;
-            int ch;
-            for (i = 0; i < l; i++) {
-                ch = netbuf_getc(inbuf);
-                /*
-                 * IO_EOF is 0 (zero) which is a very reasonable byte
-                 * when it comes to binary data. So we are not breaking
-                 * out of the read loop when reading it.
-                 *
-                 * We are protected from an infinit loop by the Java part of
-                 * Tomcat.
-                 */
-                if (IO_ERROR == ch) {
-                    break;
-                }
-
-                buf[i] = ch;
-            }
-
-            if (0 == i) {
-                return JK_FALSE;
-            }
-#endif
             *a = i;
 
         }
@@ -292,7 +261,7 @@ NSAPI_PUBLIC int jk_init(pblock * pb, Session * sn, Request * rq)
     if (shm_file) {
         shm_file_safe = shm_file;
     }
-#if !defined(WIN32) && !defined(NETWARE)
+#if !defined(WIN32)
     else {
         fprintf(stderr,
                 "Missing attribute %s in magnus.conf (jk_init) - aborting!\n", JK_SHM_FILE_TAG);
@@ -354,21 +323,11 @@ NSAPI_PUBLIC int jk_init(pblock * pb, Session * sn, Request * rq)
         }
     }
 
-#ifdef NETWARE
-    PR_IsSocketSecure =
-        (int (*)(void **))ImportSymbol(GetNLMHandle(), "PR_IsSocketSecure");
-#endif
     return rc;
 }
 
 NSAPI_PUBLIC void jk_term(void *p)
 {
-#ifdef NETWARE
-    if (NULL != PR_IsSocketSecure) {
-        UnimportSymbol(GetNLMHandle(), "PR_IsSocketSecure");
-        PR_IsSocketSecure = NULL;
-    }
-#endif
     if (uw_map) {
         uri_worker_map_free(&uw_map, logger);
     }
@@ -496,30 +455,12 @@ static int init_ws_service(nsapi_private_data_t * private_data,
     s->local_addr = server_hostname;
     s->server_name = server_hostname;
 
-#ifdef NETWARE
-    /* On NetWare, since we have virtual servers, we have a different way of
-     * getting the port that we need to try first.
-     */
-    tmp = pblock_findval("server_port", private_data->sn->client);
-    if (NULL != tmp)
-        s->server_port = atoi(tmp);
-    else
-#endif
     s->server_port = server_portnum;
     s->server_software = system_version();
 
     s->uw_map = uw_map;
 
-#ifdef NETWARE
-    /* on NetWare, we can have virtual servers that are secure.
-     * PR_IsSocketSecure is an api made available with virtual servers to check
-     * if the socket is secure or not
-     */
-    if (NULL != PR_IsSocketSecure)
-        s->is_ssl = PR_IsSocketSecure(private_data->sn->csd);
-    else
-#endif
-        s->is_ssl = security_active;
+    s->is_ssl = security_active;
 
     if (s->is_ssl) {
         char *ssl_cert = pblock_findval("auth-cert", private_data->rq->vars);

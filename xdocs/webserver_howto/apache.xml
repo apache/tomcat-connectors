@@ -97,9 +97,6 @@ WinNT4.0-i386 SP4/SP5/SP6a (should be able to work with other service packs), Wi
 Cygwin (until you have an Apache server and autoconf/automake support tools)
 </li>
 <li>
-Netware
-</li>
-<li>
 i5/OS V5R4 (System I) with Apache HTTP Server 2.0.58. Be sure to have the latest Apache PTF installed.
 </li>
 <li>
