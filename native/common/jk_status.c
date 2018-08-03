@@ -539,24 +539,13 @@ static int jk_printf(jk_ws_service_t *s, jk_logger_t *l, const char *fmt, ...)
 {
     int rc = 0;
     va_list args;
-#ifdef NETWARE
-/* On NetWare, this can get called on a thread that has a limited stack so */
-/* we will allocate and free the temporary buffer in this function         */
-        char *buf;
-#else
         char buf[HUGE_BUFFER_SIZE];
-#endif
 
     if (!s || !fmt) {
         return -1;
     }
     va_start(args, fmt);
 
-#ifdef NETWARE
-        buf = (char *)malloc(HUGE_BUFFER_SIZE);
-        if (NULL == buf)
-            return -1;
-#endif
     rc = vsnprintf(buf, HUGE_BUFFER_SIZE, fmt, args);
     va_end(args);
     if (rc > 0 && rc < HUGE_BUFFER_SIZE)
@@ -564,9 +553,6 @@ static int jk_printf(jk_ws_service_t *s, jk_logger_t *l, const char *fmt, ...)
     else
         jk_log(l, JK_LOG_WARNING,
                "Insufficient buffer size %d in status worker, some output was dropped", HUGE_BUFFER_SIZE);
-#ifdef NETWARE
-        free(buf);
-#endif
     return rc;
 }
 

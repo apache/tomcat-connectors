@@ -59,8 +59,6 @@ extern "C"
     typedef long long jk_pool_atom_t;
 #elif defined(OS2)
     typedef long long jk_pool_atom_t;
-#elif defined(NETWARE)
-    typedef long long jk_pool_atom_t;
 #elif defined(HPUX11)
     typedef long long jk_pool_atom_t;
 #elif defined(IRIX)

@@ -394,8 +394,6 @@ void jk_sleep(int ms)
     DosSleep(ms);
 #elif defined(BEOS)
     snooze(ms * 1000);
-#elif defined(NETWARE)
-    delay(ms);
 #elif defined(WIN32)
     Sleep(ms);
 #else
@@ -711,13 +709,7 @@ int jk_log(jk_logger_t *l,
     }
 
     if ((l->level <= level) || (level == JK_LOG_REQUEST_LEVEL)) {
-#ifdef NETWARE
-        /* On NetWare, this can get called on a thread that has a limited stack so */
-        /* we will allocate and free the temporary buffer in this function         */
-        char *buf;
-#else
         char buf[LOG_BUFFER_SIZE];
-#endif
         char *f = (char *)(file + strlen(file) - 1);
         va_list args;
         int used = 0;
@@ -729,11 +721,6 @@ int jk_log(jk_logger_t *l,
             f++;
         }
 
-#ifdef NETWARE
-        buf = (char *)malloc(LOG_BUFFER_SIZE);
-        if (NULL == buf)
-            return -1;
-#endif
         used = set_time_str(buf, usable_size, l);
 
         if (line) { /* line==0 only used for request log item */
@@ -814,9 +801,6 @@ int jk_log(jk_logger_t *l,
         }
         l->log(l, level, used, buf);
 
-#ifdef NETWARE
-        free(buf);
-#endif
     }
 
     return rc;

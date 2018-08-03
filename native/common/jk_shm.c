@@ -188,7 +188,7 @@ int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
 }
 
 
-#if defined (WIN32) || defined(NETWARE)
+#if defined (WIN32)
 
 /* Use plain memory */
 int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
