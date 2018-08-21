@@ -50,6 +50,10 @@
         over five years. (markt)
       </update>
       <fix>
+        <bug>58287</bug>: Common: Use Local, rather than Global, mutexs on
+        Windows to better support multi-user environments. (markt)
+      </fix>
+      <fix>
         <bug>60745</bug>: ISAPI: Remove the check that rejects requests that
         contain path segments that match WEB-INF or META-INF as it duplicates
         a check that Tomcat performs and, because ISAPI does not have visibility

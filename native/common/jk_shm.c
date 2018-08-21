@@ -223,7 +223,7 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
     if (fname) {
         int i;
         SIZE_T shmsz = 0;
-        strcpy(shname, "Global\\");
+        strcpy(shname, "Local\\");
         strncat(shname, fname, MAX_PATH - 8);
         for(i = 7; i < (int)strlen(shname); i++) {
             if (!jk_isalnum(shname[i]))

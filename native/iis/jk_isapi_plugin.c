@@ -2341,7 +2341,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
                 *p = '\0';
                 StringCbCopy(ini_file_name, MAX_PATH, fname);
                 StringCbCat(ini_file_name, MAX_PATH, ".properties");
-                StringCbCopy(ini_mutex_name, MAX_PATH, "Global\\JK_");
+                StringCbCopy(ini_mutex_name, MAX_PATH, "Local\\JK_");
                 StringCbCat(ini_mutex_name, MAX_PATH, fname);
                 StringCbCat(ini_mutex_name, MAX_PATH, "_mutex");
                 p = &ini_mutex_name[10];
