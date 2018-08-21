@@ -427,7 +427,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         
 #if JK_HAVE_IPV6
         if (strchr(host, ':')) {
-            /* If host name contains collon this must be IPV6 address.
+            /* If host name contains colon this must be IPV6 address.
              * Set prefer_ipv6 flag in this case if it wasn't set already
              */
             prefer_ipv6 = 1;            
