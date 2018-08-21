@@ -49,6 +49,13 @@
         since there has not been a supported version of Netware available for
         over five years. (markt)
       </update>
+      <fix>
+        <bug>60745</bug>: ISAPI: Remove the check that rejects requests that
+        contain path segments that match WEB-INF or META-INF as it duplicates
+        a check that Tomcat performs and, because ISAPI does not have visibility
+        of the current context path, it is impossible to implement this check
+        without valid requests being rejected. (markt)
+      </fix>
    </changelog>
   </subsection>
 </section>

@@ -874,36 +874,6 @@ static char *stristr(const char *s, const char *find)
     return ((char *)s);
 }
 
-/*
- * Find the first occurrence of path in uri tokenized by "/".
- * The comparison is done case insensitive.
- */
-static const char *find_path_in_uri(const char *uri, const char *path)
-{
-    size_t len = strlen(path);
-    while (uri = strchr(uri, '/')) {
-        uri++;
-        if (!strnicmp(uri, path, len) &&
-            (*(uri + len) == '/' ||
-             strlen(uri) == len)) {
-            return uri;
-        }
-    }
-    return NULL;
-}
-
-static int uri_is_web_inf(const char *uri)
-{
-    if (find_path_in_uri(uri, "web-inf")) {
-        return JK_TRUE;
-    }
-    if (find_path_in_uri(uri, "meta-inf")) {
-        return JK_TRUE;
-    }
-
-    return JK_FALSE;
-}
-
 static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
 {
     char status[1024];
@@ -1929,22 +1899,6 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         char *rewriteURI;
         isapi_log_data_t *ld;
         BOOL rs;
-
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG,
-                   "check if [%s] points to the web-inf directory",
-                    uri);
-
-        if (uri_is_web_inf(uri)) {
-            jk_log(logger, JK_LOG_EMERG,
-                   "[%s] points to the web-inf or meta-inf directory. "
-                   "Somebody tries to hack into the site!!!",
-                   uri);
-
-            write_error_response(pfc, 404);
-            rv = SF_STATUS_REQ_FINISHED;
-            goto cleanup;
-        }
 
         /* This is a servlet, should redirect ... */
         if (JK_IS_DEBUG_LEVEL(logger))
