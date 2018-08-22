@@ -845,8 +845,7 @@ directive when jk and alias/userdir URLs matches.
       &lt;Directory "/home/dataxxx"&gt;
           Options Indexes MultiViews
           AllowOverride None
-          Order allow,deny
-          Allow from all
+          Require all granted
       &lt;/Directory&gt;
 
       JkMount /* myssys-xxx

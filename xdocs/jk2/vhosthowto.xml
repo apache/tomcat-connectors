@@ -566,8 +566,7 @@ DirectoryIndex index.html index.jsp
 &lt;/Directory&gt;
 
 &lt;Files ~ "^\.ht"&gt;
-    Order allow,deny
-    Deny from all
+    Require all denied
 &lt;/Files&gt;
 
 &lt;Location /WEB-INF/&gt;

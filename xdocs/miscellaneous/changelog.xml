@@ -49,6 +49,10 @@
         since there has not been a supported version of Netware available for
         over five years. (markt)
       </update>
+      <update>
+        <bug>57946</bug>: Apache: Update the documentation to use httpd 2.4.x
+        style access control directives. (markt)
+      </update>
       <fix>
         <bug>58287</bug>: Common: Use Local, rather than Global, mutexs on
         Windows to better support multi-user environments. (markt)

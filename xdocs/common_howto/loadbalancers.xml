@@ -222,9 +222,7 @@ HTTP Servers use:</p>
   # Enable the JK manager access from localhost only
  &lt;Location /jkmanager/&gt;
     JkMount jkstatus
-    Order deny,allow
-    Deny from all
-    Allow from 127.0.0.1
+    Require ip 127.0.0.1
  &lt;/Location&gt;
 </source>
 
