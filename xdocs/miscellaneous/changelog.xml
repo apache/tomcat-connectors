@@ -54,6 +54,11 @@
         Windows to better support multi-user environments. (markt)
       </fix>
       <fix>
+        <bug>59897</bug>: Apache: Use poll rather than select to avoid the
+        limitations of select triggering an httpd crash. Patch provided by Koen
+        Wilde. (markt)
+      </fix>
+      <fix>
         <bug>60745</bug>: ISAPI: Remove the check that rejects requests that
         contain path segments that match WEB-INF or META-INF as it duplicates
         a check that Tomcat performs and, because ISAPI does not have visibility

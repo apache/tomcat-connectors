@@ -231,9 +231,75 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
     JK_TRACE_EXIT(l);
     return 0;
 }
+#elif defined(HAVE_POLL_H)
+/* POSIX implementation using poll(2) */
+/** Non-blocking socket connect
+ * @param sd       socket to connect
+ * @param addr     address to connect to
+ * @param source   optional source address
+ * @param timeout  connect timeout in seconds
+ *                 (<=0: no timeout=blocking)
+ * @param l        logger
+ * @return         -1: some kind of error occured
+ *                 0: success
+ */
+static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
+                      int timeout, jk_logger_t *l) {
+    int rc = 0;
+    char buf[64];
+
+    JK_TRACE_ENTER(l);
+
+    if (source != NULL) {
+        if (bind(sd, (const struct sockaddr *)&source->sa.sin, source->salen)) {
+            JK_GET_SOCKET_ERRNO();
+            jk_log(l, JK_LOG_ERROR,
+                   "error during source bind on socket %d [%s] (errno=%d)", sd,
+                   jk_dump_hinfo(source, buf, sizeof(buf)), errno);
+        }
+    }
+    if (timeout > 0) {
+        if (sononblock(sd)) {
+            JK_TRACE_EXIT(l);
+            return -1;
+        }
+    }
+    do {
+        rc = connect(sd, (const struct sockaddr *)&addr->sa.sin, addr->salen);
+    } while (rc == -1 && errno == EINTR);
+
+    if ((rc == -1) && (errno == EINPROGRESS || errno == EALREADY)
+                   && (timeout > 0)) {
+        struct pollfd pfd;
+        socklen_t rclen = (socklen_t)sizeof(rc);
+        pfd.fd = sd;
+        pfd.events = POLLOUT;
+        rc = poll(&pfd, 1, timeout * 1000);
+        if (rc <= 0) {
+            /* Save errno */
+            int err = errno;
+            soblock(sd);
+            errno = err;
+            JK_TRACE_EXIT(l);
+            return -1;
+        }
+        rc = 0;
+#ifdef SO_ERROR
+       if (getsockopt(sd, SOL_SOCKET, SO_ERROR,
+                        (char *)&rc, &rclen) < 0 || rc) {
+            if (rc)
+                errno = rc;
+            rc = -1;
+        }
+#endif
+    }
+    soblock(sd);
+    JK_TRACE_EXIT(l);
+    return rc;
+}
 
 #else
-/* POSIX implementation */
+/* POSIX implementation using select(2) */
 /** Non-blocking socket connect
  * @param sd       socket to connect
  * @param addr     address to connect to
