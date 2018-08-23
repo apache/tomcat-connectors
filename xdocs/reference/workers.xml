@@ -632,10 +632,10 @@ it will try each member in turn a number of times given by <b>retries</b>.
 Before each retry, it will make a pause define by <b>retry_interval</b> directive.
 <p>
 Note that this means that, if all workers fail, there will be a total of
-number-of-workers * lb.retries * worker.retries requests before a 503 response
+number-of-workers * lb.retries * worker.retries requests before a 504 response
 is returned to the client. So for an lb worker with four members and a default
 configuration, if all workers fail there will be a total of 16 requests before
-a 503 response is returned to the client.
+a 504 response is returned to the client.
 </p>
 <p>
 Until version <b>1.2.16</b> the default value was 3.
