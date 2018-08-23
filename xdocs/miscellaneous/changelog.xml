@@ -69,6 +69,10 @@
         of the current context path, it is impossible to implement this check
         without valid requests being rejected. (markt)
       </fix>
+      <add>
+        Clarify the behvaiour of lb workers when all ajp13 workers fail with
+        particular reference to the role of the retries attribute. (markt)
+      </add>
    </changelog>
   </subsection>
 </section>

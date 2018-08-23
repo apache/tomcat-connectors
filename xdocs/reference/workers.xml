@@ -628,8 +628,15 @@ This feature has been added in <b>jk 1.2.13</b>.
 <warn>This directive also exists for normal workers.
 For those it has a <a href="#Advanced Worker Directives">different meaning</a>.</warn>
 If the load balancer can not get a valid member worker or in case of failover,
-it will try again a number of times given by <b>retries</b>.
+it will try each member in turn a number of times given by <b>retries</b>.
 Before each retry, it will make a pause define by <b>retry_interval</b> directive.
+<p>
+Note that this means that, if all workers fail, there will be a total of
+number-of-workers * lb.retries * worker.retries requests before a 503 response
+is returned to the client. So for an lb worker with four members and a default
+configuration, if all workers fail there will be a total of 16 requests before
+a 503 response is returned to the client.
+</p>
 <p>
 Until version <b>1.2.16</b> the default value was 3.
 </p>
