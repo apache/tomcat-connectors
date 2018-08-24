@@ -50,7 +50,6 @@ for o
 do
     echo "Signing $o"
     gpg $gpgopts $o
-    $SHA1SUM $o > $o.sha1
     $SHA512SUM $o > $o.sha512
 done
 
