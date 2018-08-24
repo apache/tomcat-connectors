@@ -111,6 +111,7 @@
 #define DEFAULT_WORKER_TYPE         JK_AJP13_WORKER_NAME
 #define SECRET_KEY_OF_WORKER        "secretkey"
 #define RETRIES_OF_WORKER           "retries"
+#define LB_RETRIES_OF_WORKER        "lb_retries"
 #define STATUS_FAIL_OF_WORKER       "fail_on_status"
 
 #define DEFAULT_WORKER              JK_AJP13_WORKER_NAME
@@ -232,6 +233,7 @@ static const char *unique_properties[] = {
     STYLE_SHEET_OF_WORKER,
     READ_ONLY_OF_WORKER,
     RETRIES_OF_WORKER,
+    LB_RETRIES_OF_WORKER,
     WORKER_MAINTAIN_PROPERTY_NAME,
     NAMESPACE_OF_WORKER,
     XML_NAMESPACE_OF_WORKER,
@@ -342,6 +344,7 @@ static const char *supported_properties[] = {
     BAD_RATING_OF_WORKER,
     SECRET_KEY_OF_WORKER,
     RETRIES_OF_WORKER,
+    LB_RETRIES_OF_WORKER,
     STATUS_FAIL_OF_WORKER,
     LIST_PROPERTY_NAME,
     MAINTAIN_PROPERTY_NAME,
@@ -1228,6 +1231,24 @@ int jk_get_worker_retries(jk_map_t *m, const char *wname, int def)
 
     return rv;
 }
+
+int jk_get_worker_lb_retries(jk_map_t *m, const char *wname, int def)
+{
+    char buf[1024];
+    int rv;
+    if (!m || !wname) {
+        return -1;
+    }
+
+    MAKE_WORKER_PARAM(LB_RETRIES_OF_WORKER);
+
+    rv = jk_map_get_int(m, buf, def);
+    if (rv < 1)
+        rv = 1;
+
+    return rv;
+}
+
 
 int jk_get_worker_recovery_opts(jk_map_t *m, const char *wname, int def)
 {

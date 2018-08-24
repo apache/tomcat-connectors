@@ -626,19 +626,56 @@ This feature has been added in <b>jk 1.2.13</b>.
 
 <directive name="retries" default="2" required="false">
 <warn>This directive also exists for normal workers.
-For those it has a <a href="#Advanced Worker Directives">different meaning</a>.</warn>
-If the load balancer can not get a valid member worker or in case of failover,
-it will try each member in turn a number of times given by <b>retries</b>.
-Before each retry, it will make a pause define by <b>retry_interval</b> directive.
+For those it has a <a href="#Advanced Worker Directives">different
+meaning</a>.</warn>
+When making a request, the load-balancer worker will allocate the request to a
+member worker. If that member worker is either unable to service the request or
+fails to service the request, the request will be passed to another member
+worker until the request is processed, every member worker has attempted to
+process the request or <b>lb_retries</b> member workers have attempted to
+process the request.
+<p>
+If the request remains unprocessed, the load-balancer worker will repeat the
+above process a maximum of <b>retries</b> times (including the original
+attempt). Before each retry, the load-balancer worker will pause for a time
+defined by the <b>retry_interval</b> directive.
+</p>
 <p>
 Note that this means that, if all workers fail, there will be a total of
-number-of-workers * lb.retries * worker.retries requests before a 504 response
-is returned to the client. So for an lb worker with four members and a default
-configuration, if all workers fail there will be a total of 16 requests before
-a 504 response is returned to the client.
+worker.retries * min(lb.lb_retries,member worker count) * lb.retries requests
+before a 504 response is returned to the client. So for an lb worker with four
+members and a default configuration, if all workers fail there will be a total
+of 8 requests before a 504 response is returned to the client.
 </p>
 <p>
 Until version <b>1.2.16</b> the default value was 3.
+</p>
+</directive>
+
+<directive name="lb_retries" default="2" required="false">
+When making a request, the load-balancer worker will allocate the request to a
+member worker. If that member worker is either unable to service the request or
+fails to service the request, the request will be passed to another member
+worker until the request is processed, every member worker has attempted to
+process the request or <b>lb_retries</b> member workers have attempted to
+process the request.
+<p>
+If the request remains unprocessed, the load-balancer worker will repeat the
+above process a maximum of <b>retries</b> times (including the original
+attempt). Before each retry, the load-balancer worker will pause for a time
+defined by the <b>retry_interval</b> directive.
+</p>
+<p>
+Note that this means that, if all workers fail, there will be a total of
+worker.retries * min(lb.lb_retries,member worker count) * lb.retries requests
+before a 504 response is returned to the client. So for an lb worker with four
+members and a default configuration, if all workers fail there will be a total
+of 8 requests before a 504 response is returned to the client.
+</p>
+<p>
+This feature has been added in <b>jk 1.2.44</b>. Prior to this feature being
+added, the load-balancer worker behaved as if <b>lb_retries</b> was equal to the
+number of member workers.
 </p>
 </directive>
 

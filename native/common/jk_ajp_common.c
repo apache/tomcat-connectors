@@ -3041,6 +3041,10 @@ int ajp_init(jk_worker_t *pThis,
             jk_get_worker_retries(props, p->name,
                                   JK_RETRIES);
 
+        p->lb_retries =
+            jk_get_worker_lb_retries(props, p->name,
+                                  JK_LB_RETRIES);
+
         p->max_packet_size =
             jk_get_max_packet_size(props, p->name);
 

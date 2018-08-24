@@ -1225,6 +1225,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     if (p->worker->sequence < p->worker->s->h.sequence)
         jk_lb_pull(p->worker, JK_FALSE, l);
     for (i = 0; i < num_of_workers; i++) {
+        jk_log(l, JK_LOG_DEBUG, "LB - num_of_workers: %d, retry: %d, lb_retries: %d", num_of_workers, i, p->worker->lb_retries);
         lb_sub_worker_t *rec = &(p->worker->lb_workers[i]);
         ajp_worker_t *aw = (ajp_worker_t *)rec->worker->worker_private;
         if (rec->s->state == JK_LB_STATE_BUSY) {
@@ -1272,7 +1273,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
                p->worker->sticky_session, sessionid ? sessionid : "empty");
 
     while (recoverable == JK_TRUE) {
-        if (attempt >= num_of_workers) {
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG, "attempt %d, max attempts %d, worker count %d",
+                    attempt, p->worker->lb_retries, num_of_workers);
+        if (attempt >= num_of_workers || attempt >= p->worker->lb_retries) {
             retry++;
             if (retry >= p->worker->retries) {
                 /* Done with retrying */
@@ -1549,7 +1553,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     }
                     else {
                         /*
-                         * Reply timeout, bot not yet too many of them.
+                         * Reply timeout, but not yet too many of them.
                          * Keep previous global state.
                          * Do not try to reuse the same node for the same request.
                          * Failing over to another node could help.
@@ -1903,6 +1907,8 @@ static int JK_METHOD init(jk_worker_t *pThis,
     p->worker.we = we;
     p->retries = jk_get_worker_retries(props, p->name,
                                        JK_RETRIES);
+    p->lb_retries = jk_get_worker_lb_retries(props, p->name,
+                                       JK_LB_RETRIES);
     p->retry_interval =
             jk_get_worker_retry_interval(props, p->name,
                                         JK_SLEEP_DEF);

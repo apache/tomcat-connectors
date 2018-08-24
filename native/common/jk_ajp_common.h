@@ -370,6 +370,13 @@ struct ajp_worker
      */
     int retries;
 
+    /*
+     * Public property used in load balancer workers, meaning
+     * the maximum number of failover attempts between ajp
+     * workers of cluster.
+     */
+    int lb_retries;
+
     unsigned int max_packet_size;  /*  Maximum AJP Packet size */
 
     int retry_interval;            /*  Number of milliseconds to sleep before doing a retry */

@@ -36,6 +36,7 @@
 #include "jk_msg_buff.h"
 
 #define JK_RETRIES 2
+#define JK_LB_RETRIES 2
 
 #ifdef __cplusplus
 extern "C"

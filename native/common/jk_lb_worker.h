@@ -187,6 +187,7 @@ struct lb_worker
     int          error_escalation_time;
     int          max_reply_timeouts;
     int          retries;
+    int          lb_retries;
     int          retry_interval;
     int          lbmethod;
     int          lblock;

@@ -73,6 +73,11 @@
         Clarify the behvaiour of lb workers when all ajp13 workers fail with
         particular reference to the role of the retries attribute. (markt)
       </add>
+      <add>
+        <bug>62408</bug>: Add the new load-balancer worker property lb_retries
+        to improve the control over the number of retries. Based on a patch
+        provided by Frederik Nosi. (markt)
+      </add>
    </changelog>
   </subsection>
 </section>
