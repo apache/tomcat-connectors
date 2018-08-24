@@ -382,7 +382,7 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
             ap_content_type_tolower(tmp);
             /* It should be done like this in Apache 2.0 */
             /* This way, Apache 2.0 will be able to set the output filter */
-            /* and it make jk useable with deflate using */
+            /* and it make jk usable with deflate using */
             /* AddOutputFilterByType DEFLATE text/html */
             ap_set_content_type(r, tmp);
         }
@@ -991,13 +991,13 @@ static int init_ws_service(apache_private_data_t * private_data,
      *
      * We use JkOptions to determine which method to be used
      *
-     * ap_escape_uri is the latest recommanded but require
+     * ap_escape_uri is the latest recommended but require
      *               some java decoding (in TC 3.3 rc2)
      *
      * unparsed_uri is used for strict compliance with spec and
      *              old Tomcat (3.2.3 for example)
      *
-     * uri is use for compatibilty with mod_rewrite with old Tomcats
+     * uri is use for compatibility with mod_rewrite with old Tomcats
      */
 
     switch (conf->options & JK_OPT_FWDURIMASK) {
@@ -1974,7 +1974,7 @@ static apr_array_header_t *parse_request_log_string(apr_pool_t * p,
  *      otherwise an empty string)
  * %r - First line of request
  * %s - request HTTP status code
- * %T - Requset duration, elapsed time to handle request in seconds '.' micro seconds
+ * %T - Request duration, elapsed time to handle request in seconds '.' micro seconds
  * %U - The URL path requested, not including any query string.
  * %v - The canonical ServerName of the server serving the request.
  * %V - The server name according to the UseCanonicalName setting.
@@ -2752,7 +2752,7 @@ static int jk_handler(request_rec * r)
         worker_name = apr_table_get(r->subprocess_env, xconf->worker_indicator);
         if (worker_name) {
           /* The JkWorkerIndicator environment variable has
-           * been used to explicitely set the worker without JkMount.
+           * been used to explicitly set the worker without JkMount.
            * This is useful in combination with LocationMatch or mod_rewrite.
            */
             if (JK_IS_DEBUG_LEVEL(xconf->log))
@@ -2774,7 +2774,7 @@ static int jk_handler(request_rec * r)
           /** We have a single worker ( the common case ).
               ( lb is a bit special, it should count as a single worker but
               I'm not sure how ). We also have a manual config directive that
-              explicitely give control to us. */
+              explicitly give control to us. */
             worker_name = worker_env.worker_list[0];
             if (JK_IS_DEBUG_LEVEL(xconf->log))
                 jk_log(xconf->log, JK_LOG_DEBUG,
