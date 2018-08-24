@@ -38,13 +38,6 @@ do
     esac
 done
 
-# Try to locate a SHA1 binary
-sha1_bin="`which sha1sum 2>/dev/null || type sha1sum 2>&1`"
-if [ -x "$sha1_bin" ]; then
-    SHA1SUM="$sha1_bin --binary "
-else
-    SHA1SUM="echo 0000000000000000000000000000000000000000 "
-fi
 # Try to locate a SHA512 binary
 sha512_bin="`which sha512sum 2>/dev/null || type sha512sum 2>&1`"
 if [ -x "$sha512_bin" ]; then
