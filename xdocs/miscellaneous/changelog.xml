@@ -78,6 +78,11 @@
         to improve the control over the number of retries. Based on a patch
         provided by Frederik Nosi. (markt)
       </add>
+      <fix>
+        Refactor normalisation of request URIs to a common location and align
+        the normalisation implementation for mod_jk with that implemented by
+        Tomcat. (markt)
+      </fix>
    </changelog>
   </subsection>
 </section>

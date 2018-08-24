@@ -2196,6 +2196,95 @@ void jk_no2slash(char *name)
     *d = '\0';
 }
 
+int jk_servlet_normalize(char *path, jk_logger_t *logger)
+{
+    int l, w;
+
+    jk_log(logger, JK_LOG_DEBUG, "URI on entering jk_servlet_normalize: [%s]", path);
+
+    // This test allows the loops below to start at index 1 rather than 0.
+    if (path[0] != '/') {
+        jk_log(logger, JK_LOG_EMERG, "[%s] does not start with '/'.", path);
+        return JK_NORMALIZE_BAD_PATH;
+    }
+
+    /*
+     * First pass.
+     * Collapse ///// sequences to /
+     */
+    for (l = 1, w = 1; path[l] != '\0';) {
+        if (path[w - 1] == '/' && (path[l] == '/')) {
+            l++;
+        }
+        else
+            path[w++] = path[l++];
+    }
+    path[w] = '\0';
+
+    /* Second pass.
+     * Remove /./ segments including those with path parameters such as
+     * /.;foo=bar/
+     * Both leading and trailing segments will be removed.
+     */
+    for (l = 1, w = 1; path[l] != '\0';) {
+        if (path[l] == '.' &&
+                (path[l + 1] == '/' || path[l + 1] == ';' || path[l + 1] == '\0') &&
+                (l == 0 || path[l - 1] == '/')) {
+            l++;
+            while (path[l] != '/' && path[l] != '\0') {
+                l++;
+            }
+            if (path[l] != '\0') {
+                l++;
+            }
+        }
+        else
+            path[w++] = path[l++];
+    }
+    path[w] = '\0';
+
+    /* Third pass.
+     * Remove /xx/../ segments including those with path parameters such as
+     * /xxx/..;foo=bar/
+     * Trailing segments will be removed but leading /../ segments are an error
+     * condition.
+     */
+    for (l = 1, w = 1; path[l] != '\0';) {
+        if (path[l] == '.' && path[l + 1] == '.' &&
+                (path[l + 2] == '/' || path[l + 2] == ';' || path[l + 2] == '\0') &&
+                (l == 0 || path[l - 1] == '/')) {
+
+            // Wind w back to remove the previous segment
+            if (w == 1) {
+                jk_log(logger,
+                        JK_LOG_EMERG,
+                        "[%s] contains a '/../' sequence that tries to escape above the root.",
+                        path);
+                return JK_NORMALIZE_TRAVERSAL;
+            }
+            do {
+                w--;
+            } while (w != 0 && path[w - 1] != '/');
+
+            // Move l forward to the next segment
+            l += 2;
+
+            while (path[l] != '/' && path [l] != '\0') {
+                l++;
+            }
+            if (path[l] != '\0') {
+                l++;
+            }
+        }
+        else
+            path[w++] = path[l++];
+    }
+    path[w] = '\0';
+
+    jk_log(logger, JK_LOG_DEBUG, "URI on exiting jk_servlet_normalize: [%s]", path);
+    return 0;
+}
+
 #ifdef _MT_CODE_PTHREAD
 jk_pthread_t jk_gettid()
 {

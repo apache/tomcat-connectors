@@ -3790,7 +3790,10 @@ static int jk_translate(request_rec * r)
                                                       &jk_module);
 
         if (conf) {
+            char *clean_uri;
+            int rc;
             const char *worker;
+
             if ((r->handler != NULL) && (!strcmp(r->handler, JK_HANDLER))) {
                 /* Somebody already set the handler, probably manual config
                  * or "native" configuration, no need for extra overhead
@@ -3810,6 +3813,12 @@ static int jk_translate(request_rec * r)
                 return DECLINED;
             }
 
+            clean_uri = apr_pstrdup(r->pool, r->uri);
+            rc = jk_servlet_normalize(clean_uri, conf->log);
+            if (rc != 0) {
+            	return HTTP_NOT_FOUND;
+            }
+
             /* Special case to make sure that apache can serve a directory
                listing if there are no matches for the DirectoryIndex and
                Tomcat webapps are mapped into apache using JkAutoAlias. */
@@ -3819,11 +3828,8 @@ static int jk_translate(request_rec * r)
 
                 /* Append the request uri to the JkAutoAlias directory and
                    determine if the file exists. */
-                char *clean_uri;
                 apr_finfo_t finfo;
                 finfo.filetype = APR_NOFILE;
-                clean_uri = apr_pstrdup(r->pool, r->uri);
-                ap_no2slash(clean_uri);
                 /* Map uri to a context static file */
                 if (strlen(clean_uri) > 1) {
                     char *context_path = NULL;
@@ -3855,7 +3861,7 @@ static int jk_translate(request_rec * r)
             }
             else {
                 rule_extension_t *e;
-                worker = map_uri_to_worker_ext(conf->uw_map, r->uri,
+                worker = map_uri_to_worker_ext(conf->uw_map, clean_uri,
                                                NULL, &e, NULL, conf->log);
                 rconf->rule_extensions = e;
                 ap_set_module_config(r->request_config, &jk_module, rconf);
@@ -3875,8 +3881,6 @@ static int jk_translate(request_rec * r)
                 return OK;
             }
             else if (conf->alias_dir != NULL) {
-                char *clean_uri = apr_pstrdup(r->pool, r->uri);
-                ap_no2slash(clean_uri);
                 /* Automatically map uri to a context static file */
                 if (JK_IS_DEBUG_LEVEL(conf->log))
                     jk_log(conf->log, JK_LOG_DEBUG,
@@ -3994,7 +3998,10 @@ static int jk_map_to_storage(request_rec * r)
                                                       &jk_module);
 
         if (conf) {
+            char *clean_uri;
+            int rc;
             const char *worker;
+
             if ((r->handler != NULL) && (!strcmp(r->handler, JK_HANDLER))) {
                 /* Somebody already set the handler, probably manual config
                  * or "native" configuration, no need for extra overhead
@@ -4013,6 +4020,13 @@ static int jk_map_to_storage(request_rec * r)
 
                 return DECLINED;
             }
+
+            clean_uri = apr_pstrdup(r->pool, r->uri);
+            rc = jk_servlet_normalize(clean_uri, conf->log);
+            if (rc != 0) {
+            	return HTTP_NOT_FOUND;
+            }
+
             if (!conf->uw_map) {
                 if (JK_IS_DEBUG_LEVEL(conf->log))
                     jk_log(conf->log, JK_LOG_DEBUG,
@@ -4023,7 +4037,7 @@ static int jk_map_to_storage(request_rec * r)
             }
             else {
                 rule_extension_t *e;
-                worker = map_uri_to_worker_ext(conf->uw_map, r->uri,
+                worker = map_uri_to_worker_ext(conf->uw_map, clean_uri,
                                                NULL, &e, NULL, conf->log);
                 rconf->rule_extensions = e;
                 ap_set_module_config(r->request_config, &jk_module, rconf);

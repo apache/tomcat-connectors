@@ -250,6 +250,11 @@ int jk_wildchar_match(const char *str, const char *exp, int icase);
 
 void jk_no2slash(char *name);
 
+int jk_servlet_normalize(char *path, jk_logger_t *logger);
+
+#define JK_NORMALIZE_BAD_PATH	-1
+#define JK_NORMALIZE_TRAVERSAL	-2
+
 #define TC32_BRIDGE_TYPE    32
 #define TC33_BRIDGE_TYPE    33
 #define TC40_BRIDGE_TYPE    40

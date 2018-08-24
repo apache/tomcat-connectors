@@ -174,7 +174,6 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 
 #define BAD_REQUEST         -1
 #define BAD_PATH            -2
-#define BAD_NORMALIZATION   -3
 #define MAX_SERVERNAME      1024
 #define MAX_INSTANCEID      32
 
@@ -658,90 +657,6 @@ static int unescape_url(char *url)
         return BAD_PATH;
     else
         return 0;
-}
-
-static int getparents(char *name)
-{
-    int l, w;
-
-    jk_log(logger, JK_LOG_DEBUG, "URI on entering getparents: [%s]", name);
-
-    // This test allows the loops below to start at index 1 rather than 0.
-    if (name[0] != '/') {
-    	return BAD_PATH;
-    }
-
-    /*
-     * First pass.
-     * Collapse ///// sequences to /
-     */
-    for (l = 1, w = 1; name[l] != '\0';) {
-        if (name[w - 1] == '/' && (name[l] == '/')) {
-        	l++;
-        }
-        else
-            name[w++] = name[l++];
-    }
-    name[w] = '\0';
-
-    /* Second pass.
-     * Remove /./ segments including those with path parameters such as
-     * /.;foo=bar/
-     * Both leading and trailing segments will be removed.
-     */
-    for (l = 1, w = 1; name[l] != '\0';) {
-        if (name[l] == '.' &&
-        		(name[l + 1] == '/' || name[l + 1] == ';' || name[l + 1] == '\0') &&
-				(l == 0 || name[l - 1] == '/')) {
-        	l++;
-        	while (name[l] != '/' && name[l] != '\0') {
-        		l++;
-        	}
-        	if (name[l] != '\0') {
-        		l++;
-        	}
-        }
-        else
-            name[w++] = name[l++];
-    }
-    name[w] = '\0';
-
-    /* Third pass.
-     * Remove /xx/../ segments including those with path parameters such as
-     * /xxx/..;foo=bar/
-     * Trailing segments will be removed but leading /../ segments are an error
-     * condition.
-     */
-    for (l = 1, w = 1; name[l] != '\0';) {
-        if (name[l] == '.' && name[l + 1] == '.' &&
-        		(name[l + 2] == '/' || name[l + 2] == ';' || name[l + 2] == '\0') &&
-				(l == 0 || name[l - 1] == '/')) {
-
-        	// Wind w back to remove the previous segment
-        	if (w == 1) {
-        		return BAD_NORMALIZATION;
-        	}
-        	do {
-        		w--;
-        	} while (w != 0 && name[w - 1] != '/');
-
-        	// Move l forward to the next segment
-        	l += 2;
-
-        	while (name[l] != '/' && name [l] != '\0') {
-        		l++;
-        	}
-        	if (name[l] != '\0') {
-        		l++;
-        	}
-        }
-        else
-            name[w++] = name[l++];
-    }
-    name[w] = '\0';
-
-    jk_log(logger, JK_LOG_DEBUG, "URI on exiting getparents: [%s]", name);
-    return 0;
 }
 
 /* Apache code to escape a URL */
@@ -1860,19 +1775,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         rv = SF_STATUS_REQ_FINISHED;
         goto cleanup;
     }
-    rc = getparents(uri);
-    if (rc == BAD_PATH) {
-        jk_log(logger, JK_LOG_EMERG,
-               "[%s] does not start with '/'.",
-               uri);
-        write_error_response(pfc, 404);
-        rv = SF_STATUS_REQ_FINISHED;
-        goto cleanup;
-    }
-    if (rc == BAD_NORMALIZATION) {
-        jk_log(logger, JK_LOG_EMERG,
-               "[%s] contains a '/../' sequence that tries to escape above the root.",
-               uri);
+    if (jk_servlet_normalize(uri, logger)) {
         write_error_response(pfc, 404);
         rv = SF_STATUS_REQ_FINISHED;
         goto cleanup;
@@ -3098,7 +3001,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
             JK_TRACE_EXIT(logger);
             return JK_FALSE;
         }
-        getparents(s->req_uri);
+        jk_servlet_normalize(s->req_uri, logger);
     } else {
         GET_SERVER_VARIABLE_VALUE(HTTP_QUERY_HEADER_NAME, s->query_string, "");
         GET_SERVER_VARIABLE_VALUE(HTTP_WORKER_HEADER_NAME, (*worker_name), "");
