@@ -1225,9 +1225,11 @@ static int JK_METHOD service(jk_endpoint_t *e,
     if (p->worker->sequence < p->worker->s->h.sequence)
         jk_lb_pull(p->worker, JK_FALSE, l);
     for (i = 0; i < num_of_workers; i++) {
+        lb_sub_worker_t *rec;
+        ajp_worker_t *aw;
         jk_log(l, JK_LOG_DEBUG, "LB - num_of_workers: %d, retry: %d, lb_retries: %d", num_of_workers, i, p->worker->lb_retries);
-        lb_sub_worker_t *rec = &(p->worker->lb_workers[i]);
-        ajp_worker_t *aw = (ajp_worker_t *)rec->worker->worker_private;
+        rec = &(p->worker->lb_workers[i]);
+        aw = (ajp_worker_t *)rec->worker->worker_private;
         if (rec->s->state == JK_LB_STATE_BUSY) {
             if ((aw->busy_limit <= 0 || aw->s->busy < aw->busy_limit) &&
                 ajp_has_endpoint(rec->worker, l)) {
