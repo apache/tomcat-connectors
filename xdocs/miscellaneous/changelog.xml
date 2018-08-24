@@ -91,11 +91,6 @@
       <update>
         Update PCRE bundled with the ISAPI redirector to 8.42. (rjung)
       </update>
-      <update>
-        Update config.guess and config.sub from
-        <a href="https://git.savannah.gnu.org/git/config.git">https://git.savannah.gnu.org/git/config.git</a>.
-        (rjung)
-      </update>
    </changelog>
   </subsection>
 </section>
