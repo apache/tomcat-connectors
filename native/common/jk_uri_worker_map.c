@@ -176,10 +176,9 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
         int i, off;
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG, "uri map dump %s: id=%d, index=%d file='%s' reject_unsafe=%d "
-                  "collapse_slashes=%d reload=%d modified=%d checked=%d",
+                  "reload=%d modified=%d checked=%d",
                    reason, uw_map->id, uw_map->index, STRNULL_FOR_NULL(uw_map->fname),
-                   uw_map->reject_unsafe, uw_map->collapse_slashes,
-                   uw_map->reload, uw_map->modified, uw_map->checked);
+                   uw_map->reject_unsafe, uw_map->reload, uw_map->modified, uw_map->checked);
         }
         for (i = 0; i <= 1; i++) {
             jk_log(l, JK_LOG_DEBUG, "generation %d: size=%d nosize=%d capacity=%d",
@@ -245,7 +244,6 @@ int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
         uw_map->index = 0;
         uw_map->fname = NULL;
         uw_map->reject_unsafe = 0;
-        uw_map->collapse_slashes = JK_COLLAPSE_DEFAULT;
         uw_map->reload = JK_URIMAP_DEF_RELOAD;
         uw_map->modified = 0;
         uw_map->checked = 0;
@@ -1074,7 +1072,6 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     unsigned int i;
     unsigned int vhost_len;
     int reject_unsafe;
-    int collapse_slashes;
     size_t uri_len;
     size_t remain;
     int rv = -1;
@@ -1115,7 +1112,6 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
         }
     }
     reject_unsafe = uw_map->reject_unsafe;
-    collapse_slashes = uw_map->collapse_slashes;
     vhost_len = 0;
     /*
      * In case we got a vhost, we prepend a slash

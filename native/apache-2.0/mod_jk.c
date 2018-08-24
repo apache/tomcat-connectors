@@ -713,18 +713,6 @@ static void dump_options(server_rec *srv, apr_pool_t *p)
         jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "RejectUnsafeURI", server_name,
                JK_OPT_DEFAULT & JK_OPT_REJECTUNSAFE ? " (default)" : "");
-    if (options & JK_OPT_COLLAPSEALL)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
-               "CollapseSlashesAll", server_name,
-               JK_OPT_DEFAULT & JK_OPT_COLLAPSEALL ? " (default)" : "");
-    if (options & JK_OPT_COLLAPSENONE)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
-               "CollapseSlashesNone", server_name,
-               JK_OPT_DEFAULT & JK_OPT_COLLAPSENONE ? " (default)" : "");
-    if (options & JK_OPT_COLLAPSEUNMOUNT)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
-               "CollapseSlashesUnmount", server_name,
-               JK_OPT_DEFAULT & JK_OPT_COLLAPSEUNMOUNT ? " (default)" : "");
 }
 
 /* ========================================================================= */
@@ -2307,11 +2295,10 @@ static const char *jk_set_options(cmd_parms * cmd, void *dummy,
         mask = 0;
 
         if (action == '-' &&
-            (!strncasecmp(w, "ForwardURI", strlen("ForwardURI")) ||
-             !strncasecmp(w, "CollapseSlashes", strlen("CollapseSlashes"))))
+            (!strncasecmp(w, "ForwardURI", strlen("ForwardURI")))) {
             return apr_pstrcat(cmd->pool, "JkOptions: Illegal option '-", w,
                                "': option can not be disabled", NULL);
-
+        }
         if (!strcasecmp(w, "ForwardURICompat")) {
             opt = JK_OPT_FWDURICOMPAT;
             mask = JK_OPT_FWDURIMASK;
@@ -3700,21 +3687,9 @@ static int jk_post_config(apr_pool_t * pconf,
                             uri_worker_map_switch(sconf->uw_map, sconf->log);
                             uri_worker_map_load(sconf->uw_map, sconf->log);
                         }
-                        switch (sconf->options & JK_OPT_COLLAPSEMASK) {
-                        case JK_OPT_COLLAPSEALL:
-                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_ALL;
-                            break;
-                        case JK_OPT_COLLAPSENONE:
-                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_NONE;
-                            break;
-                        case JK_OPT_COLLAPSEUNMOUNT:
-                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_UNMOUNT;
-                            break;
-                        default:
+                        if (sconf->options & JK_OPT_COLLAPSEMASK) {
                             ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                                         "Collapse slashes value %d ignored, setting to %d",
-                                         sconf->options & JK_OPT_COLLAPSEMASK, JK_COLLAPSE_DEFAULT);
-                            sconf->uw_map->collapse_slashes = JK_COLLAPSE_DEFAULT;
+                                         "Deprecated CollapseSlashes setting ignored");
                         }
                     }
                     else {
