@@ -88,6 +88,9 @@
         now effectively hard-coded to CollpaseSlashesAll due to the changes
         made to align normalization with that implemented in Tomcat. (markt)
       </add>
+      <update>
+        Update PCRE bundled with the ISAPI redirector to 8.42. (rjung)
+      </update>
    </changelog>
   </subsection>
 </section>
