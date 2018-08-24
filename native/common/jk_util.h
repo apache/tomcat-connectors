@@ -131,6 +131,8 @@ const char *jk_get_lb_session_cookie_path(jk_map_t *m, const char *wname, const 
 
 int jk_get_worker_retries(jk_map_t *m, const char *wname, int def);
 
+int jk_get_worker_lb_retries(jk_map_t *m, const char *wname, int def);
+
 int jk_get_is_worker_disabled(jk_map_t *m, const char *wname);
 
 int jk_get_is_worker_stopped(jk_map_t *m, const char *wname);
