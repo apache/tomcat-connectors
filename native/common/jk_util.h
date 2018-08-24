@@ -248,8 +248,6 @@ int is_http_status_fail(unsigned int http_status_fail_num,
 
 int jk_wildchar_match(const char *str, const char *exp, int icase);
 
-void jk_no2slash(char *name);
-
 int jk_servlet_normalize(char *path, jk_logger_t *logger);
 
 #define JK_NORMALIZE_BAD_PATH	-1

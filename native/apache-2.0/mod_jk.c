@@ -2791,7 +2791,14 @@ static int jk_handler(request_rec * r)
             }
             else {
                 rule_extension_t *e;
-                worker_name = map_uri_to_worker_ext(xconf->uw_map, r->uri,
+                char *clean_uri;
+                clean_uri = apr_pstrdup(r->pool, r->uri);
+                rc = jk_servlet_normalize(clean_uri, xconf->log);
+                if (rc != 0) {
+                	return HTTP_NOT_FOUND;
+                }
+
+                worker_name = map_uri_to_worker_ext(xconf->uw_map, clean_uri,
                                                     NULL, &e, NULL, xconf->log);
                 rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config,
                                                                   &jk_module);

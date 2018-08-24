@@ -1175,12 +1175,6 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
             jk_log(l, JK_LOG_DEBUG, "Found session identifier '%s' in url '%s'",
                    url_rewrite, uri);
     }
-    if (collapse_slashes == JK_COLLAPSE_ALL) {
-        /* Remove multiple slashes
-         * No need to copy url, because it is local and
-         * the unchanged url is no longer needed */
-        jk_no2slash(url);
-    }
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG, "Attempting to map URI '%s' from %d maps",
                url, IND_THIS(uw_map->size));
@@ -1193,13 +1187,6 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     /* In case we found a match, check for the unmounts. */
     if (rv >= 0 && IND_THIS(uw_map->nosize)) {
         int rc;
-        if (collapse_slashes == JK_COLLAPSE_UNMOUNT) {
-            /* Remove multiple slashes when looking for
-             * unmount to prevent trivial unmount bypass attack.
-             * No need to copy url, because it is local and
-             * the unchanged url is no longer needed */
-            jk_no2slash(url);
-        }
         /* Again first including vhost. */
         rc = is_nomatch(uw_map, url, rv, l);
         /* If no unmount was found, try without vhost. */

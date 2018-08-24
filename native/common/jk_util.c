@@ -2177,25 +2177,6 @@ int jk_wildchar_match(const char *str, const char *exp, int icase)
     return (str[x] != '\0');
 }
 
-void jk_no2slash(char *name)
-{
-    char *d, *s;
-
-    s = d = name;
-
-    while (*s) {
-        if ((*d++ = *s) == '/') {
-            do {
-                ++s;
-            } while (*s == '/');
-        }
-        else {
-            ++s;
-        }
-    }
-    *d = '\0';
-}
-
 int jk_servlet_normalize(char *path, jk_logger_t *logger)
 {
     int l, w;
