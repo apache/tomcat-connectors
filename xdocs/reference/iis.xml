@@ -207,20 +207,14 @@ The default value is false.
 <p>This directive has been added in version 1.2.24</p>
 </attribute>
 <attribute name="collapse_slashes" required="false"><p>
-One of the string values "all", "none" or "unmount".
-It controls whether multiple adjacent slashes in request URLs are
-collapsed before looking for a mount or unmount match.
-</p>
-<p>
-Value "all" will result in collapsing before mount and unmount
-checks, value "none" will result in never collapsing, value
-"unmount" will check mount rules without collapsing but unmount
-with collapsing.
+This options is deprecated as of 1.2.44 and will be ignored if used.
 </p>
 <p>
 Before version 1.2.41 collapsing was never done. Starting with
 version 1.2.41 collapsing before looking for unmount matches
 is the default to prevent easy bypassing of unmount rules.
+As of 1.2.44, collpasing is always performed before looking for mount
+or unmount rules.
 </p>
 <p>This directive has been added in version 1.2.41</p>
 </attribute>

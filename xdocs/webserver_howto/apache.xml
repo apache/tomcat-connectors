@@ -558,37 +558,18 @@ but also slightly more complicated.
 </p>
 
 <p>
-JkOptions <b>CollapseSlashesAll</b> will collapse multiple
-adjacent slashes in request URLs before looking for mount or unmount
-matches.
-<source>
-  JkOptions     +CollapseSlashesAll
-</source>
-<br/>
-<br/>
+JkOptions <b>CollapseSlashesAll</b> is deprecated as of 1.2.44 and will be
+ignored if used.
 </p>
 
 <p>
-JkOptions <b>CollapseSlashesUnmount</b> will collapse multiple
-adjacent slashes in request URLs only before looking for unmount
-matches. This is the default value.
-<source>
-  JkOptions     +CollapseSlashesUnmount
-</source>
-<br/>
-<br/>
+JkOptions <b>CollapseSlashesUnmount</b> is deprecated as of 1.2.44 and will be
+ignored if used.
 </p>
 
 <p>
-JkOptions <b>CollapseSlashesNone</b> will never collapse multiple
-adjacent slashes in request URLs before looking for mount or unmount
-matches. Using this value might make you vulnerable for attacks
-bypassing your unmount rules.
-<source>
-  JkOptions     +CollapseSlashesNone
-</source>
-<br/>
-<br/>
+JkOptions <b>CollapseSlashesNone</b> is deprecated as of 1.2.44 and will be
+ignored if used.
 </p>
 
 <p>

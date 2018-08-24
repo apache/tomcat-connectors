@@ -83,6 +83,11 @@
         the normalisation implementation for mod_jk with that implemented by
         Tomcat. (markt)
       </fix>
+      <add>
+        Add a note to the documentation that the CollapseSlashes options are
+        now effectively hard-coded to CollpaseSlashesAll due to the changes
+        made to align normalization with that implemented in Tomcat. (markt)
+      </add>
    </changelog>
   </subsection>
 </section>
