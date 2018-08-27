@@ -18,7 +18,8 @@ Last modified at [$Date$]
 
 Release:
 
-    1.2.44  : development in progress
+    1.2.45  : development in progress
+    1.2.44  : release in progress
     1.2.43  : released March 6, 2018
     1.2.42  : released October 5, 2016
     1.2.41  : released August 11, 2015
