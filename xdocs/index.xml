@@ -63,12 +63,12 @@ manual is described in more detail below.</p>
 
 <section name="Headlines">
 <ul>
-<li><a href="news/20180301.html#JK-1.2.43 released"><b>JK-1.2.43 released</b></a>
+<li><a href="news/20180301.html#JK-1.2.44 released"><b>JK-1.2.44 released</b></a>
 <p>The Apache Tomcat team is proud to announce the immediate availability
-   of Tomcat Connectors 1.2.43 Stable. This release contains improvements and
+   of Tomcat Connectors 1.2.44 Stable. This release contains improvements and
    bug fixes for issues found in previous releases.</p>
    
-<p>Download the <a href="//tomcat.apache.org/download-connectors.cgi">JK 1.2.43
+<p>Download the <a href="//tomcat.apache.org/download-connectors.cgi">JK 1.2.44
    release</a>.</p>
 </li>
 
