@@ -1,0 +1,12 @@
+*.o
+*.lo
+*.slo
+.libs
+Makefile
+stamp-h.in
+list.mk
+stamp-h
+config.h.in
+config.h
+stamp-h1
+jk_types.h

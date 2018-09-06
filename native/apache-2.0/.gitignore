@@ -1,0 +1,13 @@
+.libs
+Makefile
+Makefile.apxs
+*.o
+*.lo
+*.la
+*.slo
+Release
+Debug
+*.dsw
+*.ncb
+*.opt
+*.plg
