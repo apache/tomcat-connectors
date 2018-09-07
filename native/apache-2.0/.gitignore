@@ -1,10 +1,12 @@
 .libs
 Makefile
 Makefile.apxs
+*.a
 *.o
 *.lo
 *.la
 *.slo
+*.so
 Release
 Debug
 *.dsw
