@@ -52,6 +52,15 @@
         Apache: Update the documentation to note additional limitations of the
         JkAutoAlias directive. (markt)
       </update>
+      <scode>
+        Common: Optimize path parameter handling. (rjung)
+      </scode>
+      <fix>
+        Improve path parameter parsing so that the session ID specified by the
+        <code>session_path</code> worker property for load-balanced workers can
+        be extracted from a path parameter in any segment of the URI, rather
+        than only from the final segment. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

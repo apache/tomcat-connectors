@@ -431,8 +431,7 @@ void jk_lb_push(lb_worker_t *p, int locked, int push_all_members, jk_logger_t *l
 static char *get_path_param(jk_ws_service_t *s, const char *name)
 {
     char *id_start = NULL;
-    for (id_start = strstr(s->req_uri, name);
-         id_start; id_start = strstr(id_start + 1, name)) {
+    for (id_start = strstr(s->req_uri, name); id_start; id_start = strstr(id_start + 1, name)) {
         if (id_start[strlen(name)] == '=') {
             /*
              * Session path-cookie was found, get it's value
@@ -453,6 +452,12 @@ static char *get_path_param(jk_ws_service_t *s, const char *name)
                  * Remove any trailing path element.
                  */
                 if ((id_end = strchr(id_start, ';')) != NULL) {
+                    *id_end = '\0';
+                }
+                /*
+                 * Remove any trailing URI segments.
+                 */
+                if ((id_end = strchr(id_start, '/')) != NULL) {
                     *id_end = '\0';
                 }
                 return id_start;
@@ -1766,7 +1771,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                         jk_log(l, JK_LOG_DEBUG,
                                "Balanced worker %s already configured (sequence=%d)",
                                p->lb_workers[i].name, p->lb_workers[i].s->h.sequence);
-                    }           
+                    }
                     if (!wc_create_worker(p->lb_workers[i].name, 0,
                                           props,
                                           &(p->lb_workers[i].worker),
