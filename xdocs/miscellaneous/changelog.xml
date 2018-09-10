@@ -48,6 +48,10 @@
         <bug>62689</bug>: Correct regression in 1.2.44 that broke request
         handling for <code>OPTIONS *</code> requests. (rjung)
       </fix>
+      <update>
+        Apache: Update the documentation to note additional limitations of the
+        JkAutoAlias directive. (markt)
+      </update>
     </changelog>
   </subsection>
 </section>

@@ -1063,7 +1063,13 @@ webapp directory. For security reasons it is strongly recommended that JkMount
 is used to pass all requests to Tomcat by default and JkUnMount is used to
 explicitly exclude static content to be served by Apache. It should also be noted
 that content served by Apache will bypass any security constraints defined in the
-application's web.xml.
+application's web.xml. The directive only works in the simple case of contexts
+with a single path element and no version marker. It does <b>not</b> support:
+<ul>
+<li>the ROOT context (i.e. .../webapps/ROOT)</li>
+<li>multi-level contexts (e.g. .../webapps/foo#bar)</li>
+<li>parallel deployment (e.g. .../webapps/foo##v00.05.12)</li>
+</ul>
 </p>
 <source>
   # enter the full path to the tomcat webapps directory
