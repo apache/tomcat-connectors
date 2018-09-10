@@ -2187,7 +2187,11 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
 
     // This test allows the loops below to start at index 1 rather than 0.
     if (path[0] != '/') {
-        jk_log(logger, JK_LOG_EMERG, "[%s] does not start with '/'.", path);
+        if (path[0] == '*' && path[1] == '\0') {
+            /* Most likely an "OPTIONS *" request */
+            return 0;
+        }
+        jk_log(logger, JK_LOG_WARNING, "Uri [%s] does not start with '/'.", path);
         return JK_NORMALIZE_BAD_PATH;
     }
 
