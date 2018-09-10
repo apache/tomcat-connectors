@@ -1136,6 +1136,9 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
         }
         else {
             strncpy(&url[off], vhost, vhost_len + 1);
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                jk_log(l, JK_LOG_DEBUG, "Prefixing mapping uri with vhost '%s'", vhost);
+            }
         }
         vhost_len += off;
     }
