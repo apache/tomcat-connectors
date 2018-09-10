@@ -252,6 +252,7 @@ typedef struct
 struct jk_request_conf
 {
     rule_extension_t *rule_extensions;
+    char *orig_uri;
     int jk_handled;
 };
 
@@ -798,6 +799,7 @@ static int init_ws_service(apache_private_data_t * private_data,
     int size;
     request_rec *r = private_data->r;
     char *ssl_temp = NULL;
+    char *uri = NULL;
     const char *reply_timeout = NULL;
     const char *sticky_ignore = NULL;
     const char *stateless = NULL;
@@ -988,6 +990,8 @@ static int init_ws_service(apache_private_data_t * private_data,
      * uri is use for compatibility with mod_rewrite with old Tomcats
      */
 
+    uri = rconf->orig_uri ? rconf->orig_uri : r->uri;
+
     switch (conf->options & JK_OPT_FWDURIMASK) {
 
     case JK_OPT_FWDURICOMPATUNPARSED:
@@ -1002,17 +1006,17 @@ static int init_ws_service(apache_private_data_t * private_data,
         break;
 
     case JK_OPT_FWDURICOMPAT:
-        s->req_uri = r->uri;
+        s->req_uri = uri;
         break;
 
     case JK_OPT_FWDURIPROXY:
-        size = 3 * (int)strlen(r->uri) + 1;
+        size = 3 * (int)strlen(uri) + 1;
         s->req_uri = apr_palloc(r->pool, size);
-        jk_canonenc(r->uri, s->req_uri, size);
+        jk_canonenc(uri, s->req_uri, size);
         break;
 
     case JK_OPT_FWDURIESCAPED:
-        s->req_uri = ap_escape_uri(r->pool, r->uri);
+        s->req_uri = ap_escape_uri(r->pool, uri);
         break;
 
     default:
@@ -2734,6 +2738,7 @@ static int jk_handler(request_rec * r)
         rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
         rconf->jk_handled = JK_FALSE;
         rconf->rule_extensions = NULL;
+        rconf->orig_uri = NULL;
         ap_set_module_config(r->request_config, &jk_module, rconf);
     }
 
@@ -2795,6 +2800,8 @@ static int jk_handler(request_rec * r)
                                                     NULL, &e, NULL, xconf->log);
                 if (worker_name) {
                     rconf->rule_extensions = e;
+                    rconf->orig_uri = r->uri;
+                    r->uri = clean_uri;
                 }
             }
 
@@ -3767,6 +3774,7 @@ static int jk_translate(request_rec * r)
     jk_request_conf_t *rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
     rconf->jk_handled = JK_FALSE;
     rconf->rule_extensions = NULL;
+    rconf->orig_uri = NULL;
     ap_set_module_config(r->request_config, &jk_module, rconf);
 
     if (!r->proxyreq) {
@@ -3851,6 +3859,8 @@ static int jk_translate(request_rec * r)
                                                NULL, &e, NULL, conf->log);
                 if (worker) {
                     rconf->rule_extensions = e;
+                    rconf->orig_uri = r->uri;
+                    r->uri = clean_uri;
                 }
             }
 
@@ -3975,6 +3985,7 @@ static int jk_map_to_storage(request_rec * r)
         rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
         rconf->jk_handled = JK_FALSE;
         rconf->rule_extensions = NULL;
+        rconf->orig_uri = NULL;
         ap_set_module_config(r->request_config, &jk_module, rconf);
     }
 
@@ -4028,6 +4039,8 @@ static int jk_map_to_storage(request_rec * r)
                                                NULL, &e, NULL, conf->log);
                 if (worker) {
                     rconf->rule_extensions = e;
+                    rconf->orig_uri = r->uri;
+                    r->uri = clean_uri;
                 }
             }
 
