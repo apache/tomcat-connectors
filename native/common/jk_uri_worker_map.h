@@ -169,9 +169,9 @@ struct jk_uri_worker_map
     /* should we forward potentially unsafe URLs */
     int reject_unsafe;
     /* uriworkermap filename */
-    const char *fname;    
+    const char *fname;
     /* uriworkermap reload check interval */
-    int reload;    
+    int reload;
     /* Last modified time */
     time_t  modified;
     /* Last checked time */
@@ -204,10 +204,6 @@ void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l);
 int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
                        const char *puri, const char *worker,
                        unsigned int source_type, jk_logger_t *l);
-
-const char *map_uri_to_worker(jk_uri_worker_map_t *uw_map,
-                              const char *uri, const char *vhost,
-                              jk_logger_t *l);
 
 const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
                                   const char *uri, const char *vhost,
