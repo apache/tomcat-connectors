@@ -1139,8 +1139,8 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
         }
         vhost_len += off;
     }
-    /* Make the copy of the provided uri and strip
-     * everything after the first ';' char.
+    /* Make the copy of the provided uri, check length
+     * and look for potentially unsafe constructs
      */
     uri_len = strlen(uri);
     remain = JK_MAX_URI_LEN - vhost_len;
@@ -1152,15 +1152,11 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
             JK_TRACE_EXIT(l);
             return NULL;
         }
-        if (uri[i] == ';')
-            break;
-        else {
-            url[i + vhost_len] = uri[i];
-            if (reject_unsafe && (uri[i] == '%' || uri[i] == '\\')) {
-                jk_log(l, JK_LOG_INFO, "Potentially unsafe request url '%s' rejected", uri);
-                JK_TRACE_EXIT(l);
-                return NULL;
-            }
+        url[i + vhost_len] = uri[i];
+        if (reject_unsafe && (uri[i] == '%' || uri[i] == '\\')) {
+            jk_log(l, JK_LOG_INFO, "Potentially unsafe request url '%s' rejected", uri);
+            JK_TRACE_EXIT(l);
+            return NULL;
         }
     }
     url[i + vhost_len] = '\0';

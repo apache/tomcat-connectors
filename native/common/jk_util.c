@@ -2191,8 +2191,23 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
         return JK_NORMALIZE_BAD_PATH;
     }
 
+    /* First pass.
+     * Remove path parameters ;foo=bar/ from any path segment
+     */
+    for (l = 1, w = 1; path[l] != '\0';) {
+        if (path[l] == ';') {
+            l++;
+            while (path[l] != '/' && path[l] != '\0') {
+                l++;
+            }
+        }
+        else
+            path[w++] = path[l++];
+    }
+    path[w] = '\0';
+
     /*
-     * First pass.
+     * Second pass.
      * Collapse ///// sequences to /
      */
     for (l = 1, w = 1; path[l] != '\0';) {
@@ -2204,20 +2219,16 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
     }
     path[w] = '\0';
 
-    /* Second pass.
-     * Remove /./ segments including those with path parameters such as
-     * /.;foo=bar/
+    /* Third pass.
+     * Remove /./ segments
      * Both leading and trailing segments will be removed.
      */
     for (l = 1, w = 1; path[l] != '\0';) {
         if (path[l] == '.' &&
-                (path[l + 1] == '/' || path[l + 1] == ';' || path[l + 1] == '\0') &&
+                (path[l + 1] == '/' || path[l + 1] == '\0') &&
                 (l == 0 || path[l - 1] == '/')) {
             l++;
-            while (path[l] != '/' && path[l] != '\0') {
-                l++;
-            }
-            if (path[l] != '\0') {
+            if (path[l] == '/') {
                 l++;
             }
         }
@@ -2226,15 +2237,14 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
     }
     path[w] = '\0';
 
-    /* Third pass.
-     * Remove /xx/../ segments including those with path parameters such as
-     * /xxx/..;foo=bar/
+    /* Fourth pass.
+     * Remove /xx/../ segments
      * Trailing segments will be removed but leading /../ segments are an error
      * condition.
      */
     for (l = 1, w = 1; path[l] != '\0';) {
         if (path[l] == '.' && path[l + 1] == '.' &&
-                (path[l + 2] == '/' || path[l + 2] == ';' || path[l + 2] == '\0') &&
+                (path[l + 2] == '/' || path[l + 2] == '\0') &&
                 (l == 0 || path[l - 1] == '/')) {
 
             // Wind w back to remove the previous segment
@@ -2252,10 +2262,7 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
             // Move l forward to the next segment
             l += 2;
 
-            while (path[l] != '/' && path [l] != '\0') {
-                l++;
-            }
-            if (path[l] != '\0') {
+            if (path[l] == '/') {
                 l++;
             }
         }
