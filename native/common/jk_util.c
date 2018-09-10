@@ -1844,7 +1844,7 @@ static int jk_is_some_property(const char *prp_name, const char *suffix, const c
         size_t suffix_len = strlen(suffix);
         size_t sep_len = strlen(sep);
         size_t sep_off = sep_len + suffix_len;
-        
+
         if (prp_name_len >= sep_off) {
             if (!strncmp(prp_name + prp_name_len - sep_off, sep, sep_len) &&
                 !strncmp(prp_name + prp_name_len - suffix_len, suffix, suffix_len)) {
@@ -2181,7 +2181,9 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
 {
     int l, w;
 
-    jk_log(logger, JK_LOG_DEBUG, "URI on entering jk_servlet_normalize: [%s]", path);
+    if (JK_IS_DEBUG_LEVEL(logger)) {
+    	jk_log(logger, JK_LOG_DEBUG, "URI on entering jk_servlet_normalize: [%s]", path);
+    }
 
     // This test allows the loops below to start at index 1 rather than 0.
     if (path[0] != '/') {
@@ -2262,7 +2264,10 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
     }
     path[w] = '\0';
 
-    jk_log(logger, JK_LOG_DEBUG, "URI on exiting jk_servlet_normalize: [%s]", path);
+    if (JK_IS_DEBUG_LEVEL(logger)) {
+    	jk_log(logger, JK_LOG_DEBUG, "URI on exiting jk_servlet_normalize: [%s]", path);
+    }
+
     return 0;
 }
 
