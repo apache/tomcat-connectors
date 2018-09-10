@@ -2782,7 +2782,7 @@ static int jk_handler(request_rec * r)
                 clean_uri = apr_pstrdup(r->pool, r->uri);
                 rc = jk_servlet_normalize(clean_uri, xconf->log);
                 if (rc != 0) {
-                	return HTTP_NOT_FOUND;
+                	return HTTP_BAD_REQUEST;
                 }
 
                 worker_name = map_uri_to_worker_ext(xconf->uw_map, clean_uri,
@@ -3798,7 +3798,7 @@ static int jk_translate(request_rec * r)
             clean_uri = apr_pstrdup(r->pool, r->uri);
             rc = jk_servlet_normalize(clean_uri, conf->log);
             if (rc != 0) {
-            	return HTTP_NOT_FOUND;
+            	return HTTP_BAD_REQUEST;
             }
 
             /* Special case to make sure that apache can serve a directory
@@ -4006,7 +4006,7 @@ static int jk_map_to_storage(request_rec * r)
             clean_uri = apr_pstrdup(r->pool, r->uri);
             rc = jk_servlet_normalize(clean_uri, conf->log);
             if (rc != 0) {
-            	return HTTP_NOT_FOUND;
+            	return HTTP_BAD_REQUEST;
             }
 
             if (!conf->uw_map) {
