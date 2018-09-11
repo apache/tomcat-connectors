@@ -2288,6 +2288,8 @@ int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
 
     jsessionid = strstr(path, session_name);
     if (jsessionid) {
+    	int i;
+    	int j;
         if (JK_IS_DEBUG_LEVEL(logger)) {
             jk_log(logger, JK_LOG_DEBUG,
             		"removing session identifier for non servlet uri [%s]", path);
@@ -2295,8 +2297,8 @@ int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
     	// Found a session path parameter.
     	// Need to skip at least as many characters as there are in
     	// strip_session_name
-    	int i = strlen(session_name);
-    	int j = 0;
+    	i = (int) strlen(session_name);
+    	j = 0;
     	// Increment i until the first character after the parameter
     	while (jsessionid[i] != '\0' && jsessionid[i] != ';' && jsessionid[i] != '/') {
     		i++;
