@@ -1934,7 +1934,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         	}
         }
     }
-cleanup:c
+cleanup:
     jk_close_pool(&pool);
     return rv;
 }
