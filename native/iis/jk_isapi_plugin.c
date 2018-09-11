@@ -1702,7 +1702,8 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     jk_pool_t pool;
 
     char *uri_undec  = NULL;
-    char *uri  = NULL;
+    char *cleanuri  = NULL;
+    char *uri = NULL;
     char *host = NULL;
     char *translate = NULL;
     char szHB[HDR_BUFFER_SIZE] = "/";
@@ -1771,7 +1772,8 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         rv = SF_STATUS_REQ_FINISHED;
         goto cleanup;
     }
-    if (jk_servlet_normalize(uri, logger)) {
+    cleanuri = jk_pool_strdup(&pool, uri);
+    if (jk_servlet_normalize(cleanuri, logger)) {
         write_error_response(pfc, 404);
         rv = SF_STATUS_REQ_FINISHED;
         goto cleanup;
@@ -1787,7 +1789,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         else
             host = szHB;
     }
-    worker = map_uri_to_worker_ext(uw_map, uri, host,
+    worker = map_uri_to_worker_ext(uw_map, cleanuri, host,
                                    &extensions, &worker_index, logger);
     /*
      * Check if somebody is feading us with his own TOMCAT data headers.
