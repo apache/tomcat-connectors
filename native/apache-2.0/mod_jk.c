@@ -4058,23 +4058,13 @@ static int jk_map_to_storage(request_rec * r)
                     jk_log(conf->log, JK_LOG_DEBUG,
                            "no match for %s found",
                            r->uri);
-                if (conf->strip_session == JK_TRUE &&
-                    conf->strip_session_name) {
+                if (conf->strip_session == JK_TRUE && conf->strip_session_name) {
                     char *jsessionid;
                     if (r->uri) {
-                        jsessionid = strstr(r->uri, conf->strip_session_name);
-                        if (jsessionid) {
-                            if (JK_IS_DEBUG_LEVEL(conf->log))
-                                jk_log(conf->log, JK_LOG_DEBUG,
-                                       "removing session identifier [%s] for non servlet url [%s]",
-                                       jsessionid, r->uri);
-                            *jsessionid = '\0';
-                        }
+                    	jk_strip_session_id(r->uri, conf->strip_session_name, conf->log);
                     }
                     if (r->filename) {
-                        jsessionid = strstr(r->filename, conf->strip_session_name);
-                        if (jsessionid)
-                            *jsessionid = '\0';
+                    	jk_strip_session_id(r->filename, conf->strip_session_name, conf->log);
                     }
                     return DECLINED;
                 }

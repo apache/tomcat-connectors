@@ -61,6 +61,12 @@
         be extracted from a path parameter in any segment of the URI, rather
         than only from the final segment. (markt)
       </fix>
+      <fix>
+        Apache: Improve path parameter handling so that
+        <code>JkStripSession</code> can remove session IDs that are specified on
+        path parameters in any segment of the URI rather than only the final
+        segment. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

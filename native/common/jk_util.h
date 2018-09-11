@@ -60,7 +60,7 @@ int jk_log(jk_logger_t *l,
 
 int jk_check_attribute_length(const char *name, const char *value,
                               jk_logger_t *l);
-    
+
 const char *jk_get_worker_host(jk_map_t *m, const char *wname, const char *def);
 
 const char *jk_get_worker_source(jk_map_t *m, const char *wname, const char *def);
@@ -190,7 +190,7 @@ int jk_is_unique_property(const char *prp_name);
 int jk_is_deprecated_property(const char *prp_name);
 
 int jk_check_buffer_size();
-    
+
 int jk_is_valid_property(const char *prp_name);
 
 int jk_get_worker_stdout(jk_map_t *m, const char *wname, const char **stdout_name);
@@ -249,6 +249,8 @@ int is_http_status_fail(unsigned int http_status_fail_num,
 int jk_wildchar_match(const char *str, const char *exp, int icase);
 
 int jk_servlet_normalize(char *path, jk_logger_t *logger);
+
+int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger);
 
 #define JK_NORMALIZE_BAD_PATH	-1
 #define JK_NORMALIZE_TRAVERSAL	-2

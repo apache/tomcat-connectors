@@ -2282,6 +2282,42 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
     return 0;
 }
 
+int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
+
+	char *jsessionid;
+
+    jsessionid = strstr(path, session_name);
+    if (jsessionid) {
+        if (JK_IS_DEBUG_LEVEL(logger)) {
+            jk_log(logger, JK_LOG_DEBUG,
+            		"removing session identifier for non servlet uri [%s]", path);
+        }
+    	// Found a session path parameter.
+    	// Need to skip at least as many characters as there are in
+    	// strip_session_name
+    	int i = strlen(session_name);
+    	int j = 0;
+    	// Increment i until the first character after the parameter
+    	while (jsessionid[i] != '\0' && jsessionid[i] != ';' && jsessionid[i] != '/') {
+    		i++;
+    	}
+    	// Copy until the end
+    	while (jsessionid[i] != '\0') {
+    		jsessionid[j++] = jsessionid[i++];
+    	}
+    	// Terminate
+    	jsessionid[j] = '\0';
+
+        if (JK_IS_DEBUG_LEVEL(logger)) {
+            jk_log(logger, JK_LOG_DEBUG,
+            		"result of removing session identifier for non servlet uri is [%s]", path);
+        }
+        return 1;
+    }
+
+	return 0;
+}
+
 #ifdef _MT_CODE_PTHREAD
 jk_pthread_t jk_gettid()
 {
