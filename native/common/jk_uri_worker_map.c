@@ -1164,12 +1164,6 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
     }
     url[i + vhost_len] = '\0';
 
-    if (JK_IS_DEBUG_LEVEL(l)) {
-        char *url_rewrite = strstr(uri, JK_PATH_SESSION_IDENTIFIER);
-        if (url_rewrite)
-            jk_log(l, JK_LOG_DEBUG, "Found session identifier '%s' in url '%s'",
-                   url_rewrite, uri);
-    }
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG, "Attempting to map URI '%s' from %d maps",
                url, IND_THIS(uw_map->size));
