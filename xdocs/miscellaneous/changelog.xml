@@ -67,6 +67,11 @@
         path parameters in any segment of the URI rather than only the final
         segment. (markt)
       </fix>
+      <fix>
+        IIS: Improve path parameter handling so that <code>strip_session</code>
+        can remove session IDs that are specified on path parameters in any
+        segment of the URI rather than only the final segment. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

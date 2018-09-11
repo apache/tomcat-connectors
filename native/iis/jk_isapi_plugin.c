@@ -1750,10 +1750,10 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         else
             query = NULL;
     }
-    if (uri_select_option == URI_SELECT_OPT_UNPARSED) {
-        /* Duplicate unparsed uri */
-        uri_undec = jk_pool_strdup(&pool, uri);
-    }
+
+    /* Duplicate unparsed uri */
+	uri_undec = jk_pool_strdup(&pool, uri);
+
     rc = unescape_url(uri);
     if (rc == BAD_REQUEST) {
         jk_log(logger, JK_LOG_ERROR,
@@ -1927,21 +1927,14 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     }
     else {
         if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG,
-                   "[%s] is not a servlet url", uri);
+            jk_log(logger, JK_LOG_DEBUG, "[%s] is not a servlet url", uri_undec);
         if (strip_session) {
-            char *jsessionid = strstr(uri, JK_PATH_SESSION_IDENTIFIER);
-            if (jsessionid) {
-                if (JK_IS_DEBUG_LEVEL(logger))
-                    jk_log(logger, JK_LOG_DEBUG,
-                           "removing session identifier [%s] for non servlet url [%s]",
-                           jsessionid, uri);
-                *jsessionid = '\0';
-                pfp->SetHeader(pfc, "url", uri);
-            }
+        	if (jk_strip_session_id(uri_undec, JK_PATH_SESSION_IDENTIFIER, logger)) {
+        		pfp->SetHeader(pfc, "url", uri_undec);
+        	}
         }
     }
-cleanup:
+cleanup:c
     jk_close_pool(&pool);
     return rv;
 }
