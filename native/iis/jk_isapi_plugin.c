@@ -2077,7 +2077,7 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
         lpEcb->ServerSupportFunction(lpEcb->ConnID, HSE_REQ_SET_FLUSH_FLAG,
                 (LPVOID) TRUE, NULL, NULL);
     }
-    
+
     if (init_ws_service(&private_data, &s, &worker_name)) {
         jk_endpoint_t *e = NULL;
         jk_worker_t *worker = wc_get_worker_for_name(worker_name, logger);
@@ -2829,8 +2829,8 @@ static int read_registry_init_data(void)
         }
     }
     if (get_config_parameter(src, COLLAPSE_SLASHES_TAG, tmpbuf, sizeof(tmpbuf))) {
-		jk_log(logger, JK_LOG_ERROR, "Configuration item '" COLLAPSE_SLASHES_TAG
-				"' is deprecated and will be ignored");
+        jk_log(logger, JK_LOG_ERROR, "Configuration item '" COLLAPSE_SLASHES_TAG
+                "' is deprecated and will be ignored");
     }
     shm_config_size = get_config_int(src, SHM_SIZE_TAG, -1);
     worker_mount_reload = get_config_int(src, WORKER_MOUNT_RELOAD_TAG, JK_URIMAP_DEF_RELOAD);

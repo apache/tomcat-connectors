@@ -252,8 +252,8 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger);
 
 int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger);
 
-#define JK_NORMALIZE_BAD_PATH	-1
-#define JK_NORMALIZE_TRAVERSAL	-2
+#define JK_NORMALIZE_BAD_PATH   -1
+#define JK_NORMALIZE_TRAVERSAL  -2
 
 #define TC32_BRIDGE_TYPE    32
 #define TC33_BRIDGE_TYPE    33
