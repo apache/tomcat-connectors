@@ -31,6 +31,18 @@
 
 <section name="2018 News &amp; Status">
 
+<subsection name="TBD September - JK-1.2.45 released">
+    <p>The Apache Tomcat team is proud to announce the immediate availability
+       of Tomcat Connectors 1.2.45. This is a maintenance release.</p>
+
+    <p>Please see the <a href="../miscellaneous/changelog.html">ChangeLog</a>
+       for a full list of changes.</p>
+
+    <p>If you find any bugs while using this release, please fill in the
+        <a href="https://bz.apache.org/bugzilla/enter_bug.cgi?product=Tomcat%20Connectors">Bugzilla</a>
+        Bug Report.</p>
+</subsection>
+
 <subsection name="1 September - JK-1.2.44 released">
     <p>The Apache Tomcat team is proud to announce the immediate availability
        of Tomcat Connectors 1.2.44. This is a maintenance release.</p>
