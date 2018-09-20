@@ -315,7 +315,7 @@ cd ../../
 
 # Pack
 tar cfz ${JK_DIST}.tar.gz --owner="${JK_OWNER}" --group="${JK_GROUP}" ${JK_DIST} || exit 1
-perl ${JK_DIST}/tools/lineends.pl --cr ${JK_DIST}
+perl ${JK_DIST}/tools/lineends.pl --ignore '.*/pcre/testdata/.*' --cr ${JK_DIST}
 zip -9 -r ${JK_DIST}.zip ${JK_DIST}
 
 # Create detached signature and verify it
