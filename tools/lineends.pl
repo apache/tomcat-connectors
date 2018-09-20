@@ -28,12 +28,14 @@
 #  Todo: Handle NULL stdin characters gracefully.
 #
 
+use strict;
+
 use IO::File;
 use File::Find;
 
 # The ignore list is '-' seperated, with this leading hyphen and
 # trailing hyphens in ever concatinated list below.
-$ignore = "-";
+my $ignore = "-";
 
 # Image formats
 $ignore .= "gif-jpg-jpeg-png-ico-bmp-";
@@ -53,13 +55,13 @@ $ignore .= "class-so-dll-exe-obj-a-o-lo-slo-sl-dylib-";
 # Some build env files
 $ignore .= "mcp-xdc-ncb-opt-pdb-ilk-sbr-";
 
-$preservedate = 1;
+my $preservedate = 1;
 
-$forceending = 0;
+my $forceending = 0;
 
-$givenpaths = 0;
+my $givenpaths = 0;
 
-$notnative = 0;
+my $notnative = 0;
 
 while (defined $ARGV[0]) {
     if ($ARGV[0] eq '--touch') {
@@ -105,22 +107,24 @@ if (!$givenpaths) {
 }
 
 sub totxt {
-        $oname = $_;
-        $tname = '.#' . $_;
+        my $oname = $_;
+        my $tname = '.#' . $_;
         if (!-f) {
             return;
         }
-        @exts = split /\./;
+        my @exts = split /\./;
         if ($forceending < 2) {
+            my $ext;
             while ($#exts && ($ext = pop(@exts))) {
                 if ($ignore =~ m|-$ext-|i) {
                     return;
                 }
             }
         }
-        @ostat = stat($oname);
-        $srcfl = new IO::File $oname, "r" or die;
-        $dstfl = new IO::File $tname, "w" or die;
+        my @ostat = stat($oname);
+        my $srcfl = new IO::File $oname, "r" or die;
+        my $dstfl = new IO::File $tname, "w" or die;
+        my ($t, $n);
         binmode $srcfl; 
         if ($notnative) {
             binmode $dstfl;
@@ -151,7 +155,7 @@ sub totxt {
         if (defined $t) {
             unlink $oname or die;
             rename $tname, $oname or die;
-            @anames = ($oname);
+            my @anames = ($oname);
             if ($preservedate) {
                 utime $ostat[9], $ostat[9], @anames;
             }
