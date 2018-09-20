@@ -4059,7 +4059,6 @@ static int jk_map_to_storage(request_rec * r)
                            "no match for %s found",
                            r->uri);
                 if (conf->strip_session == JK_TRUE && conf->strip_session_name) {
-                    char *jsessionid;
                     if (r->uri) {
                         jk_strip_session_id(r->uri, conf->strip_session_name, conf->log);
                     }
