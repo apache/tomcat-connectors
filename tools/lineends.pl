@@ -55,6 +55,8 @@ $ignore .= "class-so-dll-exe-obj-a-o-lo-slo-sl-dylib-";
 # Some build env files
 $ignore .= "mcp-xdc-ncb-opt-pdb-ilk-sbr-";
 
+my $ignorepat = '';
+
 my $preservedate = 1;
 
 my $forceending = 0;
@@ -79,17 +81,22 @@ while (defined $ARGV[0]) {
     elsif ($ARGV[0] eq '--FORCE') {
         $forceending = 2;
     }
+    elsif ($ARGV[0] eq '--ignore' && $#ARGV >= 1) {
+        shift;
+        $ignorepat = $ARGV[0];
+    }
     elsif ($ARGV[0] =~ m/^-/) {
         die "What is " . $ARGV[0] . " supposed to mean?\n\n" 
 	  . "Syntax:\t$0 [option()s] [path(s)]\n\n" . <<'OUTCH'
 Where:	paths specifies the top level directory to convert (default of '.')
 	options are;
 
-	  --cr     keep/add one ^M
-	  --nocr   remove ^M's
-	  --touch  the datestamp (default: keeps date/attribs)
-	  --force  mismatched corrections (unbalanced ^M's)
-	  --FORCE  all files regardless of file name!
+	  --cr          keep/add one ^M
+	  --nocr        remove ^M's
+	  --touch       the datestamp (default: keeps date/attribs)
+	  --force       mismatched corrections (unbalanced ^M's)
+	  --FORCE       all files regardless of file name!
+	  --ignore PAT  Do not convert files with full name matching regexp PAT
 
 OUTCH
     }
@@ -114,6 +121,9 @@ sub totxt {
         }
         my @exts = split /\./;
         if ($forceending < 2) {
+            if ($ignorepat ne '' && $File::Find::name =~ /$ignorepat/o) {
+                return;
+            }
             my $ext;
             while ($#exts && ($ext = pop(@exts))) {
                 if ($ignore =~ m|-$ext-|i) {
