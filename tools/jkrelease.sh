@@ -33,7 +33,7 @@ JK_OWNER="root"
 JK_GROUP="bin"
 JK_TOOLS="`pwd`"
 
-COPY_JK="README.txt HOWTO-RELEASE.txt native jkstatus support tools xdocs"
+COPY_JK="README.txt HOWTO-RELEASE.txt .gitignore native jkstatus support tools xdocs"
 COPY_NATIVE="LICENSE NOTICE"
 COPY_BUILD="docs"
 COPY_CONF="httpd-jk.conf uriworkermap.properties workers.properties"
