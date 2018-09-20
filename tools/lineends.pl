@@ -61,24 +61,24 @@ $givenpaths = 0;
 
 $notnative = 0;
 
-while (defined @ARGV[0]) {
-    if (@ARGV[0] eq '--touch') {
+while (defined $ARGV[0]) {
+    if ($ARGV[0] eq '--touch') {
         $preservedate = 0;
     }
-    elsif (@ARGV[0] eq '--nocr') {
+    elsif ($ARGV[0] eq '--nocr') {
         $notnative = -1;
     }
-    elsif (@ARGV[0] eq '--cr') {
+    elsif ($ARGV[0] eq '--cr') {
         $notnative = 1;
     }
-    elsif (@ARGV[0] eq '--force') {
+    elsif ($ARGV[0] eq '--force') {
         $forceending = 1;
     }
-    elsif (@ARGV[0] eq '--FORCE') {
+    elsif ($ARGV[0] eq '--FORCE') {
         $forceending = 2;
     }
-    elsif (@ARGV[0] =~ m/^-/) {
-        die "What is " . @ARGV[0] . " supposed to mean?\n\n" 
+    elsif ($ARGV[0] =~ m/^-/) {
+        die "What is " . $ARGV[0] . " supposed to mean?\n\n" 
 	  . "Syntax:\t$0 [option()s] [path(s)]\n\n" . <<'OUTCH'
 Where:	paths specifies the top level directory to convert (default of '.')
 	options are;
@@ -92,8 +92,8 @@ Where:	paths specifies the top level directory to convert (default of '.')
 OUTCH
     }
     else {
-        find(\&totxt, @ARGV[0]);
-        print "scanned " . @ARGV[0] . "\n";
+        find(\&totxt, $ARGV[0]);
+        print "scanned " . $ARGV[0] . "\n";
         $givenpaths = 1;
     }
     shift @ARGV;
