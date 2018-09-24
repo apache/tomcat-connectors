@@ -274,7 +274,7 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
         socklen_t rclen = (socklen_t)sizeof(rc);
         pfd.fd = sd;
         pfd.events = POLLOUT;
-        rc = poll(&pfd, 1, timeout * 1000);
+        rc = poll(&pfd, 1, timeout);
         if (rc <= 0) {
             /* Save errno */
             int err = errno;

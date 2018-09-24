@@ -44,6 +44,11 @@
   <br />
   <subsection name="Native">
     <changelog>
+      <fix>
+        <bug>62751</bug>: Apache: Fix regression in 1.2.44 which resulted in
+        socket_connect_timeout to be interpreted in units of seconds
+        instead of milliseconds on platforms that provide poll(). (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
