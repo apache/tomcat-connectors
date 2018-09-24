@@ -285,8 +285,8 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
         }
         rc = 0;
 #ifdef SO_ERROR
-       if (getsockopt(sd, SOL_SOCKET, SO_ERROR,
-                        (char *)&rc, &rclen) < 0 || rc) {
+        if (getsockopt(sd, SOL_SOCKET, SO_ERROR,
+                       (char *)&rc, &rclen) < 0 || rc) {
             if (rc)
                 errno = rc;
             rc = -1;
