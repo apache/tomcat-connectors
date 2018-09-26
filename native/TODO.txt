@@ -15,8 +15,6 @@
 
 TODO for tomcat-connectors
 
-$Id$
-
 1) Optimize "distance"
 ======================
 

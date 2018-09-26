@@ -17,8 +17,6 @@
 # limitations under the License.
 #
 
-# $Id$
-
 # Author: Glenn Nielsen
 
 # Script for generating reports and graphs using statistical data generated

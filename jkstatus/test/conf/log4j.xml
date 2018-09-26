@@ -21,10 +21,9 @@
 <!-- Log4j Configuration -->
 <!-- -->
 <!-- ===================================================================== -->
-<!-- $Id$ -->
 <!--
-| For more configuration infromation and examples see the Jakarta Log4j
-| owebsite: http://jakarta.apache.org/log4j
+| For more configuration information and examples see the Jakarta Log4j
+| website: http://jakarta.apache.org/log4j
 -->
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 

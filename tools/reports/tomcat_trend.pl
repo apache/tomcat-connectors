@@ -17,8 +17,6 @@
 # limitations under the License.
 #
 
-# $Id$
-
 # Author:  Glenn Nielsen
 
 # Script for analyzing mod_jk.log data when logging tomcat request data using

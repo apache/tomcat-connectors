@@ -20,8 +20,6 @@ dnl Author Andy Armstrong <andy@tagish.com>
 dnl Shamelessly cribbed from  Henri Gomez <hgomez@apache.org>
 dnl
 dnl He was inspired by Pier works on webapp m4 macros :)
-dnl 
-dnl Version $Id$
 dnl --------------------------------------------------------------------------
 
 dnl --------------------------------------------------------------------------
