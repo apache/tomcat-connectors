@@ -31,9 +31,9 @@
 
 <section name="2018 News &amp; Status">
 
-<subsection name="TBD September - JK-1.2.45 released">
+<subsection name="TBD September - JK-1.2.46 released">
     <p>The Apache Tomcat team is proud to announce the immediate availability
-       of Tomcat Connectors 1.2.45. This is a maintenance release.</p>
+       of Tomcat Connectors 1.2.46. This is a maintenance release.</p>
 
     <p>Please see the <a href="../miscellaneous/changelog.html">ChangeLog</a>
        for a full list of changes.</p>
