@@ -191,8 +191,7 @@ Create a directory <b>${tomcat_home}\isapi</b>
 Allow the IIS process to create the ISAPI redirector log file. Modify the path
 as necessary if the log file is to be written to a different directory. Enter
 the following at a command prompt:
-<source>
->icacls "C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi" /grant "IIS APPPOOL\DefaultAppPool":(OI)(CI)M
+<source>>icacls "C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi" /grant "IIS APPPOOL\DefaultAppPool":(OI)(CI)M
 </source>
 On client operating systems with User Account Control (UAC) enabled, the command
 prompt must be opened using <b>Run as administrator</b> for the above command to
@@ -206,8 +205,7 @@ operating system and place it in <b>${tomcat_home}\isapi</b>
 Create <b>${tomcat_home}\isapi\isapi_redirect.properties</b> file to configure the ISAPI
 redirctor. Configuration can also be performed via registry settings - see
 below. The contents of this file should be:
-<source>
-extension_uri=/jakarta/isapi_redirect.dll
+<source>extension_uri=/jakarta/isapi_redirect.dll
 log_file=C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi\isapi_redirect.log
 log_level=info
 worker_file=C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi\workers.properties
@@ -219,8 +217,7 @@ Be careful so that Windows does not add a <b>.txt</b> extension to the file.
 Create <b>${tomcat_home}\isapi\workers.properties</b> file to configure the Tomcat
 instances that requests will be passed to. For a single Tomcat instance on the
 local machine the contents of this file should be:
-<source>
-worker.list=tomcat01
+<source>worker.list=tomcat01
 worker.tomcat01.type=ajp13
 worker.tomcat01.host=localhost
 worker.tomcat01.port=8009
@@ -230,8 +227,7 @@ worker.tomcat01.port=8009
 Create <b>${tomcat_home}\isapi\uriworkermap.properties</b> file to configure which
 requests will be passed to Tomcat. To expose the examples web application the
 contents of this file should be:
-<source>
-/examples/*=tomcat01
+<source>/examples/*=tomcat01
 </source> 
 </li>
 <li>
@@ -362,8 +358,7 @@ Adding a context to the ISAPI redirector is simple, all you need to do is to edi
 your uriworkermap.properties and to add a line that looks like:
 </p>
 
-<source>
-  /context/*=worker_name
+<source>/context/*=worker_name
 </source>
 
 <p>
@@ -373,8 +368,7 @@ As an example, if you want to add a context named "shop", the line that you shou
 uriworkermap.properties will be:
 </p>
 
-<source>
-  /shop/*=defworker
+<source>/shop/*=defworker
 </source>
 
 After saving uriworkermap.properties restart IIS and it will serve the new context.
@@ -422,12 +416,11 @@ Configuring the redirector is somewhat harder, you will need to specify the exac
 URL-Path pattern(s) which you want Tomcat to handle (usually only JSP files and servlets). 
 This requires a change to the uriworkermap.properties: 
 
-<source>
-  For the examples context it requires to replace the following line
-  /examples/*=defworker
-  with the following two lines
-  /examples/*.jsp=defworker
-  /examples/servlet/*=defworker
+<source>For the examples context it requires to replace the following line
+/examples/*=defworker
+with the following two lines
+/examples/*.jsp=defworker
+/examples/servlet/*=defworker
 </source>
 </p>
 
@@ -440,8 +433,7 @@ whose name ends with .jsp.
 <p>
 You can even be more explicit and provide lines such as:
 
-<source>
-  /example/servlets/chat=defworker
+<source>/example/servlets/chat=defworker
 </source>
 </p>
 
@@ -478,26 +470,24 @@ Defining additional workers is done in the workers.properties file. This file in
 </p>
 
 <p>
-<source>
-  # An entry that lists all the workers defined
-  worker.list=worker1, worker2
-  # Entries that define the host and port associated with each of these workers
-  worker.worker1.host=localhost
-  worker.worker1.port=8009
-  worker.worker1.type=ajp13
-  worker.worker2.host=otherhost
-  worker.worker2.port=8009
-  worker.worker2.type=ajp13
+<source># An entry that lists all the workers defined
+worker.list=worker1, worker2
+# Entries that define the host and port associated with each of these workers
+worker.worker1.host=localhost
+worker.worker1.port=8009
+worker.worker1.type=ajp13
+worker.worker2.host=otherhost
+worker.worker2.port=8009
+worker.worker2.type=ajp13
 </source>
 </p>
 
 <p>
 The above example defined two workers, now we can use these workers to serve two different contexts 
 each with its own worker: 
-<source>
-  example uriworkermap.properties fragment
-  /examples/*=worker1
-  /webpages/*=worker2
+<source>example uriworkermap.properties fragment
+/examples/*=worker1
+/webpages/*=worker2
 </source>
 </p>
 
@@ -652,8 +642,7 @@ Then examine the last line in the IIS log file in found in SYSTEM/LogFiles/W3SVC
 <p>
 If the last line contains: 
 </p>
-<source>
-  GET "/examples/ HTTP/1.1" 404
+<source>GET "/examples/ HTTP/1.1" 404
 </source>
 <p> 
 then the ISAPI redirector is not recognising that it should be handling requests for the "/examples" context. 
@@ -675,8 +664,7 @@ If these are set correctly, the ISAPI redirector should recognise that it should
 <p>If the last line contains something like:
 </p>
 
-<source>
-  GET "/jakarta/isapi_redirect.dll HTTP1.1"
+<source>GET "/jakarta/isapi_redirect.dll HTTP1.1"
 </source>
 
 <p>
@@ -688,8 +676,7 @@ but is not successful at getting Tomcat to service the request.
 You should check the HTTP error code following GET "/...":
 </p>
 
-<source>
-  Error 404
+<source>Error 404
   GET "/..." 404
 </source>
 
@@ -706,9 +693,8 @@ Make sure the extension_uri data begins with "/jakarta/" (without the quotes).
 </li>
 </ul>
 
-<source>
-  Error 500
-  GET "/..." 500
+<source>Error 500
+GET "/..." 500
 </source>
 
 <ul>
@@ -720,10 +706,9 @@ Check the workers.properties file and make sure the port setting for worker.ajp1
 </li>
 </ul>
 
-<source>
-  Error 200 or 403
-  GET "/..." 200
-  GET "/..." 403
+<source>Error 200 or 403
+GET "/..." 200
+GET "/..." 403
 </source>
 
 <ul>
@@ -790,9 +775,8 @@ which indicates the ISAPI redirector is recognising that it should handle the re
 You should check the HTTP error code following GET "/...":
 </p>
 
-<source>
-  Error 404
-  GET "/..." 404
+<source>Error 404
+GET "/..." 404
 </source>
 
 <ul>
@@ -801,9 +785,8 @@ Make sure you entered the URL correctly.
 </li>
 </ul>
 
-<source>
-  Error 500
-  GET "/..." 500
+<source>Error 500
+GET "/..." 500
 </source>
 
 <ul>
@@ -818,10 +801,9 @@ Check the workers.properties file and make sure the port setting for worker.ajp1
 </li>
 </ul>
 
-<source>
-  Error 200 or 403
-  GET "/..." 200
-  GET "/..." 403
+<source>Error 200 or 403
+GET "/..." 200
+GET "/..." 403
 </source>
 
 <ul>

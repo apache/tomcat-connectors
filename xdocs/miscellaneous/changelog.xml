@@ -41,14 +41,12 @@
   </p>
 </section>
 <section name="Changes between 1.2.46 and 1.2.47">
-  <br />
   <subsection name="Native">
     <changelog>
     </changelog>
   </subsection>
 </section>
 <section name="Changes between 1.2.45 and 1.2.46">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -60,7 +58,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.44 and 1.2.45">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -95,7 +92,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.43 and 1.2.44">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -154,7 +150,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.42 and 1.2.43">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -185,7 +180,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.41 and 1.2.42">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -272,7 +266,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.40 and 1.2.41">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -461,7 +454,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.39 and 1.2.40">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -492,7 +484,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.37 and 1.2.39">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -544,7 +535,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.36 and 1.2.37">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -559,7 +549,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.35 and 1.2.36">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -584,7 +573,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.33 and 1.2.35">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -603,7 +591,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.32 and 1.2.33">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -708,7 +695,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.31 and 1.2.32">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -779,7 +765,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.30 and 1.2.31">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -834,7 +819,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.28 and 1.2.30">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -963,7 +947,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.27 and 1.2.28">
-  <br />
   <subsection name="Native">
     <changelog>
       <add>
@@ -1105,7 +1088,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.26 and 1.2.27">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -1402,7 +1384,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.25 and 1.2.26">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -1505,7 +1486,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.24 and 1.2.25">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -1561,7 +1541,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.23 and 1.2.24">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -1720,7 +1699,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.22 and 1.2.23">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -1736,7 +1714,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.21 and 1.2.22">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -1853,7 +1830,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.20 and 1.2.21">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -1963,7 +1939,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.19 and 1.2.20">
-  <br />
   <subsection name="Native">
     <changelog>
       <add>
@@ -2174,7 +2149,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.18 and 1.2.19">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -2324,7 +2298,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.17 and 1.2.18">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -2337,7 +2310,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.16 and JK 1.2.17">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -2352,7 +2324,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.15 and JK 1.2.16">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -2466,7 +2437,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.14 and 1.2.15">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -2481,7 +2451,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.13 and 1.2.14">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -2513,7 +2482,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.12 and 1.2.13">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -2553,7 +2521,6 @@
 </section>
 
 <section name="Changes between 1.2.11 and 1.2.12">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -2571,7 +2538,6 @@
 </section>
 
 <section name="Changes between 1.2.10 and 1.2.11">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>Backport SC_M_JK_STORED from JK2 for passing arbitrary
@@ -2633,7 +2599,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.8 and 1.2.10">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>Set default shared memory to 64K instead 1M. (mturk)
@@ -2699,7 +2664,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.7 and 1.2.8">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -2758,7 +2722,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.6 and 1.2.7">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -2823,7 +2786,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.5 and 1.2.6">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -2852,7 +2814,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.4 and 1.2.5">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>
@@ -2887,7 +2848,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.3 and 1.2.4">
-  <br />
   <subsection name="Native">
     <changelog>
       <add>
@@ -2907,7 +2867,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.2 and 1.2.3">
-  <br />
   <subsection name="Native">
     <changelog>
       <add>
@@ -2945,7 +2904,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.1 and 1.2.2">
-  <br />
   <subsection name="Native">
     <changelog>
       <update>
@@ -2966,7 +2924,6 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.0 and 1.2.1">
-  <br />
   <subsection name="Native">
     <changelog>
       <fix>

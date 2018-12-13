@@ -49,7 +49,7 @@
         <include name="BUILDING.txt"/>
         <include name="README.txt"/>
         <include name="RUNNING.txt"/>
-        <include name="style.css"/>
+        <include name="images/docs-stylesheet.css"/>
       </fileset>
     </copy>
     <copy    todir="${build.dir}/${dist.name}">
@@ -74,7 +74,7 @@
     <xslt basedir="."
            destdir="${build.dir}/${dist.name}/printer"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="build.xml project.xml empty.xml"
           includes="*.xml">
       <param name="relative-path" expression="./.."/>
@@ -85,7 +85,7 @@
     <xslt basedir="reference"
            destdir="${build.dir}/${dist.name}/reference"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
@@ -94,7 +94,7 @@
     <xslt basedir="reference"
            destdir="${build.dir}/${dist.name}/reference/printer"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
@@ -105,7 +105,7 @@
     <xslt basedir="common_howto"
            destdir="${build.dir}/${dist.name}/common_howto"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
@@ -114,7 +114,7 @@
     <xslt basedir="common_howto"
            destdir="${build.dir}/${dist.name}/common_howto/printer"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
@@ -125,7 +125,7 @@
     <xslt basedir="webserver_howto"
            destdir="${build.dir}/${dist.name}/webserver_howto"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
@@ -134,7 +134,7 @@
     <xslt basedir="webserver_howto"
            destdir="${build.dir}/${dist.name}/webserver_howto/printer"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
@@ -145,7 +145,7 @@
     <xslt basedir="ajp"
            destdir="${build.dir}/${dist.name}/ajp"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
@@ -154,7 +154,7 @@
     <xslt basedir="ajp"
            destdir="${build.dir}/${dist.name}/ajp/printer"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
@@ -165,7 +165,7 @@
     <xslt basedir="miscellaneous"
            destdir="${build.dir}/${dist.name}/miscellaneous"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
@@ -174,7 +174,7 @@
     <xslt basedir="miscellaneous"
            destdir="${build.dir}/${dist.name}/miscellaneous/printer"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
@@ -185,7 +185,7 @@
     <xslt basedir="news"
            destdir="${build.dir}/${dist.name}/news"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
@@ -194,7 +194,7 @@
     <xslt basedir="news"
            destdir="${build.dir}/${dist.name}/news/printer"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
@@ -211,7 +211,7 @@
     <xslt basedir="."
            destdir="${build.dir}/${dist.name}"
          extension=".html"
-             style="style.xsl"
+             style="tomcat-docs.xsl"
           excludes="build.xml project.xml empty.xml"
           includes="*.xml">
       <param name="relative-path" expression="."/>

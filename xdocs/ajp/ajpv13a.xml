@@ -348,8 +348,7 @@ Each of the above messages has a different internal structure, detailed below.
 <p>
 For messages from the server to the container of type "Forward Request":
 </p><p>
-<source>
-AJP13_FORWARD_REQUEST :=
+<source>AJP13_FORWARD_REQUEST :=
     prefix_code      (byte) 0x02 = JK_AJP13_FORWARD_REQUEST
     method           (byte)
     protocol         (string)
@@ -367,8 +366,7 @@ AJP13_FORWARD_REQUEST :=
 </p><p>
 The <code>request_headers</code> have the following structure:
 </p><p>
-<source>
-req_header_name := 
+<source>req_header_name := 
     sc_req_header_name | (string)  [see below for how this is parsed]
 
 sc_req_header_name := 0xA0xx (integer)
@@ -379,11 +377,9 @@ req_header_value := (string)
 
 The <code>attributes</code> are optional and have the following structure:
 </p><p>
-<source>
-attribute_name := sc_a_name | (sc_a_req_attribute string)
+<source>attribute_name := sc_a_name | (sc_a_req_attribute string)
 
 attribute_value := (string)
-
 </source>
 </p><p>
 Not that the all-important header is "content-length', because it
@@ -573,8 +569,7 @@ additional methods, even if they are not in this list.
 <p>
 For messages which the container can send back to the server.
 
-<source>
-AJP13_SEND_BODY_CHUNK := 
+<source>AJP13_SEND_BODY_CHUNK := 
   prefix_code   3
   chunk_length  (integer)
   chunk        *(byte)

@@ -30,7 +30,6 @@
 <body>
 
 <section name="Introduction">
-<br/>
 <p>
 Tomcat Connectors has a special type of worker, the so-called status worker.
 The status worker does not forward requests to Tomcat instances. Instead it allows
@@ -54,9 +53,7 @@ The documentation of the status worker starts with <b>jk 1.2.20</b>
 </section>
 
 <section name="Usage Patterns">
-<br/>
 <subsection name="Actions">
-<br/>
 <p>
 The status worker knows about the following actions:
 <ul>
@@ -101,7 +98,6 @@ The dump action has been added in version 1.2.27.
 </subsection>
 
 <subsection name="Output Format">
-<br/>
 <p>
 For most actions you can choose between 4 output formats.
 <ul>
@@ -128,7 +124,6 @@ The "edit" action does only make sense for the HTML output type.
 </subsection>
 
 <subsection name="User Interface Features">
-<br/>
 <p>
 In the HTML view, there is an <b>automatic refresh</b> feature, implemented via the meta refresh
 option of HTML. Once you start the automatic refresh, the UI will will respect it for all actions
@@ -170,7 +165,6 @@ The last three minimisation features have been added in version 1.2.27.
 </subsection>
 
 <subsection name="Special Considerations concerning URL Maps and Virtual Hosts">
-<br/>
 <p>
 <b>Note: </b>The following restriction has been removed starting with version 1.2.26.
 </p>
@@ -185,7 +179,6 @@ of the virtual host the status worker has been called in.
 </subsection>
 
 <subsection name="Logging">
-<br/>
 <p>
 The status worker will log changes made to the configuration with log level "info" to the usual
 JK log file. Invalid requests will be logged with log level "warn". If you want to report some
@@ -196,16 +189,13 @@ broken behaviour, log file content of level "debug" or even "trace" will be usef
 </section>
 
 <section name="Configuration">
-<br/>
 <subsection name="Basic Configuration">
-<br/>
 <p>
 The basic configuration of a status worker is very similar to that of a usual ajp worker.
 You need to specify a name for the worker, and the URLs you want to map to it. The first
 part of the configuration happens in the workers.properties file. We define a worker named
 mystatus of type status:
-<source>
-worker.list=mystatus
+<source>worker.list=mystatus
 worker.mystatus.type=status
 </source>
 Then we define a URL, which should be mapped to this worker, i.e. the URL we use
@@ -213,8 +203,7 @@ to reach the functionality of the status worker. You can use any method mod_jk s
 for the web server of your choice. Possibilities are maps inside uriworkermap.properties,
 an additional mount attribute in workers.properties, or JkMount for the Apache HTTP Server.
 Here's an example for a uriworkermap.properties line:
-<source>
-/private/admin/mystatus=mystatus
+<source>/private/admin/mystatus=mystatus
 </source>
 The URI pattern is case sensitive.
 </p>
@@ -230,19 +219,16 @@ and then allow special groups of people to use them
 </subsection>
 
 <subsection name="Output Customisation">
-<br/>
 <p>
 There are a couple of attributes for the workers.properties entries, which allow to customise
 various aspects of the output of the status worker.
 </p>
 <p>
 The attribute <b>css</b> can be set to the URL of a stylesheet:
-<source>
-worker.mystatus.css=/private/admin/static/mystatus.css
+<source>worker.mystatus.css=/private/admin/static/mystatus.css
 </source>
 When writing HTML output, the status worker then includes the line
-<source>
-&lt;link rel="stylesheet" type="text/css" href="/private/admin/static/mystatus.css" /&gt;
+<source>&lt;link rel="stylesheet" type="text/css" href="/private/admin/static/mystatus.css" /&gt;
 </source>
 There is no sample stylesheet included with the mod_jk release, and by default the attribute css
 is empty, so no stylesheet reference will be included in the pages. The HTML code
@@ -269,7 +255,6 @@ be inserted at the beginning of the document, directly after the xml header. The
 </subsection>
 
 <subsection name="Securing Access">
-<br/>
 <p>
 We urge you to use the builtin access control features of your web server to control
 access to the status worker URLs you have chosen. Nevertheless two configuration
@@ -281,8 +266,7 @@ The default value is <b>false</b>, ie. read/write. To enable read_only you need 
 <p>
 You could configure two status workers, one has read_only and will be made available to a larger
 admin group, the other one will be used fully featured, but only by fewer people:
-<source>
-worker.list=jk-watch
+<source>worker.list=jk-watch
 worker.jk-watch.type=status
 worker.jk-watch.read_only=true
 worker.jk-watch.mount=/user/status/jk
@@ -311,7 +295,6 @@ the attribute <b>user_case_insensitive</b> to <b>true</b>. Then the comparison w
 </subsection>
 
 <subsection name="Service Availability Rating">
-<br/>
 <p>
 For load balancing workers the status worker shows some interesting overview information.
 It categorises the members of the load balancer into the classes "good", "bad" and degraded".
@@ -378,7 +361,6 @@ can be found.
 </section>
 
 <section name="Request Parameters">
-<br/>
 <p>
 This section should help you building automation scripts based on the jk status
 management interface. This interface is stable in the sense, that we only expect
@@ -388,7 +370,6 @@ and Text to be kept stable. So please use those, if you want to parse status wor
 output in your automation scripts.
 </p>
 <subsection name="Actions">
-<br/>
 <p>
 The action is determined by the parameter <b>cmd</b>. It can have the values "list", "show",
 "edit", "update", "reset", "recover", "version" and "dump". If you omit the <b>cmd</b> parameter,
@@ -400,7 +381,6 @@ The action "dump" has been added in version 1.2.27.
 </p>
 </subsection>
 <subsection name="Output Format">
-<br/>
 <p>
 The format is determined by the parameter <b>mime</b>. It can have the values "html", "xml",
 "txt" and "prop". If you omit the <b>mime</b> parameter, the default "html"
@@ -408,7 +388,6 @@ will be used. The action "edit" (the edit form) does only make sense for "mime=h
 </p>
 </subsection>
 <subsection name="Worker Selection">
-<br/>
 <p>
 Actions that operate on a single worker need one or two additional parameters to select
 this worker. The parameter <b>w</b> contains the name of the worker from the worker list.
@@ -418,14 +397,12 @@ name of the sub worker.
 </p>
 </subsection>
 <subsection name="Automatic Refresh">
-<br/>
 <p>
 During automatic refresh, the parameter <b>re</b> contain the refresh interval in seconds.
 If you omit this parameter, automatic refresh will be off.
 </p>
 </subsection>
 <subsection name="Hide Options">
-<br/>
 <p>
 The parameter <b>opt</b> contains a bit mask of activated options. The default is 0, so
 by default no options are activated. The following options exist:
@@ -462,7 +439,6 @@ Values 0x0040-0x0100 have been added in version 1.2.27.
 </p>
 </subsection>
 <subsection name="Data Parameters for the standard Update Action">
-<br/>
 <p>
 You can use the edit action with a final click to the update button, to change settings of workers.
 But you can also make direct calls to the update action. The following request parameters 
@@ -563,7 +539,6 @@ For the details of all parameters, we refer to the <a href="workers.html">worker
 </p>
 </subsection>
 <subsection name="Aspect Editing for Load Balancer Members">
-<br/>
 <p>
 You can use the edit action to edit all settings for a load balancer or for a
 member of a load balancer respectively on one page. If you want to edit one

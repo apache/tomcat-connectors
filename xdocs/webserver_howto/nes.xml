@@ -192,32 +192,27 @@ Edit your server <b>magnus.conf</b> and add the following lines:
 </li>
 </ul>
 
-<source>
-  
-  Init fn="load-modules" funcs="jk_init,jk_service" shlib="c:/jk/lib/nsapi_redirect.dll" shlib_flags="(global|now)"
-  Init fn="jk_init" worker_file="c:/jk/conf/workers.properties" log_level="debug" log_file="c:/jk/logs/nsapi.log" shm_file="c:/jk/logs/jk_shm"
+<source>Init fn="load-modules" funcs="jk_init,jk_service" shlib="c:/jk/lib/nsapi_redirect.dll" shlib_flags="(global|now)"
+Init fn="jk_init" worker_file="c:/jk/conf/workers.properties" log_level="debug" log_file="c:/jk/logs/nsapi.log" shm_file="c:/jk/logs/jk_shm"
 </source>
 <ul>
 <li>
 Edit your server <b>obj.conf</b> and add the following lines:
 </li>
 </ul>
-<source>
-
+<source>In the default object NameTrans section
+&lt;Object name="default"&gt;
+    
+NameTrans fn="assign-name" from="/examples(|/*)" name="jknsapi" 
+....
+&lt;/Object&gt;
   
-  In the default object NameTrans section
-  &lt;Object name="default"&gt;
-      
-  NameTrans fn="assign-name" from="/examples(|/*)" name="jknsapi" 
-  ....
-  &lt;/Object&gt;
+Create a new configuration object by adding the following lines to the end of the obj.conf file
   
-  Create a new configuration object by adding the following lines to the end of the obj.conf file
-  
-  &lt;Object name="jknsapi"&gt;
-  ObjectType fn=force-type type=text/plain
-  Service fn="jk_service" method="*" worker="worker1"
-  &lt;/Object&gt;
+&lt;Object name="jknsapi"&gt;
+ObjectType fn=force-type type=text/plain
+Service fn="jk_service" method="*" worker="worker1"
+&lt;/Object&gt;
 </source>
 
 <ul>
@@ -226,15 +221,14 @@ Edit your worker definition file <b>workers.properties</b>. You should at least 
 </li>
 </ul>
 
-<source>
-  #An entry that lists all the workers defined. For example:
-  worker.list=worker1
+<source>#An entry that lists all the workers defined. For example:
+worker.list=worker1
   
-  # Entries that define the host and port associated with these workers.
-  worker.worker1.host=localhost
-  worker.worker1.port=8009
-  worker.worker1.type=ajp13
-  worker.worker1.connection_pool_size=50
+# Entries that define the host and port associated with these workers.
+worker.worker1.host=localhost
+worker.worker1.port=8009
+worker.worker1.type=ajp13
+worker.worker1.connection_pool_size=50
 </source>
 
 <ul>
@@ -271,8 +265,7 @@ Assigning the NSAPI redirector to handle this context is simple,
 all you need to do is to edit <b>obj.conf</b> and add a NameTrans line that looks like:
 </p>
 
-<source>
-  NameTrans fn="assign-name" from="/&lt;context_name&gt;/*" name="jknsapi"
+<source>NameTrans fn="assign-name" from="/&lt;context_name&gt;/*" name="jknsapi"
 </source>
 
 <p>
@@ -314,8 +307,7 @@ covers the <b>c:\tomcat\webapps\examples</b> directory.
 To add a new virtual directory add the following line to your <b>obj.conf</b>:
 </p>
 
-<source>
-  NameTrans fn=pfx2dir from=/examples dir="c:/tomcat/webapps/examples"
+<source>NameTrans fn=pfx2dir from=/examples dir="c:/tomcat/webapps/examples"
 </source>
 
 <p>
@@ -325,9 +317,8 @@ A second directory that should be protected is META-INF.
 Those directories can be protected by adding the following line to the PathCheck section in the default configuration object:
 </p>
 
-<source>
-  PathCheck fn="deny-existence" path="*/WEB-INF/*"
-  PathCheck fn="deny-existence" path="*/META-INF/*"
+<source>PathCheck fn="deny-existence" path="*/WEB-INF/*"
+PathCheck fn="deny-existence" path="*/META-INF/*"
 </source>
 
 These lines instruct the web server to reject any request with a URL that contains the path /WEB-INF/
@@ -343,15 +334,14 @@ you will need to specify the exact URL-Path pattern(s) that you want Tomcat to h
 This requires a change to NameTrans portion of <b>obj.conf</b>. 
 </p>
 
-<source>
-  For the examples context it requires to replace the following line:
+<source>For the examples context it requires to replace the following line:
   
-  NameTrans fn="assign-name" from="/examples/*" name="jknsapi"
+NameTrans fn="assign-name" from="/examples/*" name="jknsapi"
   
-  with the following two lines:
+with the following two lines:
   
-  NameTrans fn="assign-name" from="/examples/jsp/*.jsp" name="jknsapi"
-  NameTrans fn="assign-name" from="/examples/servlet/*" name="jknsapi"
+NameTrans fn="assign-name" from="/examples/jsp/*.jsp" name="jknsapi"
+NameTrans fn="assign-name" from="/examples/servlet/*" name="jknsapi"
 </source>
 
 <p>
@@ -364,10 +354,9 @@ the web server to assign the redirector with only requests to resources under
 You can be even more explicit and provide lines such as:
 </p>
 
-<source>
-  NameTrans fn="assign-name" from="/examples/servlets/chat" name="jknsapi"
+<source>NameTrans fn="assign-name" from="/examples/servlets/chat" name="jknsapi"
   
-  Instructs the web server to assign the redirector requests whose URL path equals /example/servlets/chat
+Instructs the web server to assign the redirector requests whose URL path equals /example/servlets/chat
 </source>
 
 </subsection>
@@ -383,18 +372,17 @@ To achieve such goal you will need to define several workers and assign each con
 Defining workers is done in <b>workers.properties</b>, this file includes two types of entries:
 </p>
 
-<source>
-  #An entry that lists all the workers defined. For example:
-  worker.list=worker1,worker2
+<source>#An entry that lists all the workers defined. For example:
+worker.list=worker1,worker2
   
-  # Entries that define the host and port associated with these workers.
-  worker.worker1.host=localhost
-  worker.worker1.port=8009
-  worker.worker1.type=ajp13
+# Entries that define the host and port associated with these workers.
+worker.worker1.host=localhost
+worker.worker1.port=8009
+worker.worker1.type=ajp13
 
-  worker.worker2.host=otherhost
-  worker.worker2.port=8009
-  worker.worker2.type=ajp13
+worker.worker2.host=otherhost
+worker.worker2.port=8009
+worker.worker2.type=ajp13
 </source>
 
 <p>
@@ -409,13 +397,12 @@ For example, if we want to submit the <b>/examples</b> context to the worker nam
 <b>/webpages</b> context to the worker named <b>worker2</b> we should use the following configuration:
 </p>
 
-<source>
-  &lt;Object name="jknsapi"&gt;
-  ObjectType fn=force-type type=text/plain
-  Service fn="jk_service" worker="worker1" path="/examples/*"
-  Service fn="jk_service" worker="worker2" path="/webpages/*"
-  Service fn="jk_service" worker="worker1"
-  &lt;/Object&gt;
+<source>&lt;Object name="jknsapi"&gt;
+ObjectType fn=force-type type=text/plain
+Service fn="jk_service" worker="worker1" path="/examples/*"
+Service fn="jk_service" worker="worker2" path="/webpages/*"
+Service fn="jk_service" worker="worker1"
+&lt;/Object&gt;
 </source>
 
 <p>

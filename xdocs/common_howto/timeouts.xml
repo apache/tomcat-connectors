@@ -28,7 +28,6 @@
 </properties>
 <body>
 <section name="Introduction"> 
-<br/>
 <p>Setting communication timeouts is very important to improve the
 communication process. They help to detect problems and stabilise
 a distributed system. JK can use several different timeout types, which
@@ -42,18 +41,16 @@ items, please consult the worker <a href="../reference/workers.html">reference</
 This page assumes, that you are using at least version 1.2.16 of JK.
 Dependencies on newer versions will be mentioned where necessary.
 </p>
-<warn>
+<span style="color: red;">
 Do not set timeouts to extreme values. Very small timeouts will likely
 be counterproductive.
-</warn>
-<warn>
+<br/><br/>
 Long Garbage Collection pauses on the backend do not make a good
 fit with some timeouts. Try to optimise your Java memory and GC settings.
-</warn>
+</span>
 </section>
 
 <section name="JK Timeout Attributes">
-<br/>
 <subsection name="CPing/CPong">
 <p>
 CPing/CPong is our notion for using small test packets to check the
@@ -301,13 +298,13 @@ reply timeout. Applications that do not harmonise with reply timeouts
 are batch type applications, data warehouse and reporting applications
 which are expected to observe long processing times.
 </p>
-<warn>
+<span style="color: red;">
 If JK aborts waiting for a response, because a reply timeout fired,
 there is no way to stop processing on the backend. Although you free
 processing resources in your web server, the request
 will continue to run on the backend - without any way to send back a
 result once the reply timeout fired.
-</warn>
+</span>
 <p>
 JK uses the worker attribute <b>reply_timeout</b> to set reply timeouts.
 The default value is "0" (timeout disabled) and you can set it to any
@@ -338,7 +335,6 @@ load balancer.
 </section>
 
 <section name="Load Balancer Error Detection">
-<br/>
 <subsection name="Local and Global Error States">
 <p>
 A load balancer worker does not only have the ability to balance load.

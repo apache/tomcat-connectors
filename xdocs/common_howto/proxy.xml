@@ -28,7 +28,6 @@
 </properties>
 <body>
 <section name="Introduction"> 
-<br/>
 <p>The Apache HTTP Server module mod_jk and its ISAPI and NSAPI redirector
 variants for Microsoft IIS and the iPlanet Web Server connect
 the web server to a backend (typically Tomcat) using the AJP protocol.
@@ -38,7 +37,6 @@ or a proxy, in the context of HTTP it is called a reverse proxy.
 </p>
 </section>
 <section name="Typical Problems">
-<br/>
 <p>A reverse proxy is not totally transparent to the application on
 the backend. For instance the host name and port the original client
 (e.g. browser) needs to talk to belong to the web server and not to the
@@ -54,7 +52,6 @@ the client IP is used by the backend application e.g. for security reasons.
 </p>
 </section>
 <section name="AJP as a Solution">
-<br/>
 <p>Most of these problems are automatically handled by the AJP protocol
 and the AJP connectors of the backend. The AJP protocol transports
 this communication metadata and the backend connector presents this
@@ -134,7 +131,6 @@ This is for Tomcat, it has not yet been standardized.
 </p>
 </section>
 <section name="Fine Tuning">
-<br/>
 <p>In some situations this is not enough though. Assume there is another
 less clever reverse proxy in front of your web server, for instance an
 HTTP load balancer or similar device which also serves as an SSL accelerator.
@@ -212,7 +208,6 @@ in the <code>X-Forwarded-For</code> header.
 </p>
 </section>
 <section name="Tomcat AJP Connector Settings">
-<br/>
 <p>As an alternative to using the environment variables described in the previous section
 (which do only exist when using Apache), you can also configure Tomcat to overwrite
 some of the communications data forwarded by mod_jk. The AJP connector in Tomcat's <code>server.xml</code>
@@ -232,7 +227,6 @@ where the web server running mod_jk knows the right data.
 </p>
 </section>
 <section name="URL Handling">
-<br/>
 <subsection name="URL Rewriting">
 <p>Sometimes one want to change path components of the URLs under which an application
 is available. Especially if a web application is deployed as some context, say <code>/myapp</code>,
@@ -251,8 +245,7 @@ users proceed using the more complex URLs, as long as they don't have to type th
 That's the easy case, and if this suffices to you, you're lucky. Use a simply RedirectMatch
 for the Apache HTTP Server:
 </p>
-<source>
-RedirectMatch ^/$ http://www.mycompany.com/myapp/
+<source>RedirectMatch ^/$ http://www.mycompany.com/myapp/
 </source>
 <p>Your application will then be available under <code>http://www.mycompany.com/</code>,
 and each visitor will be immediately redirected to the real URL
@@ -266,8 +259,7 @@ First the solution for the case of the Apache HTTP Server:
 <p>1. Use <a href="http://httpd.apache.org/docs/current/mod/mod_rewrite.html"><code>mod_rewrite</code></a>
 to add <code>/myapp</code> to all requests before forwarding to the backend:
 </p>
-<source>
-# Don't forget the PT flag! (pass through)
+<source># Don't forget the PT flag! (pass through)
 RewriteRule ^/(.*) http://www.mycompany.com/myapp/$1 [PT]
 </source>
 <p>2. Use <a href="http://httpd.apache.org/docs/current/mod/mod_headers.html"><code>mod_headers</code></a>
@@ -277,8 +269,7 @@ the full URL, and your application is not aware of the fact, that your clients t
 some shortened URL. An HTTP redirect is done with a special response header named <code>Location</code>.
 We rewrite the Location headers of our responses:
 </p>
-<source>
-# Keep protocol, server and port if present,
+<source># Keep protocol, server and port if present,
 # but insert our webapp name before the rest of the URL
 Header edit Location ^([^/]*//[^/]*)?/(.*)$ $1/myapp/$2 
 </source>
@@ -288,8 +279,7 @@ the path components you want to hide.
 A cookie is set with the HTTP response header named <code>Set-Cookie</code>.
 We rewrite the Set-Cookie headers of our responses:
 </p>
-<source>
-# Fix the cookie path
+<source># Fix the cookie path
 Header edit Set-Cookie "^(.*; Path=/)(.*)" $1/myapp/$2 
 </source>
 <p>3. Some applications might contain hard coded absolute links.
@@ -306,8 +296,7 @@ for this task.
 of doing the first step with a builtin feature. You define a mapping file for simple prefix
 changes like this:
 </p>
-<source>
-# Add a context prefix to all requests ...
+<source># Add a context prefix to all requests ...
 /=/myapp/
 # ... or change some prefix ...
 /oldapp/=/myapp/
@@ -319,8 +308,7 @@ still need to map the URLs as they are before rewriting!
 <p>More complex rewrites can be done using the same file, but with regular expressions. A leading
 tilde sign '<code>~</code>', indicates, that you are using a regular expression:
 </p>
-<source>
-# Use a regular expression rewrite
+<source># Use a regular expression rewrite
 ~/oldapps([0-9]*)/=/newapps$1/
 </source>
 <p>There is no support for Steps 2 (rewriting redirect responses) or 3 (rewriting cookie paths).
@@ -351,7 +339,6 @@ and remove all old explicit settings.
 </subsection>
 </section>
 <section name="Request Attributes">
-<br/>
 <p>
 You can also add more attributes to any request you are forwarding when using the Apache HTTP Server.
 For this use the <code>JkEnvVar</code> directive (for details see the

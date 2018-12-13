@@ -246,9 +246,8 @@ in Tomcat and put the following include directive at the end of your Apache http
 (make sure you replace $TOMCAT_HOME with the correct path for your Tomcat installation:
 </p>
 
-<source>
-    #To be added at the end of your httpd.conf
-    Include $TOMCAT_HOME/conf/jk/mod_jk.conf-auto
+<source># To be added at the end of your httpd.conf
+Include $TOMCAT_HOME/conf/jk/mod_jk.conf-auto
 </source>
 
 <p>
@@ -264,14 +263,13 @@ element in the server.xml file as per the following example.
 <b>Please note that this example is specific to Tomcat 5.x, unlike other sections of this document
    which also apply to previous Tomcat branches.</b>
 </p>
-<source>
+<source>...
+&lt;Engine ...&gt;
   ...
-  &lt;Engine ...&gt;
-    ...
     &lt;Listener className="org.apache.jk.config.ApacheConfig" modJk="/path/to/mod_jk.so" /&gt;
-    ...
-  &lt;/Engine&gt;
   ...
+&lt;/Engine&gt;
+...
 </source>
 
 <p>
@@ -309,21 +307,20 @@ to their real needs.
 Here is a simple configuration:
 </p>
 
-<source>
-    # Load mod_jk module
-    LoadModule    jk_module  modules/mod_jk.so
-    # Add the module (activate this lne for Apache 1.3)
-    # AddModule     mod_jk.c
-    # Where to find workers.properties
-    JkWorkersFile /etc/httpd/conf/workers.properties
-    # Where to put jk shared memory
-    JkShmFile     /var/log/httpd/mod_jk.shm
-    # Where to put jk logs
-    JkLogFile     /var/log/httpd/mod_jk.log
-    # Set the jk log level [debug/error/info]
-    JkLogLevel    info
-    # Send requests for context /examples to worker named worker1
-    JkMount  /examples/* worker1
+<source># Load mod_jk module
+LoadModule    jk_module  modules/mod_jk.so
+# Add the module (activate this lne for Apache 1.3)
+# AddModule     mod_jk.c
+# Where to find workers.properties
+JkWorkersFile /etc/httpd/conf/workers.properties
+# Where to put jk shared memory
+JkShmFile     /var/log/httpd/mod_jk.shm
+# Where to put jk logs
+JkLogFile     /var/log/httpd/mod_jk.log
+# Set the jk log level [debug/error/info]
+JkLogLevel    info
+# Send requests for context /examples to worker named worker1
+JkMount  /examples/* worker1
 </source>
 
 </subsection>
@@ -338,12 +335,9 @@ We'll discuss here the mod_jk directives and details behind them
 <p>
 <b>JkWorkersFile</b> specify the location where mod_jk will find the workers definitions.
 
-<source>
-  JkWorkersFile     /etc/httpd/conf/workers.properties
+<source>JkWorkersFile     /etc/httpd/conf/workers.properties
 </source>
 
-<br/>
-<br/>
 </p>
 </subsection>
 
@@ -352,8 +346,7 @@ We'll discuss here the mod_jk directives and details behind them
 <b>JkLogFile</b> specify the location where mod_jk is going to place its log file.
 </p>
 
-<source>
-  JkLogFile     /var/log/httpd/mod_jk.log
+<source>JkLogFile     /var/log/httpd/mod_jk.log
 </source>
 
 <p>
@@ -361,8 +354,7 @@ Since JK 1.2.3 for Apache 2.x and JK 1.2.16 for Apache 1.3 this can also
 be used for piped logging:
 </p>
 
-<source>
-  JkLogFile     "|/usr/bin/rotatelogs /var/log/httpd/mod_jk.log 86400"
+<source>JkLogFile     "|/usr/bin/rotatelogs /var/log/httpd/mod_jk.log 86400"
 </source>
 
 <p>
@@ -382,14 +374,11 @@ set the log level between:
 </li>
 </ul>
 
-<source>
-  JkLogLevel    info
+<source>JkLogLevel    info
 </source>
 
 <p>
 <code>info</code> should be your default selection for normal operations.
-<br/>
-<br/>
 </p>
 
 <p>
@@ -397,14 +386,8 @@ set the log level between:
 See the mod_jk <a href="../reference/apache.html">Apache HTTP Server reference</a> for details.
 </p>
 
-<source>
-  JkLogStampFormat "[%y-%m-%d %H:%M:%S.%Q] "
+<source>JkLogStampFormat "[%y-%m-%d %H:%M:%S.%Q] "
 </source>
-
-<p>
-<br/>
-<br/>
-</p>
 
 <p>
 You can log mod_jk information using the Apache standard module <b>mod_log_config</b>.
@@ -413,16 +396,10 @@ Most of them are are only useful in combination with a load balancer worker.
 See the mod_jk <a href="../reference/apache.html">Apache HTTP Server reference</a> for details.
 </p>
 
-<source>
-  LogFormat     "%h %l %u %t \"%r\" %>s %b %{JK_WORKER_NAME}n %{JK_LB_FIRST_NAME}n \
-                 %{JK_LB_FIRST_BUSY}n %{JK_LB_LAST_NAME}n %{JK_LB_LAST_BUSY}n" mod_jk_log
-  CustomLog     logs/access_log     mod_jk_log
+<source>LogFormat     "%h %l %u %t \"%r\" %>s %b %{JK_WORKER_NAME}n %{JK_LB_FIRST_NAME}n \
+              %{JK_LB_FIRST_BUSY}n %{JK_LB_LAST_NAME}n %{JK_LB_LAST_BUSY}n" mod_jk_log
+CustomLog     logs/access_log     mod_jk_log
 </source>
-
-<p>
-<br/>
-<br/>
-</p>
 
 <p>
 You can also log a request protocol in the mod_jk log file instead of
@@ -432,14 +409,8 @@ of this protocol. It gets configured and enabled on a per virtual host basis.
 See the mod_jk <a href="../reference/apache.html">Apache HTTP Server reference</a> for details.
 </p>
 
-<source>
-  JkRequestLogFormat     "%w %V %T"
+<source>JkRequestLogFormat     "%w %V %T"
 </source>
-
-<p>
-<br/>
-<br/>
-</p>
 
 </subsection>
 
@@ -447,8 +418,6 @@ See the mod_jk <a href="../reference/apache.html">Apache HTTP Server reference</
 <p>
 The directive JkOptions allow you to set many forwarding options which will enable (+)
 or disable (-) following option. Without any leading signs, options will be enabled.
-<br/>
-<br/>
 </p>
 
 <p>
@@ -460,8 +429,6 @@ It was "ForwardURICompatUnparsed" in version 1.2.23 and
 You can turn the default off by switching on one of the other two options.
 You should leave this at it's default value, unless you have a very good
 reason to change it.
-<br/>
-<br/>
 </p>
 
 <p>
@@ -469,9 +436,7 @@ All options are inherited from the global server to virtual hosts.
 Options that support enabling (plus options) and disabling (minus options),
 are inherited in the following way:
 <br/>
-<br/>
 options(vhost) = plus_options(global) - minus_options(global) + plus_options(vhost) - minus_options(vhost)
-<br/>
 <br/>
 </p>
 
@@ -481,12 +446,9 @@ will be partially reencoded after processing inside Apache and
 before forwarding to Tomcat. This will be compatible with local
 URL manipulation by mod_rewrite and with URL encoded session ids.
 
-<source>
-  JkOptions     +ForwardURIProxy
+<source>JkOptions     +ForwardURIProxy
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
@@ -496,12 +458,9 @@ It will always forward the original request URI, so rewriting
 URIs with mod_rewrite and then forwarding the rewritten URI
 will not work.
 
-<source>
-  JkOptions     +ForwardURICompatUnparsed
+<source>JkOptions     +ForwardURICompatUnparsed
 </source>
 
-<br/>
-<br/>
 </p>
 <p>
 Using JkOptions <b>ForwardURICompat</b>, the forwarded URI will
@@ -511,12 +470,9 @@ This is less spec compliant and is <b>not safe</b> if you are using
 prefix JkMount. This option will allow to rewrite URIs with
 mod_rewrite before forwarding.
 
-<source>
-  JkOptions     +ForwardURICompat
+<source>JkOptions     +ForwardURICompat
 </source>
 
-<br/>
-<br/>
 </p>
 <p>
 Using JkOptions <b>ForwardURIEscaped</b>, the forwarded URI will
@@ -525,20 +481,15 @@ Explicit path components like ".." will already be resolved.
 This will not work in combination with URL encoded session IDs,
 but it will allow to rewrite URIs with mod_rewrite before forwarding.
 
-<source>
-  JkOptions     +ForwardURIEscaped
+<source>JkOptions     +ForwardURIEscaped
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
 JkOptions <b>RejectUnsafeURI</b> will block all
 URLs, which contain percent signs '%' or backslashes '\'
 after decoding.
-<br/>
-<br/>
 </p>
 <p>
 Most web apps do not use such URLs. Using the option RejectUnsafeURI, you
@@ -549,12 +500,9 @@ is not set.
 You can also realise such a check with mod_rewrite, which is more powerful
 but also slightly more complicated.
 
-<source>
-  JkOptions     +RejectUnsafeURI
+<source>JkOptions     +RejectUnsafeURI
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
@@ -576,8 +524,6 @@ ignored if used.
 JkOptions <b>ForwardDirectories</b> is used in conjunction with <b>DirectoryIndex</b>
 directive of Apache. As such mod_dir should be available to Apache,
 statically or dynamically (DSO)
-<br/>
-<br/>
 </p>
 
 <p>
@@ -606,11 +552,8 @@ ones visible only to Tomcat (i.e. if Apache can see the file, that's the one
 that's going to get served). This is important if there is more then one type of
 file that Tomcat normally serves - for instance Velocity pages and JSP pages.
 
-<source>
-  JkOptions     +ForwardDirectories
+<source>JkOptions     +ForwardDirectories
 </source>
-<br/>
-<br/>
 </p>
 
 <p>
@@ -619,11 +562,8 @@ of the Apache HTTP Server instead of remote client address. This can be used by
 Tomcat remote address valve for allowing connections only from configured Apache
 servers.
 
-<source>
-  JkOptions     +ForwardLocalAddress
+<source>JkOptions     +ForwardLocalAddress
 </source>
-<br/>
-<br/>
 </p>
 
 <p>
@@ -633,11 +573,8 @@ uses the logical address as provided by the web server. For example the module
 mod_remoteip sets the logical IP address to the client IP forwarded by proxies
 in the <code>X-Forwarded-For</code> header.
 
-<source>
-  JkOptions     +ForwardPhysicalAddress
+<source>JkOptions     +ForwardPhysicalAddress
 </source>
-<br/>
-<br/>
 </p>
 
 <p>
@@ -647,24 +584,18 @@ a strong performance penalty for Apache and Tomcat as writes are performed
 more often than would normally be required (ie: at the end of each
 response).
 
-<source>
-  JkOptions     +FlushPackets
+<source>JkOptions     +FlushPackets
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
 JkOptions <b>FlushHeader</b>, you ask mod_jk to flush Apache's connection
 buffer after the response headers have been  received from Tomcat.
 
-<source>
-  JkOptions     +FlushHeader
+<source>JkOptions     +FlushHeader
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
@@ -680,12 +611,9 @@ If a firewall between Apache and Tomcat silently kills idle connections,
 try to use the worker attribute socket_keepalive in combination with an appropriate
 TCP keepalive value in your OS.
 
-<source>
-  JkOptions     +DisableReuse
+<source>JkOptions     +DisableReuse
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
@@ -693,12 +621,9 @@ JkOptions <b>ForwardKeySize</b>, you ask mod_jk, when using ajp13, to forward al
 required by Servlet API 2.3.
 This flag shouldn't be set when servlet engine is Tomcat 3.2.x (off by default).
 
-<source>
-  JkOptions     +ForwardKeySize
+<source>JkOptions     +ForwardKeySize
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
@@ -712,12 +637,9 @@ will not have the possibility to validate the client certificate on its own. The
 bug would be fixed by passing on the <code>SSL_CLIENT_CERT_CHAIN</code> to Tomcat via the AJP connector.
 <br/>
 This directive exists only since version 1.2.22.
-<source>
-  JkOptions     +ForwardSSLCertChain
+<source>JkOptions     +ForwardSSLCertChain
 </source>
 
-<br/>
-<br/>
 </p>
 
 <p>
@@ -732,14 +654,10 @@ via request.getAttribute(attributeName).
 Note that the variables send via JkEnvVar will not be listed
 in request.getAttributeNames().
 <br/>
-<br/>
 The variables are inherited from the global server to virtual hosts.
 
-<source>
-  JkEnvVar     SSL_CLIENT_V_START     undefined
+<source>JkEnvVar     SSL_CLIENT_V_START     undefined
 </source>
-<br/>
-<br/>
 </p>
 
 </subsection>
@@ -755,15 +673,14 @@ you can change settings such as the workers or URL prefix.
 In general the structure of a JkMount directive is:
 </p>
 
-<source>  JkMount [URL prefix] [Worker name]</source>
+<source>JkMount [URL prefix] [Worker name]</source>
 
-<source>
-  # send all requests ending in .jsp to worker1
-  JkMount /*.jsp worker1
-  # send all requests ending /servlet to worker1
-  JkMount /*/servlet/ worker1
-  # send all requests jsp requests to files located in /otherworker will go worker2
-  JkMount /otherworker/*.jsp worker2
+<source># send all requests ending in .jsp to worker1
+JkMount /*.jsp worker1
+# send all requests ending /servlet to worker1
+JkMount /*/servlet/ worker1
+# send all requests jsp requests to files located in /otherworker will go worker2
+JkMount /otherworker/*.jsp worker2
 </source>
 
 <p>
@@ -790,15 +707,14 @@ application's web.xml.
 document space for a VirtualHost:
 </p>
 
-<source>
-  # Static files in the examples webapp are served by Apache
-  Alias /examples /vat/tomcat3/webapps/examples
-  # All requests go to worker1 by default
-  JkMount /* worker1
-  # Serve html, jpg and gif using Apache
-  JkUnMount /*.html worker1
-  JkUnMount /*.jpg  worker1
-  JkUnMount /*.gif  worker1
+<source># Static files in the examples webapp are served by Apache
+Alias /examples /vat/tomcat3/webapps/examples
+# All requests go to worker1 by default
+JkMount /* worker1
+# Serve html, jpg and gif using Apache
+JkUnMount /*.html worker1
+JkUnMount /*.jpg  worker1
+JkUnMount /*.gif  worker1
 </source>
 
 <p>
@@ -811,27 +727,26 @@ You could use <b>no-jk</b> env var to fix problem with mod_alias or mod_userdir
 directive when jk and alias/userdir URLs matches.
 </p>
 
-<source>
-  # All URL goes to tomcat except the one containing /home
-  &lt;VirtualHost *:80&gt;
-      ServerName testxxx.mysys
-      DocumentRoot /www/testxxx/htdocs
+<source># All URL goes to tomcat except the one containing /home
+&lt;VirtualHost *:80&gt;
+    ServerName testxxx.mysys
+    DocumentRoot /www/testxxx/htdocs
 
-  # Use SetEnvIf to set no-jk when /home/ is encountered
-      SetEnvIf Request_URI "/home/*" no-jk
+# Use SetEnvIf to set no-jk when /home/ is encountered
+    SetEnvIf Request_URI "/home/*" no-jk
 
-  # Now /home will goes to /home/dataxxx/
-      Alias /home /home/dataxxx/
+# Now /home will goes to /home/dataxxx/
+    Alias /home /home/dataxxx/
 
-      &lt;Directory "/home/dataxxx"&gt;
-          Options Indexes MultiViews
-          AllowOverride None
-          Require all granted
-      &lt;/Directory&gt;
+    &lt;Directory "/home/dataxxx"&gt;
+        Options Indexes MultiViews
+        AllowOverride None
+        Require all granted
+    &lt;/Directory&gt;
 
-      JkMount /* myssys-xxx
+    JkMount /* myssys-xxx
 
-  &lt;/VirtualHost&gt;
+&lt;/VirtualHost&gt;
 </source>
 
 
@@ -846,16 +761,15 @@ or a Web Archive *.war within the Tomcat Host appBase (webapps) directory will f
 <code>HTTP 403, Access Forbidden</code>
 </p>
 
-<source>
-  # Static files in all Tomcat webapp context directories are served by Apache
-  JkAutoAlias /var/tomcat3/webapps
+<source># Static files in all Tomcat webapp context directories are served by Apache
+JkAutoAlias /var/tomcat3/webapps
 
-  # All requests go to worker1 by default
-  JkMount /* ajp13
-  # Serve html, jpg and gif using Apache
-  JkUnMount /*.html ajp13
-  JkUnMount /*.jpg  ajp13
-  JkUnMount /*.gif  ajp13
+# All requests go to worker1 by default
+JkMount /* ajp13
+# Serve html, jpg and gif using Apache
+JkUnMount /*.html ajp13
+JkUnMount /*.jpg  ajp13
+JkUnMount /*.gif  ajp13
 </source>
 
 <p>
@@ -902,8 +816,7 @@ To create the configure script just type:
 
 <subsection name="Using configure to build mod_jk">
 <p>Here's how to use configure to prepare mod_jk for building, just type:
-<source>
-./configure [autoconf arguments] [mod_jk arguments]
+<source>./configure [autoconf arguments] [mod_jk arguments]
 </source>
 </p>
 

@@ -290,8 +290,7 @@ A sample isapi_redirect.properties can be found under the conf directory.
 The property names and values in the properties file are the same as for the registry settings described above. For example:
 </p>
 <p>
-<source>
-# Configuration file for the Tomcat ISAPI Redirector
+<source># Configuration file for the Tomcat ISAPI Redirector
 
 # The path to the ISAPI Redirector Extension, relative to the website
 # This must be in a virtual directory with execute privileges
@@ -331,8 +330,7 @@ automatically added to the environment that can be used inside
         </li>
     </ul>    
 </p>
-<p><source>
-# Use the logs in the installation path of ISAPI Redirector
+<p><source># Use the logs in the installation path of ISAPI Redirector
 log_file=$(JKISAPI_PATH)\$(JKISAPI_NAME).log
 </source></p>
 </section>
@@ -347,8 +345,7 @@ To configure log rotation, configure a <b>log_file</b>, and one of the <b>log_ro
 If both are specified, the <b>log_rotationtime</b> will take precedence, and <b>log_filesize</b> will be ignored. 
 <br/>For example, to configure daily rotation of the log file:
 </p>
-<source>
-# Configuration file for the Tomcat ISAPI Redirector
+<source># Configuration file for the Tomcat ISAPI Redirector
 ...
 
 # Full path to the log file for the ISAPI Redirector
@@ -365,8 +362,7 @@ log_rotationtime=86400
 <p>
 Or to configure rotation of the log file when it reaches 5MB in size:
 </p>
-<source>
-# Configuration file for the Tomcat ISAPI Redirector
+<source># Configuration file for the Tomcat ISAPI Redirector
 ...
 
 # Full path to the log file for the ISAPI Redirector
@@ -397,8 +393,7 @@ as powerful as Apache HTTP Server's mod_rewrite, it allows a simple exchange of 
 <p>
 The rule is in the form original-url-prefix=forward-url-prefix. For example:
 </p>
-<source>
-# Simple rewrite rules, making examples
+<source># Simple rewrite rules, making examples
 # available under shorter URLs
 /jsp/=/examples/jsp/
 /servlets/=/examples/servlets/
@@ -406,8 +401,7 @@ The rule is in the form original-url-prefix=forward-url-prefix. For example:
 <p>
 You can also use regular expressions, if you prefix the rule with a tilde <code>~</code>:
 </p>
-<source>
-# Complex rewrite rule, prefixing "/examples/"
+<source># Complex rewrite rule, prefixing "/examples/"
 # to the first path component of all requests
 ~/([^/]*)=/examples/$1
 </source>

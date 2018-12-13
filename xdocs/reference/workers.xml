@@ -30,7 +30,6 @@
 <body>
 
 <section name="Introduction">
-<br/>
 <p>
 A <b>Tomcat worker</b> is a Tomcat instance that is waiting to execute servlets or any other content
 on behalf of some web server. For example, we can have a web server such as
@@ -68,13 +67,11 @@ explains how to work with it.
 </section>
 
 <section name="Configuration File Basics">
-<br/>
 <p>Defining workers to the Tomcat web server plugin can be done using a properties file
 (a sample file named workers.properties is available in the conf/ directory).
 </p>
 
 <subsection name="Format, Comments, Whitespace">
-<br/>
 <p>
 The lines in the file define properties. The general format is
 </p>
@@ -107,7 +104,6 @@ to <b>false</b> and <b>true</b>.
 </subsection>
 
 <subsection name="Global Properties">
-<br/>
 <p>
 These directives have global scope.
 </p>
@@ -137,7 +133,6 @@ This feature has been added in <b>jk 1.2.13</b>.
 </subsection>
 
 <subsection name="Worker Properties">
-<br/>
 <p>
 Each worker configuration directive consists of three words separated by a dot:
 </p>
@@ -155,7 +150,6 @@ The name of the worker can contain only the alphanumeric characters
 </subsection>
 
 <subsection name="Variables, Environment Variables">
-<br/>
 <p>
 You can define and use variables in the workers.properties file.
 To define a variable you use the syntax:
@@ -175,7 +169,6 @@ a variable with the same name and use their value.
 </subsection>
 
 <subsection name="Property Inheritance">
-<br/>
 <p>Often one wants to use the same property values for various workers.
 To reduce duplication of configuration lines and to ease the maintenance of
 the file, you can inherit properties from one worker to another, or even
@@ -212,9 +205,7 @@ This feature has been added in <b>jk 1.2.19</b>.
 </section>
 
 <section name="List of All Worker Directives">
-<br/>
 <subsection name="Mandatory Directives">
-<br/>
 <p>Mandatory directives are the one that each worker <b>must</b> contain. Without them the worker will
 be unavailable or will misbehave. Those directives will be marked with a <strong>strong</strong> font in the following tables.
 </p>
@@ -238,7 +229,6 @@ is obsolete.
 </subsection>
 
 <subsection name="Connection Directives">
-<br/>
 <p>Connection directives defines the parameters needed to connect and maintain
 the connections pool of persistent connections between JK and remote Tomcat.
 </p>
@@ -457,7 +447,6 @@ other worker, then it will receive five times more requests.
 </subsection>
 
 <subsection name="Load Balancing Directives">
-<br/>
 <p>Load balancer is a virtual worker that does not really communicate with Tomcat workers.
 Instead it is responsible for the management of several "real" workers.
 The worker is supposed to be a load balancer if it's worker type is <b>lb</b>.
@@ -684,7 +673,6 @@ number of member workers.
 </subsection>
 
 <subsection name="Status Worker Directives">
-<br />
 <p>
 The status worker does not communicate with Tomcat.
 Instead it is responsible for the load balancer management.
@@ -809,7 +797,6 @@ This feature has been added in <b>jk 1.2.20</b>.
 </subsection>
 
 <subsection name="Advanced Worker Directives">
-<br />
 <p>
 This table lists more advanced configuration options. Most of them only apply to
 some types of workers. We use the abbreviations <b>AJP</b> for ajp13/ajp14 workers
@@ -1198,7 +1185,6 @@ This feature has been added in <b>jk 1.2.9</b>.
 </subsection>
 
 <subsection name="Deprecated Worker Directives">
-<br/>
 <p>The following directives have been deprecated in the past. We include their documentation
 in case you need to use an older version of mod_jk. We urge you to update and not use
 them any more. Please migrate your existing configurations.

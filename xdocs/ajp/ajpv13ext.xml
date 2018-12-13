@@ -183,8 +183,7 @@ crypto used, and misc datas (timeout...).
 
 <subsection name="Messages Stream">
 <p>
-<source>
-+----------------+------------------+-----------------+
+<source>+----------------+------------------+-----------------+
 | LOGIN INIT CMD | NEGOCIATION DATA | WEB SERVER INFO |
 +----------------+------------------+-----------------+
 
@@ -222,8 +221,7 @@ WEB SERVER INFO, SERVLET ENGINE INFO are CString.
 
 The secret key will be set by a new property in
 workers.properties: secretkey
-<source>
-worker.ajp13.port=8009
+<source>worker.ajp13.port=8009
 worker.ajp13.host=localhost
 worker.ajp13.type=ajp13
 worker.ajp13.secretkey=myverysecretkey
@@ -235,8 +233,7 @@ worker.ajp13.secretkey=myverysecretkey
 <p>
 AJP13 miss a functionality of AJP12, which is shutdown command.
 A logout will tell servlet engine to shutdown itself.
-<source>
-+--------------+----------------------------+
+<source>+--------------+----------------------------+
 | SHUTDOWN CMD | MD5 of RANDOM + SECRET KEY |
 +--------------+----------------------------+
 
@@ -286,8 +283,7 @@ attributes list:
 
 In the AJP13, we've got:
 
-<source>
-AJP13_FORWARD_REQUEST :=
+<source>AJP13_FORWARD_REQUEST :=
     prefix_code      2
     method           (byte)
     protocol         (string)
@@ -317,16 +313,14 @@ AJP13_FORWARD_REQUEST :=
 Using short 'web server attribute name' will reduce the 
 network traffic.
  
-<source>
-+-------------------+---------------------------+-------------------------------+----+
+<source>+-------------------+---------------------------+-------------------------------+----+
 | EXTENDED VARS CMD | WEB SERVER ATTRIBUTE NAME | SERVLET ENGINE ATTRIBUTE NAME | ES |
 +-------------------+---------------------------+-------------------------------+----+
 </source>
 
 ie:
 
-<source>
-JkExtVars S1 SSL_CLIENT_V_START javax.servlet.request.ssl_start_cert_date
+<source>JkExtVars S1 SSL_CLIENT_V_START javax.servlet.request.ssl_start_cert_date
 JkExtVars S2 SSL_CLIENT_V_END   javax.servlet.request.ssl_end_cert_date
 JkExtVars S3 SSL_SESSION_ID     javax.servlet.request.ssl_session_id
 
@@ -395,8 +389,7 @@ these particular virtual server (defined in server.xml).
 This feature will help ISP and big sites which mutualize large farm
 of Tomcat in load balancing configuration.
 
-<source>
-+-----------------+-------------------+----------+----------+----+
+<source>+-----------------+-------------------+----------+----------+----+
 | CONTEXT QRY CMD | VIRTUAL HOST NAME | CONTEXTA | CONTEXTB | ES |
 +-----------------+-------------------+----------+----------+----+
 
@@ -438,8 +431,7 @@ This directive will set the AJP13_CONTEXT_UPDATE_NEG flag.
 
 ie: JkUpdateMount myworker1
 
-<source>
-+--------------------+-------------------+----------+--------+----------+--------+----+
+<source>+--------------------+-------------------+----------+--------+----------+--------+----+
 | CONTEXT UPDATE CMD | VIRTUAL HOST NAME | CONTEXTA | STATUS | CONTEXTB | STATUS | ES |
 +--------------------+-------------------+----------+--------+----------+--------+----+
 </source>
@@ -467,8 +459,7 @@ STATUS is one byte indicating if context is UP/DOWN/INVALID
 This query will be used by the web-server to determine if a given
 contexts are UP, DOWN or INVALID (and should be removed).
 
-<source>
-+-------------------+--------------------+----------+----------+----+
+<source>+-------------------+--------------------+----------+----------+----+
 | CONTEXT STATE CMD |  VIRTUAL HOST NAME | CONTEXTA | CONTEXTB | ES |
 +-------------------+--------------------+----------+----------+----+
 
@@ -501,8 +492,7 @@ where one end (web server or servlet engine), will receive a message it
 couldn't understand. In that case the receiver will send an 
 'UNKNOW PACKET CMD' with attached the unhandled message.
 
-<source>
-+--------------------+------------------------+-------------------+
+<source>+--------------------+------------------------+-------------------+
 | UNKNOWN PACKET CMD | UNHANDLED MESSAGE SIZE | UNHANDLED MESSAGE |
 +--------------------+------------------------+-------------------+
 </source>
@@ -546,8 +536,7 @@ for upload operations with more than 8ko of datas ?
 The hack in the AJP13 protocol is to add some bytes to read after the end of the
 service:
 
-<source>
-EXAMPLE OF DISCUSSION BETWEEN WEB SERVER AND SERVLET ENGINE
+<source>EXAMPLE OF DISCUSSION BETWEEN WEB SERVER AND SERVLET ENGINE
 
 AJP HTTP-HEADER (+ HTTP-POST)   (WEB->SERVLET)
 
@@ -572,8 +561,7 @@ it will search for another servlet engine to handle the request.
 And that feature will help ISP and big sites with farm of tomcat, 
 to updates their servlet engine without any service interruption.
 
-<source>
-+------------+-------------+
+<source>+------------+-------------+
 | STATUS CMD | STATUS DATA |
 +------------+-------------+
 </source>

@@ -64,7 +64,6 @@ Tomcat Connectors (mod_jk, mod_jk2) Downloads</a> page.
 </subsection>
 
 <subsection name="What's the difference between JK and mod_jk ?">
-<br />
 <p>
 <b>JK</b> is a project covering web servers to Tomcat connectors.
 </p>
@@ -221,16 +220,15 @@ Chances are that if you are getting these errors and you obtained Apache as a bi
 that APXS is not configured correctly for your system.  
 Your best bet is to get the Apache source from the <a href="http://httpd.apache.org/">Apache HTTP Server homepage</a> and build it yourself.  
 Use the following for a basic build (read the Apache docs for other options):
-<screen>
-<type>cd /usr/local/src</type><br/>
-<type>gzip -dc apache_1.3.19.tar.gz|tar xvf -</type><br/>
-<type>cd apache_1.3.19</type><br/>
-<type>./configure --prefix=/usr/local/apache \</type><br/>
-<type>            --enable-module=most \</type><br/>
-<type>            --enable-shared=max</type><br/>
-<type>make</type><br/>
-<type>make install</type><br/>
-</screen>
+<source>[user@host] ~ $ cd /usr/local/src
+[user@host] ~ $ gzip -dc apache_1.3.19.tar.gz|tar xvf -
+[user@host] ~ $ cd apache_1.3.19
+[user@host] ~ $ ./configure --prefix=/usr/local/apache \
+            --enable-module=most \
+            --enable-shared=max
+[user@host] ~ $ make
+[user@host] ~ $ make install
+</source>
 </p>
 <p>
 Note: The above steps assume that you downloaded the Apache source and placed it in your /usr/local/src directory.
@@ -275,9 +273,8 @@ You should verify if Apache 1.3 has been build with thread support and if not yo
 the pthreads library to your <b>httpd.conf</b> file. 
 </p>
 
-<source>
-  # Add pthread to Apache in httpd.conf
-  LoadModule "/usr/lib/libpthreads.so"
+<source># Add pthread to Apache in httpd.conf
+LoadModule "/usr/lib/libpthreads.so"
 </source>
 
 <p>
@@ -292,18 +289,16 @@ to Apache 2.x to support JNI.
 Under Linux, you should set some environment variables BEFORE launching your Apache HTTP Server:
 </p>
 
-<screen>
-<read>export LD_LIBRARY_PATH=$jre/bin:$jre/bin/classic:$LD_LIBRARY_PATH</read>
-</screen>
+<source>export LD_LIBRARY_PATH=$jre/bin:$jre/bin/classic:$LD_LIBRARY_PATH
+</source>
 
 <p>
 Also some Linux distributions have enabled a GLIBC feature called 'floating stacks' which may not works with kernel 
 less than 2.4.10 on SMP machines. You should disable floating stacks by exporting an environment variable:
 </p>
 
-<screen>
-<read>export LD_ASSUME_KERNEL=2.2.5</read>
-</screen>
+<source>export LD_ASSUME_KERNEL=2.2.5
+</source>
 
 <p>
 You could have to update your service scripts, ie <b>/etc/rc.d/init.d/httpd</b>, to set these env vars 

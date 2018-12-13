@@ -41,8 +41,7 @@ They can be used to manage the JK web server plugins via the special status work
 
 <subsection name="Simple antlib integration">
 <p>
-<source>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+<source>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 
 &lt;project name="modjk-status" 
          xmlns:jk="urn:org-apache-jk-status"
@@ -80,8 +79,7 @@ They can be used to manage the JK web server plugins via the special status work
 
 <subsection name="Test Result">
 <p>
-<source>
-[echoproperties] #Ant properties
+<source>[echoproperties] #Ant properties
 [echoproperties] #Sun Dec 10 20:40:21 CET 2006
 [echoproperties] worker.node01.lbmult=1
 [echoproperties] worker.loadbalancer.lock=Optimistic
@@ -161,54 +159,51 @@ They can be used to manage the JK web server plugins via the special status work
 
 <subsection name="Update Load Balancer">
 <p>
-<source>
-     &lt;target name="updatelb" &gt;       
- 	    &lt;jk:updateloadbalancer url="${jkstatus.url}" 
-	                username="${jkstatus.username}"
-	                password="${jkstatus.password}"
-	                loadbalancer="loadbalancer"
-	                method="Busyness"
-	                retries="2"
-	                recoverWaitTime="60"
-	                lock="Optimistic"
-	                forceStickySession="false"
-	                stickySession="false"/&gt;
-     &lt;/target&gt;
+<source>&lt;target name="updatelb" &gt;       
+&lt;jk:updateloadbalancer url="${jkstatus.url}" 
+            username="${jkstatus.username}"
+            password="${jkstatus.password}"
+            loadbalancer="loadbalancer"
+            method="Busyness"
+            retries="2"
+            recoverWaitTime="60"
+            lock="Optimistic"
+            forceStickySession="false"
+            stickySession="false"/&gt;
+&lt;/target&gt;
 </source>
 </p>
 </subsection>
 
 <subsection name="Update Worker">
 <p>
-<source>
-     &lt;target name="updatew" &gt;       
- 	    &lt;jk:updateworker url="${jkstatus.url}" 
-	                username="${jkstatus.username}"
-	                password="${jkstatus.password}"
-	                loadbalancer="loadbalancer"
-	      	        worker="node01"
-	                lbfactor="2"
-	                activation="Active"
-	                redirect=""
-	                domain=""
-	                route="node01"
-	                distance="0"/&gt;
-     &lt;/target&gt;
+<source>&lt;target name="updatew" &gt;       
+&lt;jk:updateworker url="${jkstatus.url}" 
+            username="${jkstatus.username}"
+            password="${jkstatus.password}"
+            loadbalancer="loadbalancer"
+  	        worker="node01"
+            lbfactor="2"
+            activation="Active"
+            redirect=""
+            domain=""
+            route="node01"
+            distance="0"/&gt;
+&lt;/target&gt;
 </source>
 </p>
 </subsection>
 
 <subsection name="Reset Worker">
 <p>
-<source>
-     &lt;target name="reset" &gt;       
- 	    &lt;jk:reset url="${jkstatus.url}" 
-	                username="${jkstatus.username}"
-	                password="${jkstatus.password}"
-	                loadbalancer="loadbalancer"
-	      	        worker="node01"
-	                /&gt;
-     &lt;/target&gt;
+<source>&lt;target name="reset" &gt;       
+&lt;jk:reset url="${jkstatus.url}" 
+            username="${jkstatus.username}"
+            password="${jkstatus.password}"
+            loadbalancer="loadbalancer"
+  	        worker="node01"
+            /&gt;
+&lt;/target&gt;
 </source>
 </p>
 </subsection>

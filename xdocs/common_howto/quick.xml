@@ -54,15 +54,12 @@
     to the Tomcat engine, complete documentation is available in <a href="workers.html">Workers HowTo</a>. 
 </p>
 <p>
-<source>
-
-  # Define 1 real worker using ajp13
-  worker.list=worker1
-  # Set properties for worker1 (ajp13)
-  worker.worker1.type=ajp13
-  worker.worker1.host=localhost
-  worker.worker1.port=8009
-
+<source># Define 1 real worker using ajp13
+worker.list=worker1
+# Set properties for worker1 (ajp13)
+worker.worker1.type=ajp13
+worker.worker1.host=localhost
+worker.worker1.port=8009
 </source>
 </p>
 </section>
@@ -116,29 +113,26 @@
   </ul>
 </p>
 <p>
-<source>
-
-  # Load mod_jk module
-  # Update this path to match your modules location
-  LoadModule    jk_module  modules/mod_jk.so
-  # Declare the module for &lt;IfModule directive&gt; (remove this line for Apache 2.x)
-  AddModule     mod_jk.c
-  # Where to find workers.properties
-  # Update this path to match your conf directory location (put workers.properties next to httpd.conf)
-  JkWorkersFile /etc/httpd/conf/workers.properties
-  # Where to put jk shared memory
-  # Update this path to match your local state directory or logs directory
-  JkShmFile     /var/log/httpd/mod_jk.shm
-  # Where to put jk logs
-  # Update this path to match your logs directory location (put mod_jk.log next to access_log)
-  JkLogFile     /var/log/httpd/mod_jk.log
-  # Set the jk log level [debug/error/info]
-  JkLogLevel    info
-  # Select the timestamp log format
-  JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
-  # Send everything for context /examples to worker named worker1 (ajp13)
-  JkMount  /examples/* worker1
-
+<source># Load mod_jk module
+# Update this path to match your modules location
+LoadModule    jk_module  modules/mod_jk.so
+# Declare the module for &lt;IfModule directive&gt; (remove this line for Apache 2.x)
+AddModule     mod_jk.c
+# Where to find workers.properties
+# Update this path to match your conf directory location (put workers.properties next to httpd.conf)
+JkWorkersFile /etc/httpd/conf/workers.properties
+# Where to put jk shared memory
+# Update this path to match your local state directory or logs directory
+JkShmFile     /var/log/httpd/mod_jk.shm
+# Where to put jk logs
+# Update this path to match your logs directory location (put mod_jk.log next to access_log)
+JkLogFile     /var/log/httpd/mod_jk.log
+# Set the jk log level [debug/error/info]
+JkLogLevel    info
+# Select the timestamp log format
+JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
+# Send everything for context /examples to worker named worker1 (ajp13)
+JkMount  /examples/* worker1
 </source>
 </p>
 </section>

@@ -28,7 +28,6 @@
 </properties>
 <body>
 <section name="Introduction"> 
-<br/>
 <p>A load balancer is a worker that does not directly communicate with Tomcat.
 Instead it is responsible for the management of several "real" workers,
 called members or sub workers of the load balancer.</p>
@@ -93,17 +92,16 @@ load will be distributed proportional to the factors given. Higher factors lead 
 more requests.</li>
 </ul>
 
-<source>
-  # The load balancer worker balance1 will distribute
-  # load to the members worker1 and worker2
-  worker.balance1.type=lb
-  worker.balance1.balance_workers=worker1, worker2
-  worker.worker1.type=ajp13
-  worker.worker1.host=myhost1
-  worker.worker1.port=8009
-  worker.worker2.type=ajp13
-  worker.worker1.host=myhost2
-  worker.worker1.port=8009
+<source># The load balancer worker balance1 will distribute
+# load to the members worker1 and worker2
+worker.balance1.type=lb
+worker.balance1.balance_workers=worker1, worker2
+worker.worker1.type=ajp13
+worker.worker1.host=myhost1
+worker.worker1.port=8009
+worker.worker2.type=ajp13
+worker.worker1.host=myhost2
+worker.worker1.port=8009
 </source>
 
 <warn>
@@ -153,25 +151,24 @@ maintenance will reduce logging of false errors by mod_jk.</p>
 <code>activation</code> set to <b>disabled</b> in combination with
 the attribute <code>redirect</code> added to the other workers:</p>
 
-<source>
-  # The advanced router LB worker
-  worker.list=router
-  worker.router.type=lb
-  worker.router.balance_workers=worker1,worker2
+<source># The advanced router LB worker
+worker.list=router
+worker.router.type=lb
+worker.router.balance_workers=worker1,worker2
 
-  # Define the first member worker
-  worker.worker1.type=ajp13
-  worker.worker1.host=myhost1
-  worker.worker1.port=8009
-  # Define preferred failover node for worker1
-  worker.worker1.redirect=worker2
+# Define the first member worker
+worker.worker1.type=ajp13
+worker.worker1.host=myhost1
+worker.worker1.port=8009
+# Define preferred failover node for worker1
+worker.worker1.redirect=worker2
 
-  # Define the second member worker
-  worker.worker2.type=ajp13
-  worker.worker2.host=myhost2
-  worker.worker2.port=8009
-  # Disable worker2 for all requests except failover
-  worker.worker2.activation=disabled
+# Define the second member worker
+worker.worker2.type=ajp13
+worker.worker2.host=myhost2
+worker.worker2.port=8009
+# Disable worker2 for all requests except failover
+worker.worker2.activation=disabled
 </source>
 
 <p>
@@ -205,25 +202,22 @@ The status worker does not communicate with Tomcat.
 Instead it is responsible for the worker management. It is
 especially useful when combined with load balancer workers.
 </p>
-<source>
-  # Add the status worker to the worker list
-  worker.list=jkstatus
-  # Define a 'jkstatus' worker using status
-  worker.jkstatus.type=status
+<source># Add the status worker to the worker list
+worker.list=jkstatus
+# Define a 'jkstatus' worker using status
+worker.jkstatus.type=status
 </source>
 <p>Next thing is to mount the requests to the jkstatus worker. For Apache
 HTTP Servers use:</p>
-<source>
-  # Add the jkstatus mount point
-  JkMount /jkmanager/* jkstatus 
+<source># Add the jkstatus mount point
+JkMount /jkmanager/* jkstatus 
 </source>
 <p>To obtain a higher level of security use the:</p>
-<source>
-  # Enable the JK manager access from localhost only
- &lt;Location /jkmanager/&gt;
-    JkMount jkstatus
-    Require ip 127.0.0.1
- &lt;/Location&gt;
+<source># Enable the JK manager access from localhost only
+&lt;Location /jkmanager/&gt;
+  JkMount jkstatus
+  Require ip 127.0.0.1
+&lt;/Location&gt;
 </source>
 
 </subsection>
