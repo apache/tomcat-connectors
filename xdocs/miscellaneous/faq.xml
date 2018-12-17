@@ -22,7 +22,7 @@
    limitations under the License.
 </copyright>
 <properties>
-<title>FAQ</title>
+<title>Frequently Asked Questions</title>
 <author email="hgomez@apache.org">Henri Gomez</author>
 <date>$Date$</date>
 </properties>
@@ -92,7 +92,7 @@ For <b>JK 1.2.x</b>, you should read:
 <ul>
 
 <li>
-<a href="../common_howto/quick.html">For the impatient</a>
+<a href="../common_howto/quick.html">Quick Start</a>
 </li>
 
 <li>
