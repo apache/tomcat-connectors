@@ -103,8 +103,9 @@ cd xdocs
 ant
 
 
-Check the documentation carefully (produced in build/docs)
-and copy it to people.apache.org:/x1/www/tomcat.apache.org/connectors-doc
+After checking the documentation carefully (produced in build/docs),
+see https://svn.apache.org/viewvc/tomcat/site/trunk/README.txt?view=markup
+for instructions on how to deploy the site docs.
 
 Create the new source distribution
 ----------------------------------
