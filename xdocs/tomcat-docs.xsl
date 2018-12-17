@@ -46,7 +46,6 @@
   <xsl:param    name="buglink"             select="'https://bz.apache.org/bugzilla/show_bug.cgi?id='"/>
   <xsl:param    name="revlink"             select="'https://svn.apache.org/viewvc?view=rev&amp;rev='"/>
   <xsl:param    name="doclink"             select="'https://tomcat.apache.org/connectors-doc'"/>
-  <xsl:param    name="contextroot"         select="'/connectors-doc'"/>
   <xsl:param    name="sylink"              select="'https://tomcat.apache.org/security-jk.html'"/>
   <xsl:param    name="dllink"              select="'https://tomcat.apache.org/download-connectors.cgi'"/>
   <xsl:param    name="sitedir"             select="''"/>
@@ -247,14 +246,7 @@
     <xsl:variable name="href">
       <xsl:value-of select="@href"/>
     </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="starts-with(@href,'http') or starts-with(@href,'https')">
-        <li><a href="{$href}"><xsl:value-of select="@name"/></a></li>
-      </xsl:when>
-      <xsl:otherwise>
-        <li><a href="{$contextroot}/{$href}"><xsl:value-of select="@name"/></a></li>
-      </xsl:otherwise>
-    </xsl:choose>
+    <li><a href="{$href}"><xsl:value-of select="@name"/></a></li>
   </xsl:template>
 
 
