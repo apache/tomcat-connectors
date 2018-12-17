@@ -89,6 +89,7 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
+      <param name="subdir" expression="reference/"/>
     </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/reference/printer"/>
     <xslt basedir="reference"
@@ -99,6 +100,7 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
+      <param name="subdir" expression="reference/"/>
     </xslt>
 
     <!-- Common Howto -->
@@ -109,6 +111,7 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
+      <param name="subdir" expression="common_howto/"/>
     </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/common_howto/printer"/>
     <xslt basedir="common_howto"
@@ -119,6 +122,7 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
+      <param name="subdir" expression="common_howto/"/>
     </xslt>
 
     <!-- Webserver Howto -->
@@ -129,6 +133,7 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
+      <param name="subdir" expression="webserver_howto/"/>
     </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/webserver_howto/printer"/>
     <xslt basedir="webserver_howto"
@@ -139,6 +144,7 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
+      <param name="subdir" expression="webserver_howto/"/>
     </xslt>
 
     <!-- AJP Protocol Reference -->
@@ -149,6 +155,7 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
+      <param name="subdir" expression="ajp/"/>
     </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/ajp/printer"/>
     <xslt basedir="ajp"
@@ -159,6 +166,7 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
+      <param name="subdir" expression="ajp/"/>
     </xslt>
 
     <!-- Miscellaneous Documentation -->
@@ -169,6 +177,7 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
+      <param name="subdir" expression="miscellaneous/"/>
     </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/miscellaneous/printer"/>
     <xslt basedir="miscellaneous"
@@ -179,6 +188,7 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
+      <param name="subdir" expression="miscellaneous/"/>
     </xslt>
 
     <!-- News -->
@@ -189,6 +199,7 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
+      <param name="subdir" expression="news/"/>
     </xslt>
     <mkdir     dir="${build.dir}/${dist.name}/news/printer"/>
     <xslt basedir="news"
@@ -199,6 +210,7 @@
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
+      <param name="subdir" expression="news/"/>
     </xslt>
  
   </target>
