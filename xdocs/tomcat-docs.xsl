@@ -439,6 +439,119 @@
     </table>
   </xsl:template>
 
+  <!-- Process an advanced directives list with nested directive elements -->
+  <xsl:template match="advanceddirectives">
+    <table class="defaultTable">
+      <tr>
+        <th style="width: 10%;">
+          <font color="#ffffff">Directive</font>
+        </th>
+        <th style="width: 10%;">
+          <font color="#ffffff">Worker Type</font>
+        </th>
+        <th style="width: 8%;">
+          <font color="#ffffff">Default</font>
+        </th>
+        <th style="width: 72%;">
+          <font color="#ffffff">Description</font>
+        </th>
+      </tr>
+      <xsl:for-each select="directive">
+        <tr>
+          <td>
+            <xsl:if test="@required = 'true'">
+              <strong><code class="attributeName"><xsl:value-of select="@name"/></code></strong>
+            </xsl:if>
+            <xsl:if test="@required != 'true'">
+              <code class="attributeName"><xsl:value-of select="@name"/></code>
+            </xsl:if>
+          </td>
+          <xsl:choose>
+            <xsl:when test="@workers != ''">
+              <td>
+                <code><xsl:value-of select="@workers"/></code>
+              </td>
+            </xsl:when>
+            <xsl:otherwise>
+              <td>
+                <code>?</code>
+              </td>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:choose>
+            <xsl:when test="@default != ''">
+              <td>
+                <code><xsl:value-of select="@default"/></code>
+              </td>
+            </xsl:when>
+            <xsl:otherwise>
+              <td>
+                <code>-</code>
+              </td>
+            </xsl:otherwise>
+          </xsl:choose>
+          <td>
+            <xsl:apply-templates/>
+          </td>
+        </tr>
+      </xsl:for-each>
+    </table>
+  </xsl:template>
+
+  <!-- Process a deprecations list with nested directive elements -->
+  <xsl:template match="deprecations">
+    <table class="defaultTable">
+      <tr>
+        <th style="width: 15%;">
+          <font color="#ffffff">Directive</font>
+        </th>
+        <th style="width: 15%;">
+          <font color="#ffffff">Successor</font>
+        </th>
+        <th style="width: 10%;">
+          <font color="#ffffff">Default</font>
+        </th>
+        <th style="width: 60%;">
+          <font color="#ffffff">Description</font>
+        </th>
+      </tr>
+      <xsl:for-each select="directive">
+        <tr>
+          <td>
+            <code class="attributeName"><xsl:value-of select="@name"/></code>
+          </td>
+          <xsl:choose>
+            <xsl:when test="@successor != ''">
+              <td>
+               <code><xsl:value-of select="@successor"/></code>
+              </td>
+            </xsl:when>
+            <xsl:otherwise>
+              <td>
+                <code>-</code>
+              </td>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:choose>
+            <xsl:when test="@default != ''">
+              <td>
+                <code><xsl:value-of select="@default"/></code>
+              </td>
+            </xsl:when>
+            <xsl:otherwise>
+              <td>
+                <code>-</code>
+              </td>
+            </xsl:otherwise>
+          </xsl:choose>
+          <td>
+            <xsl:apply-templates/>
+          </td>
+        </tr>
+      </xsl:for-each>
+    </table>
+  </xsl:template>
+
   <!-- Process a properties list with nested property elements -->
   <xsl:template match="properties">
     <table class="defaultTable">
