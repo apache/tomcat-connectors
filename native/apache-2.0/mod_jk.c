@@ -2793,6 +2793,7 @@ static int jk_handler(request_rec * r)
                 clean_uri = apr_pstrdup(r->pool, r->uri);
                 rc = jk_servlet_normalize(clean_uri, xconf->log);
                 if (rc != 0) {
+                    JK_TRACE_EXIT(xconf->log);
                     return HTTP_BAD_REQUEST;
                 }
 
@@ -3788,6 +3789,8 @@ static int jk_translate(request_rec * r)
             int rc;
             const char *worker;
 
+            JK_TRACE_ENTER(conf->log);
+
             if ((r->handler != NULL) && (!strcmp(r->handler, JK_HANDLER))) {
                 /* Somebody already set the handler, probably manual config
                  * or "native" configuration, no need for extra overhead
@@ -3795,6 +3798,7 @@ static int jk_translate(request_rec * r)
                 if (JK_IS_DEBUG_LEVEL(conf->log))
                     jk_log(conf->log, JK_LOG_DEBUG,
                            "Manually mapped, no need to call uri_to_worker");
+                JK_TRACE_EXIT(conf->log);
                 return DECLINED;
             }
 
@@ -3804,12 +3808,14 @@ static int jk_translate(request_rec * r)
                            "Into translate no-jk env var detected for uri=%s, declined",
                            r->uri);
 
+                JK_TRACE_EXIT(conf->log);
                 return DECLINED;
             }
 
             clean_uri = apr_pstrdup(r->pool, r->uri);
             rc = jk_servlet_normalize(clean_uri, conf->log);
             if (rc != 0) {
+                JK_TRACE_EXIT(conf->log);
                 return HTTP_BAD_REQUEST;
             }
 
@@ -3842,6 +3848,7 @@ static int jk_translate(request_rec * r)
                         jk_log(conf->log, JK_LOG_DEBUG,
                                "JkAutoAlias, no DirectoryIndex file for URI %s",
                                r->uri);
+                    JK_TRACE_EXIT(conf->log);
                     return DECLINED;
                 }
             }
@@ -3851,6 +3858,7 @@ static int jk_translate(request_rec * r)
                            "missing uri map for %s:%s",
                            conf->s->server_hostname ? conf->s->server_hostname : "_default_",
                            r->uri);
+                JK_TRACE_EXIT(conf->log);
                 return DECLINED;
             }
             else {
@@ -3875,6 +3883,7 @@ static int jk_translate(request_rec * r)
                     apr_table_setn(r->main->notes, JK_NOTE_WORKER_NAME, worker);
                 }
 
+                JK_TRACE_EXIT(conf->log);
                 return OK;
             }
             else if (conf->alias_dir != NULL) {
@@ -3915,6 +3924,7 @@ static int jk_translate(request_rec * r)
                                     jk_log(conf->log, JK_LOG_DEBUG,
                                            "AutoAlias HTTP_NOT_FOUND for URI: %s",
                                            r->uri);
+                                JK_TRACE_EXIT(conf->log);
                                 return HTTP_NOT_FOUND;
                             }
                         }
@@ -3945,6 +3955,7 @@ static int jk_translate(request_rec * r)
                                            "AutoAlias OK for file: %s",
                                            ret);
                                 r->filename = ret;
+                                JK_TRACE_EXIT(conf->log);
                                 return OK;
                             }
                         }
@@ -3958,6 +3969,7 @@ static int jk_translate(request_rec * r)
                                     jk_log(conf->log, JK_LOG_DEBUG,
                                            "AutoAlias HTTP_FORBIDDEN for URI: %s",
                                            r->uri);
+                                JK_TRACE_EXIT(conf->log);
                                 return HTTP_FORBIDDEN;
                             }
                         }
@@ -4000,6 +4012,8 @@ static int jk_map_to_storage(request_rec * r)
             int rc;
             const char *worker;
 
+            JK_TRACE_ENTER(conf->log);
+
             if ((r->handler != NULL) && (!strcmp(r->handler, JK_HANDLER))) {
                 /* Somebody already set the handler, probably manual config
                  * or "native" configuration, no need for extra overhead
@@ -4007,6 +4021,7 @@ static int jk_map_to_storage(request_rec * r)
                 if (JK_IS_DEBUG_LEVEL(conf->log))
                     jk_log(conf->log, JK_LOG_DEBUG,
                            "Manually mapped, no need to call uri_to_worker");
+                JK_TRACE_EXIT(conf->log);
                 return DECLINED;
             }
 
@@ -4016,12 +4031,14 @@ static int jk_map_to_storage(request_rec * r)
                            "Into map_to_storage no-jk env var detected for uri=%s, declined",
                            r->uri);
 
+                JK_TRACE_EXIT(conf->log);
                 return DECLINED;
             }
 
             clean_uri = apr_pstrdup(r->pool, r->uri);
             rc = jk_servlet_normalize(clean_uri, conf->log);
             if (rc != 0) {
+                JK_TRACE_EXIT(conf->log);
                 return HTTP_BAD_REQUEST;
             }
 
@@ -4031,6 +4048,7 @@ static int jk_map_to_storage(request_rec * r)
                            "missing uri map for %s:%s",
                            conf->s->server_hostname ? conf->s->server_hostname : "_default_",
                            r->uri);
+                JK_TRACE_EXIT(conf->log);
                 return DECLINED;
             }
             else {
@@ -4065,9 +4083,11 @@ static int jk_map_to_storage(request_rec * r)
                     if (r->filename) {
                         jk_strip_session_id(r->filename, conf->strip_session_name, conf->log);
                     }
+                    JK_TRACE_EXIT(conf->log);
                     return DECLINED;
                 }
             }
+		JK_TRACE_EXIT(conf->log);
         }
     }
 

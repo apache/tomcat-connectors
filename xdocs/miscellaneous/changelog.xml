@@ -43,6 +43,10 @@
 <section name="Changes between 1.2.46 and 1.2.47">
   <subsection name="Native">
     <changelog>
+      <add>
+        Extend trace level logging of method entry/exit to aid debugging of
+        request mapping issues. (markt)
+      </add>
     </changelog>
   </subsection>
 </section>
