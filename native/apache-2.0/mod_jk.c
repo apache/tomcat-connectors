@@ -4035,6 +4035,15 @@ static int jk_map_to_storage(request_rec * r)
                 return DECLINED;
             }
 
+            // Not a URI based request - e.g. file based SSI include
+            if (strlen(r->uri) == 0) {
+                jk_log(conf->log, JK_LOG_DEBUG,
+                       "File based (sub-)request for file=%s. No URI to match.",
+					   r->filename);
+                JK_TRACE_EXIT(conf->log);
+                return DECLINED;
+            }
+
             clean_uri = apr_pstrdup(r->pool, r->uri);
             rc = jk_servlet_normalize(clean_uri, conf->log);
             if (rc != 0) {
