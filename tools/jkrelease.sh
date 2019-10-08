@@ -166,14 +166,14 @@ then
 fi
 if [ -n "$revision" ]
 then
-    if [ $USE_GIT == 0 ]
+    if [ $USE_GIT -eq 0 ]
     then
         revision="-r $revision"
     fi
 fi
 if [ -n "$trunk" ]
 then
-    if [ $USE_GIT == 1 ]
+    if [ $USE_GIT -eq 1 ]
     then
         JK_REV=`git ls-remote $REPOS refs/heads/master | awk '{print $1}'`
         if [ -z "$JK_REV" ]
@@ -203,7 +203,7 @@ then
     fi
 elif [ -n "$branch" ]
 then
-    if [ $USE_GIT == 1 ]
+    if [ $USE_GIT -eq 1 ]
     then
         JK_REV=`git ls-remote $REPOS refs/heads/$branch | awk '{print $1}'`
         if [ -z "$JK_REV" ]
@@ -232,7 +232,7 @@ then
        echo "Directory '$local_dir' does not exist - Aborting!"
        exit 6
     fi
-    if [ $USE_GIT == 1 ]
+    if [ $USE_GIT -eq 1 ]
     then
         JK_REV=`git --git-dir=$local_dir rev-parse HEAD`
         if [ -z "$JK_REV" ]
@@ -254,7 +254,7 @@ then
         JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
     fi
 else
-    if [ $USE_GIT == 1 ]
+    if [ $USE_GIT -eq 1 ]
     then
         if [ -n "$tag" ]
         then
@@ -316,7 +316,7 @@ rm -rf ${JK_DIST} 2>/dev/null || true
 rm -rf ${JK_DIST}.* 2>/dev/null || true
 
 mkdir -p ${JK_DIST}.tmp
-if [ $USE_GIT == 0 ]
+if [ $USE_GIT -eq 0 ]
 then
     svn export $revision "${JK_REPOS_URL}" ${JK_DIST}.tmp/jk
     if [ $? -ne 0 ]
