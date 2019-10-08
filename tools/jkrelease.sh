@@ -105,12 +105,13 @@ do
 done
 shift `expr $OPTIND - 1`
 
-if [ "X$repos" -eq "Xgit" ]
+if [ "X$repos" == "Xgit" ]
 then
     USE_GIT=1
     REPOS=$GIT_REPOS
     JK_REPOS_URL=$REPOS
-elif [ "X$repos" -eq "Xsvn" ]
+elif [ "X$repos" == "Xsvn" ]
+then
     USE_GIT=0
     REPOS=$SVN_REPOS
 else
