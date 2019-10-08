@@ -234,6 +234,7 @@ rm -f ${targetdir}/native/LICENSE
 find ${JK_DIST} -name .cvsignore -exec rm -rf \{\} \; 
 find ${JK_DIST} -name CVS -exec rm -rf \{\} \; 
 find ${JK_DIST} -name .svn -exec rm -rf \{\} \; 
+find ${JK_DIST} -name .git -exec rm -rf \{\} \; 
 
 cd ${JK_DIST}/native
 
