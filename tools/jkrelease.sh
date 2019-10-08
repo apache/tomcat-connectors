@@ -152,6 +152,7 @@ fi
 if [ -n "$revision" ]
 then
     if [ $USE_GIT == 0 ]
+    then
         revision="-r $revision"
     fi
 fi
@@ -240,9 +241,9 @@ then
 else
     if [ $USE_GIT == 1 ]
     then
-        if [ -n $tag ]
+        if [ -n "$tag" ]
         then
-            if [ -z $force ]
+            if [ -z "$force" ]
             then
                 echo $tag | grep "^$version" > /dev/null 2>&1
                 if [ "X$tag" != "X$version" ]
@@ -271,9 +272,9 @@ else
         JK_DIST=${JK_CVST}-${version}${JK_SUFFIX}-src
     else
         JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
-        if [ -n $tag ]
+        if [ -n "$tag" ]
         then
-            if [ -z $force ]
+            if [ -z "$force" ]
             then
                 echo $tag | grep "^$JK_TAG" > /dev/null 2>&1
                 if [ $? -gt 0 ]
