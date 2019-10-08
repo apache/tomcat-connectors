@@ -26,8 +26,8 @@
 # gpg
 # And any one of: w3m, elinks, links (links2)
 
-SVNROOT="http://svn.apache.org/repos/asf"
-SVNPROJ="tomcat/jk"
+REPOS_ROOT="http://svn.apache.org/repos/asf"
+REPOS_PROJ="tomcat/jk"
 JK_CVST="tomcat-connectors"
 JK_OWNER="root"
 JK_GROUP="bin"
@@ -138,18 +138,18 @@ then
 fi
 if [ -n "$trunk" ]
 then
-    JK_SVN_URL="${SVNROOT}/${SVNPROJ}/trunk"
-    svn_url_info="`svn help info | grep URL`"
-    if [ -n "$svn_url_info" ]
+    JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/trunk"
+    repos_use_url="`svn help info | grep URL`"
+    if [ -n "$repos_use_url" ]
     then
-	JK_SVN_INFO="${JK_SVN_URL}"
+	JK_REPOS_INFO_PATH="${JK_REPOS_URL}"
     else
-	JK_SVN_INFO=.
+	JK_REPOS_INFO_PATH=.
     fi
-    JK_REV=`svn info $revision $JK_SVN_INFO | awk '$1 == "Revision:" {print $2}'`
+    JK_REV=`svn info $revision $JK_REPOS_INFO_PATH | awk '$1 == "Revision:" {print $2}'`
     if [ -z "$JK_REV" ]
     then
-       echo "No Revision found at '$JK_SVN_URL'"
+       echo "No Revision found at '$JK_REPOS_URL'"
        exit 3
     fi
     JK_SUFFIX=-${JK_REV}
@@ -157,22 +157,22 @@ then
 elif [ -n "$branch" ]
 then
     JK_BRANCH=`echo $branch | sed -e 's#/#__#g'`
-    JK_SVN_URL="${SVNROOT}/${SVNPROJ}/branches/$branch"
-    JK_REV=`svn info $revision ${JK_SVN_URL} | awk '$1 == "Revision:" {print $2}'`
+    JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/branches/$branch"
+    JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
     if [ -z "$JK_REV" ]
     then
-       echo "No Revision found at '$JK_SVN_URL'"
+       echo "No Revision found at '$JK_REPOS_URL'"
        exit 3
     fi
     JK_SUFFIX=-${JK_BRANCH}-${JK_REV}
     JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 elif [ -n "$local_dir" ]
 then
-    JK_SVN_URL="$local_dir"
-    JK_REV=`svn info $revision ${JK_SVN_URL} | awk '$1 == "Revision:" {print $2}'`
+    JK_REPOS_URL="$local_dir"
+    JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
     if [ -z "$JK_REV" ]
     then
-       echo "No Revision found at '$JK_SVN_URL'"
+       echo "No Revision found at '$JK_REPOS_URL'"
        exit 3
     fi
     JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
@@ -194,11 +194,11 @@ else
         fi
         JK_TAG=$tag
     fi
-    JK_SVN_URL="${SVNROOT}/${SVNPROJ}/tags/${JK_TAG}"
+    JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/tags/${JK_TAG}"
     JK_DIST=${JK_CVST}-${JK_VER}-src
 fi
 
-echo "Using subversion URL: $JK_SVN_URL"
+echo "Using checkout URL: $JK_REPOS_URL"
 echo "Rolling into file $JK_DIST.*"
 sleep 2
 
@@ -208,7 +208,7 @@ rm -rf ${JK_DIST} 2>/dev/null || true
 rm -rf ${JK_DIST}.* 2>/dev/null || true
 
 mkdir -p ${JK_DIST}.tmp
-svn export $revision "${JK_SVN_URL}" ${JK_DIST}.tmp/jk
+svn export $revision "${JK_REPOS_URL}" ${JK_DIST}.tmp/jk
 if [ $? -ne 0 ]; then
   echo "svn export failed"
   exit 1
