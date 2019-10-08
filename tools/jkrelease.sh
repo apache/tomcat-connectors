@@ -195,8 +195,6 @@ else
         JK_TAG=$tag
     fi
     JK_SVN_URL="${SVNROOT}/${SVNPROJ}/tags/${JK_TAG}"
-    JK_REV=`svn info $revision ${JK_SVN_URL} | awk '$1 == "Revision:" {print $2}'`
-    JK_SUFFIX=" ($JK_REV)"
     JK_DIST=${JK_CVST}-${JK_VER}-src
 fi
 
