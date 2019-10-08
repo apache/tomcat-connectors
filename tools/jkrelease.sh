@@ -50,7 +50,8 @@ usage() {
     echo "        -f: force, do not validate tag against version"
     echo "        -h: create text documentation for html"
     echo "        -t: tag to use if different from version"
-    echo "        -r: revision or hash to package"
+    echo "        -r: revision or hash to package, only allowed in"
+    echo "            combination with '-b BRANCH', '-T' or '-d DIR'"
     echo "        -b: package from branch BRANCH"
     echo "        -T: package from trunk/master"
     echo "        -d: package from local directory"
@@ -77,6 +78,7 @@ copy_files() {
 
 txtgen=n
 conflict=0
+rev_allowed=0
 while getopts :R:v:t:r:b:d:p:k:o:g:Tfh c
 do
     case $c in
@@ -91,10 +93,13 @@ do
     g)         JK_GROUP=$OPTARG;;
     b)         branch=$OPTARG
                conflict=$(($conflict+1));;
+               rev_allowed=1
     T)         trunk=trunk
                conflict=$(($conflict+1));;
+               rev_allowed=1
     d)         local_dir=$OPTARG
                conflict=$(($conflict+1));;
+               rev_allowed=1
     f)         force='y';;
     h)         txtgen='y';;
     \:)        usage
@@ -125,6 +130,16 @@ then
     usage
     echo "Only one of the options '-t', '-b', '-T'  and '-d' is allowed."
     exit 2
+fi
+
+if [ -n "$revision" ]
+then
+    if [ $rev_allowed -eq 0 ]
+    then
+        usage
+        echo "Option '-r revision' only allowed in combination with '-b BRANCH', '-T' or '-d DIR'"
+        exit 2
+    fi
 fi
 
 if [ -n "$local_dir" ]
