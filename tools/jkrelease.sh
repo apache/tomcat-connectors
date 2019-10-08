@@ -19,14 +19,15 @@
 # Make sure to set your path so that we can find
 # the following binaries:
 # cd, mkdir, cp, rm, find
-# svn
+# svn or git
 # ant
 # libtoolize, aclocal, autoheader, automake, autoconf
 # tar, zip, gzip
 # gpg
 # And any one of: w3m, elinks, links (links2)
 
-REPOS_ROOT="http://svn.apache.org/repos/asf"
+SVN_REPOS_ROOT="http://svn.apache.org/repos/asf"
+GIT_REPOS_ROOT="https://gitbox.apache.org/repos/asf"
 REPOS_PROJ="tomcat/jk"
 JK_CVST="tomcat-connectors"
 JK_OWNER="root"
@@ -44,15 +45,16 @@ SIGN_OPTS=""
 #################### FUNCTIONS ##############
 
 usage() {
-    echo "Usage:: $0 -v VERSION [-f] [-r revision] [-t tag | -b BRANCH | -T | -d DIR]"
+    echo "Usage:: $0 -R (git|svn) -v VERSION [-f] [-r revision] [-t tag | -b BRANCH | -T | -d DIR]"
+    echo "        -R: Use git or svn to check out from repos"
     echo "        -v: version to package"
     echo "        -f: force, do not validate tag against version"
     echo "        -h: create text documentation for html"
-    echo "        -t: tag to use if different from version"
-    echo "        -r: revision to package"
-    echo "        -b: package from branch BRANCH"
-    echo "        -T: package from trunk"
-    echo "        -d: package from local directory"
+    echo "        -t: tag to use if different from version (only for svn)"
+    echo "        -r: revision to package (only for svn)"
+    echo "        -b: package from branch BRANCH (only for svn)"
+    echo "        -T: package from trunk (only for svn)"
+    echo "        -d: package from local directory (only for svn)"
     echo "        -o: owner used for creating tar archive"
     echo "        -g: group used for creating tar archive"
     echo "        -p: GNU PG passphrrase used for signing"
@@ -76,9 +78,10 @@ copy_files() {
 
 txtgen=n
 conflict=0
-while getopts :v:t:r:b:d:p:k:o:g:Tfh c
+while getopts :R:v:t:r:b:d:p:k:o:g:Tfh c
 do
     case $c in
+    R)         repos=$OPTARG;;
     v)         version=$OPTARG;;
     t)         tag=$OPTARG
                conflict=$(($conflict+1));;
@@ -103,6 +106,19 @@ do
 done
 shift `expr $OPTIND - 1`
 
+if [ "X$repos" -eq "Xgit" ]
+then
+    USE_GIT=1
+    REPOS_ROOT=$GIT_REPOS_ROOT
+elif [ "X$repos" -eq "Xsvn" ]
+    USE_GIT=0
+    REPOS_ROOT=$SVN_REPOS_ROOT
+else
+    usage
+    echo "Option '-R git' or '-R svn' must be set."
+    exit 2
+fi
+
 if [ $conflict -gt 1 ]
 then
     usage
@@ -112,6 +128,11 @@ fi
 
 if [ -n "$local_dir" ]
 then
+    if [ $USE_GIT == 1 ]
+    then
+        echo "Releasing from a local directory is not yet supported when using git."
+        exit 5
+    fi
     echo "Caution: Packaging from directory!"
     echo "Make sure the directory is committed."
     answer="x"
@@ -134,10 +155,20 @@ then
 fi
 if [ -n "$revision" ]
 then
+    if [ $USE_GIT == 1 ]
+    then
+        echo "Using an explicit revision is not yet supported when using git."
+        exit 5
+    fi
     revision="-r $revision"
 fi
 if [ -n "$trunk" ]
 then
+    if [ $USE_GIT == 1 ]
+    then
+        echo "Releasing from trunk is not yet supported when using git."
+        exit 5
+    fi
     JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/trunk"
     repos_use_url="`svn help info | grep URL`"
     if [ -n "$repos_use_url" ]
@@ -156,6 +187,11 @@ then
     JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 elif [ -n "$branch" ]
 then
+    if [ $USE_GIT == 1 ]
+    then
+        echo "Releasing from a branch is not yet supported when using git."
+        exit 5
+    fi
     JK_BRANCH=`echo $branch | sed -e 's#/#__#g'`
     JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/branches/$branch"
     JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
@@ -168,6 +204,11 @@ then
     JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 elif [ -n "$local_dir" ]
 then
+    if [ $USE_GIT == 1 ]
+    then
+        echo "Releasing from a local directory is not yet supported when using git."
+        exit 5
+    fi
     JK_REPOS_URL="$local_dir"
     JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
     if [ -z "$JK_REV" ]
@@ -178,24 +219,35 @@ then
     JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
     JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 else
-    JK_VER=$version
-    JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
-    if [ -n $tag ]
+    if [ $USE_GIT == 1 ]
     then
-        if [ -z $force ]
+        if [ -n $tag ]
         then
-            echo $tag | grep "^$JK_TAG" > /dev/null 2>&1
-            if [ $? -gt 0 ]
-            then
-                echo "Tag '$tag' doesn't belong to version '$version'."
-                echo "Force using '-f' if you are sure."
-                exit 5
-            fi
+            echo "Releasing with an explicit tag is not yet supported when using git."
+            exit 5
         fi
-        JK_TAG=$tag
+        JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}"
+        JK_DIST=${JK_CVST}-${JK_VER}-src
+    else
+        JK_VER=$version
+        JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
+        if [ -n $tag ]
+        then
+            if [ -z $force ]
+            then
+                echo $tag | grep "^$JK_TAG" > /dev/null 2>&1
+                if [ $? -gt 0 ]
+                then
+                    echo "Tag '$tag' doesn't belong to version '$version'."
+                    echo "Force using '-f' if you are sure."
+                    exit 5
+                fi
+            fi
+            JK_TAG=$tag
+        fi
+        JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/tags/${JK_TAG}"
+        JK_DIST=${JK_CVST}-${JK_VER}-src
     fi
-    JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/tags/${JK_TAG}"
-    JK_DIST=${JK_CVST}-${JK_VER}-src
 fi
 
 echo "Using checkout URL: $JK_REPOS_URL"
@@ -208,10 +260,29 @@ rm -rf ${JK_DIST} 2>/dev/null || true
 rm -rf ${JK_DIST}.* 2>/dev/null || true
 
 mkdir -p ${JK_DIST}.tmp
-svn export $revision "${JK_REPOS_URL}" ${JK_DIST}.tmp/jk
-if [ $? -ne 0 ]; then
-  echo "svn export failed"
-  exit 1
+if [ $USE_GIT == 0 ]
+then
+    svn export $revision "${JK_REPOS_URL}" ${JK_DIST}.tmp/jk
+    if [ $? -ne 0 ]
+    then
+      echo "svn export failed"
+      exit 1
+    fi
+else
+    git clone "${JK_REPOS_URL}" ${JK_DIST}.tmp/jk
+    if [ $? -ne 0 ]
+    then
+      echo "git clone '${JK_REPOS_URL}' to '${JK_DIST}.tmp/jk' failed"
+      exit 1
+    fi
+    cd ${JK_DIST}.tmp/jk
+    git checkout $version
+    if [ $? -ne 0 ]
+    then
+      echo "git checkout for version $version from cloned '${JK_REPOS_URL}' in directory '`pwd`' failed"
+      exit 1
+    fi
+    cd ../..
 fi
 
 # Build documentation.
