@@ -26,9 +26,8 @@
 # gpg
 # And any one of: w3m, elinks, links (links2)
 
-SVN_REPOS_ROOT="http://svn.apache.org/repos/asf"
-GIT_REPOS_ROOT="https://gitbox.apache.org/repos/asf"
-REPOS_PROJ="tomcat/jk"
+SVN_REPOS="http://svn.apache.org/repos/asf/tomcat/jk"
+GIT_REPOS="https://gitbox.apache.org/repos/asf/tomcat-jk.git"
 JK_CVST="tomcat-connectors"
 JK_OWNER="root"
 JK_GROUP="bin"
@@ -109,10 +108,10 @@ shift `expr $OPTIND - 1`
 if [ "X$repos" -eq "Xgit" ]
 then
     USE_GIT=1
-    REPOS_ROOT=$GIT_REPOS_ROOT
+    REPOS=$GIT_REPOS
 elif [ "X$repos" -eq "Xsvn" ]
     USE_GIT=0
-    REPOS_ROOT=$SVN_REPOS_ROOT
+    REPOS=$SVN_REPOS
 else
     usage
     echo "Option '-R git' or '-R svn' must be set."
@@ -169,7 +168,7 @@ then
         echo "Releasing from trunk is not yet supported when using git."
         exit 5
     fi
-    JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/trunk"
+    JK_REPOS_URL="${REPOS}/trunk"
     repos_use_url="`svn help info | grep URL`"
     if [ -n "$repos_use_url" ]
     then
@@ -193,7 +192,7 @@ then
         exit 5
     fi
     JK_BRANCH=`echo $branch | sed -e 's#/#__#g'`
-    JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/branches/$branch"
+    JK_REPOS_URL="${REPOS}/branches/$branch"
     JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
     if [ -z "$JK_REV" ]
     then
@@ -226,7 +225,7 @@ else
             echo "Releasing with an explicit tag is not yet supported when using git."
             exit 5
         fi
-        JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}"
+        JK_REPOS_URL="${REPOS}"
         JK_DIST=${JK_CVST}-${JK_VER}-src
     else
         JK_VER=$version
@@ -245,7 +244,7 @@ else
             fi
             JK_TAG=$tag
         fi
-        JK_REPOS_URL="${REPOS_ROOT}/${REPOS_PROJ}/tags/${JK_TAG}"
+        JK_REPOS_URL="${REPOS}/tags/${JK_TAG}"
         JK_DIST=${JK_CVST}-${JK_VER}-src
     fi
 fi
