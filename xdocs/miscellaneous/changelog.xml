@@ -44,11 +44,11 @@
   <subsection name="Native">
     <changelog>
       <add>
-        Extend trace level logging of method entry/exit to aid debugging of
-        request mapping issues. (markt)
+        Apache: Extend trace level logging of method entry/exit to aid debugging
+        of request mapping issues. (markt)
       </add>
       <fix>
-        Fix a bug in the normalization checks that prevented file based
+        Apache: Fix a bug in the normalization checks that prevented file based
         requests, such as SSI file includes, from being processed. (markt)
       </fix>
     </changelog>
