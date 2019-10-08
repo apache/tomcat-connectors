@@ -44,16 +44,16 @@ SIGN_OPTS=""
 #################### FUNCTIONS ##############
 
 usage() {
-    echo "Usage:: $0 -R (git|svn) -v VERSION [-f] [-r revision] [-t tag | -b BRANCH | -T | -d DIR]"
+    echo "Usage:: $0 -R (git|svn) -v VERSION [-f] [-r revision_or_hash] [-t tag | -b BRANCH | -T | -d DIR]"
     echo "        -R: Use git or svn to check out from repos"
     echo "        -v: version to package"
     echo "        -f: force, do not validate tag against version"
     echo "        -h: create text documentation for html"
-    echo "        -t: tag to use if different from version (only for svn)"
-    echo "        -r: revision to package (only for svn)"
-    echo "        -b: package from branch BRANCH (only for svn)"
-    echo "        -T: package from trunk (only for svn)"
-    echo "        -d: package from local directory (only for svn)"
+    echo "        -t: tag to use if different from version"
+    echo "        -r: revision or hash to package"
+    echo "        -b: package from branch BRANCH"
+    echo "        -T: package from trunk/master"
+    echo "        -d: package from local directory"
     echo "        -o: owner used for creating tar archive"
     echo "        -g: group used for creating tar archive"
     echo "        -p: GNU PG passphrrase used for signing"
@@ -109,6 +109,7 @@ if [ "X$repos" -eq "Xgit" ]
 then
     USE_GIT=1
     REPOS=$GIT_REPOS
+    JK_REPOS_URL=$REPOS
 elif [ "X$repos" -eq "Xsvn" ]
     USE_GIT=0
     REPOS=$SVN_REPOS
@@ -127,11 +128,6 @@ fi
 
 if [ -n "$local_dir" ]
 then
-    if [ $USE_GIT == 1 ]
-    then
-        echo "Releasing from a local directory is not yet supported when using git."
-        exit 5
-    fi
     echo "Caution: Packaging from directory!"
     echo "Make sure the directory is committed."
     answer="x"
@@ -154,81 +150,125 @@ then
 fi
 if [ -n "$revision" ]
 then
-    if [ $USE_GIT == 1 ]
-    then
-        echo "Using an explicit revision is not yet supported when using git."
-        exit 5
+    if [ $USE_GIT == 0 ]
+        revision="-r $revision"
     fi
-    revision="-r $revision"
 fi
 if [ -n "$trunk" ]
 then
     if [ $USE_GIT == 1 ]
     then
-        echo "Releasing from trunk is not yet supported when using git."
-        exit 5
-    fi
-    JK_REPOS_URL="${REPOS}/trunk"
-    repos_use_url="`svn help info | grep URL`"
-    if [ -n "$repos_use_url" ]
-    then
-	JK_REPOS_INFO_PATH="${JK_REPOS_URL}"
+        JK_REV=`git ls-remote $REPOS refs/heads/master | awk '{print $1}'`
+        if [ -z "$JK_REV" ]
+        then
+           echo "No git hash found via 'git ls-remote $REPOS refs/heads/master'"
+           exit 3
+        fi
+        JK_SUFFIX=-${JK_REV}
+        JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
     else
-	JK_REPOS_INFO_PATH=.
+        JK_REPOS_URL="${REPOS}/trunk"
+        repos_use_url="`svn help info | grep URL`"
+        if [ -n "$repos_use_url" ]
+        then
+            JK_REPOS_INFO_PATH="${JK_REPOS_URL}"
+        else
+            JK_REPOS_INFO_PATH=.
+        fi
+        JK_REV=`svn info $revision $JK_REPOS_INFO_PATH | awk '$1 == "Revision:" {print $2}'`
+        if [ -z "$JK_REV" ]
+        then
+           echo "No svn revision found at '$JK_REPOS_URL'"
+           exit 3
+        fi
+        JK_SUFFIX=-${JK_REV}
+        JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
     fi
-    JK_REV=`svn info $revision $JK_REPOS_INFO_PATH | awk '$1 == "Revision:" {print $2}'`
-    if [ -z "$JK_REV" ]
-    then
-       echo "No Revision found at '$JK_REPOS_URL'"
-       exit 3
-    fi
-    JK_SUFFIX=-${JK_REV}
-    JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 elif [ -n "$branch" ]
 then
     if [ $USE_GIT == 1 ]
     then
-        echo "Releasing from a branch is not yet supported when using git."
-        exit 5
+        JK_REV=`git ls-remote $REPOS refs/heads/$branch | awk '{print $1}'`
+        if [ -z "$JK_REV" ]
+        then
+           echo "No git hash found via 'git ls-remote $REPOS refs/heads/$branch'"
+           exit 3
+        fi
+        JK_SUFFIX=-${JK_BRANCH}-${JK_REV}
+        JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
+    else
+        JK_BRANCH=`echo $branch | sed -e 's#/#__#g'`
+        JK_REPOS_URL="${REPOS}/branches/$branch"
+        JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
+        if [ -z "$JK_REV" ]
+        then
+           echo "No svn revision found at '$JK_REPOS_URL'"
+           exit 3
+        fi
+        JK_SUFFIX=-${JK_BRANCH}-${JK_REV}
+        JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
     fi
-    JK_BRANCH=`echo $branch | sed -e 's#/#__#g'`
-    JK_REPOS_URL="${REPOS}/branches/$branch"
-    JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
-    if [ -z "$JK_REV" ]
-    then
-       echo "No Revision found at '$JK_REPOS_URL'"
-       exit 3
-    fi
-    JK_SUFFIX=-${JK_BRANCH}-${JK_REV}
-    JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 elif [ -n "$local_dir" ]
 then
+    if [ ! -d "$local_dir" ]
+    then
+       echo "Directory '$local_dir' does not exist - Aborting!"
+       exit 6
+    fi
     if [ $USE_GIT == 1 ]
     then
-        echo "Releasing from a local directory is not yet supported when using git."
-        exit 5
+        JK_REV=`git --git-dir=$local_dir rev-parse HEAD`
+        if [ -z "$JK_REV" ]
+        then
+           echo "No git hash found via 'git rev-parse --short HEAD' in `pwd`"
+           exit 3
+        fi
+        JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
+        JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
+    else
+        JK_REPOS_URL="$local_dir"
+        JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
+        if [ -z "$JK_REV" ]
+        then
+           echo "No svn revision found at '$JK_REPOS_URL'"
+           exit 3
+        fi
+        JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
+        JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
     fi
-    JK_REPOS_URL="$local_dir"
-    JK_REV=`svn info $revision ${JK_REPOS_URL} | awk '$1 == "Revision:" {print $2}'`
-    if [ -z "$JK_REV" ]
-    then
-       echo "No Revision found at '$JK_REPOS_URL'"
-       exit 3
-    fi
-    JK_SUFFIX=-local-`date +%Y%m%d%H%M%S`-${JK_REV}
-    JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
 else
     if [ $USE_GIT == 1 ]
     then
         if [ -n $tag ]
         then
-            echo "Releasing with an explicit tag is not yet supported when using git."
-            exit 5
+            if [ -z $force ]
+            then
+                echo $tag | grep "^$version" > /dev/null 2>&1
+                if [ "X$tag" != "X$version" ]
+                then
+                    echo "Tag '$tag' doesn't belong to version '$version'."
+                    echo "Force by using '-f' if you are sure."
+                    exit 5
+                fi
+            fi
+            JK_REV=`git ls-remote $REPOS refs/tags/$tag | awk '{print $1}'`
+            if [ -z "$JK_REV" ]
+            then
+               echo "No git hash found via 'git ls-remote $REPOS refs/tags/$tag'"
+               exit 3
+            fi
+            JK_SUFFIX=-tag-${tag}-${JK_REV}
+        else
+            JK_REV=`git ls-remote $REPOS refs/tags/$version | awk '{print $1}'`
+            if [ -z "$JK_REV" ]
+            then
+               echo "No git hash found via 'git ls-remote $REPOS refs/tags/$version'"
+               exit 3
+            fi
+            JK_SUFFIX=''
         fi
-        JK_REPOS_URL="${REPOS}"
-        JK_DIST=${JK_CVST}-${JK_VER}-src
+        JK_DIST=${JK_CVST}-${version}${JK_SUFFIX}-src
     else
-        JK_VER=$version
         JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
         if [ -n $tag ]
         then
@@ -245,7 +285,7 @@ else
             JK_TAG=$tag
         fi
         JK_REPOS_URL="${REPOS}/tags/${JK_TAG}"
-        JK_DIST=${JK_CVST}-${JK_VER}-src
+        JK_DIST=${JK_CVST}-${version}-src
     fi
 fi
 
@@ -268,20 +308,28 @@ then
       exit 1
     fi
 else
-    git clone "${JK_REPOS_URL}" ${JK_DIST}.tmp/jk
-    if [ $? -ne 0 ]
+    if [ -n "$local_dir" ]
     then
-      echo "git clone '${JK_REPOS_URL}' to '${JK_DIST}.tmp/jk' failed"
-      exit 1
+        git --git-dir=$work_space/.git --work-tree=${JK_DIST}.tmp/jk checkout $JK_REV
+        if [ $? -ne 0 ]
+        then
+          echo "git checkout for version $version hash '$JK_REV' from local '$work_space/.git' to directory '${JK_DIST}.tmp/jk' failed"
+          exit 1
+        fi
+    else
+        git clone --no-checkout "${JK_REPOS_URL}" ${JK_DIST}.tmp/jk
+        if [ $? -ne 0 ]
+        then
+          echo "git clone '${JK_REPOS_URL}' to '${JK_DIST}.tmp/jk' failed"
+          exit 1
+        fi
+        git --git-dir=${JK_DIST}.tmp/jk/.git --work-tree=${JK_DIST}.tmp/jk checkout $JK_REV
+        if [ $? -ne 0 ]
+        then
+          echo "git checkout for version $version hash '$JK_REV' from cloned '${JK_REPOS_URL}' in directory '${JK_DIST}.tmp/jk' failed"
+          exit 1
+        fi
     fi
-    cd ${JK_DIST}.tmp/jk
-    git checkout $version
-    if [ $? -ne 0 ]
-    then
-      echo "git checkout for version $version from cloned '${JK_REPOS_URL}' in directory '`pwd`' failed"
-      exit 1
-    fi
-    cd ../..
 fi
 
 # Build documentation.
