@@ -34,7 +34,7 @@ Obtain the source code:
 
   c:
   cd \
-  svn co https://svn.apache.org/repos/asf/tomcat/jk/trunk/ tomcat-jk-1.2.x
+  git clone  https://github.com/apache/tomcat-connectors.git tomcat-jk-1.2.x
   cd tomcat-jk-1.2.x\native\iis
  
 

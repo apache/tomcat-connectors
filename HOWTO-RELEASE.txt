@@ -20,7 +20,7 @@ Check out a clean copy of tomcat/connectors from subversion to
 make sure you don't have any lingering configure or build files.
 This will make sure that the source distribution created is clean.
 
-We assume, that you checked out http://svn.apache.org/repos/asf/tomcat/jk/trunk
+We assume, that you cloned out git@github.com:apache/tomcat-connectors.git
 to a directory named mod_jk. All further path names will be relative to this
 directory.
 
@@ -62,7 +62,7 @@ during release. It is updated with release date after release process is
 completed.
 
 Update the JK_VERISRELEASE define in native/common/jk_version.h, here is
-a svn diff that shows what I changed:
+a git diff that shows what I changed:
 
 Index: native/common/jk_version.h
 ===================================================================
@@ -86,15 +86,13 @@ Use the pattern below for branching and tagging the tomcat-connectors directory.
 
 TAG=JK_{MAJOR_REVISION}_{MINOR_REVISION}_{RELEASE}
 
-svn copy \
-   https://svn.apache.org/repos/asf/tomcat/jk/trunk/ \
-   https://svn.apache.org/repos/asf/tomcat/jk/tags/TAG/
+Here is an example for mod_jk 1.2.47
 
-Here is an example for mod_jk 1.2.29
+git commit -a -m "Tag JK_1_2_47"
+git tag JK_1_2_47
+git push origin JK_1_2_47
+# reset master
 
-svn copy \
-   https://svn.apache.org/repos/asf/tomcat/jk/trunk/ \
-   https://svn.apache.org/repos/asf/tomcat/jk/tags/JK_1.2.29/
 
 Build the mod_jk 1.2 documentation
 ----------------------------------

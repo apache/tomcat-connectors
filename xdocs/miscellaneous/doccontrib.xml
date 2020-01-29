@@ -81,35 +81,26 @@ the docs.
 <subsection name="STEP 2.  Get the sources">
 <p>
     Get the sources for
-<a href="http://svn.apache.org/repos/asf/tomcat/jk/trunk/">tomcat-connectors</a>
-from the subversion repository.  If you'll 
-be editing from a windows platform you will need a windows subversion client.  There 
-are several available.  I like <a href="http://tortoisesvn.tigris.org/">turtoiseSVN</a>.  
-Unix users should install the subversion client of their choice,
-if they don't already have one.
+<a href="https://github.com/apache/tomcat-connectors">tomcat-connectors</a>
+from the git repository. You will need a git client. Install the client of
+your choice, if you don't already have one.
 </p>
 <p>
     You are ready to download the sources now.  Change directory to the 
 location where you want your repository to be.  For simplicity we will call this 
-your <b>SVN_HOME</b>.  Mine is located in C:\build.
+your <b>GIT_HOME</b>.  Mine is located in C:\build.
 </p>
 <p>
-    Run the following command to <b>checkout</b> the sources for the first time.
+    Run the following command to <b>clone</b> the sources for the first time.
 You should only need to do this once.
-<source>C:\build\>svn checkout http://svn.apache.org/repos/asf/tomcat/jk/trunk/
-tomcat-connectors
+<source>C:\build\>git clone https://github.com/apache/tomcat-connectors tomcat-connectors
 </source>
 </p>
 <p>
     You should now be watching all the downloads come in.  Now that you have 
 the sources on your machine the hard part is over.  From now on, to update your 
 sources all you have to do is cd into any directory in your repository and run 
-the <b>svn update</b> command.
-<note>To update your xdocs directory simply cd into the xdocs directory 
-and:</note>
-<source>C:\build\tomcat-connectors\> cd xdocs
-C:\build\tomcat-connectors\xdocs\> svn update
-</source>
+the <b>git pull</b> command.
 </p>
 </subsection>
 <subsection name="STEP 3.  Test your build environment">
@@ -148,7 +139,7 @@ C:\build\tomcat-connectors>
 </p>
 <p>
     All the xml files present in the xdocs directory structure were transformed 
-to html and copied to the <b>SVN_HOME\tomcat-connectors\build\docs</b>
+to html and copied to the <b>GIT_HOME\tomcat-connectors\build\docs</b>
 directory.  Open one of the 
 html files in your browser and see how it looks.
 </p>
@@ -156,7 +147,7 @@ html files in your browser and see how it looks.
 <subsection name="STEP 4.   The editing process.">
 <p>
     I find it easier to use two windows while doing my updates.  One I call my 
-<b>build</b> window.  I keep this one in the <b>SVN_HOME\tomcat-connectors\xdocs</b>
+<b>build</b> window.  I keep this one in the <b>GIT_HOME\tomcat-connectors\xdocs</b>
 directory and I only run two commands in this window:
 <note>First I run</note>
 <source>ant clean
@@ -167,15 +158,13 @@ directory and I only run two commands in this window:
 </p>
 <p>
     My second window I call my <b>edit</b> window and I keep that one in the 
-<b>SVN_HOME\tomcat-connectors\xdocs</b> directory where I'm doing my
-edits, diffs and svn updates.
+<b>GIT_HOME\tomcat-connectors\xdocs</b> directory where I'm doing my
+edits, diffs and git pulls.
 </p>
 <p>
     Before you start editing you should always update your local repository to 
 prevent conflicts.
-<note>You only need to update the xdocs directory</note>
-<source>C:\build\tomcat-connectors> cd xdocs
-C:\build\tomcat-connectors\xdocs> svn update
+<source>C:\build\tomcat-connectors> git pull
 </source>
 </p>
 <p>
@@ -183,7 +172,7 @@ C:\build\tomcat-connectors\xdocs> svn update
 something in the documentation to edit.  When you find something remember the 
 name of the file.  In your <b>edit</b> window find and edit the xml source file 
 with the same name.  After you are done return to the  <b>build</b> window, and 
-in the <b>SVN_HOME\tomcat-connectors\xdocs</b> directory run:
+in the <b>GIT_HOME\tomcat-connectors\xdocs</b> directory run:
 <source>C:\build\tomcat-connectors\xdocs> ant clean
 </source>
 </p>
@@ -196,7 +185,7 @@ run:
 </p>
 <p>
     Use your browser to view the edits you just made, they will be in the 
-<b>SVN_HOME\tomcat-connectors\build\docs</b> sub-tree.  If it looks
+<b>GIT_HOME\tomcat-connectors\build\docs</b> sub-tree.  If it looks
 good and is ready to go, 
 all that is left to do is to create a patch and submit it.
 </p>
@@ -204,10 +193,10 @@ all that is left to do is to create a patch and submit it.
 <subsection name="STEP 5.  Creating a patch and submitting it.">
 <p>
     From your <b>edit</b> window cd into the directory that contains the xml 
-file you are working on, and run the <b>svn update</b> command.  For example, 
+file you are working on, and run the <b>git pull</b> command.  For example, 
 to produce a diff of the index.xml file and call it patch.txt, you 
 would cd into the directory containing the index.xml file and:
-<source>C:\build\tomcat-connectors\xdocs\>svn diff index.xml >  
+<source>C:\build\tomcat-connectors\xdocs\>git diff index.xml >  
 patch.txt.
 </source>
 </p>
@@ -228,48 +217,6 @@ commit privileges will review your suggestion.
 </p>
 </subsection>
 </section>
-<section name="Subversion Basics">
-<p>
-    After you have checked out the sources the first time it is much easier to 
-use subversion.  You can cd into any directory of the repository and run <b>svn 
-update</b> to get the latest sources for that directory.  For editing 
-purposes you should always update your repository before you start editing to 
-reduce conflicts.
-</p>
-<p>
-    You will need to run <b>svn diff</b> to generate patches for submission.  
-Again cd into the directory containing the file you are editing and run <b>svn 
-diff name_of_the_file_you_edited > patch.txt</b> to generate a patch for 
-submission.
-</p>
-<p>
-    Pay attention to the terminal window during the update.
-</p>
-<p>
-    Lines begining with a <b>A</b> indicate files that have been added.
-</p>
-<p>
-    Lines begining with a <b>D</b> indicate files that have been deleted.
-</p>
-<p>
-    Lines begining with a <b>U</b> mean the local copy was patched to update it 
-to the current version in the master repository.
-</p>
-<p>
-    Lines begining with a <b>G</b> mean your local copy is different from the 
-master copy, and the changes were successfully merged into your copy.
-</p>
-<p>
-    Lines begining with a <b>C</b> mean there was a conflict in merging the 
-changes and you need to review the file and merge the changes manually.  Search 
-for  >>>> and merge the changes.
-</p>
-<p>
-    Lines begining with a <b>?</b> indicate files that reside on your local 
-system which are not part of the repository.  You will normally see this when 
-you are creating new files for submission.
-</p>
-</section>
 
 <section name="Updating Web site">
 <p>
@@ -282,7 +229,7 @@ you are creating new files for submission.
     <li>or use ant from a checkout tomcat/jk/trunk/xdocs repository:<br />
         ant -Dbuild.dir=/www/tomcat.apache.org -Ddist.name=connectors-doc 
     </li>
-    <li>The changes need around 4 hours to be synced to tomcat.apache.org.</li>
+    <li>The changes should sync to tomcat.apache.org within seconds.</li>
     </ul>
 </p>
 </section>
@@ -306,10 +253,10 @@ Writing Guide</a>
 <a href="http://ant.apache.org/">Ant</a>
 </li>
 <li>
-<a href="http://subversion.tigris.org/">Subversion Home</a>
+<a href="https://git-scm.com/">Git Home</a>
 </li>
 <li>
-<a href="http://svn.apache.org/repos/asf/tomcat/jk/trunk/xdocs/">JK Docs repository</a>
+<a href="https://github.com/apache/tomcat-connectors/tree/master/xdocs">JK Docs repository</a>
 </li>
 </ul>
 </section>

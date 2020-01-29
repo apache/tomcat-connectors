@@ -22,14 +22,14 @@ ac_version=`${AUTOCONF:-autoconf} --version 2>/dev/null|sed -e 's/^[^0-9]*//;s/[
 if test -z "$ac_version"; then
 echo "buildconf: autoconf not found."
 echo "           You need autoconf version 2.59 or newer installed"
-echo "           to build mod_jk from SVN."
+echo "           to build mod_jk from version control."
 exit 1
 fi
 IFS=.; set $ac_version; IFS=' '
 if test "$1" = "2" -a "$2" -lt "59" || test "$1" -lt "2"; then
 echo "buildconf: autoconf version $ac_version found."
 echo "           You need autoconf version 2.59 or newer installed"
-echo "           to build mod_jk from SVN."
+echo "           to build mod_jk from version control."
 exit 1
 else
 echo "buildconf: autoconf version $ac_version (ok)"
@@ -39,14 +39,14 @@ ac_version=`${LIBTOOL:-libtool} --version 2>/dev/null|sed -e 's/^[^0-9]*//;s/[a-
 if test -z "$ac_version"; then
 echo "buildconf: libtool not found."
 echo "           You need libtool version 1.4 or newer installed"
-echo "           to build mod_jk from SVN."
+echo "           to build mod_jk from version control."
 exit 1
 fi
 IFS=.; set $ac_version; IFS=' '
 if test "$1" = "1" -a "$2" -lt "4" || test "$1" -lt "1"; then
 echo "buildconf: libtool version $ac_version found."
 echo "           You need libtool version 1.4 or newer installed"
-echo "           to build mod_jk from SVN."
+echo "           to build mod_jk from version control."
 exit 1
 else
 echo "buildconf: libtool  version $ac_version (ok)"

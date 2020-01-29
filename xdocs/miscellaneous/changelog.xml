@@ -55,6 +55,10 @@
         <bug>63214</bug>: Apache: When using <code>JkAutoAlias</code>, ensure
         that files that include spaces in their name are accessible. (markt)
       </fix>
+      <update>
+        Common: Update the documentation to reflect that the source code for the
+        Apache Tomcat Connectors has moved from Subversion to Git. (markt)
+      </update>
     </changelog>
   </subsection>
 </section>
