@@ -966,6 +966,7 @@ static int find_bysession_route(jk_ws_service_t *s,
              * balancer. Of course you will need a some kind of
              * session replication between those two remote.
              */
+            s->sticky = JK_FALSE;
             if (p->sticky_session_force)
                 candidate = -1;
             else if (*wr.redirect) {

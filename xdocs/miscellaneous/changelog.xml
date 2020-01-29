@@ -59,6 +59,11 @@
         Common: Update the documentation to reflect that the source code for the
         Apache Tomcat Connectors has moved from Subversion to Git. (markt)
       </update>
+      <fix>
+        <bug>64051</bug>: Common. When using <code>set_session_cookie</code>,
+        ensure that an updated session cookie is issued if the load-balancer has
+        to failover to a different worker. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
