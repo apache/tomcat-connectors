@@ -3834,10 +3834,7 @@ static int jk_translate(request_rec * r)
                 if (strlen(clean_uri) > 1) {
                     char *context_path = NULL;
 
-                    context_path = apr_pstrcat(r->pool, conf->alias_dir,
-                                               ap_os_escape_path(r->pool,
-                                                                 clean_uri,
-                                                                 1), NULL);
+                    context_path = apr_pstrcat(r->pool, conf->alias_dir, clean_uri, NULL);
                     if (context_path != NULL) {
                         apr_stat(&finfo, context_path, APR_FINFO_TYPE,
                                  r->pool);
@@ -3933,21 +3930,14 @@ static int jk_translate(request_rec * r)
                         context_dir = apr_pstrdup(r->pool, index);
                     }
 
-                    context_path = apr_pstrcat(r->pool, conf->alias_dir,
-                                               ap_os_escape_path(r->pool,
-                                                                 context_dir,
-                                                                 1), NULL);
+                    context_path = apr_pstrcat(r->pool, conf->alias_dir, context_dir, NULL);
                     if (context_path != NULL) {
                         apr_finfo_t finfo;
                         finfo.filetype = APR_NOFILE;
                         apr_stat(&finfo, context_path, APR_FINFO_TYPE,
                                  r->pool);
                         if (finfo.filetype == APR_DIR) {
-                            char *escurl =
-                                ap_os_escape_path(r->pool, clean_uri, 1);
-                            char *ret =
-                                apr_pstrcat(r->pool, conf->alias_dir, escurl,
-                                            NULL);
+                            char *ret = apr_pstrcat(r->pool, conf->alias_dir, clean_uri, NULL);
                             /* Add code to verify real path ap_os_canonical_name */
                             if (ret != NULL) {
                                 if (JK_IS_DEBUG_LEVEL(conf->log))
