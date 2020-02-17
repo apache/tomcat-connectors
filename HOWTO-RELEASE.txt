@@ -16,9 +16,9 @@
 How to do a mod_jk 1.2 Release
 ==============================
 
-Check out a clean copy of tomcat/connectors from subversion to
-make sure you don't have any lingering configure or build files.
-This will make sure that the source distribution created is clean.
+Clone a clean copy of tomcat/connectors from git to make sure you don't have
+any lingering configure or build files. This will make sure that the source
+distribution created is clean.
 
 We assume, that you cloned out git@github.com:apache/tomcat-connectors.git
 to a directory named mod_jk. All further path names will be relative to this
@@ -77,12 +77,12 @@ Index: native/common/jk_version.h
  #define JK_VERRC        0
  #define JK_RCSTRING     "0"
 
-After updating revision numbers, commit your changes to subversion.
+After updating revision numbers, commit your changes to git.
 
-Tag and branch tomcat-connectors in subversion
-----------------------------------------------
+Tag tomcat-connectors in git
+----------------------------
 
-Use the pattern below for branching and tagging the tomcat-connectors directory.
+Use the pattern below for tagging the tomcat-connectors directory.
 
 TAG=JK_{MAJOR_REVISION}_{MINOR_REVISION}_{RELEASE}
 
