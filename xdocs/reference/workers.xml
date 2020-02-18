@@ -974,9 +974,10 @@ This feature has been added in <b>jk 1.2.38</b>.
 You can set a secret keyword on the Tomcat AJP Connector. Then only requests
 from workers with the same secret keyword will be accepted.
 <p>
-Use <b>request.secret="secret key word"</b> in your Tomcat AJP Connector
-configuration in Tomcat 5.5 or 6.0 and <b>requiredSecret="secret key word"</b>
-in Tomcat 7.0 onwards.
+Use attribute <b>secret="secret key word"</b> in your Tomcat AJP Connector configuration.
+(Historical note: the attribute name was <b>requiredSecret</b> in Tomcat
+9.0, 8.x, 7.0 versions released earlier than February 2020,
+<b>request.secret</b> in Tomcat 6.0 and earlier.)
 </p>
 <p>
 If you set a secret on a load balancer, all its members will inherit this secret.
