@@ -64,6 +64,14 @@
         ensure that an updated session cookie is issued if the load-balancer has
         to failover to a different worker. (markt)
       </fix>
+      <update>
+        Common: Update config.guess and config.sub from
+        <a href="https://git.savannah.gnu.org/git/config.git">https://git.savannah.gnu.org/git/config.git</a>.
+        (markt)
+      </update>
+      <update>
+        Common; Update release script for migration to git. (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>
