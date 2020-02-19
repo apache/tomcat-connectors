@@ -52,14 +52,9 @@ tools/dist/binaries/windows/README.html
 Check version numbers in the files that are listed in the section
 "Update source for next version" below:
 
-native/STATUS.txt
 native/configure.ac
 native/common/jk_version.h
 xdocs/miscellaneous/changelog.xml
-
-In native/STATUS.txt the current version stays labelled as "in development"
-during release. It is updated with release date after release process is
-completed.
 
 Update the JK_VERISRELEASE define in native/common/jk_version.h, here is
 a git diff that shows what I changed:
@@ -160,8 +155,6 @@ Make sure the group write bit is on for all files you upload.
 Update source for next version
 ------------------------------
 
-native/STATUS.txt: Add release date for released version and
-                   status "in development" for new version.
 native/configure.ac: Update version in AC_INIT macro.
 native/common/jk_version.h: Update variables JK_VERMAJOR, JK_VERMINOR, JK_VERFIX,
                             JK_VERSTRING, and JK_VERISRELEASE.
