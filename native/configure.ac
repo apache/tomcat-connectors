@@ -16,7 +16,6 @@ dnl  limitations under the License.
 dnl
 dnl Process this file with autoconf to produce a configure script
 dnl
-AC_REVISION($Id$)dnl
 
 dnl Minimum autoconf version
 AC_PREREQ(2.59)

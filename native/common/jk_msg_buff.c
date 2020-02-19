@@ -20,7 +20,6 @@
  * Author:      Costin <costin@costin.dnt.ro>                              *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 
 #include "jk_pool.h"

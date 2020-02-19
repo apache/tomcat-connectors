@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Platform specific, auto-detected types.                    *
  * Author:      Rainer Jung <rjung@apache.org>                             *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_TYPES_H

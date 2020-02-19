@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Multi thread portability code for JK                       *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef _JK_MT_H
@@ -31,7 +30,7 @@
 #define jk_gettid()    ((jk_uint32_t)GetCurrentThreadId())
 #endif
 
-#ifdef JK_PREFORK 
+#ifdef JK_PREFORK
 #define _MT_CODE 0
 #else
 #define _MT_CODE 1

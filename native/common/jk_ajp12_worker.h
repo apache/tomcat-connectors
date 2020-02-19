@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: ajpv1.2 worker header file                                 *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_AJP12_WORKER_H

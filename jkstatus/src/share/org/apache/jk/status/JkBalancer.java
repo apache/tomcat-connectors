@@ -22,7 +22,6 @@ import java.util.List;
 
 /**
  * @author Peter Rossbach
- * @version $Revision$ $Date$
  * @see org.apache.jk.status.JkStatusParser
  */
 public class JkBalancer implements Serializable {

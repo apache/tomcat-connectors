@@ -26,9 +26,7 @@ import org.apache.tools.ant.BuildException;
  * Ant task that implements the <code>/status</code> update worker command, supported by the
  * mod_jk status (1.2.20) application.
  * 
- * 
  * @author Peter Rossbach
- * @version $Revision$
  * @since mod_jk 1.2.20
  */
 public class JkStatusUpdateWorkerTask extends AbstractJkStatusTask {

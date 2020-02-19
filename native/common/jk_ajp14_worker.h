@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: ajpv14 worker header file                                  *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_AJP14_WORKER_H

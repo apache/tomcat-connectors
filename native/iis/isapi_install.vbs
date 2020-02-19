@@ -18,7 +18,6 @@
 ' =========================================================================
 ' Description: Install script for Tomcat ISAPI redirector                              
 ' Author:      Peter S. Horne <horneps@yahoo.com.au>                           
-' Version:     $Revision$                                           
 ' =========================================================================
 '
 ' This script automatically installs the tomcat isapi_redirector for use in

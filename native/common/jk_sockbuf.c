@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Simple buffer object to handle buffered socket IO          *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #include "jk_global.h"
@@ -152,7 +151,7 @@ int jk_sb_gets(jk_sockbuf_t *sb, char **ps)
  * start and end indices.  May move the data currently in the buffer.  If
  * new data is read into the buffer (or if it is already full), returns 1.
  * If EOF is received on the socket, returns 0.  In case of error returns
- * -1.  
+ * -1.
  */
 static int fill_buffer(jk_sockbuf_t *sb)
 {
@@ -175,7 +174,7 @@ static int fill_buffer(jk_sockbuf_t *sb)
 
     /*
      * In the unlikely case where the buffer is already full, we won't be
-     * reading anything and we'd be calling recv with a 0 count.  
+     * reading anything and we'd be calling recv with a 0 count.
      */
     if ((SOCKBUF_SIZE - sb->end) > 0) {
         /*

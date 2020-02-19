@@ -20,7 +20,6 @@
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
  * Author:      Rainer Jung <rjung@apache.org>                             *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 #ifndef _JK_UTIL_H
 #define _JK_UTIL_H

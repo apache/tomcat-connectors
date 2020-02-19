@@ -19,7 +19,6 @@
  * Description: load balance worker header file                            *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Rainer Jung <rjung@apache.org>                             *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_LB_WORKER_H
@@ -62,7 +61,7 @@ extern "C"
 #define JK_LB_LOCK_TEXT_DEF            (JK_LB_LOCK_TEXT_OPTIMISTIC)
 /*
  * The following definitions for state and activation
- * need to be kept in sync with the two macros 
+ * need to be kept in sync with the two macros
  * JK_WORKER_USABLE() and JK_WORKER_USABLE_STICKY() in jk_lb_worker.c.
  * Since we use ordered comparisons there instead of multiple
  * equal/unequal compares, order of the values is critical here.

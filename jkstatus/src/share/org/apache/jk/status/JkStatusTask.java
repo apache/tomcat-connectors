@@ -30,7 +30,6 @@ import org.apache.tools.ant.Project;
  * by the mod_jk status (1.2.13) application.
  * 
  * @author Peter Rossbach
- * @version $Revision$
  * @since 5.5.10
  */
 public class JkStatusTask extends BaseRedirectorHelperTask {

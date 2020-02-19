@@ -22,7 +22,6 @@
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Dan Milstein <danmil@shore.net>                            *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 
 #ifndef JK_SERVICE_H
@@ -66,7 +65,7 @@ struct jk_worker_env
 
     /* Virtual server handled - "*" is all virtual */
     char *virtual;
-    
+
     /* Optional APR pool used for configuration */
     void *pool;
 };

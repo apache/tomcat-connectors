@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Next generation bi-directional protocol handler.           *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 #ifndef JK_AJP14_H
 #define JK_AJP14_H
@@ -78,7 +77,7 @@ extern "C"
  */
 #define AJP14_CONTEXT_INFO_CMD      (unsigned char)0x16
 
-/* 
+/*
  * Context Update (servlet engine -> web server), status of context changed
  */
 #define AJP14_CONTEXT_UPDATE_CMD    (unsigned char)0x17
@@ -120,7 +119,7 @@ extern "C"
 
 
 /*
- * Negotiation flags 
+ * Negotiation flags
  */
 
 /*
@@ -134,7 +133,7 @@ extern "C"
 #define AJP14_CONTEXT_UPDATE_NEG    0x40000000
 
 /*
- * web-server want compressed stream 
+ * web-server want compressed stream
  */
 #define AJP14_GZIP_STREAM_NEG       0x20000000
 
@@ -164,17 +163,17 @@ extern "C"
 #define AJP14_SSL_VMISC_NEG         0x01000000
 
 /*
- * mask of protocol supported 
+ * mask of protocol supported
  */
 #define AJP14_PROTO_SUPPORT_AJPXX_NEG   0x00FF0000
 
-/* 
- * communication could use AJP14 
+/*
+ * communication could use AJP14
  */
 #define AJP14_PROTO_SUPPORT_AJP14_NEG   0x00010000
 
 /*
- * communication could use AJP15 
+ * communication could use AJP15
  */
 #define AJP14_PROTO_SUPPORT_AJP15_NEG   0x00020000
 
@@ -198,7 +197,7 @@ extern "C"
 #define AJP14_CONTEXT_UP         0x02
 #define AJP14_CONTEXT_OK         0x03
 
-/* 
+/*
  * Misc defines
  */
 #define AJP14_ENTROPY_SEED_LEN      32      /* we're using MD5 => 32 chars */
@@ -243,13 +242,13 @@ struct jk_login_service
     unsigned long negotiation;
 
     /*
-     * What we received from servlet engine 
+     * What we received from servlet engine
      */
     unsigned long negociated;
 };
 
 /*
- * functions defined here 
+ * functions defined here
  */
 
 void ajp14_compute_md5(jk_login_service_t *s, jk_logger_t *l);

@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Context Stuff (Autoconf)                                   *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 #ifndef JK_CONTEXT_H
 #define JK_CONTEXT_H
@@ -37,7 +36,7 @@ typedef struct
 {
 
     /*
-     * Context base (ie examples) 
+     * Context base (ie examples)
      */
 
     char *cbase;
@@ -49,7 +48,7 @@ typedef struct
     int status;
 
     /*
-     * Num of URI handled 
+     * Num of URI handled
      */
 
     int size;
@@ -107,7 +106,7 @@ jk_context_t;
 
 
 /*
- * functions defined here 
+ * functions defined here
  */
 
 int context_set_virtual(jk_context_t *c, char *virt);

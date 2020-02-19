@@ -19,7 +19,6 @@
  * Description: General purpose map object                                 *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Mladen Turk <mturk@apache.org>                             *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 #if defined(AS400) && !defined(AS400_UTF8)
 #include "apr_xlate.h"

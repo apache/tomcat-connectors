@@ -32,7 +32,6 @@ import org.apache.tomcat.util.digester.Digester;
  * Create connection to mod_jk jkstatus page.
  * Optional you can use Http basic auth user and password.
  * @author Peter Rossbach
- * @version $Revision$ $Date$
  * @see org.apache.jk.status.JkStatusParser
  * @since 5.5.10
  */

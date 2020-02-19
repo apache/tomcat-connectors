@@ -20,7 +20,6 @@
  *                                                                         *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Mladen Turk <mturk@apache.org>                             *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 
 #include "jk_pool.h"

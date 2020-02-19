@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Map object header file                                     *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_MAP_H

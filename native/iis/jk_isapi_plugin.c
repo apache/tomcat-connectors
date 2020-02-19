@@ -21,7 +21,6 @@
  * Author:      Larry Isaacs <larryi@apache.org>                           *
  * Author:      Ignacio J. Ortega <nacho@apache.org>                       *
  * Author:      Mladen Turk <mturk@apache.org>                             *
- * Version:     $Revision$                                       *
  ***************************************************************************/
 
 /*

@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Experimental bi-directionl protocol handler.               *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 #ifndef JK_AJP13_H
 #define JK_AJP13_H

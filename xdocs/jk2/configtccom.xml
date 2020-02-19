@@ -19,7 +19,6 @@
 	<properties>
 		<title>Coyote/JK2 Handlers</title>
 		<author email="jfrederic.clere@fujitsu-siemens.com">Jean-Frederic Clere</author>
-		<date>$Date$</date>
 	</properties>
 	<section name="apr">
 		<p>

@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: URI to worker mapper header file                           *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_URI_WORKER_MAP_H

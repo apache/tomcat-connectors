@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Workers controller header file                             *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_WORKER_H

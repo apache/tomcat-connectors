@@ -18,9 +18,7 @@
 /***************************************************************************
  * Description: Next generation bi-directional protocol handler.           *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                          *
  ***************************************************************************/
-
 
 #include "jk_global.h"
 #include "jk_util.h"
@@ -212,7 +210,7 @@ int ajp14_unmarshal_log_ok(jk_msg_buf_t *msg,
 
 
 /*
- * Decode the Log Nok Command 
+ * Decode the Log Nok Command
  *
  * +---------------------+-----------------------+
  * | LOGNOK CMD (1 byte) | FAILURE CODE (32bits) |
@@ -242,7 +240,7 @@ int ajp14_unmarshal_log_nok(jk_msg_buf_t *msg, jk_logger_t *l)
 }
 
 
-/* 
+/*
  * Build the Shutdown Cmd
  *
  * +-----------------------+---------------------------------------+
@@ -677,11 +675,11 @@ int ajp14_unmarshal_context_state_reply(jk_msg_buf_t *msg,
 
 /*
  * Decode the Context Update Cmd
- * 
+ *
  * +-----------------------------+---------------------------------+----------------------------+------------------+
  * | CONTEXT UPDATE CMD (1 byte) | VIRTUAL HOST NAME (CString (*)) | CONTEXT NAME (CString (*)) | UP/DOWN (1 byte) |
  * +-----------------------------+---------------------------------+----------------------------+------------------+
- * 
+ *
  */
 
 int ajp14_unmarshal_context_update_cmd(jk_msg_buf_t *msg,

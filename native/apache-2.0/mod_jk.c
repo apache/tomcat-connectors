@@ -19,7 +19,6 @@
  * Description: Apache 2 plugin for Tomcat                                 *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  *              Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                        *
  ***************************************************************************/
 
 /*

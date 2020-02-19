@@ -133,7 +133,6 @@ import org.apache.tomcat.util.digester.Digester;
  *        state="OK/IDLE"
  * </code>
  * @author Peter Rossbach
- * @version $Revision$ $Date$
  * @since 5.5.10
  */
 public class JkStatusParser {

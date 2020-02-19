@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Logger object definitions                                  *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_LOGGER_H

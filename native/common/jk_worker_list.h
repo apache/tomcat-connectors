@@ -19,17 +19,16 @@
  * Description: Worker list                                                *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 /*
  * This file includes a list of all the possible workers in the jk library
- * plus their factories. 
+ * plus their factories.
  *
  * If you want to add a worker just place it in the worker_factories array
  * with its unique name and factory.
  *
- * If you want to remove a worker, hjust comment out its line in the 
+ * If you want to remove a worker, hjust comment out its line in the
  * worker_factories array as well as its header file. For example, look
  * at what we have done to the ajp23 worker.
  *
@@ -68,7 +67,7 @@ static worker_factory_record_t worker_factories[] = {
      */
     {JK_AJP14_WORKER_NAME, JK_AJP14_WORKER_TYPE, ajp14_worker_factory},
     /*
-     * Load balancing worker. Performs round robin with sticky 
+     * Load balancing worker. Performs round robin with sticky
      * session load balancing.
      */
     {JK_LB_WORKER_NAME, JK_LB_WORKER_TYPE, lb_worker_factory},

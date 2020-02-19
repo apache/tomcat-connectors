@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Simple memory pool                                         *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                       *
  ***************************************************************************/
 
 #include "jk_pool.h"

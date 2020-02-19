@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: AJP14 next generation Bi-directional protocol.             *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 
 #include "jk_context.h"

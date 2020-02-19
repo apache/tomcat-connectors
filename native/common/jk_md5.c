@@ -62,7 +62,6 @@
 /***************************************************************************
  * Description: MD5 encoding wrapper                                       *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 /*
@@ -72,7 +71,7 @@
  * When another web-server is used like NES/IIS, we should use corresponding calls.
  * NES/IIS specialists will add the necessary code but until that, I reused the code
  * from Apache HTTP server.
- * 
+ *
  * Nota: If you use an EBCDIC system without Apache, you'll have to use MD5 encoding
  * corresponding call or have a ebcdic2ascii() functions somewhere.
  * For example current AS/400 have MD5 encoding support APIs but olders not....
@@ -262,8 +261,8 @@ static void JK_METHOD jk_MD5Final(unsigned char digest[16], JK_MD5_CTX * context
      */
     ascii2ebcdic(bits, bits, 8);
 
-    /* Since everything is converted to ascii within jk_MD5Update(), 
-     * the initial 0x80 (PADDING[0]) must be stored as 0x20 
+    /* Since everything is converted to ascii within jk_MD5Update(),
+     * the initial 0x80 (PADDING[0]) must be stored as 0x20
      */
     ascii2ebcdic(PADDING, PADDING, 1);
 #endif /*CHARSET_EBCDIC */

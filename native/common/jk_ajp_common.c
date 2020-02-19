@@ -19,7 +19,6 @@
  * Description: common stuff for bi-directional protocols ajp13/ajp14.     *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 
 
@@ -1073,7 +1072,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
     /* Update maximum number of connections
     */
     if (connected > ae->worker->s->max_connected)
-        ae->worker->s->max_connected = connected;  
+        ae->worker->s->max_connected = connected;
     /* set last_access only if needed
      */
     if (ae->worker->cache_timeout > 0)

@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: NSAPI plugin for Netscape servers                          *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #if defined(WIN32)

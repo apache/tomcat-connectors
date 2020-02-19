@@ -20,12 +20,7 @@ import java.io.Serializable;
 
 /**
  * @author Peter Rossbach
- * @version $Revision$ $Date$
  * @see org.apache.jk.status.JkStatusParser
- */
-/**
- * @author peter
- *
  */
 public class JkBalancerMember implements Serializable {
     

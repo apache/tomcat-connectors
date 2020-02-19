@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Memory Pool object header file                             *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 #ifndef _JK_POOL_H
 #define _JK_POOL_H
@@ -36,14 +35,14 @@ extern "C"
  *
  * Similar with apr_pools, but completely unsynchronized.
  * XXX use same names
- * 
+ *
  */
 
 /*
- * The pool atom (basic pool alocation unit) is an 8 byte long. 
- * Each allocation (even for 1 byte) will return a round up to the 
- * number of atoms. 
- * 
+ * The pool atom (basic pool alocation unit) is an 8 byte long.
+ * Each allocation (even for 1 byte) will return a round up to the
+ * number of atoms.
+ *
  * This is to help in alignment of 32/64 bit machines ...
  * G.S
  */
@@ -84,7 +83,7 @@ extern "C"
 #define JK_ALIGN_DEFAULT(size) JK_ALIGN(size, 8)
 #endif
 
-/* 
+/*
  * Pool size in number of pool atoms.
  */
 #define TINY_POOL_SIZE 256      /* Tiny 1/4K atom pool. */

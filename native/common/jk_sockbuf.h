@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Socket buffer header file                                  *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #include "jk_global.h"

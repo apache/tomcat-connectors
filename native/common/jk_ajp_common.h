@@ -19,7 +19,6 @@
  * Description: common stuff for bi-directional protocol ajp13/ajp14.      *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 
 #ifndef JK_AJP_COMMON_H

@@ -20,7 +20,6 @@
  *              This worker is deprecated                                  *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
  * Based on:    jserv_ajpv12.c from Jserv                                  *
- * Version:     $Revision$                                          *
  ***************************************************************************/
 
 #include "jk_ajp12_worker.h"

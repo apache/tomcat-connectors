@@ -19,7 +19,6 @@
  * Description: Global definitions and include files that should exist     *
  *              anywhere                                                   *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                               *
  ***************************************************************************/
 
 #ifndef JK_GLOBAL_H

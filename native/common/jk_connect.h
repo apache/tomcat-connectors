@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Socket connections header file                             *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                               *
  ***************************************************************************/
 
 #ifndef JK_CONNECT_H

@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: Context handling (Autoconf)                                *
  * Author:      Henri Gomez <hgomez@apache.org>                            *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #include "jk_global.h"
@@ -27,7 +26,7 @@
 
 
 /*
- * Set the virtual name of the context 
+ * Set the virtual name of the context
  */
 
 int context_set_virtual(jk_context_t *c, char *virt)

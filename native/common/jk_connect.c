@@ -23,7 +23,6 @@
  * @package jk_connect
  * @author      Gal Shachor <shachor@il.ibm.com>
  * @author      Mladen Turk <mturk@apache.org>
- * @version     $Revision$
  */
 
 
@@ -490,13 +489,13 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
         memset(&hints, 0, sizeof(hints));
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_protocol = IPPROTO_TCP;
-        
+
 #if JK_HAVE_IPV6
         if (strchr(host, ':')) {
             /* If host name contains colon this must be IPV6 address.
              * Set prefer_ipv6 flag in this case if it wasn't set already
              */
-            prefer_ipv6 = 1;            
+            prefer_ipv6 = 1;
         }
         if (prefer_ipv6)
             hints.ai_family = JK_INET6;
@@ -529,7 +528,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
             while (ai) {
                 if (ai->ai_family == JK_INET6) {
                     /* ignore elements without required address info */
-                    if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {                        
+                    if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {
                         family = JK_INET6;
                         break;
                     }
@@ -543,7 +542,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
             while (ai) {
                 if (ai->ai_family == JK_INET) {
                     /* ignore elements without required address info */
-                    if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {                        
+                    if((ai->ai_addr != NULL) && (ai->ai_addrlen > 0)) {
                         family = JK_INET;
                         break;
                     }
@@ -1296,7 +1295,7 @@ char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf, size_t size)
         }
 #endif
     }
- 
+
     sprintf(pb, ":%d", saddr->port);
     strncat(buf, pb, size - strlen(buf) - 1);
 

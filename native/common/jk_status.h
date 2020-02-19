@@ -17,8 +17,7 @@
 
 /***************************************************************************
  * Description: Status worker header file                                  *
- * Author:      Mladen Turk <mturk@jboss.com>                              * 
- * Version:     $Revision$                                           *
+ * Author:      Mladen Turk <mturk@jboss.com>                              *
  ***************************************************************************/
 
 #ifndef JK_STATUS_H

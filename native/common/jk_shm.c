@@ -19,7 +19,6 @@
  * Description: Shared Memory support                                      *
  * Author:      Mladen Turk <mturk@jboss.com>                              *
  * Author:      Rainer Jung <rjung@apache.org>                             *
- * Version:     $Revision$                                        *
  ***************************************************************************/
 
 #include "jk_global.h"

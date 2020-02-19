@@ -18,7 +18,6 @@
 /***************************************************************************
  * Description: ajpv1.3 worker header file                                 *
  * Author:      Gal Shachor <shachor@il.ibm.com>                           *
- * Version:     $Revision$                                           *
  ***************************************************************************/
 
 #ifndef JK_AJP13_WORKER_H
