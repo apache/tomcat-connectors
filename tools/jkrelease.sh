@@ -27,7 +27,7 @@
 # And any one of: w3m, elinks, links (links2)
 
 SVN_REPOS="http://svn.apache.org/repos/asf/tomcat/jk"
-GIT_REPOS="https://gitbox.apache.org/repos/asf/tomcat-jk.git"
+GIT_REPOS="https://gitbox.apache.org/repos/asf/tomcat-connectors.git"
 JK_CVST="tomcat-connectors"
 JK_OWNER="root"
 JK_GROUP="bin"
