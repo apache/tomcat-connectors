@@ -254,14 +254,17 @@ then
         JK_DIST=${JK_CVST}-${version}-dev${JK_SUFFIX}-src
     fi
 else
+    JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
     if [ $USE_GIT -eq 1 ]
     then
+        echo Tag:    [$tag]
+        echo JK_TAG: [$JK_TAG]
         if [ -n "$tag" ]
         then
             if [ -z "$force" ]
             then
-                echo $tag | grep "^$version" > /dev/null 2>&1
-                if [ "X$tag" != "X$version" ]
+                echo $tag | grep "^$JK_TAG" > /dev/null 2>&1
+                if [ "X$tag" != "X$JK_TAG" ]
                 then
                     echo "Tag '$tag' doesn't belong to version '$version'."
                     echo "Force by using '-f' if you are sure."
@@ -276,17 +279,16 @@ else
             fi
             JK_SUFFIX=-tag-${tag}-${JK_REV}
         else
-            JK_REV=`git ls-remote $REPOS refs/tags/$version | awk '{print $1}'`
+            JK_REV=`git ls-remote $REPOS refs/tags/$JK_TAG | awk '{print $1}'`
             if [ -z "$JK_REV" ]
             then
-               echo "No git hash found via 'git ls-remote $REPOS refs/tags/$version'"
+               echo "No git hash found via 'git ls-remote $REPOS refs/tags/$JK_TAG'"
                exit 3
             fi
             JK_SUFFIX=''
         fi
         JK_DIST=${JK_CVST}-${version}${JK_SUFFIX}-src
     else
-        JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
         if [ -n "$tag" ]
         then
             if [ -z "$force" ]
