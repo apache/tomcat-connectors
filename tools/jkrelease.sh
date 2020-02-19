@@ -257,8 +257,6 @@ else
     JK_TAG=`echo $version | sed -e 's#^#JK_#' -e 's#\.#_#g'`
     if [ $USE_GIT -eq 1 ]
     then
-        echo Tag:    [$tag]
-        echo JK_TAG: [$JK_TAG]
         if [ -n "$tag" ]
         then
             if [ -z "$force" ]
