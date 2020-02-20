@@ -81,11 +81,11 @@ Use the pattern below for tagging the tomcat-connectors directory.
 
 TAG=JK_{MAJOR_REVISION}_{MINOR_REVISION}_{RELEASE}
 
-Here is an example for mod_jk 1.2.47
+Here is an example for mod_jk 1.2.48
 
-git commit -a -m "Tag JK_1_2_47"
-git tag JK_1_2_47
-git push origin JK_1_2_47
+git commit -a -m "Tag JK_1_2_48"
+git tag JK_1_2_48
+git push origin JK_1_2_48
 # reset master
 
 

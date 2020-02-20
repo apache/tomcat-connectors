@@ -31,9 +31,9 @@
 
 <section name="2020 News &amp; Status">
 
-<subsection name="February - JK-1.2.47 released">
+<subsection name="February - JK-1.2.48 released">
     <p>The Apache Tomcat team is proud to announce the immediate availability
-       of Tomcat Connectors 1.2.47. This is a maintenance release.</p>
+       of Tomcat Connectors 1.2.48. This is a maintenance release.</p>
 
     <p>Please see the <a href="../miscellaneous/changelog.html">ChangeLog</a>
        for a full list of changes.</p>
