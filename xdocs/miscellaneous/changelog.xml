@@ -40,6 +40,14 @@
   new documentation project for JK was started.
   </p>
 </section>
+<section name="Changes between 1.2.47 and 1.2.48">
+  <changelog>
+    <update>
+      IIS: Update the installation how-to to remove windows versions that are no
+      longer supported and to add Windows Server 2019. (markt)
+    </update>
+  </changelog>
+</section>
 <section name="Changes between 1.2.46 and 1.2.47">
   <subsection name="Native">
     <changelog>
