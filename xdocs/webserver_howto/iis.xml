@@ -79,8 +79,8 @@ A worker is defined to be a tomcat process that accepts work from the IIS server
 The IIS to Tomcat redirector is supported for:
 </p>
 <ul>
-<li>IIS running on Windows 7 or later</li>
-<li>IIS running on Windows Server 2008 SP2 or later</li>
+<li>IIS running on Windows 8.1 or later</li>
+<li>IIS running on Windows Server 2012 or later</li>
 <li>Tomcat 7 or later</li>
 </ul>
 <p>
@@ -171,7 +171,7 @@ Adding more contexts to the configuration.
 
 <p>These instructions have been written based on Windows Server 2012 R2 and
 tested with all supported Windows operating systems up to Windows 10 / Windows
-Server 2016.
+Server 2019.
 </p>
 
 <p>
@@ -199,6 +199,13 @@ complete successfully.
 <li>
 Download the appropriate (32-bit or 64-bit) isapi_redirect.dll for your
 operating system and place it in <b>${tomcat_home}\isapi</b>
+</li>
+<li>
+Set the premissions for isapi_redirect.dll. On Windows Server 2019 it appears to be
+necessary to explicitly set the permissions for this dll. Enter
+the following at a command prompt:
+<source>>icacls "C:\Program Files\Apache Software Foundation\Tomcat 9.0\isapi\isapi_redirect.dll" /grant "Everyone":RX
+</source>
 </li>
 <li>
 Create <b>${tomcat_home}\isapi\isapi_redirect.properties</b> file to configure the ISAPI
