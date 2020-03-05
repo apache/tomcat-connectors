@@ -106,6 +106,10 @@ Create the new source distribution
 A tool named jkrelease.sh in the directory tools creates
 a release tarball and a zip including signature files.
 
+Here is an example for mod_jk 1.2.48
+
+./jkrelease.sh -R git -v 1.2.48 -h
+
 
 
 Upload source distribution and documentation to www.apache.org
