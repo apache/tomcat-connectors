@@ -62,25 +62,6 @@
       <fileset dir="images"/>
     </copy>
 
-    <mkdir     dir="${build.dir}/${dist.name}/printer"/>
-    <!-- Top Level Static Files -->
-    <copy    todir="${build.dir}/${dist.name}/printer">
-      <fileset dir=".">
-        <include name="BUILDING.txt"/>
-        <include name="README.txt"/>
-        <include name="RUNNING.txt"/>
-      </fileset>
-    </copy>
-    <xslt basedir="."
-           destdir="${build.dir}/${dist.name}/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="build.xml project.xml empty.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="./.."/>
-      <param name="project-menu" expression="nomenu"/>
-    </xslt>
-
     <!-- Reference Guide -->
     <xslt basedir="reference"
            destdir="${build.dir}/${dist.name}/reference"
@@ -89,17 +70,6 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
-      <param name="subdir" expression="reference/"/>
-    </xslt>
-    <mkdir     dir="${build.dir}/${dist.name}/reference/printer"/>
-    <xslt basedir="reference"
-           destdir="${build.dir}/${dist.name}/reference/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="../.."/>
-      <param name="project-menu" expression="nomenu"/>
       <param name="subdir" expression="reference/"/>
     </xslt>
 
@@ -113,17 +83,6 @@
       <param name="relative-path" expression=".."/>
       <param name="subdir" expression="common_howto/"/>
     </xslt>
-    <mkdir     dir="${build.dir}/${dist.name}/common_howto/printer"/>
-    <xslt basedir="common_howto"
-           destdir="${build.dir}/${dist.name}/common_howto/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="../.."/>
-      <param name="project-menu" expression="nomenu"/>
-      <param name="subdir" expression="common_howto/"/>
-    </xslt>
 
     <!-- Webserver Howto -->
     <xslt basedir="webserver_howto"
@@ -133,17 +92,6 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
-      <param name="subdir" expression="webserver_howto/"/>
-    </xslt>
-    <mkdir     dir="${build.dir}/${dist.name}/webserver_howto/printer"/>
-    <xslt basedir="webserver_howto"
-           destdir="${build.dir}/${dist.name}/webserver_howto/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="../.."/>
-      <param name="project-menu" expression="nomenu"/>
       <param name="subdir" expression="webserver_howto/"/>
     </xslt>
 
@@ -157,17 +105,6 @@
       <param name="relative-path" expression=".."/>
       <param name="subdir" expression="ajp/"/>
     </xslt>
-    <mkdir     dir="${build.dir}/${dist.name}/ajp/printer"/>
-    <xslt basedir="ajp"
-           destdir="${build.dir}/${dist.name}/ajp/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="../.."/>
-      <param name="project-menu" expression="nomenu"/>
-      <param name="subdir" expression="ajp/"/>
-    </xslt>
 
     <!-- Miscellaneous Documentation -->
     <xslt basedir="miscellaneous"
@@ -179,17 +116,6 @@
       <param name="relative-path" expression=".."/>
       <param name="subdir" expression="miscellaneous/"/>
     </xslt>
-    <mkdir     dir="${build.dir}/${dist.name}/miscellaneous/printer"/>
-    <xslt basedir="miscellaneous"
-           destdir="${build.dir}/${dist.name}/miscellaneous/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="../.."/>
-      <param name="project-menu" expression="nomenu"/>
-      <param name="subdir" expression="miscellaneous/"/>
-    </xslt>
 
     <!-- News -->
     <xslt basedir="news"
@@ -199,17 +125,6 @@
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression=".."/>
-      <param name="subdir" expression="news/"/>
-    </xslt>
-    <mkdir     dir="${build.dir}/${dist.name}/news/printer"/>
-    <xslt basedir="news"
-           destdir="${build.dir}/${dist.name}/news/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="../.."/>
-      <param name="project-menu" expression="nomenu"/>
       <param name="subdir" expression="news/"/>
     </xslt>
  
