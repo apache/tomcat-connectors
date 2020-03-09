@@ -90,7 +90,7 @@ worker.worker1.port=8009
 </p>
 <p>
   You'll find a link to prebuilt binaries
-        <a href="http://tomcat.apache.org/download-connectors.cgi">here</a>
+        <a href="//tomcat.apache.org/download-connectors.cgi">here</a>
 </p>
 <p>
     Here is the minimum which should be set in <b>httpd.conf</b> directly or 
