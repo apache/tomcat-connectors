@@ -113,12 +113,10 @@
           <a href="https://www.apache.org/" target="_blank"><img src="{$src}" alt="The Apache Software Foundation" style="width: 266px; height: 83px;"/></a>
         </div>
         <h1><xsl:value-of select="$project/title"/></h1>
-        <!-- version and build-date aren't available, so we can't display them
         <div class="versionInfo">
           Version <xsl:value-of select="$version"/>,
           <time datetime="{$build-date-iso-8601}"><xsl:value-of select="$build-date"/></time>
         </div>
-        -->
         <div style="height: 1px;"/>
         <div style="clear: left;"/>
       </div>

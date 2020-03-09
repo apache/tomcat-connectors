@@ -45,6 +45,7 @@ had to be updated:
 
 native/iis/README
 native/netscape/README
+xdocs/build.xml
 xdocs/index.xml
 xdocs/news/<THISYEAR0101>.xml
 tools/dist/binaries/windows/README.html
