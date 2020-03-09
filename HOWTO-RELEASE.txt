@@ -48,6 +48,7 @@ native/netscape/README
 xdocs/build.xml
 xdocs/index.xml
 xdocs/news/<THISYEAR0101>.xml
+tools/dist/README.html
 tools/dist/binaries/windows/README.html
 
 Check version numbers in the files that are listed in the section
@@ -82,7 +83,7 @@ Use the pattern below for tagging the tomcat-connectors directory.
 
 TAG=JK_{MAJOR_REVISION}_{MINOR_REVISION}_{RELEASE}
 
-Here is an example for mod_jk 1.2.48
+Here is an example for mod_jk 1.2.49
 
 git commit -a -m "Tag JK_1_2_48"
 git tag JK_1_2_48
@@ -107,9 +108,9 @@ Create the new source distribution
 A tool named jkrelease.sh in the directory tools creates
 a release tarball and a zip including signature files.
 
-Here is an example for mod_jk 1.2.48
+Here is an example for mod_jk 1.2.49
 
-./jkrelease.sh -R git -v 1.2.48 -h
+./jkrelease.sh -R git -v 1.2.49 -h
 
 
 
