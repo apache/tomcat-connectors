@@ -12,275 +12,91 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+PROJECT = mod_jk
+# Tools
+CC = cl.exe
+LINK = link.exe
+RC = rc.exe
+MT = mt.exe
 
-!IFDEF APACHE20_HOME
-APR_LIB=libapr.lib
-APU_LIB=libaprutil.lib
-OUTDIR=.\Release20
-INTDIR=.\Release20
-APACHE2_HOME=$(APACHE20_HOME)
+!IF !DEFINED(APACHE2_HOME) || "$(APACHE2_HOME)" == ""
+!ERROR Cannot find APACHE2_HOME. Use nmake -f Makefile.vc APACHE2_HOME=dir
+!ENDIF
+
+!IF !DEFINED(BUILD_CPU) || "$(BUILD_CPU)" == ""
+!ERROR Must specify BUILD_CPU matching compiler x86 or x64
+!ENDIF
+!IF "$(BUILD_CPU)" == "x86"
+CPUFLAGS = -D_X86_=1
+MACHINE = X86
 !ELSE
-!IFDEF APACHE24_HOME
-APACHE2_HOME=$(APACHE24_HOME)
-OUTDIR=.\Release24
-INTDIR=.\Release24
-!ELSE
-!IFDEF APACHE22_HOME
-APACHE2_HOME=$(APACHE22_HOME)
-OUTDIR=.\Release22
-INTDIR=.\Release22
-!ENDIF
-!ENDIF
-APR_LIB=libapr-1.lib
-APU_LIB=libaprutil-1.lib
-!ENDIF
-!IFNDEF APACHE2_HOME
-!ERROR Missing APACHE2_HOME environment variable.
+CPUFLAGS = -DWIN64 -D_WIN64
+MACHINE = AMD64
 !ENDIF
 
-TARGET=mod_jk$(SO_VERSION)$(SO_HTTPD_VERSION)
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-ARCH=X86
-
-ALL : "$(OUTDIR)\$(TARGET).so"
-
-
-CLEAN :
-	-@erase "$(INTDIR)\jk.res"
-	-@erase "$(INTDIR)\jk_ajp12_worker.obj"
-	-@erase "$(INTDIR)\jk_ajp13.obj"
-	-@erase "$(INTDIR)\jk_ajp13_worker.obj"
-	-@erase "$(INTDIR)\jk_ajp14.obj"
-	-@erase "$(INTDIR)\jk_ajp14_worker.obj"
-	-@erase "$(INTDIR)\jk_ajp_common.obj"
-	-@erase "$(INTDIR)\jk_connect.obj"
-	-@erase "$(INTDIR)\jk_context.obj"
-	-@erase "$(INTDIR)\jk_lb_worker.obj"
-	-@erase "$(INTDIR)\jk_map.obj"
-	-@erase "$(INTDIR)\jk_md5.obj"
-	-@erase "$(INTDIR)\jk_msg_buff.obj"
-	-@erase "$(INTDIR)\jk_pool.obj"
-	-@erase "$(INTDIR)\jk_shm.obj"
-	-@erase "$(INTDIR)\jk_sockbuf.obj"
-	-@erase "$(INTDIR)\jk_status.obj"
-	-@erase "$(INTDIR)\jk_uri_worker_map.obj"
-	-@erase "$(INTDIR)\jk_url.obj"
-	-@erase "$(INTDIR)\jk_util.obj"
-	-@erase "$(INTDIR)\jk_worker.obj"
-	-@erase "$(INTDIR)\mod_jk.obj"
-	-@erase "$(INTDIR)\mod_jk_src.idb"
-	-@erase "$(INTDIR)\mod_jk_src.pdb"
-	-@erase "$(OUTDIR)\mod_jk.exp"
-	-@erase "$(OUTDIR)\mod_jk.lib"
-	-@erase "$(OUTDIR)\$(TARGET).pdb"
-	-@erase "$(OUTDIR)\$(TARGET).so"
-
-"$(OUTDIR)" :
-    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\$(TARGET).bsc"
-BSC32_SBRS= \
-
-LINK32=link.exe
-LINK32_FLAGS=libhttpd.lib $(APR_LIB) $(APU_LIB) kernel32.lib user32.lib advapi32.lib mswsock.lib ws2_32.lib $(EXTRA_LIBS) /nologo /base:"0x6A6B0000" /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\$(TARGET).pdb" /debug /machine:$(ARCH) /out:"$(OUTDIR)\$(TARGET).so" /implib:"$(OUTDIR)\mod_jk.lib" /libpath:"$(APACHE2_HOME)\lib" /opt:ref
-LINK32_OBJS= \
-	"$(INTDIR)\jk_ajp12_worker.obj" \
-	"$(INTDIR)\jk_ajp13.obj" \
-	"$(INTDIR)\jk_ajp13_worker.obj" \
-	"$(INTDIR)\jk_ajp14.obj" \
-	"$(INTDIR)\jk_ajp14_worker.obj" \
-	"$(INTDIR)\jk_ajp_common.obj" \
-	"$(INTDIR)\jk_connect.obj" \
-	"$(INTDIR)\jk_context.obj" \
-	"$(INTDIR)\jk_lb_worker.obj" \
-	"$(INTDIR)\jk_map.obj" \
-	"$(INTDIR)\jk_md5.obj" \
-	"$(INTDIR)\jk_msg_buff.obj" \
-	"$(INTDIR)\jk_pool.obj" \
-	"$(INTDIR)\jk_shm.obj" \
-	"$(INTDIR)\jk_sockbuf.obj" \
-	"$(INTDIR)\jk_status.obj" \
-	"$(INTDIR)\jk_uri_worker_map.obj" \
-	"$(INTDIR)\jk_url.obj" \
-	"$(INTDIR)\jk_util.obj" \
-	"$(INTDIR)\jk_worker.obj" \
-	"$(INTDIR)\jk.res" \
-	"$(INTDIR)\mod_jk.obj"
-
-"$(OUTDIR)\$(TARGET).so" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-	@IF EXIST $(OUTDIR)\$(TARGET).manifest \
-		mt -nologo -manifest $(OUTDIR)\$(TARGET).manifest -outputresource:$(OUTDIR)\$(TARGET).so;2
-
-
-CPP_PROJ=-nologo -MD -W3 -O2 -Ob2 -Oy- -Zi -EHsc /I "..\common" /I "$(APACHE2_HOME)\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" $(CFLAGS) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\mod_jk_src" /FD /c
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\jk.res" /i "..\common" /d BASENAME="mod_jk" /d "NDEBUG"
-
-SOURCE=..\common\jk.rc
-
-"$(INTDIR)\jk.res" : $(SOURCE) "$(INTDIR)"
-	$(RSC) $(RSC_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_ajp12_worker.c
-
-"$(INTDIR)\jk_ajp12_worker.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_ajp13.c
-
-"$(INTDIR)\jk_ajp13.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_ajp13_worker.c
-
-"$(INTDIR)\jk_ajp13_worker.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_ajp14.c
-
-"$(INTDIR)\jk_ajp14.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_ajp14_worker.c
-
-"$(INTDIR)\jk_ajp14_worker.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_ajp_common.c
-
-"$(INTDIR)\jk_ajp_common.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_connect.c
-
-"$(INTDIR)\jk_connect.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_context.c
-
-"$(INTDIR)\jk_context.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_lb_worker.c
-
-"$(INTDIR)\jk_lb_worker.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_map.c
-
-"$(INTDIR)\jk_map.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_md5.c
-
-"$(INTDIR)\jk_md5.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_msg_buff.c
-
-"$(INTDIR)\jk_msg_buff.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_pool.c
-
-"$(INTDIR)\jk_pool.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_shm.c
-
-"$(INTDIR)\jk_shm.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_sockbuf.c
-
-"$(INTDIR)\jk_sockbuf.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_status.c
-
-"$(INTDIR)\jk_status.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_uri_worker_map.c
-
-"$(INTDIR)\jk_uri_worker_map.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_url.c
-
-"$(INTDIR)\jk_url.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_util.c
-
-"$(INTDIR)\jk_util.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=..\common\jk_worker.c
-
-"$(INTDIR)\jk_worker.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=.\mod_jk.c
-
-"$(INTDIR)\mod_jk.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
+# Modify library names or list them when calling nmake
+APACHE2_LIBS = libhttpd.lib libapr-1.lib libaprutil-1.lib
+
+BUILDBIN = $(WORKDIR)\$(PROJECT).so
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDMFT = $(BUILDBIN).manifest
+
+WORKDIR = $(BUILD_CPU)_RELEASE
+CLEANTARGET = rd /s /q $(WORKDIR)
+MAKEWORKDIR = md $(WORKDIR)
+NMAKE_WINVER=0x0700
+
+CFLAGS = $(CFLAGS) -DNDEBUG -DWIN32 -D_WINNT -DWINNT -D_WIN32_WINNT=$(NMAKE_WINVER) -DWINVER=$(NMAKE_WINVER) $(CPUFLAGS)
+CFLAGS = $(CFLAGS)
+CLOPTS = /c /nologo -MD -W3 -O2 -Ob2 -Zi -EHsc
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
+LFLAGS = /nologo /DLL /INCREMENTAL:NO /DEBUG /OPT:REF /SUBSYSTEM:WINDOWS /MACHINE:$(MACHINE) /libpath:$(APACHE2_HOME)\lib
+LDLIBS = kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib $(APACHE2_LIBS) $(EXTRA_LIBS)
+INCDIR = -I..\common -I$(APACHE2_HOME)\include
+
+OBJECTS = \
+	$(WORKDIR)\jk_ajp12_worker.obj \
+	$(WORKDIR)\jk_ajp13.obj \
+	$(WORKDIR)\jk_ajp13_worker.obj \
+	$(WORKDIR)\jk_ajp14.obj \
+	$(WORKDIR)\jk_ajp14_worker.obj \
+	$(WORKDIR)\jk_ajp_common.obj \
+	$(WORKDIR)\jk_connect.obj \
+	$(WORKDIR)\jk_context.obj \
+	$(WORKDIR)\jk_lb_worker.obj \
+	$(WORKDIR)\jk_map.obj \
+	$(WORKDIR)\jk_md5.obj \
+	$(WORKDIR)\jk_msg_buff.obj \
+	$(WORKDIR)\jk_pool.obj \
+	$(WORKDIR)\jk_shm.obj \
+	$(WORKDIR)\jk_sockbuf.obj \
+	$(WORKDIR)\jk_status.obj \
+	$(WORKDIR)\jk_uri_worker_map.obj \
+	$(WORKDIR)\jk_url.obj \
+	$(WORKDIR)\jk_util.obj \
+	$(WORKDIR)\jk_worker.obj \
+	$(WORKDIR)\mod_jk.obj
+
+all : $(WORKDIR) $(BUILDBIN)
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+.c{$(WORKDIR)}.obj:
+	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
+
+{..\common}.c{$(WORKDIR)}.obj:
+	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
+
+$(BUILDRES): ..\common\jk.rc
+	$(RC) /l 0x409 /i "..\common" /d "MOD_JK" /d "NDEBUG" /fo $(BUILDRES) $@
+
+$(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LDLIBS) /out:$(BUILDBIN) /pdb:$(BUILDPDB)
+	@if exist $(BUILDMFT) \
+		$(MT) -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
+
+clean:
+	@-$(CLEANTARGET) 2>NUL
