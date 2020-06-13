@@ -29,6 +29,9 @@ APACHE2_LDIR=$(APACHE2_HOME)\lib
 !IF !DEFINED(APACHE2_IDIR) || "$(APACHE2_IDIR)" == ""
 APACHE2_IDIR=$(APACHE2_HOME)\include
 !ENDIF
+!IF !DEFINED(PREFIX) || "$PREFIX)" == ""
+PREFIX=$(APACHE2_HOME)\modules
+!ENDIF
 
 LIB = $(LIB);$(APACHE2_LDIR)
 INCLUDE = $(INCLUDE);$(APACHE2_IDIR)
@@ -108,6 +111,10 @@ $(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
 	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LDLIBS) /out:$(BUILDBIN) /pdb:$(BUILDPDB)
 	@if exist $(BUILDMFT) \
 		$(MT) -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
+
+install : all
+	@-xcopy /I /Y /Q "$(WORKDIR)\*.so"  "$(PREFIX)"
+	@-xcopy /I /Y /Q "$(WORKDIR)\*.pdb" "$(PREFIX)"
 
 clean:
 	@-$(CLEANTARGET) 2>NUL
