@@ -89,6 +89,7 @@ $(BUILDRES): ..\common\jk.rc
 $(PCRELIB):
 	@cd .\pcre
 	$(MAKE)
+	@if not ERRORLEVEL 0 exit /B 1
 	@cd ..
 
 $(BUILDBIN): $(PCRELIB) $(WORKDIR) $(OBJECTS) $(BUILDRES)
@@ -97,8 +98,9 @@ $(BUILDBIN): $(PCRELIB) $(WORKDIR) $(OBJECTS) $(BUILDRES)
 		$(MT) -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
 
 clean:
-	@$(CLEANTARGET)
 	@cd .\pcre
 	$(MAKE) clean
+	@if not ERRORLEVEL 0 exit /B 1
 	@cd ..
+	@$(CLEANTARGET)
 
