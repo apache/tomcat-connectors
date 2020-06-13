@@ -12,19 +12,9 @@ To build the ISAPI redirector you will need to create the following build
 environment:
 
 - Git client
-- Subversion client
 - Mladen's Custom Microsoft Compiler Toolkit Compilation  
-    https://github.com/mturk/cmsc (cb6be932c8c95a46262a64a89e68aae620dfdcee)  
-- Windows SDK  
-    No documentation  
-    No samples  
-    Complete set of developer tools  
-- Windows DDK  
-    Build environments  
-    Tools  
-- Compile as per <cmsc-root>/tools/README.txt  
-- Install Perl as per <cmsc-root>/tools/README.txt  
-- Java 7 (releases only, can be replaced with any zip tool)
+    https://github.com/mturk/cmsc/releases/tag/v15.0.28
+    download cmsc-15.0_28-win7-x86_x64.zip and unzip in C:
 
 
 BUILDING
@@ -40,14 +30,14 @@ Obtain the source code:
 
 Build  isapi_redirector.dll:
 
-  c:\cmsc\setenv.bat /x86 
-  nmake -f Makefile.x86
- 
-  c:\cmsc\setenv.bat /x64
-  nmake -f Makefile.amd64
+  c:\cmsc-15.0_28\setenv.bat x86
+  nmake
+
+  c:\cmsc-15.0_28\setenv.bat x64
+  nmake -f
 
 Tomcat isapi_redirect DLLs may then be found in
-C:\tomcat-jk-1.2.x\native\iis\Release_[amd64|x86].
+C:\tomcat-jk-1.2.x\native\iis\[x86|x64]_RELEASE
 
 
 
