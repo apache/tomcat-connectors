@@ -34,6 +34,7 @@ MACHINE = AMD64
 BUILDBIN = $(WORKDIR)\$(PROJECT).dll
 BUILDRES = $(WORKDIR)\$(PROJECT).res
 BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDMFT = $(BUILDBIN).manifest
 PCRELIB  = .\pcre\$(WORKDIR)\pcre.lib
 
 WORKDIR = $(BUILD_CPU)_RELEASE
@@ -71,7 +72,7 @@ OBJECTS = \
 	$(WORKDIR)\jk_util.obj \
 	$(WORKDIR)\jk_worker.obj
 
-all : pcre $(WORKDIR) $(BUILDBIN)
+all : $(WORKDIR) $(PCRELIB) $(BUILDBIN)
 
 $(WORKDIR) :
 	@$(MAKEWORKDIR)
@@ -86,15 +87,18 @@ $(BUILDRES): ..\common\jk.rc
 	$(RC)/l 0x409 /i "..\common" /d "JK_ISAPI" /d "NDEBUG" /fo $(BUILDRES) ..\common\jk.rc
 
 $(PCRELIB):
-	cd .\pcre
+	@cd .\pcre
 	$(MAKE)
-	cd ..
+	@cd ..
+
 $(BUILDBIN): $(PCRELIB) $(WORKDIR) $(OBJECTS) $(BUILDRES)
 	$(LINK) $(LFLAGS) $(OBJECTS) $(PCRELIB) $(BUILDRES) $(LDLIBS) /def:isapi.def /out:$(BUILDBIN) /pdb:$(BUILDPDB)
+	@if exist $(BUILDMFT) \
+		$(MT) -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
 
 clean:
 	@$(CLEANTARGET)
-	cd .\pcre
+	@cd .\pcre
 	$(MAKE) clean
-	cd ..
+	@cd ..
 
