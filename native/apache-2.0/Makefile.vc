@@ -105,7 +105,7 @@ $(WORKDIR) :
 	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
 
 $(BUILDRES): ..\common\jk.rc
-	$(RC) /l 0x409 /i ..\common /d NDEBUG /fo $(BUILDRES) $@
+	$(RC) /l 0x409 /n /i ..\common /d NDEBUG /fo $(BUILDRES) ..\common\jk.rc
 
 $(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
 	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LDLIBS) /out:$(BUILDBIN) /pdb:$(BUILDPDB)
