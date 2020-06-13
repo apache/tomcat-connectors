@@ -102,5 +102,4 @@ clean:
 	$(MAKE) clean
 	@if not ERRORLEVEL 0 exit /B 1
 	@cd ..
-	@-$(CLEANTARGET)
-
+	@-$(CLEANTARGET) 2>NUL
