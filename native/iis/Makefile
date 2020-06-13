@@ -1,0 +1,100 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+PROJECT = isapi_redirect
+# Tools
+CC = cl.exe
+LINK = link.exe
+RC = rc.exe
+MT = mt.exe
+
+!IF !DEFINED(BUILD_CPU) || "$(BUILD_CPU)" == ""
+!ERROR Must specify BUILD_CPU matching compiler x86 or x64
+!ENDIF
+!IF "$(BUILD_CPU)" == "x86"
+CPUFLAGS = -D_X86_=1
+MACHINE = X86
+!ELSE
+CPUFLAGS = -DWIN64 -D_WIN64
+MACHINE = AMD64
+!ENDIF
+
+BUILDBIN = $(WORKDIR)\$(PROJECT).dll
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+PCRELIB  = .\pcre\$(WORKDIR)\pcre.lib
+
+WORKDIR = $(BUILD_CPU)_RELEASE
+CLEANTARGET=if exist "$(WORKDIR)" rd /s /q $(WORKDIR)
+MAKEWORKDIR=if not exist "$(WORKDIR)" md $(WORKDIR)
+NMAKE_WINVER=0x0700
+CFLAGS = $(CFLAGS) -DNDEBUG -DWIN32 -D_WINNT -DWINNT -D_WIN32_WINNT=$(NMAKE_WINVER) -DWINVER=$(NMAKE_WINVER) -DHAVE_CONFIG_H $(CPUFLAGS)
+CFLAGS = $(CFLAGS) -DPCRE_STATIC -DJK_ISAPI -DISAPI_EXPORTS
+CLOPTS = /c /nologo -MD -W3 -O2 -Ob2 -Zi -EHsc
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
+LFLAGS = /nologo /DLL /INCREMENTAL:NO /DEBUG /OPT:REF /SUBSYSTEM:WINDOWS /MACHINE:$(MACHINE)
+LDLIBS = kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib $(EXTRA_LIBS)
+INCDIR = -I.\pcre -I..\common
+
+OBJECTS = \
+	$(WORKDIR)\jk_ajp12_worker.obj \
+	$(WORKDIR)\jk_ajp13.obj \
+	$(WORKDIR)\jk_ajp13_worker.obj \
+	$(WORKDIR)\jk_ajp14.obj \
+	$(WORKDIR)\jk_ajp14_worker.obj \
+	$(WORKDIR)\jk_ajp_common.obj \
+	$(WORKDIR)\jk_connect.obj \
+	$(WORKDIR)\jk_context.obj \
+	$(WORKDIR)\jk_isapi_plugin.obj \
+	$(WORKDIR)\jk_lb_worker.obj \
+	$(WORKDIR)\jk_map.obj \
+	$(WORKDIR)\jk_md5.obj \
+	$(WORKDIR)\jk_msg_buff.obj \
+	$(WORKDIR)\jk_pool.obj \
+	$(WORKDIR)\jk_shm.obj \
+	$(WORKDIR)\jk_sockbuf.obj \
+	$(WORKDIR)\jk_status.obj \
+	$(WORKDIR)\jk_uri_worker_map.obj \
+	$(WORKDIR)\jk_url.obj \
+	$(WORKDIR)\jk_util.obj \
+	$(WORKDIR)\jk_worker.obj
+
+all : pcre $(WORKDIR) $(BUILDBIN)
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+.c{$(WORKDIR)}.obj:
+	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
+
+{..\common}.c{$(WORKDIR)}.obj:
+	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
+
+$(BUILDRES): ..\common\jk.rc
+	$(RC)/l 0x409 /i "..\common" /d "JK_ISAPI" /d "NDEBUG" /fo $(BUILDRES) ..\common\jk.rc
+
+$(PCRELIB):
+	cd .\pcre
+	$(MAKE)
+	cd ..
+$(BUILDBIN): $(PCRELIB) $(WORKDIR) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(PCRELIB) $(BUILDRES) $(LDLIBS) /def:isapi.def /out:$(BUILDBIN) /pdb:$(BUILDPDB)
+
+clean:
+	@$(CLEANTARGET)
+	cd .\pcre
+	$(MAKE) clean
+	cd ..
+
