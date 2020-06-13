@@ -22,24 +22,22 @@ BUILDING
 
 Obtain the source code:
 
-  c:
-  cd \
-  git clone  https://github.com/apache/tomcat-connectors.git tomcat-jk-1.2.x
-  cd tomcat-jk-1.2.x\native\iis
+  git clone https://github.com/apache/tomcat-connectors.git
+  cd tomcat-connectors\native\iis
 
 
 Build  isapi_redirector.dll:
 
-  c:\cmsc-15.0_28\setenv.bat x86
-  nmake
+    c:\cmsc-15.0_28\setenv.bat x86
+    nmake
 
-  open new cmd.exe
+    open new cmd.exe
 
-  c:\cmsc-15.0_28\setenv.bat x64
-  nmake
+    c:\cmsc-15.0_28\setenv.bat x64
+    nmake
 
 Tomcat isapi_redirect DLLs may then be found in
-C:\tomcat-jk-1.2.x\native\iis\[x86|x64]_RELEASE
+    tomcat-connectors\native\iis\[x86|x64]_RELEASE
 
 
 
