@@ -29,12 +29,12 @@ Obtain the source code:
 Build  isapi_redirector.dll:
 
     c:\cmsc-15.0_28\setenv.bat x86
-    nmake
+    nmake -f Makefile.vc
 
     open new cmd.exe
 
     c:\cmsc-15.0_28\setenv.bat x64
-    nmake
+    nmake -f Makefile.vc
 
 Tomcat isapi_redirect DLLs may then be found in
     tomcat-connectors\native\iis\[x86|x64]_RELEASE
