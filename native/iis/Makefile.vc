@@ -74,7 +74,7 @@ OBJECTS = \
 	$(WORKDIR)\jk_util.obj \
 	$(WORKDIR)\jk_worker.obj
 
-all : $(WORKDIR) $(PCRELIB) $(BUILDBIN)
+all : libpcre $(WORKDIR) $(BUILDBIN)
 
 $(WORKDIR) :
 	@$(MAKEWORKDIR)
@@ -88,20 +88,18 @@ $(WORKDIR) :
 $(BUILDRES): ..\common\jk.rc
 	$(RC) /l 0x409 /n /i ..\common /d JK_ISAPI /d NDEBUG /fo $(BUILDRES) ..\common\jk.rc
 
-$(PCRELIB):
+libpcre:
 	@cd .\pcre
-	$(MAKE) -f Makefile.vc WINVER=$(WINVER) BUILD_CPU=$(BUILD_CPU) CPUFLAGS="$(CPUFLAGS)"
-	@if not ERRORLEVEL 0 exit /B 1
+	@$(MAKE) -f Makefile.vc WINVER=$(WINVER) BUILD_CPU=$(BUILD_CPU) CPUFLAGS="$(CPUFLAGS)"
 	@cd ..
 
-$(BUILDBIN): $(PCRELIB) $(WORKDIR) $(OBJECTS) $(BUILDRES)
+$(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
 	$(LINK) $(LFLAGS) $(OBJECTS) $(PCRELIB) $(BUILDRES) $(LDLIBS) /def:isapi.def /out:$(BUILDBIN) /pdb:$(BUILDPDB)
 	@if exist $(BUILDMFT) \
 		$(MT) -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
 
 clean:
 	@cd .\pcre
-	$(MAKE) -f Makefile.vc clean
-	@if not ERRORLEVEL 0 exit /B 1
+	@$(MAKE) -f Makefile.vc clean
 	@cd ..
 	@-$(CLEANTARGET) 2>NUL
