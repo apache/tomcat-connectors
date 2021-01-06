@@ -91,7 +91,7 @@ noted in the tables below.
 </p>
 <p>
 Whitespace at the beginning and the end of a property name or value gets ignored.
-Comments can be placed in any line and start with a hash sign '#'.
+Comments can be placed in any line and start with a hash sign '<b>#</b>'.
 Any line contents behind the hash sign get ignored.
 </p>
 <p>
@@ -111,19 +111,19 @@ These directives have global scope.
 <directive name="worker.list" default="ajp13" required="true">
 A comma separated list of workers names that the JK will use. When starting up,
 the web server plugin will instantiate the workers whose name appears in the
-worker.list property, these are also the workers to whom you can map requests.
+<b>worker.list</b> property, these are also the workers to whom you can map requests.
 <p>
 This directive can be used multiple times.
 </p>
 </directive>
 <directive name="worker.maintain" default="60" required="false">
 Worker connection pool maintain interval in seconds. If set to the positive
-value JK will scan all connections for all workers specified in worker.list
+value JK will scan all connections for all workers specified in <b>worker.list</b>
 directive and check if connections needs to be recycled.
 <p>
-Furthermore any load balancer does a global maintenance every worker.maintain
+Furthermore any load balancer does a global maintenance every <b>worker.maintain</b>
 seconds. During global maintenance load counters are decayed and workers
-in error are checked for recover_time.
+in error are checked for <b>recover_time</b>.
 </p>
 <p>
 This feature has been added in <b>jk 1.2.13</b>.
@@ -151,17 +151,17 @@ The name of the worker can contain only the alphanumeric characters
 
 <subsection name="Variables, Environment Variables">
 <p>
-You can define and use variables in the workers.properties file.
+You can define and use variables in the <b>workers.properties</b> file.
 To define a variable you use the syntax:
 </p>
 <p><strong>&lt;variable_name&gt;=&lt;value&gt;</strong></p>
 <p>
 Dots are allowed in the variable name, but you have to be careful
 not to use variable names, that clash with standard directives.
-Therefore variable names should never start with "worker.".
+Therefore variable names should never start with "<b>worker.</b>".
 </p>
 <p>
-To use a variable, you can insert "$(variable_name)" at any place
+To use a variable, you can insert "<b>$(variable_name)</b>" at any place
 on the value side of a property line. If a variable has not been
 defined before its use, we will search the process environment for
 a variable with the same name and use their value.
@@ -175,22 +175,22 @@ the file, you can inherit properties from one worker to another, or even
 from a template to real workers.
 </p>
 <p>
-The directive "reference" allows to copy configurations between workers or
-worker templates in a hierarchical way. If worker castor sets
+The directive "<b>reference</b>" allows to copy configurations between workers or
+worker templates in a hierarchical way. If worker <b>castor</b> sets
 <b>worker.castor.reference=worker.pollux</b> then it inherits all properties
 of <b>pollux</b>, except for the ones that are explicitly set for <b>castor</b>.
 </p>
 <p>
 Please note, that the value of the directive is not only the name of the referred worker,
-but the complete prefix including "worker.".
+but the complete prefix including "<b>worker.</b>".
 </p>
 <p>
 To use a template worker simply define it like a real worker, but do not add it
-to the "worker.list" or as a member to any load balancer. Such a template worker
+to the <b>worker.list</b> or as a member to any load balancer. Such a template worker
 does not have to contain mandatory directives. This approach is especially useful,
 if one has a lot of balanced workers in a load balancer
 and these workers share most of their properties. You can set all of these properties
-in a template worker, e.g. using the prefix "worker.template1", and then simply
+in a template worker, e.g. using the prefix "<b>worker.template1</b>", and then simply
 reference those common properties in all balanced workers.
 </p>
 <p>
@@ -211,7 +211,7 @@ be unavailable or will misbehave. Those directives will be marked with a <strong
 </p>
 <directives>
 <directive name="type" default="ajp13" required="true">
-Type of the worker (can be one of ajp12, ajp13, ajp14, jni, lb or status). The type of the worker
+Type of the worker (can be one of <b>ajp12</b>, <b>ajp13</b>, <b>ajp14</b>, <b>jni</b>, <b>lb</b> or <b>status</b>). The type of the worker
 defines the directives that can be applied to the worker.
 <p>Type <b>ajp13</b> is the preferred worker type that JK uses for communication
 between web server and Tomcat. This type of worker uses sockets as communication
@@ -269,7 +269,7 @@ and retry again.
 Note that <code>socket_timeout</code> is in seconds, and
 <code>socket_connect_timeout</code> in milliseconds,
 so in absolute terms the default <code>socket_connect_timeout</code> is
-equal to <code>"socket_timeout</code>.
+equal to <code>socket_timeout</code>.
 </p>
 <p>
 This feature has been added in <b>jk 1.2.27</b>.
@@ -437,7 +437,7 @@ Only used for a member worker of a load balancer.
 The integer number lbfactor (load balancing factor) is
 <i>how much we expect this worker to work</i>, or
 <i>the worker's work quota</i>. Load balancing factor is compared with other workers
-that makes the load balancer. For example if one worker has lb_factor 5 times higher then
+that makes the load balancer. For example if one worker has <b>lbfactor</b> 5 times higher then
 other worker, then it will receive five times more requests.
 </p>
 </directive>
@@ -525,7 +525,7 @@ environment variable <b>JK_STICKY_IGNORE</b> and the worker map extension for
 
 <directive name="sticky_session_force" default="false" required="false">
 Specifies whether requests with SESSION ID's for workers that are in error state
-should be rejected. If sticky_session_force is set to <b>true</b>
+should be rejected. If <b>sticky_session_force</b> is set to <b>true</b>
 and the worker that matches that SESSION ID is in error state, client will
 receive 500 (Server Error). If set to <b>false</b> failover on
 another worker will be issued with losing client session. This directive is
@@ -570,7 +570,7 @@ environment variable <b>JK_STATELESS</b> for them.
 </p>
 <p>
 If method is set to <b>N[ext]</b> the balancer will again use the number of sessions
-to find the best worker. All remarks concerning the <b>Session</b>method apply as well.
+to find the best worker. All remarks concerning the <b>Session</b> method apply as well.
 The difference to the <b>Session</b> method is how the session count is handled in the
 sliding time window. The <b>Next</b> method does not divide by 2, instead it subtracts
 the current minimum number. This should effectively result in a round-robin session
@@ -769,16 +769,16 @@ This feature has been added in <b>jk 1.2.20</b>.
 </directive>
 <directive name="ns" default="jk:" required="false">
 This directive can be used to customise the XML output from the
-status worker. If set to <b>-</b> no namespace will be used.
+status worker. If set to <code>-</code> no namespace will be used.
 <p>
 This feature has been added in <b>jk 1.2.20</b>.
 </p>
 </directive>
 <directive name="xmlns" default="" required="false">
 This directive can be used to customise the XML output from the
-status worker. If set to <b>-</b> no xmlns will be used.
+status worker. If set to <code>-</code> no xmlns will be used.
 <p>
-Default value is set to xmlns:jk=&quot;http://tomcat.apache.org&quot;
+Default value is set to <b>xmlns:jk=&quot;http://tomcat.apache.org&quot;</b>
 </p>
 <p>
 This feature has been added in <b>jk 1.2.20</b>.
@@ -842,7 +842,7 @@ See also <b>max_reply_timeouts</b>, <b>retries</b> and <b>recovery_options</b>.
 </p>
 <p>
 By default (value zero) the web server will wait forever which could be an issue for you.
-If you set a reply_timeout, adjust it carefully if you have long running servlets.
+If you set a <b>reply_timeout</b>, adjust it carefully if you have long running servlets.
 </p>
 <p>
 The <b>reply_timeout</b> can be overwritten using the Apache HTTP Server environment variable
