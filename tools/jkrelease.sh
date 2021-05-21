@@ -53,7 +53,7 @@ usage() {
     echo "        -r: revision or hash to package, only allowed in"
     echo "            combination with '-b BRANCH', '-T' or '-d DIR'"
     echo "        -b: package from branch BRANCH"
-    echo "        -T: package from trunk/master"
+    echo "        -T: package from trunk/main"
     echo "        -d: package from local directory"
     echo "        -o: owner used for creating tar archive"
     echo "        -g: group used for creating tar archive"
@@ -175,10 +175,10 @@ if [ -n "$trunk" ]
 then
     if [ $USE_GIT -eq 1 ]
     then
-        JK_REV=`git ls-remote $REPOS refs/heads/master | awk '{print $1}'`
+        JK_REV=`git ls-remote $REPOS refs/heads/main | awk '{print $1}'`
         if [ -z "$JK_REV" ]
         then
-           echo "No git hash found via 'git ls-remote $REPOS refs/heads/master'"
+           echo "No git hash found via 'git ls-remote $REPOS refs/heads/main'"
            exit 3
         fi
         JK_SUFFIX=-${JK_REV}

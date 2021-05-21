@@ -88,7 +88,7 @@ Here is an example for mod_jk 1.2.49
 git commit -a -m "Tag JK_1_2_48"
 git tag JK_1_2_48
 git push origin JK_1_2_48
-# reset master
+# reset main
 
 
 Build the mod_jk 1.2 documentation
