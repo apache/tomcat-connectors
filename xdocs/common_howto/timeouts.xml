@@ -220,9 +220,8 @@ attribute <b>connection_pool_size</b>. We generally do not recommend
 to use this attribute in combination with Apache HTTP Server. For
 Apache we automatically detect the number of threads per
 process and set the maximum pool size to this value. For Microsoft IIS we use
-a default value of 250 (before version 1.2.20: 10),
-for the iPlanet Web Server the default is "1".
-We strongly recommend adjusting this value for IIS and the iPlanet Web Server
+a default value of 250 (before version 1.2.20: 10).
+We strongly recommend adjusting this value for IIS
 to the number of requests one web server process should
 be able to send to a backend in parallel. You should measure how many connections
 you need during peak hours without performance problems, and then add some

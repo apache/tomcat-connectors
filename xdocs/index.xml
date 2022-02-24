@@ -40,9 +40,6 @@ and provides web server plugins to connect web servers with Tomcat and other bac
 <li>the Apache HTTP Server with a plugin (module) named <strong>mod_jk</strong>.</li>
 <li>Microsoft IIS with a plugin (extension) named <strong>ISAPI redirector</strong>
 (or simply redirector).</li>
-<li>the iPlanet Web Server with a plugin named <strong>NSAPI redirector</strong>. The
-iPlanet Web Server was previously known under various names, including Netscape Enterprise Server,
-SunOne Web Server and Sun Enterprise System web server.</li>
 </ul>
 <p>In all cases the plugin uses a special protocol named <strong>Apache JServ Protocol</strong>
 or simply <strong>AJP</strong> to connect to the backend. Backends known to support AJP
@@ -160,8 +157,6 @@ install JK for the various web servers.
 <li><a href="webserver_howto/apache.html"><b>Apache HTTP Server (mod_jk)</b></a>
 </li>
 <li><a href="webserver_howto/iis.html"><b>Microsoft IIS (ISAPI redirector)</b></a>
-</li>
-<li><a href="webserver_howto/nes.html"><b>iPlanet Web Server (NSAPI redirector)</b></a>
 </li>
 
 </ul>

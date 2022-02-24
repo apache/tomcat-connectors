@@ -42,6 +42,10 @@
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
   <changelog>
+    <update>
+      Remove support for the Netscape / Sun ONE / Oracle iPlanet Web Server as
+      the product has been retired. (markt)
+    </update>
     <fix>
       <bug>64878</bug>: Common: Enable configure to find the correct sizes for
       pid_t and pthread_t when building on MacOS. (markt)

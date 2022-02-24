@@ -44,7 +44,6 @@ and replace it with the new version.  These are the docs I found which
 had to be updated:
 
 native/iis/README
-native/netscape/README
 xdocs/build.xml
 xdocs/index.xml
 xdocs/news/<THISYEAR0101>.xml

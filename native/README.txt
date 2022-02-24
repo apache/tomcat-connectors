@@ -21,10 +21,9 @@ What is tomcat-connector?
 
 tomcat-connectors is a project that provides web server connectors
 for the Tomcat servlet engine. The supported web servers are the
-Apache HTTP Server 2.x, Microsoft IIS and the Netscape/IPlanet
-web server. The AJP protocol used by the connector is supported in
-all Tomcat versions starting with Tomcat 3.2. Some other back end servers
-also support the AJP protocol.
+Apache HTTP Server 2.x and Microsoft IIS. The AJP protocol used by the connector
+is supported in all Tomcat versions starting with Tomcat 3.2. Some other back
+end servers also support the AJP protocol.
 
 Main features of the tomcat-connectors are fault tolerance, load balancing,
 dynamic configuration, flexibility and robustness.

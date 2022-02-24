@@ -75,24 +75,6 @@
   using DSO/APXS.
 
 
-  Building for Netscape/iPlanet/SunONE WebServer
-  ==============================================
-
-  Building uses the following command sequence:
-
-  ./configure --enable-netscape
-  cd netscape
-  make -f Makefile.solaris
-
-  This assumes that IPLANET_HOME is defined and points to
-  your iPlanet install path (eg: /opt/SUNWwbsvr).
-
-  By default GCC will be used. You can use Sun CC by providing
-  CC=cc on the make command line:
-
-  make -f Makefile.solaris CC=cc IPLANET_HOME=/opt/SUNWwbsrv70 EXTRA_CFLAGS=-m64
-
-
   Misc Notes
   ==========
 

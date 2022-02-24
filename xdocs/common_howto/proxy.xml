@@ -27,10 +27,9 @@
 </properties>
 <body>
 <section name="Introduction"> 
-<p>The Apache HTTP Server module mod_jk and its ISAPI and NSAPI redirector
-variants for Microsoft IIS and the iPlanet Web Server connect
-the web server to a backend (typically Tomcat) using the AJP protocol.
-The web server receives an HTTP(S) request and the module forwards
+<p>The Apache HTTP Server module mod_jk and its ISAPI redirector variant for
+Microsoft IIS connect the web server to a backend (typically Tomcat) using the
+AJP protocol. The web server receives an HTTP(S) request and the module forwards
 the request to the backend. This function is usually called a gateway
 or a proxy, in the context of HTTP it is called a reverse proxy.
 </p>

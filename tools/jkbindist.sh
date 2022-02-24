@@ -84,9 +84,6 @@ case "$websrv" in
     iis*)
         webdesc="Microsoft IIS Web Server"
     ;;
-    netscape*|nsapi*)
-        webdesc="Oracle iPlanet Web Server"
-    ;;
     *)
         echo "Unknown web server: $webserv"
         echo "   Supported are: httpd, iis, nsapi"

@@ -35,8 +35,8 @@
     </p>
     <p>
       JNI support in JK2 require APR, which is provded in Apache 2.0, and is
-      available for many platforms, so Apache 1.3, IIS and NES/iPlanet should be
-      able to use it
+      available for many platforms, so Apache 1.3 and IIS should be able to
+      use it.
     </p>
     <subsection name="Apache 1.3">
       <p>

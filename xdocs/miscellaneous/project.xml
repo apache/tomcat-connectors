@@ -40,7 +40,6 @@
     <menu name="Web Server HowTo">
         <item name="Apache HTTP Server (mod_jk)"           href="../webserver_howto/apache.html"/>
         <item name="Microsoft IIS (ISAPI redirector)"      href="../webserver_howto/iis.html"/>
-        <item name="iPlanet Web Server (NSAPI redirector)" href="../webserver_howto/nes.html"/>
     </menu>
 
     <menu name="Reference Guide">

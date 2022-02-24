@@ -76,11 +76,6 @@ called the <b>mod_jk module</b>.
 called the <b>ISAPI redirector</b>.
 </p>
 
-<p>
-<a href="../webserver_howto/nes.html">iPlanet Web Server</a> support is implemented on JK, using a plugin
-called the <b>NSAPI redirector</b>.
-</p>
-
 </subsection>
 
 <subsection name="Where can I get more information ?">
@@ -100,10 +95,6 @@ For <b>JK 1.2.x</b>, you should read:
 
 <li>
 <a href="../webserver_howto/iis.html">Microsoft IIS and JK (ISAPI redirector)</a>
-</li>
-
-<li>
-<a href="../webserver_howto/nes.html">iPlanet Web Server and JK (NSAPI redirector)</a>
 </li>
 
 <li>

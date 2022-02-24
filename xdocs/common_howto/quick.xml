@@ -34,7 +34,7 @@
     <li>
     <b>workers.properties</b> is a mandatory file used by the web server and which
     is the same for all JK implementations (mod_jk for the Apache HTTP Server,
-    ISAPI for Microsoft IIS, NSAPI for the iPlanet Web Server).
+    ISAPI for Microsoft IIS).
     </li>
     <li>
     <b>web server</b> add-ons to be set on the web server side. 
@@ -144,16 +144,6 @@ JkMount  /examples/* worker1
 More information to be added!
 </todo>
 </section>
-
-<section name="Minimum iPlanet Web Server configuration">
-<p>
-  A separate <a href="../webserver_howto/nes.html">HowTo for the iPlanet Web Server</a> is available.
-<todo>
-More information to be added?
-</todo>
-</p>
-</section>
-
 
 <section name="Test your configuration">
 <p>

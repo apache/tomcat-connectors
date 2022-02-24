@@ -540,21 +540,6 @@ AC_SUBST(apache_include)
 APACHE_DIR=${apache_dir}
 AC_SUBST(APACHE_DIR)
 
-AC_ARG_ENABLE(netscape,
-[AS_HELP_STRING([--enable-netscape=DIR],[Build Netscape/iPlanet/SunONE nsapi redirector plugin])],
-[
-    if ${TEST} ! -z "$WEBSERVER" ; then
-        AC_MSG_ERROR([Sorry cannot use --with-apxs=${APXS} or --with-apache=${withval} with --with-netscape, please choose one or the other.])
-    fi
-
-    WEBSERVER="netscape"
-
-    AC_MSG_RESULT([building connector for \"$WEBSERVER\"])
-],
-[
-    AC_MSG_RESULT(no netscape given)
-])
-
 dnl CFLAGS for EAPI mod_ssl (Apache 1.3)
 dnl it also allows the CFLAGS environment variable.
 CFLAGS="${CFLAGS}"
