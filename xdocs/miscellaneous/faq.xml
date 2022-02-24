@@ -58,7 +58,7 @@ to determine how to subscribe to tomcat mailing list.
 Now that JK moved to the <b>tomcat-connectors</b> repository, 
 the source and the binaries for JK can be downloaded from a mirror at the
 <a href="http://tomcat.apache.org/download-connectors.cgi">
-Tomcat Connectors (mod_jk, mod_jk2) Downloads</a> page.
+Tomcat Connectors (mod_jk) Downloads</a> page.
 </p>
 </subsection>
 
@@ -302,7 +302,7 @@ configure assume you have some GNU tools already installed and configured for yo
 </p>
 <p>
 Also some systems may have mixed cc and gcc setup which may make you puzzled when trying to link an Apache built with native
-c compiler with a jk/jk2 build with gcc.
+c compiler with a jk build with gcc.
 </p>
 <p>
 In case the make processing doesn't work as expected, you should use a GNU make <b>gmake</b>.

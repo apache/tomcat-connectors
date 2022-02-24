@@ -208,11 +208,6 @@ This page describes ant tasks to automate JK management via the status worker.
 This page contains information, on some report analysis scripts contained in the JK distribution.
 </p>
 </li>
-<li><a href="http://tomcat.apache.org/connectors-doc-archive/jk2/index.html">
-<b>Old JK/JK2 documentation archive.</b></a>
-<p>Here you can find old JK and JK2 documentation.
-</p>
-</li>
 </ul>
 
 </section>

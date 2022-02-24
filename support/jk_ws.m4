@@ -77,7 +77,7 @@ AC_DEFUN(
 	    if ${TEST} -d ${tempval}/srclib/apr ; then
 	      # Apache 2 contains apr.
 	      if ${TEST} ! -f ${tempval}/srclib/apr/config.status ; then
-                AC_MSG_ERROR(configure Apache2 before mod_jk2)
+                AC_MSG_ERROR(configure Apache2 before mod_jk)
 	      fi
 	      osdir=`${GREP} @OSDIR@ ${tempval}/srclib/apr/config.status | sed 's:s,@OSDIR@,::' | sed 's:,;t t::'`
 	      $2_INCL="-I${tempval}/include -I${withval}/os/${osdir}"

@@ -362,7 +362,6 @@ copy_files ${JK_DIST}.tmp/jk/conf $JK_DIST/conf "$COPY_CONF"
 
 # Remove extra directories and files
 targetdir=${JK_DIST}
-rm -rf ${targetdir}/xdocs/jk2
 rm -f ${targetdir}/native/build.xml
 rm -f ${targetdir}/native/NOTICE
 rm -f ${targetdir}/native/LICENSE

@@ -62,7 +62,6 @@
         <item name="Contribute documentation"   href="miscellaneous/doccontrib.html"/>
         <item name="JK Status Ant Tasks"        href="miscellaneous/jkstatustasks.html"/>
         <item name="Reporting Tools"            href="miscellaneous/reporttools.html"/>
-        <item name="Old JK/JK2 documentation"   href="http://tomcat.apache.org/connectors-doc-archive/jk2/index.html"/>
     </menu>
 
     <menu name="News">
