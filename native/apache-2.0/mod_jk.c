@@ -332,8 +332,9 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
     /* If we use proxy error pages, still pass
      * through context headers needed for special status codes.
      */
-    if (s->extension.use_server_error_pages &&
-        status >= s->extension.use_server_error_pages) {
+    if ((s->extension.use_server_error_pages &&
+        status >= s->extension.use_server_error_pages) ||
+	(!strcmp(s->method, "HEAD") && (status >= HTTP_BAD_REQUEST))) {
         if (status == HTTP_UNAUTHORIZED) {
             int found = JK_FALSE;
             for (h = 0; h < num_of_headers; h++) {
@@ -350,6 +351,9 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
                        " WWW-Authenticate header");
             }
         }
+    }
+    if (s->extension.use_server_error_pages &&
+        status >= s->extension.use_server_error_pages) {
         return JK_TRUE;
     }
 

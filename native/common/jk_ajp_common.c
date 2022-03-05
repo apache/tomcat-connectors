@@ -2028,8 +2028,9 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 return JK_STATUS_ERROR;
             }
 
-            if (s->extension.use_server_error_pages &&
-                s->http_response_status >= s->extension.use_server_error_pages)
+            if ((s->extension.use_server_error_pages &&
+                s->http_response_status >= s->extension.use_server_error_pages) ||
+                (!strcmp(s->method, "HEAD") && s->http_response_status >= JK_HTTP_BAD_REQUEST))
                 s->response_blocked = JK_TRUE;
 
             /*
