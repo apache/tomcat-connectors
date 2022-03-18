@@ -29,9 +29,9 @@
 <body>
 <section name="Introduction">
 <p>
-This document explains how to connect Tomcat to the popular open source web server, Apache HTTP Server.
-You can use the connection module mod_jk with any version of Apache starting with 1.3 and any version
-of Tomcat starting with (at least) 3.2.
+This document explains how to connect Tomcat to the popular open source web
+server, Apache HTTP Server. You can use the connection module mod_jk with any
+supported version of Apache and any supported version of Tomcat.
 </p>
 
 <p>
@@ -83,37 +83,28 @@ A <a href="../common_howto/workers.html">worker</a> is defined to be a tomcat pr
 
 <subsection name="Supported Configuration">
 <p>
-The mod_jk module was developed and tested on:
-<ul>
-<li>
-Linux, FreeBSD, AIX, HP-UX, MacOS X, Solaris and should work on major Unixes platforms
-supporting Apache 1.3 and/or 2.x
-</li>
-<li>
-WinNT4.0-i386 SP4/SP5/SP6a (should be able to work with other service packs), Win2K and WinXP and Win98
-</li>
-<li>
-Cygwin (until you have an Apache server and autoconf/automake support tools)
-</li>
-<li>
-i5/OS V5R4 (System I) with Apache HTTP Server 2.0.58. Be sure to have the latest Apache PTF installed.
-</li>
-<li>
-Tomcat 3.2 to Tomcat 8.
-</li>
-</ul>
+The mod_jk module is supported for:
 </p>
+<ul>
+<li>All currently supported versions of Apache Web Server (httpd)</li>
+<li>Any operating system supported by Apache Web Server</li>
+<li>All currently supported versions of Tomcat</li>
+</ul>
 
 <p>
-The mod_jk module uses the AJP protocol to send requests to the Tomcat containers.
-The AJP version typically used is <b>ajp13</b>.
+The mod_jk module may work with older, unsupported versions of Apache Web Server
+and/or Tomcat but such configurations are not supported.
 </p>
+
 </subsection>
 
-<subsection name="Who supports AJP protocols?">
+<subsection name="AJP protocols?">
+
 <p>
-Tomcat supports ajp13 since Tomcat 3.2.
-Others servlet engines such as <b>Jetty</b> or <b>JBoss</b> also support the ajp13 protocol
+The mod_jk module uses the AJP protocol to send requests to the Tomcat
+containers. The AJP version used is <b>ajp13</b>. All current versions Tomcat
+support the ajp13 protocol. Others servlet engines such as <b>Jetty</b> and
+<b>JBoss</b> also support the ajp13 protocol.
 </p>
 
 <p>
