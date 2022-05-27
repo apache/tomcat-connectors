@@ -2279,9 +2279,9 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
             // Wind w back to remove the previous segment
             if (w == 1) {
                 jk_log(logger,
-                        JK_LOG_EMERG,
-                        "[%s] contains a '/../' sequence that tries to escape above the root.",
-                        path);
+                       JK_LOG_EMERG,
+                       "[%s] contains a '/../' sequence that tries to escape above the root.",
+                       path);
                 return JK_NORMALIZE_TRAVERSAL;
             }
             do {
@@ -2317,7 +2317,7 @@ int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
         int j;
         if (JK_IS_DEBUG_LEVEL(logger)) {
             jk_log(logger, JK_LOG_DEBUG,
-                    "removing session identifier for non servlet uri [%s]", path);
+                   "removing session identifier for non servlet uri [%s]", path);
         }
         // Found a session path parameter.
         // Need to skip at least as many characters as there are in
@@ -2337,7 +2337,7 @@ int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
 
         if (JK_IS_DEBUG_LEVEL(logger)) {
             jk_log(logger, JK_LOG_DEBUG,
-                    "result of removing session identifier for non servlet uri is [%s]", path);
+                   "result of removing session identifier for non servlet uri is [%s]", path);
         }
         return 1;
     }
