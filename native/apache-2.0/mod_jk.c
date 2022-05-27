@@ -344,9 +344,9 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
                 jk_server_conf_t *xconf = (jk_server_conf_t *)
                                            ap_get_module_config(r->server->module_config,
                                                                 &jk_module);
-                jk_log(xconf->log, JK_LOG_INFO,
-                       "origin server sent 401 without"
-                       " WWW-Authenticate header");
+                jk_request_log(s, xconf->log, JK_LOG_INFO,
+                               "origin server sent 401 without"
+                               " WWW-Authenticate header");
             }
         }
         return JK_TRUE;
@@ -514,8 +514,8 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
 
             if (!s->response_started) {
                 if (main_log)
-                    jk_log(main_log, JK_LOG_INFO,
-                           "Write without start, starting with defaults");
+                    jk_request_log(s, main_log, JK_LOG_INFO,
+                                   "Write without start, starting with defaults");
                 if (!s->start_response(s, 200, NULL, NULL, NULL, 0)) {
                     return JK_FALSE;
                 }
@@ -540,8 +540,8 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
             while (ll > 0 && !p->r->connection->aborted) {
                 r = ap_rwrite(bb, ll, p->r);
                 if (JK_IS_DEBUG_LEVEL(main_log))
-                    jk_log(main_log, JK_LOG_DEBUG,
-                           "written %d out of %d", r, ll);
+                    jk_request_log(s, main_log, JK_LOG_DEBUG,
+                                   "written %d out of %d", r, ll);
 
                 if (r < 0)
                     return JK_FALSE;
@@ -1057,9 +1057,9 @@ static int init_ws_service(apache_private_data_t * private_data,
                 if (s->ssl_cert) {
                     s->ssl_cert_len = (unsigned int)strlen(s->ssl_cert);
                     if (JK_IS_DEBUG_LEVEL(conf->log)) {
-                        jk_log(conf->log, JK_LOG_DEBUG,
-                               "SSL client certificate (%d bytes): %s",
-                               s->ssl_cert_len, s->ssl_cert);
+                        jk_request_log(s, conf->log, JK_LOG_DEBUG,
+                                       "SSL client certificate (%d bytes): %s",
+                                       s->ssl_cert_len, s->ssl_cert);
                     }
                 }
                 s->ssl_protocol =
@@ -1176,26 +1176,26 @@ static int init_ws_service(apache_private_data_t * private_data,
      * the remote tomcat
      */
     if (JK_IS_DEBUG_LEVEL(conf->log)) {
-        jk_log(conf->log, JK_LOG_DEBUG,
-               "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uaddr=%s uri=%s",
-               STRNULL_FOR_NULL(s->protocol),
-               STRNULL_FOR_NULL(s->method),
-               s->is_ssl ? "true" : "false",
-               STRNULL_FOR_NULL(s->remote_host),
-               STRNULL_FOR_NULL(s->remote_addr),
-               STRNULL_FOR_NULL(s->server_name),
-               s->server_port,
-               STRNULL_FOR_NULL(s->auth_type),
-               STRNULL_FOR_NULL(s->remote_user),
-               STRNULL_FOR_NULL(r->connection->local_ip),
+        jk_request_log(s, conf->log, JK_LOG_DEBUG,
+                       "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uaddr=%s uri=%s",
+                       STRNULL_FOR_NULL(s->protocol),
+                       STRNULL_FOR_NULL(s->method),
+                       s->is_ssl ? "true" : "false",
+                       STRNULL_FOR_NULL(s->remote_host),
+                       STRNULL_FOR_NULL(s->remote_addr),
+                       STRNULL_FOR_NULL(s->server_name),
+                       s->server_port,
+                       STRNULL_FOR_NULL(s->auth_type),
+                       STRNULL_FOR_NULL(s->remote_user),
+                       STRNULL_FOR_NULL(r->connection->local_ip),
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20111130)
-               STRNULL_FOR_NULL(r->connection->client_ip),
-               STRNULL_FOR_NULL(r->useragent_ip),
+                       STRNULL_FOR_NULL(r->connection->client_ip),
+                       STRNULL_FOR_NULL(r->useragent_ip),
 #else
-               STRNULL_FOR_NULL(r->connection->remote_ip),
-               STRNULL_FOR_NULL(r->connection->remote_ip),
+                       STRNULL_FOR_NULL(r->connection->remote_ip),
+                       STRNULL_FOR_NULL(r->connection->remote_ip),
 #endif
-               STRNULL_FOR_NULL(s->req_uri));
+                       STRNULL_FOR_NULL(s->req_uri));
     }
 
     return JK_TRUE;
@@ -2785,7 +2785,7 @@ static int jk_handler(request_rec * r)
                     jk_log(xconf->log, JK_LOG_DEBUG,
                            "missing uri map for %s:%s",
                            xconf->s->server_hostname ? xconf->s->server_hostname : "_default_",
-                           r->uri);
+                                   r->uri);
             }
             else {
                 rule_extension_t *e;
@@ -2828,8 +2828,8 @@ static int jk_handler(request_rec * r)
     /* If this is a proxy request, we'll notify an error */
     if (r->proxyreq) {
         jk_log(xconf->log, JK_LOG_INFO, "Proxy request for worker=%s"
-              " is not allowed",
-              STRNULL_FOR_NULL(worker_name));
+               " is not allowed",
+               STRNULL_FOR_NULL(worker_name));
         JK_TRACE_EXIT(xconf->log);
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -2919,16 +2919,16 @@ static int jk_handler(request_rec * r)
                             }
                         }
                         if (JK_IS_DEBUG_LEVEL(xconf->log)) {
-                           jk_log(xconf->log, JK_LOG_DEBUG,
-                                  "Consumed %d bytes of remaining request data for worker=%s",
-                                  consumed, STRNULL_FOR_NULL(worker_name));
+                           jk_request_log(&s, xconf->log, JK_LOG_DEBUG,
+                                          "Consumed %d bytes of remaining request data for worker=%s",
+                                          consumed, STRNULL_FOR_NULL(worker_name));
                         }
                     }
                 }
                 else {            /* this means we couldn't get an endpoint */
-                    jk_log(xconf->log, JK_LOG_ERROR, "Could not get endpoint"
-                           " for worker=%s",
-                           worker_name);
+                    jk_request_log(&s, xconf->log, JK_LOG_ERROR, "Could not get endpoint"
+                                   " for worker=%s",
+                                   worker_name);
                     rc = 0;       /* just to make sure that we know we've failed */
                     is_error = HTTP_SERVICE_UNAVAILABLE;
                 }
@@ -2956,9 +2956,9 @@ static int jk_handler(request_rec * r)
                 if (s.extension.use_server_error_pages &&
                     s.http_response_status >= s.extension.use_server_error_pages) {
                     if (JK_IS_DEBUG_LEVEL(xconf->log))
-                        jk_log(xconf->log, JK_LOG_DEBUG, "Forwarding status=%d"
-                               " for worker=%s",
-                               s.http_response_status, worker_name);
+                        jk_request_log(&s, xconf->log, JK_LOG_DEBUG, "Forwarding status=%d"
+                                       " for worker=%s",
+                                       s.http_response_status, worker_name);
                     JK_TRACE_EXIT(xconf->log);
                     return s.http_response_status;
                 }
@@ -2966,32 +2966,32 @@ static int jk_handler(request_rec * r)
                    let apache handle the error code */
 
                 if (!r->sent_bodyct && r->status >= HTTP_BAD_REQUEST) {
-                    jk_log(xconf->log, JK_LOG_INFO, "No body with status=%d"
-                           " for worker=%s",
-                           r->status, worker_name);
+                    jk_request_log(&s, xconf->log, JK_LOG_INFO, "No body with status=%d"
+                                   " for worker=%s",
+                                   r->status, worker_name);
                     JK_TRACE_EXIT(xconf->log);
                     return r->status;
                 }
                 if (JK_IS_DEBUG_LEVEL(xconf->log))
-                    jk_log(xconf->log, JK_LOG_DEBUG, "Service finished"
-                           " with status=%d for worker=%s",
-                           r->status, worker_name);
+                    jk_request_log(&s, xconf->log, JK_LOG_DEBUG, "Service finished"
+                                   " with status=%d for worker=%s",
+                                   r->status, worker_name);
                 JK_TRACE_EXIT(xconf->log);
                 return OK;      /* NOT r->status, even if it has changed. */
             }
             else if (rc == JK_CLIENT_ERROR) {
                 if (is_error != HTTP_REQUEST_ENTITY_TOO_LARGE)
                     r->connection->aborted = 1;
-                jk_log(xconf->log, JK_LOG_INFO, "Aborting connection"
-                       " for worker=%s",
-                       worker_name);
+                jk_request_log(&s, xconf->log, JK_LOG_INFO, "Aborting connection"
+                               " for worker=%s",
+                               worker_name);
                 JK_TRACE_EXIT(xconf->log);
                 return is_error;
             }
             else {
-                jk_log(xconf->log, JK_LOG_INFO, "Service error=%d"
-                       " for worker=%s",
-                       rc, worker_name);
+                jk_request_log(&s, xconf->log, JK_LOG_INFO, "Service error=%d"
+                               " for worker=%s",
+                               rc, worker_name);
                 JK_TRACE_EXIT(xconf->log);
                 return is_error;
             }

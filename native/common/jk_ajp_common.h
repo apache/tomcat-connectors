@@ -463,7 +463,7 @@ int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l);
 int ajp_get_endpoint(jk_worker_t *pThis,
                      jk_endpoint_t **pend, jk_logger_t *l, int proto);
 
-int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l);
+int ajp_connect_to_endpoint(jk_ws_service_t *s, ajp_endpoint_t * ae, jk_logger_t *l);
 
 void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l);
 
@@ -471,10 +471,10 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l);
 
 void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l);
 
-int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
+int ajp_connection_tcp_send_message(jk_ws_service_t *s, ajp_endpoint_t * ae,
                                     jk_msg_buf_t *msg, jk_logger_t *l);
 
-int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
+int ajp_connection_tcp_get_message(jk_ws_service_t *s, ajp_endpoint_t * ae,
                                    jk_msg_buf_t *msg, jk_logger_t *l);
 
 int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t now, int global, jk_logger_t *l);
