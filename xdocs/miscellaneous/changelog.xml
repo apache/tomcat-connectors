@@ -42,6 +42,9 @@
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
   <changelog>
+    <fix>
+      IIS: Fix non-empty check for the Translate header. (rjung)
+    </fix>
     <update>
       Common: Add a request id to error log lines. To get a useful
       request id for the Apache web server, mod_unique_id should

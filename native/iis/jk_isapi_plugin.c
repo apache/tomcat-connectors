@@ -1886,7 +1886,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
          * that the extension proc will be called.
          * This allows the servlet to handle 'Translate: f'.
          */
-        if (translate && &translate) {
+        if (translate != NULL && *translate != '\0') {
             if (!pfp->AddHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, translate)) {
                 jk_log(logger, JK_LOG_ERROR,
                        "error while adding Tomcat-Translate headers");
