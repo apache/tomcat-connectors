@@ -734,7 +734,7 @@ int jk_request_log(jk_ws_service_t *s, jk_logger_t *l,
                 rc = 1;
             } else if (s->request_id == NULL) {
                 request_id = "NO-ID";
-                rc = 1;
+                rc = 5;
             } else {
                 request_id = s->request_id;
                 rc = (int)strlen(request_id);
