@@ -167,6 +167,7 @@ struct jk_ws_service
     const char *remote_user;
     const char *auth_type;
     const char *query_string;
+    const char *request_id;
     const char *server_name;
     const char *local_addr;
     unsigned server_port;
