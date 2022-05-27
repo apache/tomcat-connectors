@@ -44,8 +44,12 @@
   <changelog>
     <update>
       Common: Add a request id to error log lines. To get a useful
-      request id for the Apache web server, mod_unique_id needs
-      to be loaded. The request id is not yet supported for IIS.
+      request id for the Apache web server, mod_unique_id should
+      be loaded. Alternatively an externally provided request
+      id can be copied to some Apache environment variable and
+      the name of that variable provided to mod_jk using the configuration
+      directive "JkRequestIdIndicator".
+      The request id is not yet supported for IIS.
       (rjung)
     </update>
     <update>
