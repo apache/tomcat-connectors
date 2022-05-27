@@ -90,6 +90,7 @@
 
 #define JK_LOG_DEF_FILE             ("logs/mod_jk.log")
 #define JK_SHM_DEF_FILE             ("logs/jk-runtime-status")
+#define JK_ENV_REQUEST_ID           ("UNIQUE_ID")
 #define JK_ENV_REMOTE_ADDR          ("JK_REMOTE_ADDR")
 #define JK_ENV_REMOTE_PORT          ("JK_REMOTE_PORT")
 #define JK_ENV_REMOTE_HOST          ("JK_REMOTE_HOST")
@@ -197,6 +198,7 @@ typedef struct
      * request information using meta data send by a
      * proxy in front of us.
      */
+    char *request_id_indicator;
     char *remote_addr_indicator;
     char *remote_port_indicator;
     char *remote_host_indicator;
@@ -821,7 +823,8 @@ static int init_ws_service(apache_private_data_t * private_data,
                                   conf->auth_type_indicator, 1);
     s->remote_user = get_env_string(r, r->user,
                                     conf->remote_user_indicator, 1);
-    s->request_id = apr_table_get(r->subprocess_env, "UNIQUE_ID");
+    s->request_id = get_env_string(r, s->request_id,
+                                   conf->request_id_indicator, 1);
 
     s->protocol = r->protocol;
     s->remote_host = (char *)ap_get_remote_host(r->connection,
@@ -2009,6 +2012,7 @@ static const char *jk_set_worker_indicator(cmd_parms * cmd,
 /*
  * Directives Handling for setting various environment names
  * used to overwrite the following request information:
+ * - request_id
  * - remote_addr
  * - remote_port
  * - remote_host
@@ -2017,6 +2021,16 @@ static const char *jk_set_worker_indicator(cmd_parms * cmd,
  * - server_name
  * - server_port
  */
+static const char *jk_set_request_id_indicator(cmd_parms * cmd,
+                                               void *dummy, const char *indicator)
+{
+    server_rec *s = cmd->server;
+    jk_server_conf_t *conf =
+        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
+    conf->request_id_indicator = apr_pstrdup(cmd->pool, indicator);
+    return NULL;
+}
+
 static const char *jk_set_remote_addr_indicator(cmd_parms * cmd,
                                                 void *dummy, const char *indicator)
 {
@@ -2552,6 +2566,7 @@ static const command_rec jk_cmds[] = {
     /*
      * Environment variables used to overwrite the following
      * request information which gets forwarded:
+     * - request_id
      * - remote_addr
      * - remote_port
      * - remote_host
@@ -2560,6 +2575,8 @@ static const command_rec jk_cmds[] = {
      * - server_name
      * - server_port
      */
+    AP_INIT_TAKE1("JkRequestIdIndicator", jk_set_request_id_indicator, NULL, RSRC_CONF,
+                  "Name of the Apache environment that contains the request id."),
     AP_INIT_TAKE1("JkRemoteAddrIndicator", jk_set_remote_addr_indicator, NULL, RSRC_CONF,
                   "Name of the Apache environment that contains the remote address"),
     AP_INIT_TAKE1("JkRemotePortIndicator", jk_set_remote_port_indicator, NULL, RSRC_CONF,
@@ -3081,6 +3098,7 @@ static void *create_jk_config(apr_pool_t * p, server_rec * s)
          * request information using meta data send by a
          * proxy in front of us.
          */
+        c->request_id_indicator = JK_ENV_REQUEST_ID;
         c->remote_addr_indicator = JK_ENV_REMOTE_ADDR;
         c->remote_port_indicator = JK_ENV_REMOTE_PORT;
         c->remote_host_indicator = JK_ENV_REMOTE_HOST;
@@ -3160,6 +3178,8 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
     if (!overrides->worker_indicator)
         overrides->worker_indicator = base->worker_indicator;
 
+    if (!overrides->request_id_indicator)
+        overrides->request_id_indicator = base->request_id_indicator;
     if (!overrides->remote_addr_indicator)
         overrides->remote_addr_indicator = base->remote_addr_indicator;
     if (!overrides->remote_port_indicator)
