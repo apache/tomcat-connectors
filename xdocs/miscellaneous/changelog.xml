@@ -43,6 +43,12 @@
 <section name="Changes between 1.2.48 and 1.2.49">
   <changelog>
     <update>
+      Common: Add a request id to error log lines. To get a useful
+      request id for the Apache web server, mod_unique_id needs
+      to be loaded. The request id is not yet supported for IIS.
+      (rjung)
+    </update>
+    <update>
       Remove support for the Netscape / Sun ONE / Oracle iPlanet Web Server as
       the product has been retired. (markt)
     </update>
