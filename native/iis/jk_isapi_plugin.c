@@ -2963,6 +2963,8 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
     GET_SERVER_VARIABLE_VALUE(HTTP_URI_HEADER_NAME, s->req_uri, NULL);
 
+    /* XXX Add request_id generation */
+    s->request_id = NULL;
     if (s->req_uri == NULL) {
         if (JK_IS_DEBUG_LEVEL(logger))
             jk_log(logger, JK_LOG_DEBUG, "No URI header value provided. Defaulting to old behaviour" );

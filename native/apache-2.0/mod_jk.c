@@ -821,6 +821,7 @@ static int init_ws_service(apache_private_data_t * private_data,
                                   conf->auth_type_indicator, 1);
     s->remote_user = get_env_string(r, r->user,
                                     conf->remote_user_indicator, 1);
+    s->request_id = apr_table_get(r->subprocess_env, "UNIQUE_ID");
 
     s->protocol = r->protocol;
     s->remote_host = (char *)ap_get_remote_host(r->connection,
