@@ -114,7 +114,7 @@ typedef struct svc_extension svc_extension_t;
  * container.  Contains the basic information about the request
  * (e.g. protocol, req_uri, etc), and also contains a series of methods
  * which provide access to core web server functionality (start_response,
- * read, write).  This class might be more accurately called ws_request.
+ * read, write).
  *
  * As with all the core jk classes, this is essentially an abstract base
  * class which is implemented/extended by classes which are specific to a
