@@ -2518,13 +2518,13 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     op->request = jk_b_new(&(p->pool));
     if (!op->request) {
         jk_log(l, JK_LOG_ERROR,
-               "(%s) Failed allocating AJP message", aw->name);
+               "(%s) Failed allocating AJP request message", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
     if (jk_b_set_buffer_size(op->request, aw->max_packet_size)) {
         jk_log(l, JK_LOG_ERROR,
-               "(%s) Failed allocating AJP message buffer", aw->name);
+               "(%s) Failed allocating AJP request message buffer", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
@@ -2533,13 +2533,13 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     op->reply = jk_b_new(&(p->pool));
     if (!op->reply) {
         jk_log(l, JK_LOG_ERROR,
-               "(%s) Failed allocating AJP message", aw->name);
+               "(%s) Failed allocating AJP reply message", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
     if (jk_b_set_buffer_size(op->reply, aw->max_packet_size)) {
         jk_log(l, JK_LOG_ERROR,
-               "(%s) Failed allocating AJP message buffer", aw->name);
+               "(%s) Failed allocating AJP reply message buffer", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
@@ -2547,13 +2547,13 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     op->post = jk_b_new(&(p->pool));
     if (!op->post) {
         jk_log(l, JK_LOG_ERROR,
-               "(%s) Failed allocating AJP message", aw->name);
+               "(%s) Failed allocating AJP post message", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
     if (jk_b_set_buffer_size(op->post, aw->max_packet_size)) {
         jk_log(l, JK_LOG_ERROR,
-               "(%s) Failed allocating AJP message buffer", aw->name);
+               "(%s) Failed allocating AJP post message buffer", aw->name);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
