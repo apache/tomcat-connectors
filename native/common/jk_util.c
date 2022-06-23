@@ -457,8 +457,8 @@ void jk_set_time_fmt(jk_logger_t *l, const char *jk_log_fmt)
                 l->log_fmt_subsec[JK_TIME_MAX_SIZE-1] = '\0';
                 l->log_fmt_size = strlen(l->log_fmt_subsec);
             }
-            /* Look for the first occurence of JK_TIME_CONV_MICRO */
         }
+        /* Look for the first occurence of JK_TIME_CONV_MICRO */
         else if ((s = strstr(jk_log_fmt, JK_TIME_CONV_MICRO))) {
             size_t offset = s - jk_log_fmt;
             size_t len = strlen(JK_TIME_PATTERN_MICRO);
@@ -483,8 +483,6 @@ void jk_set_time_fmt(jk_logger_t *l, const char *jk_log_fmt)
                 l->log_fmt_size = strlen(l->log_fmt_subsec);
             }
         }
-        jk_log(l, JK_LOG_DEBUG, "Pre-processed log time stamp format is '%s'",
-               l->log_fmt_type == JK_TIME_SUBSEC_NONE ? l->log_fmt : l->log_fmt_subsec);
     }
 }
 
