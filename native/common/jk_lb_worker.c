@@ -1904,13 +1904,13 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 
 static int JK_METHOD init(jk_worker_t *pThis,
                           jk_map_t *props,
-                          jk_worker_env_t *we, jk_log_context_t *log)
+                          jk_worker_env_t *we, jk_log_context_t *l)
 {
     int i;
     const char *s;
 
     lb_worker_t *p = (lb_worker_t *)pThis->worker_private;
-    JK_TRACE_ENTER(log);
+    JK_TRACE_ENTER(l);
 
     p->worker.we = we;
     p->retries = jk_get_worker_retries(props, p->name,
@@ -1937,51 +1937,51 @@ static int JK_METHOD init(jk_worker_t *pThis,
     p->lbmethod = jk_get_lb_method(props, p->name);
 #ifdef JK_ATOMIC_MISSING
     if (p->lbmethod == JK_LB_METHOD_BUSYNESS) {
-        jk_log(log, JK_LOG_WARNING, "Missing support for atomics: "
+        jk_log(l, JK_LOG_WARNING, "Missing support for atomics: "
                "LB method 'busyness' not recommended");
     }
 #endif
     p->lblock   = jk_get_lb_lock(props, p->name);
     s = jk_get_lb_session_cookie(props, p->name, JK_SESSION_IDENTIFIER);
-    if (jk_check_attribute_length("session_cookie", s, log) == JK_FALSE) {
-        JK_TRACE_EXIT(log);
+    if (jk_check_attribute_length("session_cookie", s, l) == JK_FALSE) {
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     strncpy(p->session_cookie, s, JK_SHM_STR_SIZ);
     s = jk_get_lb_session_path(props, p->name, JK_PATH_SESSION_IDENTIFIER);
-    if (jk_check_attribute_length("session_path", s, log) == JK_FALSE) {
-        JK_TRACE_EXIT(log);
+    if (jk_check_attribute_length("session_path", s, l) == JK_FALSE) {
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     strncpy(p->session_path, s, JK_SHM_STR_SIZ);
     p->set_session_cookie = jk_get_lb_set_session_cookie(props, p->name, JK_FALSE);
     s = jk_get_lb_session_cookie_path(props, p->name, "/");
-    if (jk_check_attribute_length("session_cookie_path", s, log) == JK_FALSE) {
-        JK_TRACE_EXIT(log);
+    if (jk_check_attribute_length("session_cookie_path", s, l) == JK_FALSE) {
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     strncpy(p->session_cookie_path, s, JK_SHM_STR_SIZ);
 
     JK_INIT_CS(&(p->cs), i);
     if (i == JK_FALSE) {
-        jk_log(log, JK_LOG_ERROR,
+        jk_log(l, JK_LOG_ERROR,
                "creating thread lock (errno=%d)",
                errno);
-        JK_TRACE_EXIT(log);
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     if (p->s->h.sequence == 0) {
         /* Set configuration data to shared memory
          */
-        jk_lb_push(p, JK_TRUE, JK_FALSE, log);
+        jk_lb_push(p, JK_TRUE, JK_FALSE, l);
     }
     else {
         /* Shared memory for this worker is already configured.
          * Update with runtime data
          */
-        jk_lb_pull(p, JK_TRUE, log);
+        jk_lb_pull(p, JK_TRUE, l);
     }
-    JK_TRACE_EXIT(log);
+    JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
 

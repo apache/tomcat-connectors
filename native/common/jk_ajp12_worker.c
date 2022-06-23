@@ -231,7 +231,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 
 static int JK_METHOD init(jk_worker_t *pThis,
                           jk_map_t *props,
-                          jk_worker_env_t *we, jk_log_context_t *log)
+                          jk_worker_env_t *we, jk_log_context_t *l)
 {
     /* Nothing to do for now */
     return JK_TRUE;
