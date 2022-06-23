@@ -878,7 +878,7 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_log_context_t *l)
 
 /** Steal a connection from an idle cache endpoint
  * @param ae   endpoint that needs a new connection
- * @param l    logger
+ * @param l    log context
  * @return     JK_FALSE: failure
  *             JK_TRUE: success
  * @remark     Always closes old socket endpoint
@@ -924,7 +924,7 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_log_context_t *l)
 /** Handle the cping/cpong query
  * @param ae       endpoint
  * @param timeout  wait timeout in milliseconds
- * @param l        logger
+ * @param l        log context
  * @return         JK_FALSE: failure
  *                 JK_TRUE: success
  * @remark         Always closes socket in case of
@@ -1034,7 +1034,7 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_log_conte
 
 /** Connect an endpoint to a backend
  * @param ae       endpoint
- * @param l        logger
+ * @param l        log context
  * @return         JK_FALSE: failure
  *                 JK_TRUE: success
  * @remark         Always closes socket in case of
@@ -1241,7 +1241,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_log_context_t *l)
 /** Send a message to an endpoint, using corresponding PROTO HEADER
  * @param ae       endpoint
  * @param msg      message to send
- * @param l        logger
+ * @param l        log context
  * @return         JK_FATAL_ERROR: endpoint contains unknown protocol
  *                 JK_FALSE: other failure
  *                 JK_TRUE: success
@@ -1303,7 +1303,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
 /** Receive a message from an endpoint, checking PROTO HEADER
  * @param ae       endpoint
  * @param msg      message to send
- * @param l        logger
+ * @param l        log context
  * @return         JK_TRUE: success
  *                 JK_FALSE: could not read the AJP packet header
  *                 JK_AJP_PROTOCOL_ERROR: failure after reading

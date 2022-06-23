@@ -154,7 +154,7 @@ static int sononblock(jk_sock_t sd)
  * @param source   optional source address
  * @param timeout  connect timeout in seconds
  *                 (<=0: no timeout=blocking)
- * @param l        logger
+ * @param l        log context
  * @return         -1: some kind of error occured
  *                 SOCKET_ERROR: no timeout given and error
  *                               during blocking connect
@@ -238,7 +238,7 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
  * @param source   optional source address
  * @param timeout  connect timeout in seconds
  *                 (<=0: no timeout=blocking)
- * @param l        logger
+ * @param l        log context
  * @return         -1: some kind of error occured
  *                 0: success
  */
@@ -305,7 +305,7 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
  * @param source   optional source address
  * @param timeout  connect timeout in seconds
  *                 (<=0: no timeout=blocking)
- * @param l        logger
+ * @param l        log context
  * @return         -1: some kind of error occured
  *                 0: success
  */
@@ -391,8 +391,9 @@ void jk_clone_sockaddr(jk_sockaddr_t *out, jk_sockaddr_t *in)
 /** Resolve the host IP
  * @param host     host or ip address
  * @param port     port
- * @param rc       return value pointer
- * @param l        logger
+ * @param pool     memory pool for allocation
+ * @param prefer_ipv6 should IPv6 be preferred
+ * @param l        log context
  * @return         JK_FALSE: some kind of error occured
  *                 JK_TRUE: success
  */
@@ -601,12 +602,14 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 
 /** Connect to Tomcat
  * @param addr      address to connect to
+ * @param source    source address to use
  * @param keepalive should we set SO_KEEPALIVE (if !=0)
- * @param timeout   connect timeout in seconds
+ * @param timeout   socket timeout in seconds
  *                  (<=0: no timeout=blocking)
+ * @param connect_timeout connect timeout in seconds
  * @param sock_buf  size of send and recv buffer
  *                  (<=0: use default)
- * @param l         logger
+ * @param l         log context
  * @return          JK_INVALID_SOCKET: some kind of error occured
  *                  created socket: success
  * @remark          Cares about errno
@@ -829,7 +832,7 @@ iSeries when Unix98 is required at compile time */
 
 /** Close the socket
  * @param sd        socket to close
- * @param l         logger
+ * @param l         log context
  * @return          -1: some kind of error occured (!WIN32)
  *                  SOCKET_ERROR: some kind of error occured  (WIN32)
  *                  0: success
@@ -898,7 +901,7 @@ int jk_close_socket(jk_sock_t sd, jk_log_context_t *l)
 
 /** Drain and close the socket
  * @param sd        socket to close
- * @param l         logger
+ * @param l         log context
  * @return          -1: socket to close is invalid
  *                  -1: some kind of error occured (!WIN32)
  *                  SOCKET_ERROR: some kind of error occured  (WIN32)
@@ -1023,7 +1026,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_log_context_t *l)
  * @param sd  socket to use
  * @param b   buffer containing the data
  * @param len length to send
- * @param l   logger
+ * @param l   log context
  * @return    negative errno: write returns a fatal -1 (!WIN32)
  *            negative pseudo errno: send returns SOCKET_ERROR (WIN32)
  *            JK_SOCKET_EOF: no bytes could be sent
@@ -1076,7 +1079,7 @@ int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_log
  * @param sd  socket to use
  * @param b   buffer to store the data
  * @param len length to receive
- * @param l   logger
+ * @param l   log context
  * @return    negative errno: read returns a fatal -1 (!WIN32)
  *            negative pseudo errno: recv returns SOCKET_ERROR (WIN32)
  *            JK_SOCKET_EOF: no bytes could be read
@@ -1356,7 +1359,7 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
 /** Wait for input event on socket until timeout
  * @param sd      socket to use
  * @param timeout wait timeout in milliseconds
- * @param l       logger
+ * @param l       log context
  * @return        JK_FALSE: Timeout expired without something to read
  *                JK_FALSE: Error during waiting
  *                JK_TRUE: success
@@ -1475,7 +1478,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_log_context_t *l)
 
 /** Test if a socket is still connected
  * @param sd   socket to use
- * @param l    logger
+ * @param l    log context
  * @return     JK_FALSE: failure
  *             JK_TRUE: success
  * @remark     Always closes socket in case of error
