@@ -42,6 +42,19 @@
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
   <changelog>
+    <update>
+      IIS: Set default request id as a GUID.
+      It can also be taken from an arbitrary request
+      header by configuring "request_id_header". (rjung)
+    </update>
+    <update>
+      Apache: Retrieve default request id from mod_unique_id.
+      It can also be taken from an arbitrary environment
+      variable by configuring "JkRequestIdIndicator". (rjung)
+    </update>
+    <update>
+      Common: Add a request id to mod_jk log lines. (rjung)
+    </update>
     <fix>
       IIS: Fix non-empty check for the Translate header. (rjung)
     </fix>
