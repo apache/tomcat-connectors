@@ -123,6 +123,12 @@ A string value which is the full path to uriworkermap.properties file
 A string value which is the full path to rewrite.properties file
 (for example <b>c:\tomcat\conf\rewrite.properties</b>)
 </p></attribute>
+<attribute name="request_id_header" required="false"><p>
+A string value which is the name of a request header
+from which a request id will be extracted that is part of
+every log line.</p>
+<p>This directive has been added in version 1.2.49</p>
+</attribute>
 <attribute name="shm_size" required="false"><p>
 A DWORD value size of the shared memory. Set this value to be
 the number of all defined workers * 400.

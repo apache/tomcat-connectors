@@ -348,6 +348,9 @@ The default value is "UNIQUE_ID". Loading the module "mod_unique_id"
 will automatically provide a unique request id under that name.
 </p>
 <p>
+This feature has been added in version 1.2.49 of mod_jk.
+</p>
+<p>
 If a request id is sent by the client or another reverse proxy in front via
 an HTTP request header, one can make this id available for mod_jk by
 copying it to an environment variable using mod_setenvif:<br/>
