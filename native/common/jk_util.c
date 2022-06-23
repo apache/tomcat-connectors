@@ -692,11 +692,12 @@ int jk_close_file_logger(jk_logger_t **l)
     return JK_FALSE;
 }
 
-int jk_log(jk_logger_t *l,
+int jk_log(jk_log_context_t *log_ctx,
            const char *file, int line, const char *funcname, int level,
            const char *fmt, ...)
 {
     int rc = 0;
+    jk_logger_t *l;
 
     /*
      * Need to reserve space for terminating zero byte
@@ -704,7 +705,7 @@ int jk_log(jk_logger_t *l,
      * to the output routing.
      */
     static int usable_size = LOG_BUFFER_SIZE - 3;
-    if (!l || !file || !fmt) {
+    if (!log_ctx || !(l = log_ctx->logger) || !file || !fmt) {
         return -1;
     }
 
@@ -724,6 +725,34 @@ int jk_log(jk_logger_t *l,
         used = set_time_str(buf, usable_size, l);
 
         if (line) { /* line==0 only used for request log item */
+            /* Log [requestid] for all levels except REQUEST.
+             */
+            const char *context_id;
+            if (log_ctx == NULL) {
+                context_id = "-";
+                rc = 1;
+            } else if (log_ctx->id == NULL) {
+                context_id = "NO-ID";
+                rc = 5;
+            }
+            else {
+                context_id = log_ctx->id;
+                rc = (int)strlen(context_id);
+            }
+            if (usable_size - used >= rc + 3) {
+                strncpy(buf + used, "[", 1);
+                used += 1;
+                strncpy(buf + used, context_id, rc);
+                used += rc;
+                strncpy(buf + used, "] ", 2);
+                used += 2;
+            }
+            else {
+                strcpy(buf, "Logging failed in context_id formatting");
+                l->log(l, level, (int)strlen(buf), buf);
+                return 0;
+            }
+
             /* Log [pid:threadid] for all levels except REQUEST.
              * This information helps to correlate lines from different logs.
              * Performance is no issue, because with production log levels
