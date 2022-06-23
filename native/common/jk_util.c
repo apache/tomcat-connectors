@@ -836,7 +836,7 @@ int jk_log(jk_log_context_t *log_ctx,
 }
 
 int jk_check_attribute_length(const char *name, const char *value,
-                              jk_logger_t *l)
+                              jk_log_context_t *l)
 {
     size_t len = strlen(value);
     if (len > JK_MAX_NAME_LEN) {
@@ -2203,7 +2203,7 @@ int jk_wildchar_match(const char *str, const char *exp, int icase)
     return (str[x] != '\0');
 }
 
-int jk_servlet_normalize(char *path, jk_logger_t *logger)
+int jk_servlet_normalize(char *path, jk_log_context_t *logger)
 {
     int l, w;
 
@@ -2308,7 +2308,7 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
     return 0;
 }
 
-int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
+int jk_strip_session_id(char* path, char* session_name, jk_log_context_t *logger) {
 
     char *jsessionid;
 

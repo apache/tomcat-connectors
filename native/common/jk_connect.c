@@ -161,7 +161,7 @@ static int sononblock(jk_sock_t sd)
  *                 0: success
  */
 static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
-                      int timeout, jk_logger_t *l)
+                      int timeout, jk_log_context_t *l)
 {
     int rc;
     char buf[64];
@@ -243,7 +243,7 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
  *                 0: success
  */
 static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
-                      int timeout, jk_logger_t *l) {
+                      int timeout, jk_log_context_t *l) {
     int rc = 0;
     char buf[64];
 
@@ -310,7 +310,7 @@ static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
  *                 0: success
  */
 static int nb_connect(jk_sock_t sd, jk_sockaddr_t *addr, jk_sockaddr_t *source,
-                      int timeout, jk_logger_t *l)
+                      int timeout, jk_log_context_t *l)
 {
     int rc = 0;
     char buf[64];
@@ -397,7 +397,7 @@ void jk_clone_sockaddr(jk_sockaddr_t *out, jk_sockaddr_t *in)
  *                 JK_TRUE: success
  */
 int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
-               void *pool, int prefer_ipv6, jk_logger_t *l)
+               void *pool, int prefer_ipv6, jk_log_context_t *l)
 {
     int family = JK_INET;
     struct in_addr iaddr;
@@ -614,7 +614,7 @@ int jk_resolve(const char *host, int port, jk_sockaddr_t *saddr,
 jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
                          int keepalive,
                          int timeout, int connect_timeout,
-                         int sock_buf, jk_logger_t *l)
+                         int sock_buf, jk_log_context_t *l)
 {
     char buf[DUMP_SINFO_BUF_SZ];
     jk_sock_t sd;
@@ -835,7 +835,7 @@ iSeries when Unix98 is required at compile time */
  *                  0: success
  * @remark          Does not change errno
  */
-int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
+int jk_close_socket(jk_sock_t sd, jk_log_context_t *l)
 {
     int rc;
     int save_errno;
@@ -905,7 +905,7 @@ int jk_close_socket(jk_sock_t sd, jk_logger_t *l)
  *                  0: success
  * @remark          Does not change errno
  */
-int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
+int jk_shutdown_socket(jk_sock_t sd, jk_log_context_t *l)
 {
     char dummy[512];
     char buf[DUMP_SINFO_BUF_SZ];
@@ -1033,7 +1033,7 @@ int jk_shutdown_socket(jk_sock_t sd, jk_logger_t *l)
  * @bug       this fails on Unixes if len is too big for the underlying
  *            protocol
  */
-int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_logger_t *l)
+int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_log_context_t *l)
 {
     int sent = 0;
     int wr;
@@ -1084,7 +1084,7 @@ int jk_tcp_socket_sendfull(jk_sock_t sd, const unsigned char *b, int len, jk_log
  * @remark    Always closes socket in case of error
  * @remark    Cares about errno
  */
-int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_logger_t *l)
+int jk_tcp_socket_recvfull(jk_sock_t sd, unsigned char *b, int len, jk_log_context_t *l)
 {
     int rdlen = 0;
     int rd;
@@ -1365,7 +1365,7 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
  * @remark        Cares about errno
  */
 #ifdef HAVE_POLL
-int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
+int jk_is_input_event(jk_sock_t sd, int timeout, jk_log_context_t *l)
 {
     struct pollfd fds;
     int rc;
@@ -1421,7 +1421,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
     return JK_TRUE;
 }
 #else
-int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
+int jk_is_input_event(jk_sock_t sd, int timeout, jk_log_context_t *l)
 {
     fd_set rset;
     struct timeval tv;
@@ -1482,7 +1482,7 @@ int jk_is_input_event(jk_sock_t sd, int timeout, jk_logger_t *l)
  * @remark     Cares about errno
  */
 #ifdef HAVE_POLL
-int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
+int jk_is_socket_connected(jk_sock_t sd, jk_log_context_t *l)
 {
     struct pollfd fds;
     int rc;
@@ -1520,7 +1520,7 @@ int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
 }
 
 #else
-int jk_is_socket_connected(jk_sock_t sd, jk_logger_t *l)
+int jk_is_socket_connected(jk_sock_t sd, jk_log_context_t *l)
 {
     fd_set fd;
     struct timeval tv;

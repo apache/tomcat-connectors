@@ -406,7 +406,7 @@ int jk_map_put(jk_map_t *m, const char *name, const void *value, void **old)
 }
 
 
-static int jk_map_validate_property(char *prp, jk_logger_t *l)
+static int jk_map_validate_property(char *prp, jk_log_context_t *l)
 {
     /* check the worker properties */
     if (!jk_is_valid_property(prp)) {
@@ -426,7 +426,7 @@ static int jk_map_validate_property(char *prp, jk_logger_t *l)
 }
 
 static int jk_map_handle_duplicates(jk_map_t *m, const char *prp, char **v,
-                                    int treatment, jk_logger_t *l)
+                                    int treatment, jk_log_context_t *l)
 {
     const char *oldv = jk_map_get_string(m, prp, NULL);
     if (oldv) {
@@ -465,7 +465,7 @@ static int jk_map_handle_duplicates(jk_map_t *m, const char *prp, char **v,
 }
 
 int jk_map_read_property(jk_map_t *m, jk_map_t *env, const char *str,
-                         int treatment, jk_logger_t *l)
+                         int treatment, jk_log_context_t *l)
 {
     int rc = JK_TRUE;
     char buf[LENGTH_OF_LINE + 1];
@@ -514,7 +514,7 @@ int jk_map_read_property(jk_map_t *m, jk_map_t *env, const char *str,
 
 
 int jk_map_read_properties(jk_map_t *m, jk_map_t *env, const char *f, time_t *modified,
-                           int treatment, jk_logger_t *l)
+                           int treatment, jk_log_context_t *l)
 {
     int rc = JK_FALSE;
 
@@ -579,7 +579,7 @@ void *jk_map_value_at(jk_map_t *m, int idex)
     return NULL;
 }
 
-void jk_map_dump(jk_map_t *m, jk_logger_t *l)
+void jk_map_dump(jk_map_t *m, jk_log_context_t *l)
 {
     if (m) {
         int s = jk_map_size(m);
@@ -767,7 +767,7 @@ static char *jk_map_replace_properties(jk_map_t *m, jk_map_t *env, char *value)
  *
  */
 int jk_map_resolve_references(jk_map_t *m, const char *prefix,
-                              int wildcard, int depth, jk_logger_t *l)
+                              int wildcard, int depth, jk_log_context_t *l)
 {
     int rc = JK_FALSE;
 
@@ -843,7 +843,7 @@ int jk_map_resolve_references(jk_map_t *m, const char *prefix,
  *  Inherit properties
  *
  */
-int jk_map_inherit_properties(jk_map_t *m, const char *from, const char *to, jk_logger_t *l)
+int jk_map_inherit_properties(jk_map_t *m, const char *from, const char *to, jk_log_context_t *l)
 {
     int rc = JK_FALSE;
     const char *prp;

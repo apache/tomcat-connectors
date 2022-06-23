@@ -28,7 +28,7 @@
 #include "jk_ajp13.h"
 
 int ajp13_marshal_shutdown_into_msgb(jk_msg_buf_t *msg,
-                                     jk_pool_t *p, jk_logger_t *l)
+                                     jk_pool_t *p, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     /* To be on the safe side */

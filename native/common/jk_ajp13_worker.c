@@ -28,7 +28,7 @@
 /* -------------------- Method -------------------- */
 static int JK_METHOD validate(jk_worker_t *pThis,
                               jk_map_t *props,
-                              jk_worker_env_t *we, jk_logger_t *l)
+                              jk_worker_env_t *we, jk_log_context_t *l)
 {
     int rc;
     JK_TRACE_ENTER(l);
@@ -40,7 +40,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 
 static int JK_METHOD init(jk_worker_t *pThis,
                           jk_map_t *props,
-                          jk_worker_env_t *we, jk_logger_t *l)
+                          jk_worker_env_t *we, jk_log_context_t *l)
 {
     int rc;
     JK_TRACE_ENTER(l);
@@ -51,7 +51,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
 }
 
 
-static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
+static int JK_METHOD destroy(jk_worker_t **pThis, jk_log_context_t *l)
 {
     int rc;
     JK_TRACE_ENTER(l);
@@ -62,7 +62,7 @@ static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
 
 
 static int JK_METHOD get_endpoint(jk_worker_t *pThis,
-                                  jk_endpoint_t **pend, jk_logger_t *l)
+                                  jk_endpoint_t **pend, jk_log_context_t *l)
 {
     int rc;
     JK_TRACE_ENTER(l);
@@ -72,7 +72,7 @@ static int JK_METHOD get_endpoint(jk_worker_t *pThis,
 }
 
 int JK_METHOD ajp13_worker_factory(jk_worker_t **w,
-                                   const char *name, jk_logger_t *l)
+                                   const char *name, jk_log_context_t *l)
 {
     ajp_worker_t *aw;
 

@@ -168,7 +168,7 @@ static void worker_qsort(jk_uri_worker_map_t *uw_map)
 
 /* Dump the map contents - only call if debug log is active. */
 static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
-                                const char *reason, jk_logger_t *l)
+                                const char *reason, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     if (uw_map) {
@@ -208,7 +208,7 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
 
 
 int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
-                         jk_map_t *init_data, jk_logger_t *l)
+                         jk_map_t *init_data, jk_log_context_t *l)
 {
     int i;
 
@@ -261,7 +261,7 @@ int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
     return JK_FALSE;
 }
 
-static int uri_worker_map_close(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
+static int uri_worker_map_close(jk_uri_worker_map_t *uw_map, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -279,7 +279,7 @@ static int uri_worker_map_close(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
     return JK_FALSE;
 }
 
-int uri_worker_map_free(jk_uri_worker_map_t **uw_map, jk_logger_t *l)
+int uri_worker_map_free(jk_uri_worker_map_t **uw_map, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -334,7 +334,7 @@ static int uri_worker_map_realloc(jk_uri_worker_map_t *uw_map)
  */
 
 static int uri_worker_map_clear(jk_uri_worker_map_t *uw_map,
-                                jk_logger_t *l)
+                                jk_log_context_t *l)
 {
     uri_worker_record_t *uwr = NULL;
     unsigned int i;
@@ -377,7 +377,7 @@ static void extract_activation(jk_pool_t *p,
                                int *activations,
                                char *workers,
                                int activation,
-                               jk_logger_t *l)
+                               jk_log_context_t *l)
 {
     unsigned int i;
     char *worker;
@@ -421,7 +421,7 @@ static void extract_activation(jk_pool_t *p,
 static void extension_fix_fail_on_status(jk_pool_t *p,
                                          const char *name,
                                          rule_extension_t *extensions,
-                                         jk_logger_t *l)
+                                         jk_log_context_t *l)
 {
     unsigned int i;
     int j;
@@ -477,7 +477,7 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
 }
 
 static int extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t *jw,
-                                    rule_extension_t *extensions, jk_logger_t *l)
+                                    rule_extension_t *extensions, jk_log_context_t *l)
 {
 
     JK_TRACE_ENTER(l);
@@ -543,7 +543,7 @@ static int extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t 
 }
 
 static void extension_fix_session(jk_pool_t *p, const char *name, jk_worker_t *jw,
-                                  rule_extension_t *extensions, jk_logger_t *l)
+                                  rule_extension_t *extensions, jk_log_context_t *l)
 {
     if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie) {
         jk_log(l, JK_LOG_WARNING,
@@ -572,7 +572,7 @@ static void extension_fix_session(jk_pool_t *p, const char *name, jk_worker_t *j
 }
 
 void extension_fix(jk_pool_t *p, const char *name,
-                   rule_extension_t *extensions, jk_logger_t *l)
+                   rule_extension_t *extensions, jk_log_context_t *l)
 {
     jk_worker_t *jw = wc_get_worker_for_name(name, l);
     if(!jw) {
@@ -589,7 +589,7 @@ void extension_fix(jk_pool_t *p, const char *name,
     extension_fix_session(p, name, jw, extensions, l);
 }
 
-void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
+void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_log_context_t *l)
 {
     int new_index;
 
@@ -609,7 +609,7 @@ void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
 
 }
 
-void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
+void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_log_context_t *l)
 {
     unsigned int i;
 
@@ -636,7 +636,7 @@ void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l)
 
 /* Parse rule extensions */
 void parse_rule_extensions(char *rule, rule_extension_t *extensions,
-                           jk_logger_t *l)
+                           jk_log_context_t *l)
 {
     char *param;
 #ifdef _MT_CODE_PTHREAD
@@ -781,7 +781,7 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
 /* Add new entry to NEXT generation */
 int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
                        const char *puri, const char *worker,
-                       unsigned int source_type, jk_logger_t *l)
+                       unsigned int source_type, jk_log_context_t *l)
 {
     uri_worker_record_t *uwr = NULL;
     char *uri;
@@ -884,7 +884,7 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
 }
 
 int uri_worker_map_open(jk_uri_worker_map_t *uw_map,
-                        jk_map_t *init_data, jk_logger_t *l)
+                        jk_map_t *init_data, jk_log_context_t *l)
 {
     int rc = JK_TRUE;
 
@@ -959,7 +959,7 @@ int uri_worker_map_open(jk_uri_worker_map_t *uw_map,
 }
 
 static int find_match(jk_uri_worker_map_t *uw_map,
-                      const char *url, jk_logger_t *l)
+                      const char *url, jk_log_context_t *l)
 {
     unsigned int i;
 
@@ -1012,7 +1012,7 @@ static int find_match(jk_uri_worker_map_t *uw_map,
 
 static int is_nomatch(jk_uri_worker_map_t *uw_map,
                       const char *uri, int match,
-                      jk_logger_t *l)
+                      jk_log_context_t *l)
 {
     unsigned int i;
     const char *worker = IND_THIS(uw_map->maps)[match]->worker_name;
@@ -1066,7 +1066,7 @@ static int is_nomatch(jk_uri_worker_map_t *uw_map,
 const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
                                   const char *uri, const char *vhost,
                                   rule_extension_t **extensions,
-                                  int *index, jk_logger_t *l)
+                                  int *index, jk_log_context_t *l)
 {
     unsigned int i;
     unsigned int vhost_len;
@@ -1214,7 +1214,7 @@ rule_extension_t *get_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
 }
 
 int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
-                        jk_logger_t *l)
+                        jk_log_context_t *l)
 {
     int rc = JK_FALSE;
     jk_map_t *map;
@@ -1276,7 +1276,7 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
 }
 
 int uri_worker_map_update(jk_uri_worker_map_t *uw_map,
-                          int force, jk_logger_t *l)
+                          int force, jk_log_context_t *l)
 {
     int rc = JK_TRUE;
     time_t now = time(NULL);

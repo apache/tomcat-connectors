@@ -31,14 +31,14 @@
 #define JK_WORKER_SHUTDOWN_WAIT 100
 #define JK_WORKER_SHUTDOWN_COUNT 10
 
-static void close_workers(jk_logger_t *l);
+static void close_workers(jk_log_context_t *l);
 
 static worker_factory get_factory_for(const char *type);
 
 static int build_worker_map(jk_map_t *init_data,
                             char **worker_list,
                             unsigned num_of_workers,
-                            jk_worker_env_t *we, jk_logger_t *l);
+                            jk_worker_env_t *we, jk_log_context_t *l);
 
 /* Global worker list */
 static jk_map_t *worker_map;
@@ -48,7 +48,7 @@ static JK_CRIT_SEC worker_lock;
 #endif
 static int worker_maintain_time = 0;
 
-int wc_open(jk_map_t *init_data, jk_worker_env_t *we, jk_logger_t *l)
+int wc_open(jk_map_t *init_data, jk_worker_env_t *we, jk_log_context_t *l)
 {
     int rc;
     JK_TRACE_ENTER(l);
@@ -94,7 +94,7 @@ int wc_open(jk_map_t *init_data, jk_worker_env_t *we, jk_logger_t *l)
 }
 
 
-void wc_close(jk_logger_t *l)
+void wc_close(jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     JK_DELETE_CS(&worker_lock);
@@ -102,7 +102,7 @@ void wc_close(jk_logger_t *l)
     JK_TRACE_EXIT(l);
 }
 
-jk_worker_t *wc_get_worker_for_name(const char *name, jk_logger_t *l)
+jk_worker_t *wc_get_worker_for_name(const char *name, jk_log_context_t *l)
 {
     jk_worker_t *rc;
 
@@ -124,7 +124,7 @@ jk_worker_t *wc_get_worker_for_name(const char *name, jk_logger_t *l)
 
 int wc_create_worker(const char *name, int use_map,
                      jk_map_t *init_data,
-                     jk_worker_t **rc, jk_worker_env_t *we, jk_logger_t *l)
+                     jk_worker_t **rc, jk_worker_env_t *we, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -210,7 +210,7 @@ int wc_create_worker(const char *name, int use_map,
     return JK_FALSE;
 }
 
-static void close_workers(jk_logger_t *l)
+static void close_workers(jk_log_context_t *l)
 {
     int sz = jk_map_size(worker_map);
 
@@ -236,7 +236,7 @@ static void close_workers(jk_logger_t *l)
 static int build_worker_map(jk_map_t *init_data,
                             char **worker_list,
                             unsigned num_of_workers,
-                            jk_worker_env_t *we, jk_logger_t *l)
+                            jk_worker_env_t *we, jk_log_context_t *l)
 {
     unsigned i;
 
@@ -295,7 +295,7 @@ static worker_factory get_factory_for(const char *type)
     return NULL;
 }
 
-const char *wc_get_name_for_type(int type, jk_logger_t *l)
+const char *wc_get_name_for_type(int type, jk_log_context_t *l)
 {
     worker_factory_record_t *factory = &worker_factories[0];
     while (factory->name) {
@@ -312,7 +312,7 @@ const char *wc_get_name_for_type(int type, jk_logger_t *l)
     return NULL;
 }
 
-void wc_maintain(jk_logger_t *l)
+void wc_maintain(jk_log_context_t *l)
 {
     static time_t last_maintain = 0;
     int needs_global_maintenance;
@@ -362,7 +362,7 @@ void wc_maintain(jk_logger_t *l)
     JK_TRACE_EXIT(l);
 }
 
-void wc_shutdown(jk_logger_t *l)
+void wc_shutdown(jk_log_context_t *l)
 {
     int sz = jk_map_size(worker_map);
 

@@ -118,7 +118,7 @@ static size_t jk_shm_calculate_slot_size()
 }
 
 /* Calculate needed shm size */
-int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
+int jk_shm_calculate_size(jk_map_t *init_data, jk_log_context_t *l)
 {
     char **worker_list;
     size_t needed_slot_size = 0;
@@ -190,7 +190,7 @@ int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l)
 #if defined (WIN32)
 
 /* Use plain memory */
-int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
+int jk_shm_open(const char *fname, int sz, jk_log_context_t *l)
 {
     int rc = -1;
     int attached = 0;
@@ -369,7 +369,7 @@ int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
     return 0;
 }
 
-int jk_shm_attach(const char *fname, int sz, jk_logger_t *l)
+int jk_shm_attach(const char *fname, int sz, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     if (!jk_shm_open(fname, sz, l)) {
@@ -392,7 +392,7 @@ int jk_shm_attach(const char *fname, int sz, jk_logger_t *l)
     }
 }
 
-void jk_shm_close(jk_logger_t *l)
+void jk_shm_close(jk_log_context_t *l)
 {
     if (jk_shm_inited_cs) {
         JK_ENTER_CS(&jk_shmem.cs);
@@ -447,7 +447,7 @@ void jk_shm_close(jk_logger_t *l)
 #define MAP_FILE    (0)
 #endif
 
-static int do_shm_open_lock(const char *fname, int attached, jk_logger_t *l)
+static int do_shm_open_lock(const char *fname, int attached, jk_log_context_t *l)
 {
     int rc;
     char flkname[256];
@@ -535,7 +535,7 @@ static int do_shm_open_lock(const char *fname, int attached, jk_logger_t *l)
 }
 
 static int do_shm_open(const char *fname, int attached,
-                       int sz, jk_logger_t *l)
+                       int sz, jk_log_context_t *l)
 {
     int rc;
     int fd;
@@ -723,17 +723,17 @@ static int do_shm_open(const char *fname, int attached,
     return 0;
 }
 
-int jk_shm_open(const char *fname, int sz, jk_logger_t *l)
+int jk_shm_open(const char *fname, int sz, jk_log_context_t *l)
 {
     return do_shm_open(fname, 0, sz, l);
 }
 
-int jk_shm_attach(const char *fname, int sz, jk_logger_t *l)
+int jk_shm_attach(const char *fname, int sz, jk_log_context_t *l)
 {
     return do_shm_open(fname, 1, sz, l);
 }
 
-void jk_shm_close(jk_logger_t *l)
+void jk_shm_close(jk_log_context_t *l)
 {
 #ifdef AS400_UTF8
     char *wptr;
@@ -808,7 +808,7 @@ void jk_shm_close(jk_logger_t *l)
 
 jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
                                             int parent_id, const char *name,
-                                            jk_logger_t *l)
+                                            jk_log_context_t *l)
 {
     unsigned int i;
     jk_shm_worker_header_t *w = 0;
@@ -925,21 +925,21 @@ int jk_shm_unlock()
 }
 
 jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p, const char *name,
-                                             jk_logger_t *l)
+                                             jk_log_context_t *l)
 {
     return (jk_shm_ajp_worker_t *)jk_shm_alloc_worker(p,
                                     JK_AJP13_WORKER_TYPE, 0, name, l);
 }
 
 jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p, int lb_id, const char *name,
-                                                   jk_logger_t *l)
+                                                   jk_log_context_t *l)
 {
     return (jk_shm_lb_sub_worker_t *)jk_shm_alloc_worker(p,
                                     JK_LB_SUB_WORKER_TYPE, lb_id, name, l);
 }
 
 jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name,
-                                           jk_logger_t *l)
+                                           jk_log_context_t *l)
 {
     return (jk_shm_lb_worker_t *)jk_shm_alloc_worker(p,
                                     JK_LB_WORKER_TYPE, 0, name, l);

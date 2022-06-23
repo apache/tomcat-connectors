@@ -149,14 +149,14 @@ static jk_uint64_t scm(jk_uint64_t a, jk_uint64_t b)
 
 /* Return the string representation of the lb lock type */
 /* based on the integer representation */
-const char *jk_lb_get_lock_direct(int lblock, jk_logger_t *l)
+const char *jk_lb_get_lock_direct(int lblock, jk_log_context_t *l)
 {
     return lb_locking_type[lblock];
 }
 
 /* Return the string representation of the lb lock type */
 /* based on the lb worker struct */
-const char *jk_lb_get_lock(lb_worker_t *p, jk_logger_t *l)
+const char *jk_lb_get_lock(lb_worker_t *p, jk_log_context_t *l)
 {
     return lb_locking_type[p->lblock];
 }
@@ -175,14 +175,14 @@ int jk_lb_get_lock_code(const char *v)
 
 /* Return the string representation of the lb method type */
 /* based on the integer representation */
-const char *jk_lb_get_method_direct(int lbmethod, jk_logger_t *l)
+const char *jk_lb_get_method_direct(int lbmethod, jk_log_context_t *l)
 {
     return lb_method_type[lbmethod];
 }
 
 /* Return the string representation of the lb method type */
 /* based on the lb worker struct */
-const char *jk_lb_get_method(lb_worker_t *p, jk_logger_t *l)
+const char *jk_lb_get_method(lb_worker_t *p, jk_log_context_t *l)
 {
     return lb_method_type[p->lbmethod];
 }
@@ -207,14 +207,14 @@ int jk_lb_get_method_code(const char *v)
 
 /* Return the string representation of the balance worker state */
 /* based on the integer representation */
-const char *jk_lb_get_state_direct(int state, jk_logger_t *l)
+const char *jk_lb_get_state_direct(int state, jk_log_context_t *l)
 {
     return lb_state_type[state];
 }
 
 /* Return the string representation of the balance worker state */
 /* based on the sub worker struct */
-const char *jk_lb_get_state(lb_sub_worker_t *p, jk_logger_t *l)
+const char *jk_lb_get_state(lb_sub_worker_t *p, jk_log_context_t *l)
 {
     return lb_state_type[p->s->state];
 }
@@ -243,14 +243,14 @@ int jk_lb_get_state_code(const char *v)
 
 /* Return the string representation of the balance worker activation */
 /* based on the integer representation */
-const char *jk_lb_get_activation_direct(int activation, jk_logger_t *l)
+const char *jk_lb_get_activation_direct(int activation, jk_log_context_t *l)
 {
     return lb_activation_type[activation];
 }
 
 /* Return the string representation of the balance worker activation */
 /* based on the sub worker struct */
-const char *jk_lb_get_activation(lb_sub_worker_t *p, jk_logger_t *l)
+const char *jk_lb_get_activation(lb_sub_worker_t *p, jk_log_context_t *l)
 {
     return lb_activation_type[p->activation];
 }
@@ -269,7 +269,7 @@ int jk_lb_get_activation_code(const char *v)
 }
 
 /* Update the load multipliers wrt. lb_factor */
-void update_mult(lb_worker_t *p, jk_logger_t *l)
+void update_mult(lb_worker_t *p, jk_log_context_t *l)
 {
     unsigned int i = 0;
     jk_uint64_t s = 1;
@@ -291,7 +291,7 @@ void update_mult(lb_worker_t *p, jk_logger_t *l)
 
 /* Reset all lb values.
  */
-void reset_lb_values(lb_worker_t *p, jk_logger_t *l)
+void reset_lb_values(lb_worker_t *p, jk_log_context_t *l)
 {
     unsigned int i = 0;
     JK_TRACE_ENTER(l);
@@ -303,7 +303,7 @@ void reset_lb_values(lb_worker_t *p, jk_logger_t *l)
     JK_TRACE_EXIT(l);
 }
 
-static void jk_lb_pull_worker(lb_worker_t *p, int i, jk_logger_t *l)
+static void jk_lb_pull_worker(lb_worker_t *p, int i, jk_log_context_t *l)
 {
     lb_sub_worker_t *w = &p->lb_workers[i];
     if (w->sequence < w->s->h.sequence) {
@@ -328,7 +328,7 @@ static void jk_lb_pull_worker(lb_worker_t *p, int i, jk_logger_t *l)
 }
 
 /* Syncing config values from shm */
-void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
+void jk_lb_pull(lb_worker_t *p, int locked, jk_log_context_t *l)
 {
     unsigned int i = 0;
 
@@ -367,7 +367,7 @@ void jk_lb_pull(lb_worker_t *p, int locked, jk_logger_t *l)
 }
 
 /* Syncing config values to shm */
-void jk_lb_push(lb_worker_t *p, int locked, int push_all_members, jk_logger_t *l)
+void jk_lb_push(lb_worker_t *p, int locked, int push_all_members, jk_log_context_t *l)
 {
     unsigned int i = 0;
 
@@ -528,7 +528,7 @@ static char *get_cookie(jk_ws_service_t *s, const char *name)
 /* Retrieve session id from the cookie or the parameter
  * (parameter first)
  */
-static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
+static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_log_context_t *l)
 {
     char *val;
     char *session_path;
@@ -568,7 +568,7 @@ static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
     return val;
 }
 
-static void close_workers(lb_worker_t *p, int num_of_workers, jk_logger_t *l)
+static void close_workers(lb_worker_t *p, int num_of_workers, jk_log_context_t *l)
 {
     int i = 0;
     for (i = 0; i < num_of_workers; i++) {
@@ -589,7 +589,7 @@ static void close_workers(lb_worker_t *p, int num_of_workers, jk_logger_t *l)
 static int recover_workers(lb_worker_t *p,
                            jk_uint64_t curmax,
                            time_t now,
-                           jk_logger_t *l)
+                           jk_log_context_t *l)
 {
     unsigned int i;
     int non_error = 0;
@@ -647,7 +647,7 @@ static int recover_workers(lb_worker_t *p,
 
 static int force_recovery(lb_worker_t *p,
                           int *states,
-                          jk_logger_t *l)
+                          jk_log_context_t *l)
 {
     unsigned int i;
     int forced = 0;
@@ -681,7 +681,7 @@ static int force_recovery(lb_worker_t *p,
  */
 static jk_uint64_t decay_load(lb_worker_t *p,
                               time_t exponent,
-                              jk_logger_t *l)
+                              jk_log_context_t *l)
 {
     unsigned int i;
     jk_uint64_t curmax = 0;
@@ -731,7 +731,7 @@ static jk_uint64_t decay_load(lb_worker_t *p,
     return curmax;
 }
 
-static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, int global, jk_logger_t *l)
+static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, int global, jk_log_context_t *l)
 {
     unsigned int i = 0;
     jk_uint64_t curmax = 0;
@@ -793,7 +793,7 @@ static int JK_METHOD maintain_workers(jk_worker_t *p, time_t now, int global, jk
     return JK_TRUE;
 }
 
-static int JK_METHOD shutdown_workers(jk_worker_t *p, jk_logger_t *l)
+static int JK_METHOD shutdown_workers(jk_worker_t *p, jk_log_context_t *l)
 {
     unsigned int i = 0;
 
@@ -819,7 +819,7 @@ static int JK_METHOD shutdown_workers(jk_worker_t *p, jk_logger_t *l)
 static int find_by_session(jk_ws_service_t *s,
                            lb_worker_t *p,
                            const char *session_route,
-                           jk_logger_t *l)
+                           jk_log_context_t *l)
 {
 
     int rc = -1;
@@ -838,7 +838,7 @@ static int find_best_bydomain(jk_ws_service_t *s,
                               lb_worker_t *p,
                               const char *route_or_domain,
                               int *states,
-                              jk_logger_t *l)
+                              jk_log_context_t *l)
 {
     unsigned int i;
     int d = 0;
@@ -888,7 +888,7 @@ static int find_best_bydomain(jk_ws_service_t *s,
 static int find_best_byvalue(jk_ws_service_t *s,
                              lb_worker_t *p,
                              int *states,
-                             jk_logger_t *l)
+                             jk_log_context_t *l)
 {
     unsigned int i;
     unsigned int j;
@@ -935,7 +935,7 @@ static int find_bysession_route(jk_ws_service_t *s,
                                 lb_worker_t *p,
                                 const char *session_route,
                                 int *states,
-                                jk_logger_t *l)
+                                jk_log_context_t *l)
 {
     int uses_domain  = 0;
     int candidate = -1;
@@ -999,7 +999,7 @@ static int find_bysession_route(jk_ws_service_t *s,
 static int find_failover_worker(jk_ws_service_t *s,
                                 lb_worker_t *p,
                                 int *states,
-                                jk_logger_t *l)
+                                jk_log_context_t *l)
 {
     int rc = -1;
     unsigned int i;
@@ -1021,7 +1021,7 @@ static int find_failover_worker(jk_ws_service_t *s,
 static int find_best_worker(jk_ws_service_t *s,
                             lb_worker_t *p,
                             int *states,
-                            jk_logger_t *l)
+                            jk_log_context_t *l)
 {
     int rc = -1;
 
@@ -1036,7 +1036,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                                     lb_worker_t *p,
                                     char *sessionid,
                                     int *states,
-                                    jk_logger_t *l)
+                                    jk_log_context_t *l)
 {
     int rc = -1;
 
@@ -1152,7 +1152,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
 static void lb_add_log_items(jk_ws_service_t *s,
                              const char *const *log_names,
                              lb_sub_worker_t *w,
-                             jk_logger_t *l)
+                             jk_log_context_t *l)
 {
     /* ADJUST JK_LB_NOTES_COUNT WHEN ADDING MORE NOTES HERE! */
     ajp_worker_t *aw = (ajp_worker_t *)w->worker->worker_private;
@@ -1198,7 +1198,7 @@ static void lb_add_log_items(jk_ws_service_t *s,
 
 static int JK_METHOD service(jk_endpoint_t *e,
                              jk_ws_service_t *s,
-                             jk_logger_t *l, int *is_error)
+                             jk_log_context_t *l, int *is_error)
 {
     lb_endpoint_t *p;
     int attempt = 0;
@@ -1695,7 +1695,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     return rc;
 }
 
-static int JK_METHOD done(jk_endpoint_t **e, jk_logger_t *l)
+static int JK_METHOD done(jk_endpoint_t **e, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -1715,7 +1715,7 @@ static int JK_METHOD done(jk_endpoint_t **e, jk_logger_t *l)
 
 static int JK_METHOD validate(jk_worker_t *pThis,
                               jk_map_t *props,
-                              jk_worker_env_t *we, jk_logger_t *l)
+                              jk_worker_env_t *we, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -1904,7 +1904,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 
 static int JK_METHOD init(jk_worker_t *pThis,
                           jk_map_t *props,
-                          jk_worker_env_t *we, jk_logger_t *log)
+                          jk_worker_env_t *we, jk_log_context_t *log)
 {
     int i;
     const char *s;
@@ -1986,7 +1986,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
 }
 
 static int JK_METHOD get_endpoint(jk_worker_t *pThis,
-                                  jk_endpoint_t **pend, jk_logger_t *l)
+                                  jk_endpoint_t **pend, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -2016,7 +2016,7 @@ static int JK_METHOD get_endpoint(jk_worker_t *pThis,
     return JK_FALSE;
 }
 
-static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
+static int JK_METHOD destroy(jk_worker_t **pThis, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -2038,7 +2038,7 @@ static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
 }
 
 int JK_METHOD lb_worker_factory(jk_worker_t **w,
-                                const char *name, jk_logger_t *l)
+                                const char *name, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 

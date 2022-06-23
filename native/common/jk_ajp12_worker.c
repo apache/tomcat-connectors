@@ -79,10 +79,10 @@ static int ajpv12_sendnbytes(ajp12_endpoint_t * p,
 static int ajpv12_flush(ajp12_endpoint_t * p);
 
 static int ajpv12_handle_response(ajp12_endpoint_t * p,
-                                  jk_ws_service_t *s, jk_logger_t *l);
+                                  jk_ws_service_t *s, jk_log_context_t *l);
 
 static int ajpv12_handle_request(ajp12_endpoint_t * p,
-                                 jk_ws_service_t *s, jk_logger_t *l);
+                                 jk_ws_service_t *s, jk_log_context_t *l);
 
 /*
  * Return values of service() method for ajp12 worker:
@@ -99,7 +99,7 @@ static int ajpv12_handle_request(ajp12_endpoint_t * p,
  */
 static int JK_METHOD service(jk_endpoint_t *e,
                              jk_ws_service_t *s,
-                             jk_logger_t *l, int *is_error)
+                             jk_log_context_t *l, int *is_error)
 {
     ajp12_endpoint_t *p;
     unsigned int attempt;
@@ -157,7 +157,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     return JK_FALSE;
 }
 
-static int JK_METHOD done(jk_endpoint_t **e, jk_logger_t *l)
+static int JK_METHOD done(jk_endpoint_t **e, jk_log_context_t *l)
 {
     jk_log(l, JK_LOG_DEBUG, "Into jk_endpoint_t::done");
     if (e && *e && (*e)->endpoint_private) {
@@ -176,7 +176,7 @@ static int JK_METHOD done(jk_endpoint_t **e, jk_logger_t *l)
 
 static int JK_METHOD validate(jk_worker_t *pThis,
                               jk_map_t *props,
-                              jk_worker_env_t *we, jk_logger_t *l)
+                              jk_worker_env_t *we, jk_log_context_t *l)
 {
     jk_log(l, JK_LOG_DEBUG, "Into jk_worker_t::validate");
 
@@ -231,14 +231,14 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 
 static int JK_METHOD init(jk_worker_t *pThis,
                           jk_map_t *props,
-                          jk_worker_env_t *we, jk_logger_t *log)
+                          jk_worker_env_t *we, jk_log_context_t *log)
 {
     /* Nothing to do for now */
     return JK_TRUE;
 }
 
 static int JK_METHOD get_endpoint(jk_worker_t *pThis,
-                                  jk_endpoint_t **pend, jk_logger_t *l)
+                                  jk_endpoint_t **pend, jk_log_context_t *l)
 {
     jk_log(l, JK_LOG_DEBUG, "Into jk_worker_t::get_endpoint");
 
@@ -265,7 +265,7 @@ static int JK_METHOD get_endpoint(jk_worker_t *pThis,
     return JK_FALSE;
 }
 
-static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
+static int JK_METHOD destroy(jk_worker_t **pThis, jk_log_context_t *l)
 {
     jk_log(l, JK_LOG_DEBUG, "Into jk_worker_t::destroy");
     if (pThis && *pThis && (*pThis)->worker_private) {
@@ -281,7 +281,7 @@ static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
 }
 
 int JK_METHOD ajp12_worker_factory(jk_worker_t **w,
-                                   const char *name, jk_logger_t *l)
+                                   const char *name, jk_log_context_t *l)
 {
     jk_log(l, JK_LOG_DEBUG, "Into ajp12_worker_factory");
     if (NULL != name && NULL != w) {
@@ -399,7 +399,7 @@ static int ajpv12_flush(ajp12_endpoint_t * p)
 }
 
 static int ajpv12_handle_request(ajp12_endpoint_t * p,
-                                 jk_ws_service_t *s, jk_logger_t *l)
+                                 jk_ws_service_t *s, jk_log_context_t *l)
 {
     int ret;
 
@@ -541,7 +541,7 @@ static int ajpv12_handle_request(ajp12_endpoint_t * p,
 }
 
 static int ajpv12_handle_response(ajp12_endpoint_t * p,
-                                  jk_ws_service_t *s, jk_logger_t *l)
+                                  jk_ws_service_t *s, jk_log_context_t *l)
 {
     int status = 200;
     char *reason = NULL;

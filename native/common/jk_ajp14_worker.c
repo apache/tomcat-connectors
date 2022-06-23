@@ -34,7 +34,7 @@
 
 static int handle_discovery(ajp_endpoint_t * ae,
                             jk_worker_env_t *we,
-                            jk_msg_buf_t *msg, jk_logger_t *l)
+                            jk_msg_buf_t *msg, jk_log_context_t *l)
 {
     int cmd;
     int i, j;
@@ -140,7 +140,7 @@ static int handle_discovery(ajp_endpoint_t * ae,
  */
 
 static int handle_logon(ajp_endpoint_t * ae,
-                        jk_msg_buf_t *msg, jk_logger_t *l)
+                        jk_msg_buf_t *msg, jk_log_context_t *l)
 {
     int cmd;
 
@@ -215,7 +215,7 @@ static int handle_logon(ajp_endpoint_t * ae,
     return JK_FALSE;
 }
 
-static int logon(ajp_endpoint_t * ae, jk_logger_t *l)
+static int logon(ajp_endpoint_t * ae, jk_log_context_t *l)
 {
     jk_pool_t *p = &ae->pool;
     jk_msg_buf_t *msg;
@@ -233,7 +233,7 @@ static int logon(ajp_endpoint_t * ae, jk_logger_t *l)
     return rc;
 }
 
-static int discovery(ajp_endpoint_t * ae, jk_worker_env_t *we, jk_logger_t *l)
+static int discovery(ajp_endpoint_t * ae, jk_worker_env_t *we, jk_log_context_t *l)
 {
     jk_pool_t *p = &ae->pool;
     jk_msg_buf_t *msg;
@@ -254,7 +254,7 @@ static int discovery(ajp_endpoint_t * ae, jk_worker_env_t *we, jk_logger_t *l)
 /* -------------------- Method -------------------- */
 static int JK_METHOD validate(jk_worker_t *pThis,
                               jk_map_t *props,
-                              jk_worker_env_t *we, jk_logger_t *l)
+                              jk_worker_env_t *we, jk_log_context_t *l)
 {
     ajp_worker_t *aw;
     const char *secret_key;
@@ -281,7 +281,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 }
 
 static int JK_METHOD get_endpoint(jk_worker_t *pThis,
-                                  jk_endpoint_t **pend, jk_logger_t *l)
+                                  jk_endpoint_t **pend, jk_log_context_t *l)
 {
     int rc;
     JK_TRACE_ENTER(l);
@@ -292,7 +292,7 @@ static int JK_METHOD get_endpoint(jk_worker_t *pThis,
 
 static int JK_METHOD init(jk_worker_t *pThis,
                           jk_map_t *props,
-                          jk_worker_env_t *we, jk_logger_t *l)
+                          jk_worker_env_t *we, jk_log_context_t *l)
 {
     ajp_worker_t *aw;
     ajp_endpoint_t *ae;
@@ -347,7 +347,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
 }
 
 
-static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
+static int JK_METHOD destroy(jk_worker_t **pThis, jk_log_context_t *l)
 {
     int rc;
     ajp_worker_t *aw = (*pThis)->worker_private;
@@ -365,7 +365,7 @@ static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
 }
 
 int JK_METHOD ajp14_worker_factory(jk_worker_t **w,
-                                   const char *name, jk_logger_t *l)
+                                   const char *name, jk_log_context_t *l)
 {
     ajp_worker_t *aw;
 

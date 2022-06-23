@@ -534,7 +534,7 @@ static void jk_putv(jk_ws_service_t *s, ...)
     va_end(va);
 }
 
-static int jk_printf(jk_ws_service_t *s, jk_logger_t *l, const char *fmt, ...)
+static int jk_printf(jk_ws_service_t *s, jk_log_context_t *l, const char *fmt, ...)
 {
     int rc = 0;
     va_list args;
@@ -555,7 +555,7 @@ static int jk_printf(jk_ws_service_t *s, jk_logger_t *l, const char *fmt, ...)
     return rc;
 }
 
-static void jk_print_xml_start_elt(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_xml_start_elt(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                    int indentation, int close_tag,
                                    const char *name)
 {
@@ -567,14 +567,14 @@ static void jk_print_xml_start_elt(jk_ws_service_t *s, jk_logger_t *l, status_wo
     }
 }
 
-static void jk_print_xml_close_elt(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_xml_close_elt(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                    int indentation,
                                    const char *name)
 {
     jk_printf(s, l, "%*s</%s%s>\n", indentation, "", w->ns, name);
 }
 
-static void jk_print_xml_stop_elt(jk_ws_service_t *s, jk_logger_t *l,
+static void jk_print_xml_stop_elt(jk_ws_service_t *s, jk_log_context_t *l,
                                   int indentation, int close_tag)
 {
     if (close_tag) {
@@ -585,49 +585,49 @@ static void jk_print_xml_stop_elt(jk_ws_service_t *s, jk_logger_t *l,
     }
 }
 
-static void jk_print_xml_att_string(jk_ws_service_t *s, jk_logger_t *l,
+static void jk_print_xml_att_string(jk_ws_service_t *s, jk_log_context_t *l,
                                     int indentation,
                                     const char *key, const char *value)
 {
     jk_printf(s, l, "%*s%s=\"%s\"\n", indentation, "", key, value ? value : "");
 }
 
-static void jk_print_xml_att_int(jk_ws_service_t *s, jk_logger_t *l,
+static void jk_print_xml_att_int(jk_ws_service_t *s, jk_log_context_t *l,
                                  int indentation,
                                  const char *key, int value)
 {
     jk_printf(s, l, "%*s%s=\"%d\"\n", indentation, "", key, value);
 }
 
-static void jk_print_xml_att_uint(jk_ws_service_t *s, jk_logger_t *l,
+static void jk_print_xml_att_uint(jk_ws_service_t *s, jk_log_context_t *l,
                                   int indentation,
                                   const char *key, unsigned int value)
 {
     jk_printf(s, l, "%*s%s=\"%u\"\n", indentation, "", key, value);
 }
 
-static void jk_print_xml_att_long(jk_ws_service_t *s, jk_logger_t *l,
+static void jk_print_xml_att_long(jk_ws_service_t *s, jk_log_context_t *l,
                                   int indentation,
                                   const char *key, long value)
 {
     jk_printf(s, l, "%*s%s=\"%ld\"\n", indentation, "", key, value);
 }
 
-static void jk_print_xml_att_uint32(jk_ws_service_t *s, jk_logger_t *l,
+static void jk_print_xml_att_uint32(jk_ws_service_t *s, jk_log_context_t *l,
                                     int indentation,
                                     const char *key, jk_uint32_t value)
 {
     jk_printf(s, l, "%*s%s=\"%" JK_UINT32_T_FMT "\"\n", indentation, "", key, value);
 }
 
-static void jk_print_xml_att_uint64(jk_ws_service_t *s, jk_logger_t *l,
+static void jk_print_xml_att_uint64(jk_ws_service_t *s, jk_log_context_t *l,
                                     int indentation,
                                     const char *key, jk_uint64_t value)
 {
     jk_printf(s, l, "%*s%s=\"%" JK_UINT64_T_FMT "\"\n", indentation, "", key, value);
 }
 
-static void jk_print_prop_att_string(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_att_string(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                      const char *name,
                                      const char *key, const char *value)
 {
@@ -639,7 +639,7 @@ static void jk_print_prop_att_string(jk_ws_service_t *s, jk_logger_t *l, status_
     }
 }
 
-static void jk_print_prop_att_int(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_att_int(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                   const char *name,
                                   const char *key, int value)
 {
@@ -651,7 +651,7 @@ static void jk_print_prop_att_int(jk_ws_service_t *s, jk_logger_t *l, status_wor
     }
 }
 
-static void jk_print_prop_att_uint(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_att_uint(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                    const char *name,
                                    const char *key, unsigned int value)
 {
@@ -663,7 +663,7 @@ static void jk_print_prop_att_uint(jk_ws_service_t *s, jk_logger_t *l, status_wo
     }
 }
 
-static void jk_print_prop_att_long(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_att_long(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                    const char *name,
                                    const char *key, long value)
 {
@@ -675,7 +675,7 @@ static void jk_print_prop_att_long(jk_ws_service_t *s, jk_logger_t *l, status_wo
     }
 }
 
-static void jk_print_prop_att_uint32(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_att_uint32(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                      const char *name,
                                      const char *key, jk_uint32_t value)
 {
@@ -687,7 +687,7 @@ static void jk_print_prop_att_uint32(jk_ws_service_t *s, jk_logger_t *l, status_
     }
 }
 
-static void jk_print_prop_att_uint64(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_att_uint64(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                      const char *name,
                                      const char *key, jk_uint64_t value)
 {
@@ -699,7 +699,7 @@ static void jk_print_prop_att_uint64(jk_ws_service_t *s, jk_logger_t *l, status_
     }
 }
 
-static void jk_print_prop_item_int(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_item_int(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                    const char *name, const char *list, int num,
                                    const char *key, int value)
 {
@@ -711,7 +711,7 @@ static void jk_print_prop_item_int(jk_ws_service_t *s, jk_logger_t *l, status_wo
     }
 }
 
-static void jk_print_prop_item_string(jk_ws_service_t *s, jk_logger_t *l, status_worker_t *w,
+static void jk_print_prop_item_string(jk_ws_service_t *s, jk_log_context_t *l, status_worker_t *w,
                                       const char *name, const char *list, int num,
                                       const char *key, const char *value)
 {
@@ -797,7 +797,7 @@ static const char *windows_strftime_preprocess(const char *pattern,
 #endif
 
 static int status_strftime(time_t clock, int mime, char *buf_time, char *buf_tz,
-                           jk_logger_t *l)
+                           jk_log_context_t *l)
 {
     size_t rc_time;
 #ifdef WIN32
@@ -835,7 +835,7 @@ static int status_strftime(time_t clock, int mime, char *buf_time, char *buf_tz,
 }
 
 static int status_rate(lb_sub_worker_t *wr, status_worker_t *w,
-                       jk_logger_t *l)
+                       jk_log_context_t *l)
 {
     jk_uint32_t mask = 0;
     int activation = wr->activation;
@@ -903,7 +903,7 @@ static int status_rate(lb_sub_worker_t *wr, status_worker_t *w,
     return rv;
 }
 
-static jk_uint32_t status_get_single_rating(const char rating, jk_logger_t *l)
+static jk_uint32_t status_get_single_rating(const char rating, jk_log_context_t *l)
 {
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
@@ -946,7 +946,7 @@ static jk_uint32_t status_get_single_rating(const char rating, jk_logger_t *l)
 }
 
 static jk_uint32_t status_get_rating(const char *rating,
-                                     jk_logger_t *l)
+                                     jk_log_context_t *l)
 {
     int off = 0;
     jk_uint32_t mask = 0;
@@ -983,7 +983,7 @@ static int status_get_string(status_endpoint_t *p,
                              const char *param,
                              const char *def,
                              const char **result,
-                             jk_logger_t *l)
+                             jk_log_context_t *l)
 {
     int rv;
 
@@ -1007,7 +1007,7 @@ static int status_get_string(status_endpoint_t *p,
 static int status_get_int(status_endpoint_t *p,
                           const char *param,
                           int def,
-                          jk_logger_t *l)
+                          jk_log_context_t *l)
 {
     const char *arg;
     int rv = def;
@@ -1021,7 +1021,7 @@ static int status_get_int(status_endpoint_t *p,
 static int status_get_bool(status_endpoint_t *p,
                            const char *param,
                            int def,
-                           jk_logger_t *l)
+                           jk_log_context_t *l)
 {
     const char *arg;
 
@@ -1128,7 +1128,7 @@ static void status_start_form(jk_ws_service_t *s,
                               const char *method,
                               int cmd,
                               const char *overwrite,
-                              jk_logger_t *l)
+                              jk_log_context_t *l)
 {
 
     int i;
@@ -1164,7 +1164,7 @@ static void status_write_uri(jk_ws_service_t *s,
                              const char *worker, const char *sub_worker,
                              unsigned int add_options, unsigned int rm_options,
                              const char *attribute,
-                             jk_logger_t *l)
+                             jk_log_context_t *l)
 {
     int i;
     int sz;
@@ -1292,7 +1292,7 @@ static void status_write_uri(jk_ws_service_t *s,
 
 static int status_parse_uri(jk_ws_service_t *s,
                             status_endpoint_t *p,
-                            jk_logger_t *l)
+                            jk_log_context_t *l)
 {
     jk_map_t *m;
     status_worker_t *w = p->worker;
@@ -1400,7 +1400,7 @@ static int status_parse_uri(jk_ws_service_t *s,
 static void write_html_refresh_response(jk_ws_service_t *s,
                                         status_endpoint_t *p,
                                         const char *err,
-                                        jk_logger_t *l)
+                                        jk_log_context_t *l)
 {
     if (!err) {
         jk_puts(s, "\n<meta http-equiv=\"Refresh\" content=\""
@@ -1417,7 +1417,7 @@ static int fetch_worker_and_sub_worker(status_endpoint_t *p,
                                        const char *operation,
                                        const char **worker,
                                        const char **sub_worker,
-                                       jk_logger_t *l)
+                                       jk_log_context_t *l)
 {
     status_worker_t *w = p->worker;
 
@@ -1455,7 +1455,7 @@ static int check_valid_lb(jk_ws_service_t *s,
                           const char *worker,
                           lb_worker_t **lbp,
                           int implemented,
-                          jk_logger_t *l)
+                          jk_log_context_t *l)
 {
     status_worker_t *w = p->worker;
 
@@ -1494,7 +1494,7 @@ static int search_worker(jk_ws_service_t *s,
                          status_endpoint_t *p,
                          jk_worker_t **jwp,
                          const char *worker,
-                         jk_logger_t *l)
+                         jk_log_context_t *l)
 {
     status_worker_t *w = p->worker;
 
@@ -1533,7 +1533,7 @@ static int search_sub_worker(jk_ws_service_t *s,
                              lb_sub_worker_t **wrp,
                              const char *sub_worker,
                              unsigned int *idx,
-                             jk_logger_t *l)
+                             jk_log_context_t *l)
 {
     lb_worker_t *lb = NULL;
     lb_sub_worker_t *wr = NULL;
@@ -1587,7 +1587,7 @@ static int search_sub_worker(jk_ws_service_t *s,
 
 static int count_map(jk_uri_worker_map_t *uw_map,
                       const char *worker,
-                      jk_logger_t *l)
+                      jk_log_context_t *l)
 {
     unsigned int i;
     int count=0;
@@ -1609,7 +1609,7 @@ static int count_map(jk_uri_worker_map_t *uw_map,
 
 static int count_maps(jk_ws_service_t *s,
                       const char *worker,
-                      jk_logger_t *l)
+                      jk_log_context_t *l)
 {
     int count=0;
 
@@ -1633,7 +1633,7 @@ static void display_map(jk_ws_service_t *s,
                         const char *server_name,
                         int *count_ptr,
                         int mime,
-                        jk_logger_t *l)
+                        jk_log_context_t *l)
 {
     char buf[64];
     unsigned int i;
@@ -1742,7 +1742,7 @@ static void display_map(jk_ws_service_t *s,
 static void display_maps(jk_ws_service_t *s,
                          status_endpoint_t *p,
                          const char *worker,
-                         jk_logger_t *l)
+                         jk_log_context_t *l)
 {
     int mime;
     unsigned int hide;
@@ -1838,7 +1838,7 @@ static void display_worker_ajp_conf_details(jk_ws_service_t *s,
                                             ajp_worker_t *aw,
                                             int is_member,
                                             int type,
-                                            jk_logger_t *l)
+                                            jk_log_context_t *l)
 {
     char buf[64];
 
@@ -1885,7 +1885,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
                                        int ms_min,
                                        int ms_max,
                                        int map_count,
-                                       jk_logger_t *l)
+                                       jk_log_context_t *l)
 {
     char buf[64];
     char buf_rd[32];
@@ -2211,7 +2211,7 @@ static void display_worker_lb(jk_ws_service_t *s,
                               status_endpoint_t *p,
                               lb_worker_t *lb,
                               lb_sub_worker_t *swr,
-                              jk_logger_t *l)
+                              jk_log_context_t *l)
 {
     int cmd;
     int mime;
@@ -2625,7 +2625,7 @@ static void display_worker_ajp(jk_ws_service_t *s,
                                status_endpoint_t *p,
                                ajp_worker_t *aw,
                                int type,
-                               jk_logger_t *l)
+                               jk_log_context_t *l)
 {
     int cmd;
     int mime;
@@ -2716,7 +2716,7 @@ static void display_worker(jk_ws_service_t *s,
                            status_endpoint_t *p,
                            jk_worker_t *jw,
                            lb_sub_worker_t *swr,
-                           jk_logger_t *l)
+                           jk_log_context_t *l)
 {
     status_worker_t *w = p->worker;
 
@@ -2765,7 +2765,7 @@ static void display_worker(jk_ws_service_t *s,
 static void form_worker(jk_ws_service_t *s,
                         status_endpoint_t *p,
                         jk_worker_t *jw,
-                        jk_logger_t *l)
+                        jk_log_context_t *l)
 {
     const char *name = NULL;
     lb_worker_t *lb = NULL;
@@ -2890,7 +2890,7 @@ static void form_member(jk_ws_service_t *s,
                         lb_sub_worker_t *wr,
                         ajp_worker_t *aw,
                         const char *lb_name,
-                        jk_logger_t *l)
+                        jk_log_context_t *l)
 {
     status_worker_t *w = p->worker;
 
@@ -3027,7 +3027,7 @@ static void form_all_members(jk_ws_service_t *s,
                              status_endpoint_t *p,
                              jk_worker_t *jw,
                              const char *attribute,
-                             jk_logger_t *l)
+                             jk_log_context_t *l)
 {
     const char *name = NULL;
     lb_worker_t *lb = NULL;
@@ -3219,7 +3219,7 @@ static void form_all_members(jk_ws_service_t *s,
 static void commit_worker(jk_ws_service_t *s,
                           status_endpoint_t *p,
                           jk_worker_t *jw,
-                          jk_logger_t *l)
+                          jk_log_context_t *l)
 {
     const char *name = NULL;
     lb_worker_t *lb = NULL;
@@ -3348,7 +3348,7 @@ static int set_int_if_changed(status_endpoint_t *p,
                               int max,
                               int *param,
                               const char *lb_name,
-                              jk_logger_t *l)
+                              jk_log_context_t *l)
 {
     int i;
     status_worker_t *w = p->worker;
@@ -3377,7 +3377,7 @@ static int set_uint_if_changed(status_endpoint_t *p,
                                unsigned int align,
                                unsigned int *param,
                                const char *lb_name,
-                               jk_logger_t *l)
+                               jk_log_context_t *l)
 {
     unsigned i;
     status_worker_t *w = p->worker;
@@ -3406,7 +3406,7 @@ static int commit_member(jk_ws_service_t *s,
                          lb_sub_worker_t *wr,
                          ajp_worker_t *aw,
                          int *side_effect,
-                         jk_logger_t *l)
+                         jk_log_context_t *l)
 {
     const char *arg;
     const char *lb_name = NULL;
@@ -3615,7 +3615,7 @@ static void commit_all_members(jk_ws_service_t *s,
                                status_endpoint_t *p,
                                jk_worker_t *jw,
                                const char *attribute,
-                               jk_logger_t *l)
+                               jk_log_context_t *l)
 {
     const char *arg;
     char vname[32];
@@ -3889,7 +3889,7 @@ static void commit_all_members(jk_ws_service_t *s,
 
 static void display_legend(jk_ws_service_t *s,
                            status_endpoint_t *p,
-                           jk_logger_t *l)
+                           jk_log_context_t *l)
 {
 
     int mime;
@@ -3958,7 +3958,7 @@ static void display_legend(jk_ws_service_t *s,
 static int check_worker(jk_ws_service_t *s,
                         status_endpoint_t *p,
                         jk_uint32_t allow_wildchars,
-                        jk_logger_t *l)
+                        jk_log_context_t *l)
 {
     const char *worker;
     const char *sub_worker;
@@ -4004,7 +4004,7 @@ static int check_worker(jk_ws_service_t *s,
 static void count_workers(jk_ws_service_t *s,
                           status_endpoint_t *p,
                           int *lb_cnt, int *ajp_cnt,
-                          jk_logger_t *l)
+                          jk_log_context_t *l)
 {
     unsigned int i;
     jk_worker_t *jw = NULL;
@@ -4035,7 +4035,7 @@ static void count_workers(jk_ws_service_t *s,
 static void list_workers_type(jk_ws_service_t *s,
                               status_endpoint_t *p,
                               int list_lb, int count,
-                              jk_logger_t *l)
+                              jk_log_context_t *l)
 {
 
     const char *arg;
@@ -4161,7 +4161,7 @@ static void list_workers_type(jk_ws_service_t *s,
 
 static int list_workers(jk_ws_service_t *s,
                         status_endpoint_t *p,
-                        jk_logger_t *l)
+                        jk_log_context_t *l)
 {
     int lb_cnt = 0;
     int ajp_cnt = 0;
@@ -4183,7 +4183,7 @@ static int list_workers(jk_ws_service_t *s,
 
 static int show_worker(jk_ws_service_t *s,
                        status_endpoint_t *p,
-                       jk_logger_t *l)
+                       jk_log_context_t *l)
 {
     const char *worker;
     const char *sub_worker;
@@ -4211,7 +4211,7 @@ static int show_worker(jk_ws_service_t *s,
 
 static int edit_worker(jk_ws_service_t *s,
                        status_endpoint_t *p,
-                       jk_logger_t *l)
+                       jk_log_context_t *l)
 {
     const char *worker;
     const char *sub_worker;
@@ -4304,7 +4304,7 @@ static int edit_worker(jk_ws_service_t *s,
 
 static int update_worker(jk_ws_service_t *s,
                          status_endpoint_t *p,
-                         jk_logger_t *l)
+                         jk_log_context_t *l)
 {
     const char *worker;
     const char *sub_worker;
@@ -4470,7 +4470,7 @@ static int update_worker(jk_ws_service_t *s,
 
 static int reset_worker(jk_ws_service_t *s,
                         status_endpoint_t *p,
-                        jk_logger_t *l)
+                        jk_log_context_t *l)
 {
     unsigned int i;
     const char *worker;
@@ -4593,7 +4593,7 @@ static int reset_worker(jk_ws_service_t *s,
 
 static int recover_worker(jk_ws_service_t *s,
                           status_endpoint_t *p,
-                          jk_logger_t *l)
+                          jk_log_context_t *l)
 {
     const char *worker;
     const char *sub_worker;
@@ -4655,7 +4655,7 @@ static int recover_worker(jk_ws_service_t *s,
 
 static int dump_config(jk_ws_service_t *s,
                        status_endpoint_t *p,
-                       int mime, jk_logger_t *l)
+                       int mime, jk_log_context_t *l)
 {
     status_worker_t *w = p->worker;
     jk_worker_env_t *we = w->we;
@@ -4724,7 +4724,7 @@ static int dump_config(jk_ws_service_t *s,
  */
 static int JK_METHOD service(jk_endpoint_t *e,
                              jk_ws_service_t *s,
-                             jk_logger_t *l, int *is_error)
+                             jk_log_context_t *l, int *is_error)
 {
     int cmd;
     jk_uint32_t cmd_props;
@@ -5247,7 +5247,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     return JK_TRUE;
 }
 
-static int JK_METHOD done(jk_endpoint_t **e, jk_logger_t *l)
+static int JK_METHOD done(jk_endpoint_t **e, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -5268,7 +5268,7 @@ static int JK_METHOD done(jk_endpoint_t **e, jk_logger_t *l)
 
 static int JK_METHOD validate(jk_worker_t *pThis,
                               jk_map_t *props,
-                              jk_worker_env_t *we, jk_logger_t *l)
+                              jk_worker_env_t *we, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -5284,7 +5284,7 @@ static int JK_METHOD validate(jk_worker_t *pThis,
 
 static int JK_METHOD init(jk_worker_t *pThis,
                           jk_map_t *props,
-                          jk_worker_env_t *we, jk_logger_t *l)
+                          jk_worker_env_t *we, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     if (pThis && pThis->worker_private) {
@@ -5375,7 +5375,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
 }
 
 static int JK_METHOD get_endpoint(jk_worker_t *pThis,
-                                  jk_endpoint_t **pend, jk_logger_t *l)
+                                  jk_endpoint_t **pend, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -5400,7 +5400,7 @@ static int JK_METHOD get_endpoint(jk_worker_t *pThis,
     return JK_FALSE;
 }
 
-static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
+static int JK_METHOD destroy(jk_worker_t **pThis, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -5420,7 +5420,7 @@ static int JK_METHOD destroy(jk_worker_t **pThis, jk_logger_t *l)
 }
 
 int JK_METHOD status_worker_factory(jk_worker_t **w,
-                                    const char *name, jk_logger_t *l)
+                                    const char *name, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 

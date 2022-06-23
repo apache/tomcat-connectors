@@ -323,7 +323,7 @@ static int sc_for_req_header(const char *header_name)
 
 /* Return the string representation of the worker state
  */
-const char *jk_ajp_get_state(ajp_worker_t *aw, jk_logger_t *l)
+const char *jk_ajp_get_state(ajp_worker_t *aw, jk_log_context_t *l)
 {
     return ajp_state_type[aw->s->state];
 }
@@ -418,7 +418,7 @@ AJPV13_REQUEST/AJPV14_REQUEST=
 
 static int ajp_marshal_into_msgb(jk_msg_buf_t *msg,
                                  jk_ws_service_t *s,
-                                 jk_logger_t *l, ajp_endpoint_t * ae)
+                                 jk_log_context_t *l, ajp_endpoint_t * ae)
 {
     int method;
     unsigned int i;
@@ -710,7 +710,7 @@ body_chunk :=
 
 static int ajp_unmarshal_response(jk_msg_buf_t *msg,
                                   jk_res_data_t * d,
-                                  ajp_endpoint_t * ae, jk_logger_t *l)
+                                  ajp_endpoint_t * ae, jk_log_context_t *l)
 {
     jk_pool_t *p = &ae->pool;
 
@@ -809,7 +809,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
 /*
  * Abort endpoint use
  */
-static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_logger_t *l)
+static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -839,7 +839,7 @@ static void ajp_abort_endpoint(ajp_endpoint_t * ae, int shutdown, jk_logger_t *l
 /*
  * Reset the endpoint (clean buf and close socket)
  */
-static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
+static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -857,7 +857,7 @@ static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 /*
  * Close the endpoint (close pool and close socket)
  */
-void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
+void ajp_close_endpoint(ajp_endpoint_t * ae, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -883,7 +883,7 @@ void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
  *             JK_TRUE: success
  * @remark     Always closes old socket endpoint
  */
-static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
+static int ajp_next_connection(ajp_endpoint_t *ae, jk_log_context_t *l)
 {
     unsigned int i;
     int ret = JK_FALSE;
@@ -930,7 +930,7 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
  * @remark         Always closes socket in case of
  *                 a socket error
  */
-static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t *l)
+static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_log_context_t *l)
 {
     int i;
     int cmd;
@@ -1041,7 +1041,7 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout, jk_logger_t 
  *                 a socket error
  * @remark         Cares about ae->last_errno
  */
-int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
+int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_log_context_t *l)
 {
     char buf[64];
     int rc = JK_TRUE;
@@ -1108,7 +1108,7 @@ int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 
 /* Syncing config values from shm
  */
-void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
+void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_log_context_t *l)
 {
     int address_change = JK_FALSE;
     int port = 0;
@@ -1180,7 +1180,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l)
 
 /* Syncing config values to shm
  */
-void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
+void jk_ajp_push(ajp_worker_t * aw, int locked, jk_log_context_t *l)
 {
     int address_change = JK_FALSE;
 
@@ -1250,7 +1250,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l)
  * @remark         Cares about ae->last_errno
  */
 int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
-                                    jk_msg_buf_t *msg, jk_logger_t *l)
+                                    jk_msg_buf_t *msg, jk_log_context_t *l)
 {
     int rc;
 
@@ -1313,7 +1313,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
  * @remark         Cares about ae->last_errno
  */
 int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
-                                   jk_msg_buf_t *msg, jk_logger_t *l)
+                                   jk_msg_buf_t *msg, jk_log_context_t *l)
 {
     unsigned char head[AJP_HEADER_LEN];
     int rc;
@@ -1469,7 +1469,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
  * Socket API doesn't guaranty that all the data will be kept in a
  * single read, so we must loop until all awaited data is received
  */
-static int ajp_read_fully_from_server(jk_ws_service_t *s, jk_logger_t *l,
+static int ajp_read_fully_from_server(jk_ws_service_t *s, jk_log_context_t *l,
                                       unsigned char *buf, unsigned int len)
 {
     unsigned int rdlen = 0;
@@ -1519,7 +1519,7 @@ static int ajp_read_fully_from_server(jk_ws_service_t *s, jk_logger_t *l,
  */
 static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
                                   jk_ws_service_t *s,
-                                  jk_msg_buf_t *msg, int len, jk_logger_t *l)
+                                  jk_msg_buf_t *msg, int len, jk_log_context_t *l)
 {
     unsigned char *read_buf = msg->buf;
     int maxlen;
@@ -1601,7 +1601,7 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
  */
 static int ajp_send_request(jk_endpoint_t *e,
                             jk_ws_service_t *s,
-                            jk_logger_t *l,
+                            jk_log_context_t *l,
                             ajp_endpoint_t * ae, ajp_operation_t * op)
 {
     int err_conn = 0;
@@ -1912,7 +1912,7 @@ static int ajp_send_request(jk_endpoint_t *e,
 static int ajp_process_callback(jk_msg_buf_t *msg,
                                 jk_msg_buf_t *pmsg,
                                 ajp_endpoint_t * ae,
-                                jk_ws_service_t *s, jk_logger_t *l)
+                                jk_ws_service_t *s, jk_log_context_t *l)
 {
     int code = (int)jk_b_get_byte(msg);
 
@@ -2192,7 +2192,7 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
  */
 static int ajp_get_reply(jk_endpoint_t *e,
                          jk_ws_service_t *s,
-                         jk_logger_t *l,
+                         jk_log_context_t *l,
                          ajp_endpoint_t * p, ajp_operation_t * op)
 {
     /* Don't get header from tomcat yet
@@ -2416,7 +2416,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
     return JK_FALSE;
 }
 
-static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_logger_t *l)
+static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_log_context_t *l)
 {
     aw->s->readed += e->rd;
     aw->s->transferred += e->wr;
@@ -2474,7 +2474,7 @@ static void ajp_update_stats(jk_endpoint_t *e, ajp_worker_t *aw, int rc, jk_logg
  */
 static int JK_METHOD ajp_service(jk_endpoint_t *e,
                                  jk_ws_service_t *s,
-                                 jk_logger_t *l, int *is_error)
+                                 jk_log_context_t *l, int *is_error)
 {
     int i;
     int err = JK_TRUE;
@@ -2807,7 +2807,7 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
  */
 int ajp_validate(jk_worker_t *pThis,
                  jk_map_t *props,
-                 jk_worker_env_t *we, jk_logger_t *l, int proto)
+                 jk_worker_env_t *we, jk_log_context_t *l, int proto)
 {
     int port;
     const char *host;
@@ -2917,7 +2917,7 @@ int ajp_validate(jk_worker_t *pThis,
     return JK_FALSE;
 }
 
-static int ajp_create_endpoint_cache(ajp_worker_t *p, int proto, jk_logger_t *l)
+static int ajp_create_endpoint_cache(ajp_worker_t *p, int proto, jk_log_context_t *l)
 {
     unsigned int i;
     time_t now = time(NULL);
@@ -2965,7 +2965,7 @@ static int ajp_create_endpoint_cache(ajp_worker_t *p, int proto, jk_logger_t *l)
 }
 
 int ajp_init(jk_worker_t *pThis,
-             jk_map_t *props, jk_worker_env_t *we, jk_logger_t *l, int proto)
+             jk_map_t *props, jk_worker_env_t *we, jk_log_context_t *l, int proto)
 {
     int rc = JK_FALSE;
     int cache;
@@ -3158,7 +3158,7 @@ int ajp_init(jk_worker_t *pThis,
 }
 
 int JK_METHOD ajp_worker_factory(jk_worker_t **w,
-                                 const char *name, jk_logger_t *l)
+                                 const char *name, jk_log_context_t *l)
 {
     int rc;
     ajp_worker_t *aw;
@@ -3224,7 +3224,7 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
     return JK_TRUE;
 }
 
-int ajp_destroy(jk_worker_t **pThis, jk_logger_t *l, int proto)
+int ajp_destroy(jk_worker_t **pThis, jk_log_context_t *l, int proto)
 {
     JK_TRACE_ENTER(l);
 
@@ -3264,7 +3264,7 @@ int ajp_destroy(jk_worker_t **pThis, jk_logger_t *l, int proto)
     return JK_FALSE;
 }
 
-int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l)
+int JK_METHOD ajp_done(jk_endpoint_t **e, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -3299,7 +3299,7 @@ int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l)
 }
 
 int ajp_get_endpoint(jk_worker_t *pThis,
-                     jk_endpoint_t **je, jk_logger_t *l, int proto)
+                     jk_endpoint_t **je, jk_log_context_t *l, int proto)
 {
     JK_TRACE_ENTER(l);
 
@@ -3383,7 +3383,7 @@ int ajp_get_endpoint(jk_worker_t *pThis,
     return JK_FALSE;
 }
 
-int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, int global, jk_logger_t *l)
+int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, int global, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -3506,7 +3506,7 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, int global, jk_l
     return JK_FALSE;
 }
 
-int JK_METHOD ajp_shutdown(jk_worker_t *pThis, jk_logger_t *l)
+int JK_METHOD ajp_shutdown(jk_worker_t *pThis, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -3550,7 +3550,7 @@ int JK_METHOD ajp_shutdown(jk_worker_t *pThis, jk_logger_t *l)
 }
 
 int ajp_has_endpoint(jk_worker_t *pThis,
-                     jk_logger_t *l)
+                     jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 

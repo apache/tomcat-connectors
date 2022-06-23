@@ -31,7 +31,7 @@
  * Compute the MD5 with ENTROPY / SECRET KEY
  */
 
-void ajp14_compute_md5(jk_login_service_t *s, jk_logger_t *l)
+void ajp14_compute_md5(jk_login_service_t *s, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     jk_md5((const unsigned char *)s->entropy,
@@ -54,7 +54,7 @@ void ajp14_compute_md5(jk_login_service_t *s, jk_logger_t *l)
  */
 
 int ajp14_marshal_login_init_into_msgb(jk_msg_buf_t *msg,
-                                       jk_login_service_t *s, jk_logger_t *l)
+                                       jk_login_service_t *s, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     /* To be on the safe side */
@@ -99,7 +99,7 @@ int ajp14_marshal_login_init_into_msgb(jk_msg_buf_t *msg,
  */
 
 int ajp14_unmarshal_login_seed(jk_msg_buf_t *msg,
-                               jk_login_service_t *s, jk_logger_t *l)
+                               jk_login_service_t *s, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -126,7 +126,7 @@ int ajp14_unmarshal_login_seed(jk_msg_buf_t *msg,
  */
 
 int ajp14_marshal_login_comp_into_msgb(jk_msg_buf_t *msg,
-                                       jk_login_service_t *s, jk_logger_t *l)
+                                       jk_login_service_t *s, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -167,7 +167,7 @@ int ajp14_marshal_login_comp_into_msgb(jk_msg_buf_t *msg,
  */
 
 int ajp14_unmarshal_log_ok(jk_msg_buf_t *msg,
-                           jk_login_service_t *s, jk_logger_t *l)
+                           jk_login_service_t *s, jk_log_context_t *l)
 {
     unsigned long nego;
     char *sname;
@@ -218,7 +218,7 @@ int ajp14_unmarshal_log_ok(jk_msg_buf_t *msg,
  *
  */
 
-int ajp14_unmarshal_log_nok(jk_msg_buf_t *msg, jk_logger_t *l)
+int ajp14_unmarshal_log_nok(jk_msg_buf_t *msg, jk_log_context_t *l)
 {
     unsigned long status;
 
@@ -250,7 +250,7 @@ int ajp14_unmarshal_log_nok(jk_msg_buf_t *msg, jk_logger_t *l)
  */
 
 int ajp14_marshal_shutdown_into_msgb(jk_msg_buf_t *msg,
-                                     jk_login_service_t *s, jk_logger_t *l)
+                                     jk_login_service_t *s, jk_log_context_t *l)
 {
 
     JK_TRACE_ENTER(l);
@@ -289,7 +289,7 @@ int ajp14_marshal_shutdown_into_msgb(jk_msg_buf_t *msg,
  * +----------------------+-----------------------+
  *
  */
-int ajp14_unmarshal_shutdown_nok(jk_msg_buf_t *msg, jk_logger_t *l)
+int ajp14_unmarshal_shutdown_nok(jk_msg_buf_t *msg, jk_log_context_t *l)
 {
     unsigned long status;
 
@@ -319,7 +319,7 @@ int ajp14_unmarshal_shutdown_nok(jk_msg_buf_t *msg, jk_logger_t *l)
  */
 
 int ajp14_marshal_unknown_packet_into_msgb(jk_msg_buf_t *msg,
-                                           jk_msg_buf_t *unk, jk_logger_t *l)
+                                           jk_msg_buf_t *unk, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -365,7 +365,7 @@ int ajp14_marshal_unknown_packet_into_msgb(jk_msg_buf_t *msg,
  */
 
 int ajp14_marshal_context_query_into_msgb(jk_msg_buf_t *msg,
-                                          char *virtual, jk_logger_t *l)
+                                          char *virtual, jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -406,7 +406,7 @@ int ajp14_marshal_context_query_into_msgb(jk_msg_buf_t *msg,
  */
 
 int ajp14_unmarshal_context_info(jk_msg_buf_t *msg,
-                                 jk_context_t *c, jk_logger_t *l)
+                                 jk_context_t *c, jk_log_context_t *l)
 {
     char *vname;
     char *cname;
@@ -516,7 +516,7 @@ int ajp14_unmarshal_context_info(jk_msg_buf_t *msg,
 
 int ajp14_marshal_context_state_into_msgb(jk_msg_buf_t *msg,
                                           jk_context_t *c,
-                                          char *cname, jk_logger_t *l)
+                                          char *cname, jk_log_context_t *l)
 {
     jk_context_item_t *ci;
     int i;
@@ -610,7 +610,7 @@ int ajp14_marshal_context_state_into_msgb(jk_msg_buf_t *msg,
  */
 
 int ajp14_unmarshal_context_state_reply(jk_msg_buf_t *msg,
-                                        jk_context_t *c, jk_logger_t *l)
+                                        jk_context_t *c, jk_log_context_t *l)
 {
     char *vname;
     char *cname;
@@ -683,7 +683,7 @@ int ajp14_unmarshal_context_state_reply(jk_msg_buf_t *msg,
  */
 
 int ajp14_unmarshal_context_update_cmd(jk_msg_buf_t *msg,
-                                       jk_context_t *c, jk_logger_t *l)
+                                       jk_context_t *c, jk_log_context_t *l)
 {
     int rc;
     JK_TRACE_ENTER(l);
