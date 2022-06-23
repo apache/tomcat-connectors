@@ -2203,12 +2203,12 @@ int jk_wildchar_match(const char *str, const char *exp, int icase)
     return (str[x] != '\0');
 }
 
-int jk_servlet_normalize(char *path, jk_log_context_t *logger)
+int jk_servlet_normalize(char *path, jk_log_context_t *log_ctx)
 {
     int l, w;
 
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG, "URI on entering jk_servlet_normalize: [%s]", path);
+    if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+        jk_log(log_ctx, JK_LOG_DEBUG, "URI on entering jk_servlet_normalize: [%s]", path);
     }
 
     // This test allows the loops below to start at index 1 rather than 0.
@@ -2217,7 +2217,7 @@ int jk_servlet_normalize(char *path, jk_log_context_t *logger)
             /* Most likely an "OPTIONS *" request */
             return 0;
         }
-        jk_log(logger, JK_LOG_WARNING, "Uri [%s] does not start with '/'.", path);
+        jk_log(log_ctx, JK_LOG_WARNING, "Uri [%s] does not start with '/'.", path);
         return JK_NORMALIZE_BAD_PATH;
     }
 
@@ -2279,7 +2279,7 @@ int jk_servlet_normalize(char *path, jk_log_context_t *logger)
 
             // Wind w back to remove the previous segment
             if (w == 1) {
-                jk_log(logger,
+                jk_log(log_ctx,
                        JK_LOG_EMERG,
                        "[%s] contains a '/../' sequence that tries to escape above the root.",
                        path);
@@ -2301,14 +2301,14 @@ int jk_servlet_normalize(char *path, jk_log_context_t *logger)
     }
     path[w] = '\0';
 
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG, "URI on exiting jk_servlet_normalize: [%s]", path);
+    if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+        jk_log(log_ctx, JK_LOG_DEBUG, "URI on exiting jk_servlet_normalize: [%s]", path);
     }
 
     return 0;
 }
 
-int jk_strip_session_id(char* path, char* session_name, jk_log_context_t *logger) {
+int jk_strip_session_id(char* path, char* session_name, jk_log_context_t *log_ctx) {
 
     char *jsessionid;
 
@@ -2316,8 +2316,8 @@ int jk_strip_session_id(char* path, char* session_name, jk_log_context_t *logger
     if (jsessionid) {
         int i;
         int j;
-        if (JK_IS_DEBUG_LEVEL(logger)) {
-            jk_log(logger, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+            jk_log(log_ctx, JK_LOG_DEBUG,
                    "removing session identifier for non servlet uri [%s]", path);
         }
         // Found a session path parameter.
@@ -2336,8 +2336,8 @@ int jk_strip_session_id(char* path, char* session_name, jk_log_context_t *logger
         // Terminate
         jsessionid[j] = '\0';
 
-        if (JK_IS_DEBUG_LEVEL(logger)) {
-            jk_log(logger, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+            jk_log(log_ctx, JK_LOG_DEBUG,
                    "result of removing session identifier for non servlet uri is [%s]", path);
         }
         return 1;
