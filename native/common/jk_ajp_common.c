@@ -1518,7 +1518,7 @@ static int ajp_read_fully_from_server(jk_ws_service_t *s, jk_logger_t *l,
  * Returns -1 on error, else number of bytes read
  */
 static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
-                                  jk_ws_service_t *r,
+                                  jk_ws_service_t *s,
                                   jk_msg_buf_t *msg, int len, jk_logger_t *l)
 {
     unsigned char *read_buf = msg->buf;
@@ -1534,7 +1534,7 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
 
     /* Pick the max size since we don't know the content_length
      */
-    if (r->is_chunked && ae->left_bytes_to_send == 0) {
+    if (s->is_chunked && ae->left_bytes_to_send == 0) {
         len = maxlen;
     }
     else {
@@ -1546,7 +1546,7 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
         }
     }
 
-    if ((len = ajp_read_fully_from_server(r, l, read_buf, len)) < 0) {
+    if ((len = ajp_read_fully_from_server(s, l, read_buf, len)) < 0) {
         jk_log(l, JK_LOG_INFO,
                "(%s) receiving data from client failed. "
                "Connection aborted or network problems",
@@ -1555,7 +1555,7 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
         return JK_CLIENT_RD_ERROR;
     }
 
-    if (!r->is_chunked) {
+    if (!s->is_chunked) {
         ae->left_bytes_to_send -= len;
     }
 
@@ -1912,7 +1912,7 @@ static int ajp_send_request(jk_endpoint_t *e,
 static int ajp_process_callback(jk_msg_buf_t *msg,
                                 jk_msg_buf_t *pmsg,
                                 ajp_endpoint_t * ae,
-                                jk_ws_service_t *r, jk_logger_t *l)
+                                jk_ws_service_t *s, jk_logger_t *l)
 {
     int code = (int)jk_b_get_byte(msg);
 
@@ -1940,23 +1940,23 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 JK_TRACE_EXIT(l);
                 return JK_AJP13_ERROR;
             }
-            if (r->num_resp_headers > 0) {
+            if (s->num_resp_headers > 0) {
                 char **old_names = res.header_names;
                 char **old_values = res.header_values;
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG, "(%s) Adding %d response headers to %d "
                            "headers received from tomcat",
-                           ae->worker->name, r->num_resp_headers, res.num_headers);
-                res.header_names  = jk_pool_alloc(r->pool,
-                                                  (r->num_resp_headers + res.num_headers) *
+                           ae->worker->name, s->num_resp_headers, res.num_headers);
+                res.header_names  = jk_pool_alloc(s->pool,
+                                                  (s->num_resp_headers + res.num_headers) *
                                                    sizeof(char *));
-                res.header_values = jk_pool_alloc(r->pool,
-                                                  (r->num_resp_headers + res.num_headers) *
+                res.header_values = jk_pool_alloc(s->pool,
+                                                  (s->num_resp_headers + res.num_headers) *
                                                    sizeof(char *));
                 if (!res.header_names || !res.header_values) {
                     jk_log(l, JK_LOG_ERROR,
                            "(%s) Failed allocating one %d response headers.",
-                           ae->worker->name, r->num_resp_headers + res.num_headers);
+                           ae->worker->name, s->num_resp_headers + res.num_headers);
                     res.header_names = old_names;
                     res.header_values = old_values;
                 }
@@ -1965,19 +1965,19 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                         memcpy(res.header_names, old_names, res.num_headers * sizeof(char *));
                         memcpy(res.header_values, old_values, res.num_headers * sizeof(char *));
                     }
-                    if (r->num_resp_headers) {
-                        memcpy(res.header_names + res.num_headers, r->resp_headers_names,
-                               r->num_resp_headers * sizeof(char *));
-                        memcpy(res.header_values + res.num_headers, r->resp_headers_values,
-                               r->num_resp_headers * sizeof(char *));
+                    if (s->num_resp_headers) {
+                        memcpy(res.header_names + res.num_headers, s->resp_headers_names,
+                               s->num_resp_headers * sizeof(char *));
+                        memcpy(res.header_values + res.num_headers, s->resp_headers_values,
+                               s->num_resp_headers * sizeof(char *));
                     }
-                    res.num_headers = res.num_headers + r->num_resp_headers;
+                    res.num_headers = res.num_headers + s->num_resp_headers;
                 }
             }
-            r->http_response_status = res.status;
-            if (r->extension.fail_on_status_size > 0)
-                rc = is_http_status_fail(r->extension.fail_on_status_size,
-                                         r->extension.fail_on_status, res.status);
+            s->http_response_status = res.status;
+            if (s->extension.fail_on_status_size > 0)
+                rc = is_http_status_fail(s->extension.fail_on_status_size,
+                                         s->extension.fail_on_status, res.status);
             else
                 rc = is_http_status_fail(ae->worker->http_status_fail_num,
                                          ae->worker->http_status_fail, res.status);
@@ -1990,9 +1990,9 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 return JK_STATUS_ERROR;
             }
 
-            if (r->extension.use_server_error_pages &&
-                r->http_response_status >= r->extension.use_server_error_pages)
-                r->response_blocked = JK_TRUE;
+            if (s->extension.use_server_error_pages &&
+                s->http_response_status >= s->extension.use_server_error_pages)
+                s->response_blocked = JK_TRUE;
 
             /*
              * Call even if response is blocked, since it also handles
@@ -2001,14 +2001,14 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
              * Example: The WWW-Authenticate header in case of
              * HTTP_UNAUTHORIZED (401).
              */
-            r->start_response(r, res.status, res.msg,
+            s->start_response(s, res.status, res.msg,
                               (const char *const *)res.header_names,
                               (const char *const *)res.header_values,
                               res.num_headers);
 
-            if (!r->response_blocked) {
-                if (r->flush && r->flush_header)
-                    r->flush(r);
+            if (!s->response_blocked) {
+                if (s->flush && s->flush_header)
+                    s->flush(s);
             }
         }
         return JK_AJP13_SEND_HEADERS;
@@ -2037,7 +2037,7 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
             JK_TRACE_EXIT(l);
             return JK_AJP13_ERROR;
         }
-        if (!r->response_blocked) {
+        if (!s->response_blocked) {
             unsigned int len = (unsigned int)jk_b_get_int(msg);
             /*
              * Do a sanity check on len to prevent write reading beyond buffer
@@ -2059,9 +2059,9 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 /* AJP13_SEND_BODY_CHUNK with length 0 is
                  * explicit flush packet message.
                  */
-                if (r->response_started) {
-                    if (r->flush) {
-                        r->flush(r);
+                if (s->response_started) {
+                    if (s->flush) {
+                        s->flush(s);
                     }
                 }
                 else {
@@ -2071,15 +2071,15 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 }
             }
             else {
-                if (!r->write(r, msg->buf + msg->pos, len)) {
+                if (!s->write(s, msg->buf + msg->pos, len)) {
                     jk_log(l, JK_LOG_INFO,
                            "(%s) Writing to client aborted or client network problems",
                            ae->worker->name);
                     JK_TRACE_EXIT(l);
                     return JK_CLIENT_WR_ERROR;
                 }
-                if (r->flush && r->flush_packets)
-                    r->flush(r);
+                if (s->flush && s->flush_packets)
+                    s->flush(s);
             }
         }
         break;
@@ -2094,8 +2094,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
 
             /* the right place to add file storage for upload
              */
-            if ((len = ajp_read_into_msg_buff(ae, r, pmsg, len, l)) >= 0) {
-                r->content_read += (jk_uint64_t)len;
+            if ((len = ajp_read_into_msg_buff(ae, s, pmsg, len, l)) >= 0) {
+                s->content_read += (jk_uint64_t)len;
                 JK_TRACE_EXIT(l);
                 return JK_AJP13_HAS_RESPONSE;
             }
@@ -2119,7 +2119,7 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
             jk_log(l, JK_LOG_WARNING, "(%s) AJP13 protocol: Reuse is set to false",
                    ae->worker->name);
         }
-        else if (r->disable_reuse) {
+        else if (s->disable_reuse) {
             if (JK_IS_DEBUG_LEVEL(l)) {
                 jk_log(l, JK_LOG_DEBUG, "(%s) AJP13 protocol: Reuse is disabled",
                        ae->worker->name);
@@ -2135,16 +2135,16 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
             }
             ae->reuse = JK_TRUE;
         }
-        if (!r->response_blocked) {
-            if (r->done) {
+        if (!s->response_blocked) {
+            if (s->done) {
                 /* Done with response
                  */
-                r->done(r);
+                s->done(s);
             }
-            else if (r->flush && !r->flush_packets) {
+            else if (s->flush && !s->flush_packets) {
                 /* Flush after the last write
                  */
-                r->flush(r);
+                s->flush(s);
             }
         }
         JK_TRACE_EXIT(l);
