@@ -350,7 +350,7 @@ will automatically provide a unique request id under that name.
 <p>
 If a request id is sent by the client or another reverse proxy in front via
 an HTTP request header, one can make this id available for mod_jk by
-copying it to an environment variable using mod_headers:<br/>
+copying it to an environment variable using mod_setenvif:<br/>
 <code>SetEnvIf X-REQUEST-ID-HEADER "(.+)" X-REQUEST-ID=$1</code><br/>
 copies the value of the incoming header <code>X-REQUEST-ID-HEADER</code>
 to the environment variable <code>X-REQUEST-ID</code>. mod_jk can
