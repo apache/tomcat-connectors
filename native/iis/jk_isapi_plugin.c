@@ -575,7 +575,7 @@ static int JK_METHOD iis_log_to_file(jk_logger_t *l, int level,
 
 static BOOL initialize_extension(void);
 
-static int read_registry_init_data(void);
+static int read_registry_init_data(jk_log_context_t *log_ctx);
 
 static int get_config_parameter(LPVOID src, const char *tag,
                                 char *val, size_t sz);
@@ -606,7 +606,8 @@ static int base64_encode_cert(char *encoded,
 
 static int get_iis_info(iis_info_t *info);
 
-static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned int write_length);
+static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned int write_length,
+                              jk_log_context_t *log_ctx);
 
 static char *path_merge(const char *root, const char *path);
 
@@ -811,7 +812,7 @@ static void write_error_response(PHTTP_FILTER_CONTEXT pfc, int err)
                      HSE_IO_SYNC);
 }
 
-static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err, const char *err_hdrs)
+static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err, const char *err_hdrs, jk_log_context_t *l)
 {
     DWORD len;
     char status[1024];
@@ -844,7 +845,7 @@ static void write_error_message(LPEXTENSION_CONTROL_BLOCK lpEcb, int err, const 
         if (FAILED(hr) || strlen(body) > (8191 - strlen(CONTENT_TYPE))) {
             /* Header is too long.
              */
-            jk_log(logger, JK_LOG_WARNING,
+            jk_log(l, JK_LOG_WARNING,
                    "error header too long (%d bytes requested).",
                    lstrlenA(err_hdrs));
             body[0] = '\0';
@@ -885,18 +886,19 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
 {
     int rv = JK_TRUE;
     isapi_private_data_t *p;
+    jk_log_context_t *l = s->log_ctx;
 
-    JK_TRACE_ENTER(logger);
-    if (status < 100 || status > 1000) {
-        jk_log(logger, JK_LOG_ERROR,
-               "invalid status %d",
-               status);
-        JK_TRACE_EXIT(logger);
+    JK_TRACE_ENTER(l);
+    if (s == NULL || s->ws_private == NULL) {
+        JK_LOG_NULL_PARAMS(l);
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    if (s == NULL || s->ws_private == NULL) {
-        JK_LOG_NULL_PARAMS(logger);
-        JK_TRACE_EXIT(logger);
+    if (status < 100 || status > 1000) {
+        jk_log(l, JK_LOG_ERROR,
+               "invalid status %d",
+               status);
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     p = s->ws_private;
@@ -918,7 +920,7 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                 }
             }
             if (found == JK_FALSE) {
-                jk_log(logger, JK_LOG_INFO,
+                jk_log(l, JK_LOG_INFO,
                        "origin server sent 401 without"
                        " WWW-Authenticate header");
             }
@@ -935,8 +937,8 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
 
         s->response_started = JK_TRUE;
 
-        if (JK_IS_DEBUG_LEVEL(logger)) {
-            jk_log(logger, JK_LOG_DEBUG, "Starting response for URI '%s' (protocol %s)",
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG, "Starting response for URI '%s' (protocol %s)",
                    s->req_uri, s->protocol);
         }
 
@@ -975,8 +977,8 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
         if ((status == 204) || (status == 205) || (status == 304)) {
             p->chunk_content = JK_FALSE;
             /* Keep alive is still possible */
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG, "Response status %d implies no message body", status);
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG, "Response status %d implies no message body", status);
         }
         if (p->chunk_content) {
             for (i = 0; i < num_of_headers; i++) {
@@ -990,23 +992,23 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                  */
                 if (!strcasecmp(CONTENT_LENGTH_HEADER_NAME, header_names[i])) {
                     p->chunk_content = JK_FALSE;
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG, "Response specifies Content-Length");
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG, "Response specifies Content-Length");
                 }
                 else if (!strcasecmp(CONNECTION_HEADER_NAME, header_names[i])
                         && !strcasecmp(CONNECTION_CLOSE_VALUE, header_values[i])) {
                     keep_alive = FALSE;
                     p->chunk_content = JK_FALSE;
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG, "Response specifies Connection: Close");
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG, "Response specifies Connection: Close");
                 }
                 else if (!strcasecmp(TRANSFER_ENCODING_HEADER_NAME, header_names[i])
                         && !strcasecmp(TRANSFER_ENCODING_IDENTITY_VALUE, header_values[i])) {
                     /* HTTP states that this must include 'chunked' as the last value.
                         * 'identity' is the same as absence of the header */
                     p->chunk_content = JK_FALSE;
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG, "Response specifies Transfer-Encoding");
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG, "Response specifies Transfer-Encoding");
                 }
             }
 
@@ -1029,8 +1031,8 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
 
         if (p->chunk_content) {
             /* Configure the response if chunked encoding is used */
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG, "Using Transfer-Encoding: chunked");
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG, "Using Transfer-Encoding: chunked");
 
             /** We will supply the transfer-encoding to allow IIS to keep the connection open */
             keep_alive = TRUE;
@@ -1044,8 +1046,8 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
         /* Terminate the headers */
         StringCbCat(headers_str, len_of_headers, CRLF);
 
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG, "%ssing Keep-Alive", (keep_alive ? "U" : "Not u"));
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG, "%ssing Keep-Alive", (keep_alive ? "U" : "Not u"));
 
         if (keep_alive) {
             HSE_SEND_HEADER_EX_INFO hi;
@@ -1079,7 +1081,7 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
         }
 
         if (!rc) {
-            jk_log(logger, JK_LOG_ERROR,
+            jk_log(l, JK_LOG_ERROR,
                    "HSE_REQ_SEND_RESPONSE_HEADER%s failed with error=%d (0x%08x)",
                    (keep_alive ? "_EX" : ""), GetLastError(), GetLastError());
             rv = JK_FALSE;
@@ -1089,7 +1091,7 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
         if (status_str)
             free(status_str);
     }
-    JK_TRACE_EXIT(logger);
+    JK_TRACE_EXIT(l);
     return rv;
 }
 
@@ -1097,24 +1099,25 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
                               void *b, unsigned int l, unsigned int *a)
 {
     isapi_private_data_t *p;
+    jk_log_context_t *log_ctx = s->log_ctx;
 
-    JK_TRACE_ENTER(logger);
+    JK_TRACE_ENTER(log_ctx);
     if (s == NULL || s->ws_private == NULL) {
-        JK_LOG_NULL_PARAMS(logger);
-        JK_TRACE_EXIT(logger);
+        JK_LOG_NULL_PARAMS(log_ctx);
+        JK_TRACE_EXIT(log_ctx);
         return JK_FALSE;
     }
     if (a == NULL  || b == NULL) {
         /* XXX: Do we really need those useless checks?
          */
-        JK_LOG_NULL_PARAMS(logger);
-        JK_TRACE_EXIT(logger);
+        JK_LOG_NULL_PARAMS(log_ctx);
+        JK_TRACE_EXIT(log_ctx);
         return JK_FALSE;
 
     }
     p = s->ws_private;
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG,
+    if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+        jk_log(log_ctx, JK_LOG_DEBUG,
                "Preparing to read %d bytes. "
                "ECB reports %d bytes total, with %d available.",
                l, p->lpEcb->cbTotalBytes, p->lpEcb->cbAvailable);
@@ -1126,8 +1129,8 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
         DWORD already_read = p->lpEcb->cbAvailable - p->bytes_read_so_far;
 
         if (already_read >= l) {
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+                jk_log(log_ctx, JK_LOG_DEBUG,
                        "Already read %d bytes - supplying %d bytes from buffer",
                        already_read, l);
             }
@@ -1140,8 +1143,8 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
              * Try to copy what we already have
              */
             if (already_read > 0) {
-                if (JK_IS_DEBUG_LEVEL(logger)) {
-                    jk_log(logger, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+                    jk_log(log_ctx, JK_LOG_DEBUG,
                            "Supplying %d bytes from buffer",
                            already_read);
                 }
@@ -1157,8 +1160,8 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
             /*
              * Now try to read from the client ...
              */
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+                jk_log(log_ctx, JK_LOG_DEBUG,
                        "Attempting to read %d bytes from client", l);
             }
             if (p->lpEcb->ReadClient(p->lpEcb->ConnID, buf, &l)) {
@@ -1167,44 +1170,45 @@ static int JK_METHOD iis_read(jk_ws_service_t *s,
                 *a += l;
             }
             else {
-                jk_log(logger, JK_LOG_ERROR,
+                jk_log(log_ctx, JK_LOG_ERROR,
                        "ReadClient failed with %d (0x%08x)", GetLastError(), GetLastError());
-                JK_TRACE_EXIT(logger);
+                JK_TRACE_EXIT(log_ctx);
                 return JK_FALSE;
             }
         }
     }
-    JK_TRACE_EXIT(logger);
+    JK_TRACE_EXIT(log_ctx);
     return JK_TRUE;
 }
 
 /*
  * Writes a buffer to the ISAPI response.
  */
-static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned int write_length)
+static int isapi_write_client(isapi_private_data_t *p, const char *buf, unsigned int write_length,
+                              jk_log_context_t *l)
 {
     unsigned int written = 0;
     DWORD try_to_write = 0;
 
-    JK_TRACE_ENTER(logger);
+    JK_TRACE_ENTER(l);
 
-    if (JK_IS_DEBUG_LEVEL(logger))
-        jk_log(logger, JK_LOG_DEBUG, "Writing %d bytes of data to client", write_length);
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG, "Writing %d bytes of data to client", write_length);
 
     while (written < write_length) {
         try_to_write = write_length - written;
         if (!p->lpEcb->WriteClient(p->lpEcb->ConnID,
                                    (LPVOID)(buf + written), &try_to_write, HSE_IO_SYNC)) {
-            jk_log(logger, JK_LOG_ERROR,
+            jk_log(l, JK_LOG_ERROR,
                    "WriteClient failed with %d (0x%08x)", GetLastError(), GetLastError());
-            JK_TRACE_EXIT(logger);
+            JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
         written += try_to_write;
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG, "Wrote %d bytes of data successfully", try_to_write);
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG, "Wrote %d bytes of data successfully", try_to_write);
     }
-    JK_TRACE_EXIT(logger);
+    JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
 
@@ -1218,15 +1222,16 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
 {
     isapi_private_data_t *p;
     const char *buf = (const char *)b;
+    jk_log_context_t *log_ctx = s->log_ctx;
 
-    JK_TRACE_ENTER(logger);
+    JK_TRACE_ENTER(log_ctx);
     if (!l) {
-        JK_TRACE_EXIT(logger);
+        JK_TRACE_EXIT(log_ctx);
         return JK_TRUE;
     }
     if (s == NULL || s->ws_private == NULL || b == NULL) {
-        JK_LOG_NULL_PARAMS(logger);
-        JK_TRACE_EXIT(logger);
+        JK_LOG_NULL_PARAMS(log_ctx);
+        JK_TRACE_EXIT(log_ctx);
         return JK_FALSE;
     }
     p = s->ws_private;
@@ -1236,8 +1241,8 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
     }
 
     if (p->chunk_content == JK_FALSE) {
-        if (isapi_write_client(p, buf, l) == JK_FALSE) {
-            JK_TRACE_EXIT(logger);
+        if (isapi_write_client(p, buf, l, log_ctx) == JK_FALSE) {
+            JK_TRACE_EXIT(log_ctx);
             return JK_FALSE;
         }
     }
@@ -1272,56 +1277,56 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
             response_vector.nElementCount = 3;
             response_vector.lpElementArray = response_elements;
 
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(log_ctx))
+                jk_log(log_ctx, JK_LOG_DEBUG,
                        "Using vector write for chunk encoded %d byte chunk", l);
 
             if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
                 HSE_REQ_VECTOR_SEND,
                 &response_vector,
                 NULL, NULL)) {
-                    jk_log(logger, JK_LOG_ERROR,
+                    jk_log(log_ctx, JK_LOG_ERROR,
                            "Vector write of chunk encoded response failed with %d (0x%08x)",
                            GetLastError(), GetLastError());
-                    JK_TRACE_EXIT(logger);
+                    JK_TRACE_EXIT(log_ctx);
                     return JK_FALSE;
             }
         }
         else {
             /* Write chunk header */
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(log_ctx))
+                jk_log(log_ctx, JK_LOG_DEBUG,
                        "Using chunked encoding - writing chunk header for %d byte chunk", l);
 
-            if (!isapi_write_client(p, chunk_header, lstrlenA(chunk_header))) {
-                jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk header failed");
-                JK_TRACE_EXIT(logger);
+            if (!isapi_write_client(p, chunk_header, lstrlenA(chunk_header), log_ctx)) {
+                jk_log(log_ctx, JK_LOG_ERROR, "WriteClient for chunk header failed");
+                JK_TRACE_EXIT(log_ctx);
                 return JK_FALSE;
             }
 
             /* Write chunk body (or simple body block) */
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG, "Writing %s of size %d",
+            if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+                jk_log(log_ctx, JK_LOG_DEBUG, "Writing %s of size %d",
                        (p->chunk_content ? "chunk body" : "simple response"), l);
             }
-            if (!isapi_write_client(p, buf, l)) {
-                jk_log(logger, JK_LOG_ERROR, "WriteClient for response body chunk failed");
-                JK_TRACE_EXIT(logger);
+            if (!isapi_write_client(p, buf, l, log_ctx)) {
+                jk_log(log_ctx, JK_LOG_ERROR, "WriteClient for response body chunk failed");
+                JK_TRACE_EXIT(log_ctx);
                 return JK_FALSE;
             }
             /* Write chunk trailer */
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG, "Using chunked encoding - writing chunk trailer");
+            if (JK_IS_DEBUG_LEVEL(log_ctx)) {
+                jk_log(log_ctx, JK_LOG_DEBUG, "Using chunked encoding - writing chunk trailer");
             }
 
-            if (!isapi_write_client(p, CRLF, CRLF_LEN)) {
-                jk_log(logger, JK_LOG_ERROR, "WriteClient for chunk trailer failed");
-                JK_TRACE_EXIT(logger);
+            if (!isapi_write_client(p, CRLF, CRLF_LEN, log_ctx)) {
+                jk_log(log_ctx, JK_LOG_ERROR, "WriteClient for chunk trailer failed");
+                JK_TRACE_EXIT(log_ctx);
                 return JK_FALSE;
             }
         }
     }
-    JK_TRACE_EXIT(logger);
+    JK_TRACE_EXIT(log_ctx);
     return JK_TRUE;
 }
 
@@ -1331,16 +1336,17 @@ static int JK_METHOD iis_write(jk_ws_service_t *s, const void *b, unsigned int l
 static int JK_METHOD iis_done(jk_ws_service_t *s)
 {
     isapi_private_data_t *p;
+    jk_log_context_t *l = s->log_ctx;
 
-    JK_TRACE_ENTER(logger);
+    JK_TRACE_ENTER(l);
     if (s == NULL || s->ws_private == NULL) {
-        JK_LOG_NULL_PARAMS(logger);
-        JK_TRACE_EXIT(logger);
+        JK_LOG_NULL_PARAMS(l);
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     p = s->ws_private;
     if (p->chunk_content == JK_FALSE) {
-        JK_TRACE_EXIT(logger);
+        JK_TRACE_EXIT(l);
         return JK_TRUE;
     }
 
@@ -1361,35 +1367,35 @@ static int JK_METHOD iis_done(jk_ws_service_t *s)
         response_vector.nElementCount = 1;
         response_vector.lpElementArray = response_elements;
 
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
                    "Using vector write to terminate chunk encoded response.");
 
         if (!p->lpEcb->ServerSupportFunction(p->lpEcb->ConnID,
                                              HSE_REQ_VECTOR_SEND,
                                              &response_vector,
                                              NULL, NULL)) {
-                jk_log(logger, JK_LOG_ERROR,
+                jk_log(l, JK_LOG_ERROR,
                        "Vector termination of chunk encoded response failed with %d (0x%08x)",
                        GetLastError(), GetLastError());
-                JK_TRACE_EXIT(logger);
+                JK_TRACE_EXIT(l);
                 return JK_FALSE;
         }
     }
     else {
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG, "Terminating chunk encoded response");
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG, "Terminating chunk encoded response");
 
-        if (!isapi_write_client(p, CHUNKED_ENCODING_TRAILER, CHUNKED_ENCODING_TRAILER_LEN)) {
-            jk_log(logger, JK_LOG_ERROR,
+        if (!isapi_write_client(p, CHUNKED_ENCODING_TRAILER, CHUNKED_ENCODING_TRAILER_LEN, l)) {
+            jk_log(l, JK_LOG_ERROR,
                    "WriteClient for chunked response terminator failed with %d (0x%08x)",
                    GetLastError(), GetLastError());
-            JK_TRACE_EXIT(logger);
+            JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
     }
 
-    JK_TRACE_EXIT(logger);
+    JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
 
@@ -1713,9 +1719,13 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     char swindex[32] = "";
     char *query;
     DWORD len;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
 
-    if (JK_IS_DEBUG_LEVEL(logger))
-        jk_log(logger, JK_LOG_DEBUG, "Filter started");
+    l->logger = logger;
+    l->id = "FILTER";
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG, "Filter started");
     jk_open_pool(&pool, pbuf, sizeof(jk_pool_atom_t) * HUGE_POOL_SIZE);
     /*
      * Just in case somebody set these headers in the request!
@@ -1735,7 +1745,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     }
     uri = get_pheader(&pool, pfp, pfc, "url", szUB, sizeof(szUB));
     if (uri == NULL) {
-        jk_log(logger, JK_LOG_ERROR,
+        jk_log(l, JK_LOG_ERROR,
                "error while getting the url");
         return SF_STATUS_REQ_ERROR;
     }
@@ -1757,7 +1767,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
 
     rc = unescape_url(uri);
     if (rc == BAD_REQUEST) {
-        jk_log(logger, JK_LOG_ERROR,
+        jk_log(l, JK_LOG_ERROR,
                "[%s] contains one or more invalid escape sequences.",
                uri);
         write_error_response(pfc, 400);
@@ -1765,7 +1775,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         goto cleanup;
     }
     if (rc == BAD_PATH) {
-        jk_log(logger, JK_LOG_EMERG,
+        jk_log(l, JK_LOG_EMERG,
                "[%s] contains forbidden escape sequences.",
                uri);
         write_error_response(pfc, 404);
@@ -1773,7 +1783,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         goto cleanup;
     }
     cleanuri = jk_pool_strdup(&pool, uri);
-    if (jk_servlet_normalize(cleanuri, logger)) {
+    if (jk_servlet_normalize(cleanuri, l)) {
         write_error_response(pfc, 404);
         rv = SF_STATUS_REQ_FINISHED;
         goto cleanup;
@@ -1790,7 +1800,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             host = szHB;
     }
     worker = map_uri_to_worker_ext(uw_map, cleanuri, host,
-                                   &extensions, &worker_index, logger);
+                                   &extensions, &worker_index, l);
     /*
      * Check if somebody is feading us with his own TOMCAT data headers.
      * We reject such postings !
@@ -1802,8 +1812,8 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         BOOL rs;
 
         /* This is a servlet, should redirect ... */
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
                    "[%s] is a servlet url - should redirect to %s",
                    uri, worker);
 
@@ -1816,15 +1826,15 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             size_t elen  = strlen(uri) * 3 + 1;
             char *escuri = jk_pool_alloc(&pool, elen);
             if (!escape_url(uri, escuri, (int)elen)) {
-                jk_log(logger, JK_LOG_ERROR,
+                jk_log(l, JK_LOG_ERROR,
                        "[%s] re-encoding request exceeds maximum buffer size.",
                        uri);
                 write_error_response(pfc, 400);
                 rv = SF_STATUS_REQ_FINISHED;
                 goto cleanup;
             }
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
                        "fowarding escaped URI [%s]",
                        escuri);
             forwardURI = escuri;
@@ -1833,15 +1843,15 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             size_t elen  = strlen(uri) * 3 + 1;
             char *escuri = jk_pool_alloc(&pool, elen);
             if (!jk_canonenc(uri, escuri, (int)elen)) {
-                jk_log(logger, JK_LOG_ERROR,
+                jk_log(l, JK_LOG_ERROR,
                        "[%s] re-encoding request exceeds maximum buffer size.",
                        uri);
                 write_error_response(pfc, 400);
                 rv = SF_STATUS_REQ_FINISHED;
                 goto cleanup;
             }
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
                        "fowarding escaped URI [%s]",
                        escuri);
             forwardURI = escuri;
@@ -1859,8 +1869,8 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         if (rewriteURI == NULL)
             rewriteURI = rregex_rewrite(&pool, forwardURI);
         if (rewriteURI) {
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                jk_log(l, JK_LOG_DEBUG,
                        "rewritten URI [%s]->[%s]",
                        forwardURI, rewriteURI);
             }
@@ -1875,7 +1885,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         rs = rs && pfp->SetHeader(pfc, "url", extension_uri);
 
         if (!rs) {
-            jk_log(logger, JK_LOG_ERROR,
+            jk_log(l, JK_LOG_ERROR,
                    "error while adding request headers");
             SetLastError(ERROR_INVALID_PARAMETER);
             rv = SF_STATUS_REQ_ERROR;
@@ -1889,7 +1899,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
          */
         if (translate != NULL && *translate != '\0') {
             if (!pfp->AddHeader(pfc, TOMCAT_TRANSLATE_HEADER_NAME, translate)) {
-                jk_log(logger, JK_LOG_ERROR,
+                jk_log(l, JK_LOG_ERROR,
                        "error while adding Tomcat-Translate headers");
                 rv = SF_STATUS_REQ_ERROR;
                 goto cleanup;
@@ -1900,7 +1910,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         if (ld == NULL) {
             ld = (isapi_log_data_t *)pfc->AllocMem(pfc, sizeof(isapi_log_data_t), 0);
             if (ld == NULL) {
-                jk_log(logger, JK_LOG_ERROR,
+                jk_log(l, JK_LOG_ERROR,
                        "error while allocating memory");
                 SetLastError(ERROR_NOT_ENOUGH_MEMORY);
                 rv = SF_STATUS_REQ_ERROR;
@@ -1913,25 +1923,25 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         if (query)
             StringCbCopy(ld->query, sizeof(ld->query), query);
         ld->request_matched = JK_TRUE;
-        if (JK_IS_DEBUG_LEVEL(logger)) {
-            jk_log(logger, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
                    "forwarding to : %s", extension_uri);
-            jk_log(logger, JK_LOG_DEBUG,
+            jk_log(l, JK_LOG_DEBUG,
                    "forward URI   : %s%s", URI_HEADER_NAME, forwardURI);
             if (query)
-                jk_log(logger, JK_LOG_DEBUG,
+                jk_log(l, JK_LOG_DEBUG,
                        "forward query : %s%s", QUERY_HEADER_NAME, query);
-            jk_log(logger, JK_LOG_DEBUG,
+            jk_log(l, JK_LOG_DEBUG,
                    "forward worker: %s%s", WORKER_HEADER_NAME, worker);
-            jk_log(logger, JK_LOG_DEBUG,
+            jk_log(l, JK_LOG_DEBUG,
                    "worker index  : %s%s", WORKER_HEADER_INDEX, swindex);
         }
     }
     else {
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG, "[%s] is not a servlet url", uri_undec);
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG, "[%s] is not a servlet url", uri_undec);
         if (strip_session) {
-            if (jk_strip_session_id(uri_undec, JK_PATH_SESSION_IDENTIFIER, logger)) {
+            if (jk_strip_session_id(uri_undec, JK_PATH_SESSION_IDENTIFIER, l)) {
                 pfp->SetHeader(pfc, "url", uri_undec);
             }
         }
@@ -2021,10 +2031,15 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     jk_ws_service_t s;
     jk_pool_atom_t buf[SMALL_POOL_SIZE];
     char *worker_name;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
+
+    l->logger = logger;
+    l->id = "EXTENSION";
 
     lpEcb->dwHttpStatusCode = HTTP_STATUS_SERVER_ERROR;
 
-    JK_TRACE_ENTER(logger);
+    JK_TRACE_ENTER(l);
 
     /* Initialise jk */
     EnterCriticalSection(&log_cs);
@@ -2056,13 +2071,13 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     LeaveCriticalSection(&log_cs);
 
     if (!is_inited) {
-        jk_log(logger, JK_LOG_ERROR, "not initialized");
-        JK_TRACE_EXIT(logger);
+        jk_log(l, JK_LOG_ERROR, "not initialized");
+        JK_TRACE_EXIT(l);
         return HSE_STATUS_ERROR;
     }
 
     if (!watchdog_interval)
-        wc_maintain(logger);
+        wc_maintain(l);
     jk_init_ws_service(&s);
     jk_open_pool(&private_data.p, buf, sizeof(buf));
 
@@ -2073,6 +2088,9 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     s.ws_private = &private_data;
     s.pool = &private_data.p;
 
+    /* Needs to be replaced by a pool allocated ctx in init_ws_service() */
+    s.log_ctx = l;
+
     if (flush_packets) {
         lpEcb->ServerSupportFunction(lpEcb->ConnID, HSE_REQ_SET_FLUSH_FLAG,
                 (LPVOID) TRUE, NULL, NULL);
@@ -2080,70 +2098,72 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
 
     if (init_ws_service(&private_data, &s, &worker_name)) {
         jk_endpoint_t *e = NULL;
-        jk_worker_t *worker = wc_get_worker_for_name(worker_name, logger);
+        jk_worker_t *worker = wc_get_worker_for_name(worker_name, l);
+        /* Replace by a pool allocated ctx from init_ws_service() */
+        l = s.log_ctx;
 
         if (!worker) {
-            jk_log(logger, JK_LOG_ERROR,
+            jk_log(l, JK_LOG_ERROR,
                    "could not get a worker for name %s",
                    worker_name);
             jk_close_pool(&private_data.p);
-            JK_TRACE_EXIT(logger);
+            JK_TRACE_EXIT(l);
             return rc;
         }
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
                    "got a worker for name %s", worker_name);
-        if (worker->get_endpoint(worker, &e, logger)) {
+        if (worker->get_endpoint(worker, &e, l)) {
             int is_error = JK_HTTP_SERVER_ERROR;
             int result;
-            if ((result = e->service(e, &s, logger, &is_error)) > 0) {
+            if ((result = e->service(e, &s, l, &is_error)) > 0) {
                 if (s.extension.use_server_error_pages &&
                     s.http_response_status >= s.extension.use_server_error_pages) {
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG, "Forwarding status=%d"
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG, "Forwarding status=%d"
                                " for worker=%s",
                                s.http_response_status, worker_name);
                     lpEcb->dwHttpStatusCode = s.http_response_status;
                     write_error_message(lpEcb, s.http_response_status,
-                                        private_data.err_hdrs);
+                                        private_data.err_hdrs, l);
                 }
                 else {
                     rc = HSE_STATUS_SUCCESS;
                     lpEcb->dwHttpStatusCode = s.http_response_status;
-                    if (JK_IS_DEBUG_LEVEL(logger))
-                        jk_log(logger, JK_LOG_DEBUG,
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG,
                                "service() returned OK");
                 }
             }
             else {
                 if ((result == JK_CLIENT_ERROR) && (is_error == JK_HTTP_OK)) {
-                    jk_log(logger, JK_LOG_INFO,
+                    jk_log(l, JK_LOG_INFO,
                            "service() failed because client aborted connection");
                 }
                 else {
-                    jk_log(logger, JK_LOG_ERROR,
+                    jk_log(l, JK_LOG_ERROR,
                            "service() failed with http error %d", is_error);
                 }
                 lpEcb->dwHttpStatusCode = is_error;
-                write_error_message(lpEcb, is_error, private_data.err_hdrs);
+                write_error_message(lpEcb, is_error, private_data.err_hdrs, l);
             }
-            e->done(&e, logger);
+            e->done(&e, l);
         }
         else {
             int is_error = JK_HTTP_SERVER_BUSY;
-            jk_log(logger, JK_LOG_ERROR,
+            jk_log(l, JK_LOG_ERROR,
                    "Failed to obtain an endpoint to service request - "
                    "your connection_pool_size is probably less than the threads in your web server!");
             lpEcb->dwHttpStatusCode = is_error;
-            write_error_message(lpEcb, is_error, private_data.err_hdrs);
+            write_error_message(lpEcb, is_error, private_data.err_hdrs, l);
         }
     }
     else {
-        jk_log(logger, JK_LOG_ERROR,
+        jk_log(l, JK_LOG_ERROR,
                "failed to init service for request.");
     }
     jk_close_pool(&private_data.p);
-    JK_TRACE_EXIT(logger);
+    JK_TRACE_EXIT(l);
 
     return rc;
 }
@@ -2155,7 +2175,12 @@ BOOL WINAPI TerminateExtension(DWORD dwFlags)
 
 BOOL WINAPI TerminateFilter(DWORD dwFlags)
 {
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     UNREFERENCED_PARAMETER(dwFlags);
+
+    l->logger = logger;
+    l->id = "TERMINATE_FILTER";
 
     if (dll_process_detach) {
         /* Simple case */
@@ -2167,7 +2192,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             CloseHandle(watchdog_handle);
             watchdog_handle = NULL;
         }
-        jk_shm_close(logger);
+        jk_shm_close(l);
         if (logger)
             jk_close_file_logger(&logger);
         return TRUE;
@@ -2180,16 +2205,16 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
     WaitForSingleObject(init_cs, INFINITE);
     if (is_inited) {
         is_inited = JK_FALSE;
-        jk_log(logger, JK_LOG_INFO, "%s stopping", (FULL_VERSION_STRING));
+        jk_log(l, JK_LOG_INFO, "%s stopping", (FULL_VERSION_STRING));
         watchdog_interval = 0;
         if (watchdog_handle) {
             WaitForSingleObject(watchdog_handle, INFINITE);
             CloseHandle(watchdog_handle);
             watchdog_handle = NULL;
         }
-        wc_close(logger);
+        wc_close(l);
         if (is_mapread) {
-            uri_worker_map_free(&uw_map, logger);
+            uri_worker_map_free(&uw_map, l);
             is_mapread = JK_FALSE;
         }
         if (workers_map) {
@@ -2209,7 +2234,7 @@ BOOL WINAPI TerminateFilter(DWORD dwFlags)
             }
             jk_map_free(&rregexp_map);
         }
-        jk_shm_close(logger);
+        jk_shm_close(l);
         if (logger) {
             jk_close_file_logger(&logger);
         }
@@ -2308,8 +2333,14 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
 static DWORD WINAPI watchdog_thread(void *param)
 {
     int i;
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG,
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
+
+    l->logger = logger;
+    l->id = "WATCHDOG";
+
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        jk_log(l, JK_LOG_DEBUG,
                "Watchdog thread initialized with %u second interval",
                watchdog_interval);
     }
@@ -2321,19 +2352,19 @@ static DWORD WINAPI watchdog_thread(void *param)
         }
         if (!watchdog_interval)
             break;
-        if (JK_IS_DEBUG_LEVEL(logger)) {
-            jk_log(logger, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(l)) {
+            jk_log(l, JK_LOG_DEBUG,
                    "Watchdog thread running");
         }
         if (worker_mount_file[0]) {
             jk_shm_lock();
-            uri_worker_map_update(uw_map, 0, logger);
+            uri_worker_map_update(uw_map, 0, l);
             jk_shm_unlock();
         }
-        wc_maintain(logger);
+        wc_maintain(l);
     }
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG,
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        jk_log(l, JK_LOG_DEBUG,
                "Watchdog thread finished");
     }
     return 0;
@@ -2481,13 +2512,19 @@ static int init_jk(char *serverName)
 {
     char *p, shm_name[MAX_PATH];
     int i, rc = JK_FALSE;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
 
     init_logger(JK_FALSE);
+
+    l->logger = logger;
+    l->id = "INIT_JK";
+
     /* TODO: Use System logging to notify the user that
      *       we cannot open the configured log file.
      */
     StringCbCopy(shm_name, MAX_PATH, SHM_DEF_PREFIX);
-    jk_log(logger, JK_LOG_INFO, "Starting " FULL_VERSION_STRING);
+    jk_log(l, JK_LOG_INFO, "Starting " FULL_VERSION_STRING);
     StringCbCat(shm_name, MAX_PATH, serverName);
     StringCbCat(shm_name, MAX_PATH, "_");
     StringCbCat(shm_name, MAX_PATH, extension_uri + 1);
@@ -2497,30 +2534,30 @@ static int init_jk(char *serverName)
 
     /* Logging the initialization type: registry or properties file in virtual dir
      */
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG, "Detected IIS version %d.%d", iis_info.major, iis_info.minor);
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        jk_log(l, JK_LOG_DEBUG, "Detected IIS version %d.%d", iis_info.major, iis_info.minor);
         if (using_ini_file) {
-            jk_log(logger, JK_LOG_DEBUG, "Using ini file %s.", ini_file_name);
+            jk_log(l, JK_LOG_DEBUG, "Using ini file %s.", ini_file_name);
         }
         else {
-            jk_log(logger, JK_LOG_DEBUG, "Using registry.");
+            jk_log(l, JK_LOG_DEBUG, "Using registry.");
         }
 
-        jk_log(logger, JK_LOG_DEBUG, "Using log file %s.", log_file);
-        jk_log(logger, JK_LOG_DEBUG, "Using log level %d.", log_level);
-        jk_log(logger, JK_LOG_DEBUG, "Using log rotation time %d seconds.", log_rotationtime);
-        jk_log(logger, JK_LOG_DEBUG, "Using log file size %d bytes.", log_filesize);
+        jk_log(l, JK_LOG_DEBUG, "Using log file %s.", log_file);
+        jk_log(l, JK_LOG_DEBUG, "Using log level %d.", log_level);
+        jk_log(l, JK_LOG_DEBUG, "Using log rotation time %d seconds.", log_rotationtime);
+        jk_log(l, JK_LOG_DEBUG, "Using log file size %d bytes.", log_filesize);
 
-        jk_log(logger, JK_LOG_DEBUG, "Using extension uri %s.", extension_uri);
-        jk_log(logger, JK_LOG_DEBUG, "Using worker file %s.", worker_file);
-        jk_log(logger, JK_LOG_DEBUG, "Using worker mount file %s.",
+        jk_log(l, JK_LOG_DEBUG, "Using extension uri %s.", extension_uri);
+        jk_log(l, JK_LOG_DEBUG, "Using worker file %s.", worker_file);
+        jk_log(l, JK_LOG_DEBUG, "Using worker mount file %s.",
                worker_mount_file);
-        jk_log(logger, JK_LOG_DEBUG, "Using rewrite rule file %s.",
+        jk_log(l, JK_LOG_DEBUG, "Using rewrite rule file %s.",
                rewrite_rule_file);
-        jk_log(logger, JK_LOG_DEBUG, "Using uri select %d.", uri_select_option);
-        jk_log(logger, JK_LOG_DEBUG, "Using%s chunked encoding.", (chunked_encoding_enabled ? "" : " no"));
+        jk_log(l, JK_LOG_DEBUG, "Using uri select %d.", uri_select_option);
+        jk_log(l, JK_LOG_DEBUG, "Using%s chunked encoding.", (chunked_encoding_enabled ? "" : " no"));
 
-        jk_log(logger, JK_LOG_DEBUG, "Using notification event %s (0x%08x)",
+        jk_log(l, JK_LOG_DEBUG, "Using notification event %s (0x%08x)",
                (iis_info.filter_notify_event == SF_NOTIFY_AUTH_COMPLETE) ?
                "SF_NOTIFY_AUTH_COMPLETE" :
                ((iis_info.filter_notify_event == SF_NOTIFY_PREPROC_HEADERS) ?
@@ -2528,28 +2565,28 @@ static int init_jk(char *serverName)
                iis_info.filter_notify_event);
 
         if (error_page) {
-            jk_log(logger, JK_LOG_DEBUG, "Using error page '%s'.", error_page);
+            jk_log(l, JK_LOG_DEBUG, "Using error page '%s'.", error_page);
         }
-        jk_log(logger, JK_LOG_DEBUG, "Using uri header %s.", URI_HEADER_NAME);
-        jk_log(logger, JK_LOG_DEBUG, "Using query header %s.", QUERY_HEADER_NAME);
-        jk_log(logger, JK_LOG_DEBUG, "Using worker header %s.", WORKER_HEADER_NAME);
-        jk_log(logger, JK_LOG_DEBUG, "Using worker index %s.", WORKER_HEADER_INDEX);
-        jk_log(logger, JK_LOG_DEBUG, "Using translate header %s.", TOMCAT_TRANSLATE_HEADER_NAME);
-        jk_log(logger, JK_LOG_DEBUG, "Using a default of %d connections per pool.",
+        jk_log(l, JK_LOG_DEBUG, "Using uri header %s.", URI_HEADER_NAME);
+        jk_log(l, JK_LOG_DEBUG, "Using query header %s.", QUERY_HEADER_NAME);
+        jk_log(l, JK_LOG_DEBUG, "Using worker header %s.", WORKER_HEADER_NAME);
+        jk_log(l, JK_LOG_DEBUG, "Using worker index %s.", WORKER_HEADER_INDEX);
+        jk_log(l, JK_LOG_DEBUG, "Using translate header %s.", TOMCAT_TRANSLATE_HEADER_NAME);
+        jk_log(l, JK_LOG_DEBUG, "Using a default of %d connections per pool.",
                DEFAULT_WORKER_THREADS);
     }
 
     if ((log_rotationtime > 0) && (log_filesize > 0)) {
-        jk_log(logger, JK_LOG_WARNING,
+        jk_log(l, JK_LOG_WARNING,
                "%s is defined in configuration, but will be ignored because %s is set. ",
                LOG_FILESIZE_TAG, LOG_ROTATION_TIME_TAG);
     }
 
     if (rewrite_rule_file[0] && jk_map_alloc(&rewrite_map)) {
         if (jk_map_read_properties(rewrite_map, NULL, rewrite_rule_file,
-                                   NULL, JK_MAP_HANDLE_RAW, logger)) {
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG, "Loaded rewrite rule file %s.",
+                                   NULL, JK_MAP_HANDLE_RAW, l)) {
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                jk_log(l, JK_LOG_DEBUG, "Loaded rewrite rule file %s.",
                        rewrite_rule_file);
 
             }
@@ -2564,14 +2601,14 @@ static int init_jk(char *serverName)
                     regexp->fake = val;
                     if (ap_regcomp(regexp, src) == JK_TRUE) {
                         jk_map_add(rregexp_map, src, regexp);
-                        if (JK_IS_DEBUG_LEVEL(logger)) {
-                            jk_log(logger, JK_LOG_DEBUG,
+                        if (JK_IS_DEBUG_LEVEL(l)) {
+                            jk_log(l, JK_LOG_DEBUG,
                                    "Added regular expression rule %s -> %s",
                                    src, regexp->fake);
                         }
                     }
                     else {
-                        jk_log(logger, JK_LOG_ERROR,
+                        jk_log(l, JK_LOG_ERROR,
                                "Unable to compile regular expression %s",
                                src);
                         free(regexp);
@@ -2585,7 +2622,7 @@ static int init_jk(char *serverName)
         }
     }
 
-    if (uri_worker_map_alloc(&uw_map, NULL, logger)) {
+    if (uri_worker_map_alloc(&uw_map, NULL, l)) {
         rc = JK_FALSE;
         if (reject_unsafe)
             uw_map->reject_unsafe = 1;
@@ -2594,44 +2631,44 @@ static int init_jk(char *serverName)
         uw_map->reload = worker_mount_reload;
         if (worker_mount_file[0]) {
             uw_map->fname = worker_mount_file;
-            rc = uri_worker_map_load(uw_map, logger);
+            rc = uri_worker_map_load(uw_map, l);
         }
     }
     if (rc) {
         rc = JK_FALSE;
         if (jk_map_alloc(&workers_map)) {
             if (jk_map_read_properties(workers_map, NULL, worker_file, NULL,
-                                       JK_MAP_HANDLE_DUPLICATES, logger)) {
+                                       JK_MAP_HANDLE_DUPLICATES, l)) {
                 int rv = -1;
 
                 /* we add the URI->WORKER MAP since workers using AJP14 will feed it */
 
-                if (jk_map_resolve_references(workers_map, "worker.", 1, 1, logger) == JK_FALSE) {
-                    jk_log(logger, JK_LOG_ERROR, "Error in resolving configuration references");
+                if (jk_map_resolve_references(workers_map, "worker.", 1, 1, l) == JK_FALSE) {
+                    jk_log(l, JK_LOG_ERROR, "Error in resolving configuration references");
                 }
                 /*
                  * Create named shared memory for each server
                  */
                 if (shm_config_size == -1) {
-                    shm_config_size = jk_shm_calculate_size(workers_map, logger);
+                    shm_config_size = jk_shm_calculate_size(workers_map, l);
                 }
                 else if (shm_config_size > 0) {
-                    jk_log(logger, JK_LOG_WARNING,
+                    jk_log(l, JK_LOG_WARNING,
                            "The optimal shared memory size can now be determined automatically.");
-                    jk_log(logger, JK_LOG_WARNING,
+                    jk_log(l, JK_LOG_WARNING,
                            "You can remove the shm_size attribute if you want to use the optimal size.");
                 }
                 if ((shm_config_size > 0) &&
-                    (rv = jk_shm_open(shm_name, shm_config_size, logger)) != 0) {
-                    jk_log(logger, JK_LOG_ERROR,
+                    (rv = jk_shm_open(shm_name, shm_config_size, l)) != 0) {
+                    jk_log(l, JK_LOG_ERROR,
                            "Initializing shm:%s errno=%d. Load balancing workers will not function properly",
                            jk_shm_name(), rv);
                 }
-                if (rv != 0 && (rv = jk_shm_open(NULL, shm_config_size, logger)) != 0) {
+                if (rv != 0 && (rv = jk_shm_open(NULL, shm_config_size, l)) != 0) {
                     /* Do not try to open the worker if we cannot create
                      * the shared memory segment or heap memory.
                      */
-                    jk_log(logger, JK_LOG_EMERG,
+                    jk_log(l, JK_LOG_EMERG,
                            "Initializing shm:%s errno=%d. Cannot continue",
                            jk_shm_name(), rv);
                     jk_map_free(&workers_map);
@@ -2641,7 +2678,7 @@ static int init_jk(char *serverName)
                 else {
                     if (shm_loaded_name[0]) {
                         if (strcmp(shm_loaded_name, shm_name)) {
-                            jk_log(logger, JK_LOG_WARNING,
+                            jk_log(l, JK_LOG_WARNING,
                                    "Loading different shared memory %s. Already loaded %s",
                                    shm_name, shm_loaded_name);
                         }
@@ -2654,17 +2691,17 @@ static int init_jk(char *serverName)
                 worker_env.server_name = serverName;
                 worker_env.pool = NULL;
 
-                if (wc_open(workers_map, &worker_env, logger)) {
+                if (wc_open(workers_map, &worker_env, l)) {
                     rc = JK_TRUE;
-                    uri_worker_map_ext(uw_map, logger);
-                    uri_worker_map_switch(uw_map, logger);
+                    uri_worker_map_ext(uw_map, l);
+                    uri_worker_map_switch(uw_map, l);
                 }
                 else {
-                    jk_shm_close(logger);
+                    jk_shm_close(l);
                 }
             }
             else {
-                jk_log(logger, JK_LOG_EMERG,
+                jk_log(l, JK_LOG_EMERG,
                        "Unable to read worker file %s. (errno=%d, err=%s)", worker_file, errno, strerror(errno));
             }
             if (rc != JK_TRUE) {
@@ -2679,12 +2716,12 @@ static int init_jk(char *serverName)
             watchdog_handle = CreateThread(NULL, 0, watchdog_thread,
                                            NULL, 0, &wi);
             if (!watchdog_handle) {
-                jk_log(logger, JK_LOG_EMERG, "Error %d (0x%08x) creating Watchdog thread",
+                jk_log(l, JK_LOG_EMERG, "Error %d (0x%08x) creating Watchdog thread",
                        GetLastError(), GetLastError());
                 watchdog_interval = 0;
             }
         }
-        jk_log(logger, JK_LOG_INFO, "%s initialized", (FULL_VERSION_STRING));
+        jk_log(l, JK_LOG_INFO, "%s initialized", (FULL_VERSION_STRING));
     }
     return rc;
 }
@@ -2692,9 +2729,15 @@ static int init_jk(char *serverName)
 static BOOL initialize_extension(void)
 {
 
-    if (read_registry_init_data()) {
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
+
+    l->logger = logger;
+    l->id = "INIT_EXTENSION";
+
+    if (read_registry_init_data(l)) {
         if (get_iis_info(&iis_info) != JK_TRUE) {
-            jk_log(logger, JK_LOG_ERROR, "Could not retrieve IIS version from registry");
+            jk_log(l, JK_LOG_ERROR, "Could not retrieve IIS version from registry");
         }
         else {
             if (use_auth_notification_flags)
@@ -2720,7 +2763,7 @@ int parse_uri_select(const char *uri_select)
     return -1;
 }
 
-static int read_registry_init_data(void)
+static int read_registry_init_data(jk_log_context_t *l)
 {
     char tmpbuf[MAX_PATH];
     int ok = JK_FALSE;
@@ -2731,13 +2774,13 @@ static int read_registry_init_data(void)
 
     remain = jk_check_buffer_size();
     if (remain < 0) {
-        jk_log(logger, JK_LOG_ERROR,
+        jk_log(l, JK_LOG_ERROR,
                "mod_jk: JK_MAX_ATTRIBUTE_NAME_LEN in jk_util.c is too small, "
                "increase by %d", -1 * remain);
     }
     if (jk_map_alloc(&map)) {
         if (jk_map_read_properties(map, jk_environment_map, ini_file_name, NULL,
-                                   JK_MAP_HANDLE_DUPLICATES, logger)) {
+                                   JK_MAP_HANDLE_DUPLICATES, l)) {
             using_ini_file = JK_TRUE;
             src = map;
         }
@@ -2824,12 +2867,12 @@ static int read_registry_init_data(void)
             uri_select_option = opt;
         }
         else {
-            jk_log(logger, JK_LOG_ERROR, "Invalid value '%s' for configuration item '"
+            jk_log(l, JK_LOG_ERROR, "Invalid value '%s' for configuration item '"
                    URI_SELECT_TAG "'", tmpbuf);
         }
     }
     if (get_config_parameter(src, COLLAPSE_SLASHES_TAG, tmpbuf, sizeof(tmpbuf))) {
-        jk_log(logger, JK_LOG_ERROR, "Configuration item '" COLLAPSE_SLASHES_TAG
+        jk_log(l, JK_LOG_ERROR, "Configuration item '" COLLAPSE_SLASHES_TAG
                "' is deprecated and will be ignored");
     }
     shm_config_size = get_config_int(src, SHM_SIZE_TAG, -1);
@@ -2953,28 +2996,33 @@ static int init_ws_service(isapi_private_data_t * private_data,
     BOOL  unknown_content_length = FALSE;
     unsigned int cnt = 0;
     char *tmp;
+    jk_log_context_t *l = s->log_ctx;
 
-
-    JK_TRACE_ENTER(logger);
+    JK_TRACE_ENTER(l);
 
     s->start_response = start_response;
     s->read  = iis_read;
     s->write = iis_write;
     s->done  = iis_done;
 
+    l = jk_pool_alloc(s->pool, sizeof(jk_log_context_t));
+    l->logger = logger;
+    l->id = "INIT_WS_SERVICE";
+    s->log_ctx = l;
+
     GET_SERVER_VARIABLE_VALUE(HTTP_URI_HEADER_NAME, s->req_uri, NULL);
 
     if (s->req_uri == NULL) {
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG, "No URI header value provided. Defaulting to old behaviour");
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG, "No URI header value provided. Defaulting to old behaviour");
         s->query_string = private_data->lpEcb->lpszQueryString;
         *worker_name = DEFAULT_WORKER_NAME;
         GET_SERVER_VARIABLE_VALUE("URL", s->req_uri, "");
         if (unescape_url(s->req_uri) < 0) {
-            JK_TRACE_EXIT(logger);
+            JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
-        jk_servlet_normalize(s->req_uri, logger);
+        jk_servlet_normalize(s->req_uri, l);
     }
     else {
         GET_SERVER_VARIABLE_VALUE(HTTP_QUERY_HEADER_NAME, s->query_string, "");
@@ -2982,11 +3030,11 @@ static int init_ws_service(isapi_private_data_t * private_data,
         GET_SERVER_VARIABLE_VALUE_INT(HTTP_WORKER_HEADER_INDEX, worker_index, -1);
     }
 
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_WORKER_HEADER_NAME, (*worker_name));
-        jk_log(logger, JK_LOG_DEBUG, "Reading extension header %s: %d", HTTP_WORKER_HEADER_INDEX, worker_index);
-        jk_log(logger, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_URI_HEADER_NAME, s->req_uri);
-        jk_log(logger, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_QUERY_HEADER_NAME, s->query_string);
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_WORKER_HEADER_NAME, (*worker_name));
+        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %d", HTTP_WORKER_HEADER_INDEX, worker_index);
+        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_URI_HEADER_NAME, s->req_uri);
+        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_QUERY_HEADER_NAME, s->query_string);
     }
 
     GET_SERVER_VARIABLE_VALUE("AUTH_TYPE", s->auth_type, NULL);
@@ -3009,15 +3057,15 @@ static int init_ws_service(isapi_private_data_t * private_data,
                          sizeof(temp_buf))) {
         if (strcasecmp(temp_buf, TRANSFER_ENCODING_CHUNKED_VALUE) == 0) {
             s->is_chunked = JK_TRUE;
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG, "Request is Transfer-Encoding: chunked");
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                jk_log(l, JK_LOG_DEBUG, "Request is Transfer-Encoding: chunked");
             }
         }
         else {
             /* XXX: What to do with non chunked T-E ?
              */
-            if (JK_IS_DEBUG_LEVEL(logger))
-                jk_log(logger, JK_LOG_DEBUG, "Unsupported Transfer-Encoding: %s",
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG, "Unsupported Transfer-Encoding: %s",
                        temp_buf);
         }
     }
@@ -3033,8 +3081,8 @@ static int init_ws_service(isapi_private_data_t * private_data,
     }
     e = get_uri_to_worker_ext(uw_map, worker_index);
     if (e) {
-        if (JK_IS_DEBUG_LEVEL(logger))
-            jk_log(logger, JK_LOG_DEBUG, "Applying service extensions");
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG, "Applying service extensions");
         s->extension.reply_timeout = e->reply_timeout;
         s->extension.sticky_ignore = e->sticky_ignore;
         s->extension.stateless = e->stateless;
@@ -3109,7 +3157,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
             s->attributes_values = jk_pool_alloc(&private_data->p,
                                                  num_of_vars * sizeof(char *));
             if (!s->attributes_names || !s->attributes_values) {
-                JK_TRACE_EXIT(logger);
+                JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
             for (i = 0; i < 9; i++) {
@@ -3125,7 +3173,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 BYTE *cb = jk_pool_alloc(&private_data->p, AJP13_MAX_PACKET_SIZE);
 
                 if (!cb) {
-                    JK_TRACE_EXIT(logger);
+                    JK_TRACE_EXIT(l);
                     return JK_FALSE;
                 }
                 cc.cbAllocated = AJP13_MAX_PACKET_SIZE;
@@ -3135,7 +3183,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                 if (private_data->lpEcb->ServerSupportFunction(private_data->lpEcb->ConnID,
                                           HSE_REQ_GET_CERT_INFO_EX,
                                           &cc, NULL, NULL) != FALSE) {
-                    jk_log(logger, JK_LOG_DEBUG,
+                    jk_log(l, JK_LOG_DEBUG,
                            "Client Certificate encoding:%d sz:%d flags:%ld",
                            cc.CertContext.
                            dwCertEncodingType & X509_ASN_ENCODING,
@@ -3152,7 +3200,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
 
     GET_SERVER_VARIABLE_VALUE(ALL_HEADERS, all_headers, NULL);
     if (!all_headers) {
-        JK_TRACE_EXIT(logger);
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     for (tmp = all_headers; *tmp; tmp++) {
@@ -3178,7 +3226,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
         s->headers_values = jk_pool_alloc(&private_data->p,
                                          (cnt + 1) * sizeof(char *));
         if (!s->headers_names || !s->headers_values) {
-            JK_TRACE_EXIT(logger);
+            JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
 
@@ -3210,8 +3258,8 @@ static int init_ws_service(isapi_private_data_t * private_data,
                  * read into the available buffer.
                  */
                 if (unknown_content_length || s->is_chunked) {
-                    if (JK_IS_DEBUG_LEVEL(logger)) {
-                        jk_log(logger, JK_LOG_DEBUG,
+                    if (JK_IS_DEBUG_LEVEL(l)) {
+                        jk_log(l, JK_LOG_DEBUG,
                                "Disregarding Content-Length in request - content is %s",
                                s->is_chunked ? "chunked" : "unknown length");
                     }
@@ -3264,8 +3312,8 @@ static int init_ws_service(isapi_private_data_t * private_data,
             }
 
             if (real_header) {
-                if (JK_IS_DEBUG_LEVEL(logger)) {
-                    jk_log(logger, JK_LOG_DEBUG, "Forwarding request header %s : %s",
+                if (JK_IS_DEBUG_LEVEL(l)) {
+                    jk_log(l, JK_LOG_DEBUG, "Forwarding request header %s : %s",
                            s->headers_names[i], s->headers_values[i]);
                 }
                 i++;
@@ -3276,8 +3324,8 @@ static int init_ws_service(isapi_private_data_t * private_data,
          * but non-zero length body.
          */
         if (need_content_length_header) {
-            if (JK_IS_DEBUG_LEVEL(logger)) {
-                jk_log(logger, JK_LOG_DEBUG, "Incoming request needs explicit Content-Length: 0 in AJP13");
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                jk_log(l, JK_LOG_DEBUG, "Incoming request needs explicit Content-Length: 0 in AJP13");
             }
             s->headers_names[cnt] = "Content-Length";
             s->headers_values[cnt] = "0";
@@ -3286,15 +3334,15 @@ static int init_ws_service(isapi_private_data_t * private_data,
         s->num_headers = cnt;
     }
     else {
-        JK_TRACE_EXIT(logger);
+        JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
 
     /* Dump all connection param so we can trace what's going to
      * the remote tomcat
      */
-    if (JK_IS_DEBUG_LEVEL(logger)) {
-        jk_log(logger, JK_LOG_DEBUG,
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        jk_log(l, JK_LOG_DEBUG,
                "Service protocol=%s method=%s host=%s addr=%s name=%s port=%d "
                "auth=%s user=%s uri=%s",
                STRNULL_FOR_NULL(s->protocol),
@@ -3306,7 +3354,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                STRNULL_FOR_NULL(s->auth_type),
                STRNULL_FOR_NULL(s->remote_user),
                STRNULL_FOR_NULL(s->req_uri));
-        jk_log(logger, JK_LOG_DEBUG,
+        jk_log(l, JK_LOG_DEBUG,
                "Service request headers=%d attributes=%d "
                "chunked=%s content-length=%" JK_UINT64_T_FMT " available=%u",
                s->num_headers,
@@ -3316,7 +3364,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
                private_data->lpEcb->cbTotalBytes);
     }
 
-    JK_TRACE_EXIT(logger);
+    JK_TRACE_EXIT(l);
     return JK_TRUE;
 }
 
