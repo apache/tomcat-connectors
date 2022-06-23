@@ -90,7 +90,6 @@
 
 #define JK_LOG_DEF_FILE             ("logs/mod_jk.log")
 #define JK_SHM_DEF_FILE             ("logs/jk-runtime-status")
-#define JK_ENV_REQUEST_ID           ("UNIQUE_ID")
 #define JK_ENV_REMOTE_ADDR          ("JK_REMOTE_ADDR")
 #define JK_ENV_REMOTE_PORT          ("JK_REMOTE_PORT")
 #define JK_ENV_REMOTE_HOST          ("JK_REMOTE_HOST")
@@ -198,7 +197,6 @@ typedef struct
      * request information using meta data send by a
      * proxy in front of us.
      */
-    char *request_id_indicator;
     char *remote_addr_indicator;
     char *remote_port_indicator;
     char *remote_host_indicator;
@@ -346,9 +344,9 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
                 jk_server_conf_t *xconf = (jk_server_conf_t *)
                                            ap_get_module_config(r->server->module_config,
                                                                 &jk_module);
-                jk_request_log(s, xconf->log, JK_LOG_INFO,
-                               "origin server sent 401 without"
-                               " WWW-Authenticate header");
+                jk_log(xconf->log, JK_LOG_INFO,
+                       "origin server sent 401 without"
+                       " WWW-Authenticate header");
             }
         }
         return JK_TRUE;
@@ -516,8 +514,8 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
 
             if (!s->response_started) {
                 if (main_log)
-                    jk_request_log(s, main_log, JK_LOG_INFO,
-                                   "Write without start, starting with defaults");
+                    jk_log(main_log, JK_LOG_INFO,
+                           "Write without start, starting with defaults");
                 if (!s->start_response(s, 200, NULL, NULL, NULL, 0)) {
                     return JK_FALSE;
                 }
@@ -542,8 +540,8 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
             while (ll > 0 && !p->r->connection->aborted) {
                 r = ap_rwrite(bb, ll, p->r);
                 if (JK_IS_DEBUG_LEVEL(main_log))
-                    jk_request_log(s, main_log, JK_LOG_DEBUG,
-                                   "written %d out of %d", r, ll);
+                    jk_log(main_log, JK_LOG_DEBUG,
+                           "written %d out of %d", r, ll);
 
                 if (r < 0)
                     return JK_FALSE;
@@ -823,8 +821,6 @@ static int init_ws_service(apache_private_data_t * private_data,
                                   conf->auth_type_indicator, 1);
     s->remote_user = get_env_string(r, r->user,
                                     conf->remote_user_indicator, 1);
-    s->request_id = get_env_string(r, s->request_id,
-                                   conf->request_id_indicator, 1);
 
     s->protocol = r->protocol;
     s->remote_host = (char *)ap_get_remote_host(r->connection,
@@ -1060,9 +1056,9 @@ static int init_ws_service(apache_private_data_t * private_data,
                 if (s->ssl_cert) {
                     s->ssl_cert_len = (unsigned int)strlen(s->ssl_cert);
                     if (JK_IS_DEBUG_LEVEL(conf->log)) {
-                        jk_request_log(s, conf->log, JK_LOG_DEBUG,
-                                       "SSL client certificate (%d bytes): %s",
-                                       s->ssl_cert_len, s->ssl_cert);
+                        jk_log(conf->log, JK_LOG_DEBUG,
+                               "SSL client certificate (%d bytes): %s",
+                               s->ssl_cert_len, s->ssl_cert);
                     }
                 }
                 s->ssl_protocol =
@@ -1179,26 +1175,26 @@ static int init_ws_service(apache_private_data_t * private_data,
      * the remote tomcat
      */
     if (JK_IS_DEBUG_LEVEL(conf->log)) {
-        jk_request_log(s, conf->log, JK_LOG_DEBUG,
-                       "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uaddr=%s uri=%s",
-                       STRNULL_FOR_NULL(s->protocol),
-                       STRNULL_FOR_NULL(s->method),
-                       s->is_ssl ? "true" : "false",
-                       STRNULL_FOR_NULL(s->remote_host),
-                       STRNULL_FOR_NULL(s->remote_addr),
-                       STRNULL_FOR_NULL(s->server_name),
-                       s->server_port,
-                       STRNULL_FOR_NULL(s->auth_type),
-                       STRNULL_FOR_NULL(s->remote_user),
-                       STRNULL_FOR_NULL(r->connection->local_ip),
+        jk_log(conf->log, JK_LOG_DEBUG,
+               "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uaddr=%s uri=%s",
+               STRNULL_FOR_NULL(s->protocol),
+               STRNULL_FOR_NULL(s->method),
+               s->is_ssl ? "true" : "false",
+               STRNULL_FOR_NULL(s->remote_host),
+               STRNULL_FOR_NULL(s->remote_addr),
+               STRNULL_FOR_NULL(s->server_name),
+               s->server_port,
+               STRNULL_FOR_NULL(s->auth_type),
+               STRNULL_FOR_NULL(s->remote_user),
+               STRNULL_FOR_NULL(r->connection->local_ip),
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20111130)
-                       STRNULL_FOR_NULL(r->connection->client_ip),
-                       STRNULL_FOR_NULL(r->useragent_ip),
+               STRNULL_FOR_NULL(r->connection->client_ip),
+               STRNULL_FOR_NULL(r->useragent_ip),
 #else
-                       STRNULL_FOR_NULL(r->connection->remote_ip),
-                       STRNULL_FOR_NULL(r->connection->remote_ip),
+               STRNULL_FOR_NULL(r->connection->remote_ip),
+               STRNULL_FOR_NULL(r->connection->remote_ip),
 #endif
-                       STRNULL_FOR_NULL(s->req_uri));
+               STRNULL_FOR_NULL(s->req_uri));
     }
 
     return JK_TRUE;
@@ -2012,7 +2008,6 @@ static const char *jk_set_worker_indicator(cmd_parms * cmd,
 /*
  * Directives Handling for setting various environment names
  * used to overwrite the following request information:
- * - request_id
  * - remote_addr
  * - remote_port
  * - remote_host
@@ -2021,16 +2016,6 @@ static const char *jk_set_worker_indicator(cmd_parms * cmd,
  * - server_name
  * - server_port
  */
-static const char *jk_set_request_id_indicator(cmd_parms * cmd,
-                                               void *dummy, const char *indicator)
-{
-    server_rec *s = cmd->server;
-    jk_server_conf_t *conf =
-        (jk_server_conf_t *) ap_get_module_config(s->module_config, &jk_module);
-    conf->request_id_indicator = apr_pstrdup(cmd->pool, indicator);
-    return NULL;
-}
-
 static const char *jk_set_remote_addr_indicator(cmd_parms * cmd,
                                                 void *dummy, const char *indicator)
 {
@@ -2566,7 +2551,6 @@ static const command_rec jk_cmds[] = {
     /*
      * Environment variables used to overwrite the following
      * request information which gets forwarded:
-     * - request_id
      * - remote_addr
      * - remote_port
      * - remote_host
@@ -2575,8 +2559,6 @@ static const command_rec jk_cmds[] = {
      * - server_name
      * - server_port
      */
-    AP_INIT_TAKE1("JkRequestIdIndicator", jk_set_request_id_indicator, NULL, RSRC_CONF,
-                  "Name of the Apache environment that contains the request id."),
     AP_INIT_TAKE1("JkRemoteAddrIndicator", jk_set_remote_addr_indicator, NULL, RSRC_CONF,
                   "Name of the Apache environment that contains the remote address"),
     AP_INIT_TAKE1("JkRemotePortIndicator", jk_set_remote_port_indicator, NULL, RSRC_CONF,
@@ -2802,7 +2784,7 @@ static int jk_handler(request_rec * r)
                     jk_log(xconf->log, JK_LOG_DEBUG,
                            "missing uri map for %s:%s",
                            xconf->s->server_hostname ? xconf->s->server_hostname : "_default_",
-                                   r->uri);
+                           r->uri);
             }
             else {
                 rule_extension_t *e;
@@ -2845,8 +2827,8 @@ static int jk_handler(request_rec * r)
     /* If this is a proxy request, we'll notify an error */
     if (r->proxyreq) {
         jk_log(xconf->log, JK_LOG_INFO, "Proxy request for worker=%s"
-               " is not allowed",
-               STRNULL_FOR_NULL(worker_name));
+              " is not allowed",
+              STRNULL_FOR_NULL(worker_name));
         JK_TRACE_EXIT(xconf->log);
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -2936,16 +2918,16 @@ static int jk_handler(request_rec * r)
                             }
                         }
                         if (JK_IS_DEBUG_LEVEL(xconf->log)) {
-                           jk_request_log(&s, xconf->log, JK_LOG_DEBUG,
-                                          "Consumed %d bytes of remaining request data for worker=%s",
-                                          consumed, STRNULL_FOR_NULL(worker_name));
+                           jk_log(xconf->log, JK_LOG_DEBUG,
+                                  "Consumed %d bytes of remaining request data for worker=%s",
+                                  consumed, STRNULL_FOR_NULL(worker_name));
                         }
                     }
                 }
                 else {            /* this means we couldn't get an endpoint */
-                    jk_request_log(&s, xconf->log, JK_LOG_ERROR, "Could not get endpoint"
-                                   " for worker=%s",
-                                   worker_name);
+                    jk_log(xconf->log, JK_LOG_ERROR, "Could not get endpoint"
+                           " for worker=%s",
+                           worker_name);
                     rc = 0;       /* just to make sure that we know we've failed */
                     is_error = HTTP_SERVICE_UNAVAILABLE;
                 }
@@ -2973,9 +2955,9 @@ static int jk_handler(request_rec * r)
                 if (s.extension.use_server_error_pages &&
                     s.http_response_status >= s.extension.use_server_error_pages) {
                     if (JK_IS_DEBUG_LEVEL(xconf->log))
-                        jk_request_log(&s, xconf->log, JK_LOG_DEBUG, "Forwarding status=%d"
-                                       " for worker=%s",
-                                       s.http_response_status, worker_name);
+                        jk_log(xconf->log, JK_LOG_DEBUG, "Forwarding status=%d"
+                               " for worker=%s",
+                               s.http_response_status, worker_name);
                     JK_TRACE_EXIT(xconf->log);
                     return s.http_response_status;
                 }
@@ -2983,32 +2965,32 @@ static int jk_handler(request_rec * r)
                    let apache handle the error code */
 
                 if (!r->sent_bodyct && r->status >= HTTP_BAD_REQUEST) {
-                    jk_request_log(&s, xconf->log, JK_LOG_INFO, "No body with status=%d"
-                                   " for worker=%s",
-                                   r->status, worker_name);
+                    jk_log(xconf->log, JK_LOG_INFO, "No body with status=%d"
+                           " for worker=%s",
+                           r->status, worker_name);
                     JK_TRACE_EXIT(xconf->log);
                     return r->status;
                 }
                 if (JK_IS_DEBUG_LEVEL(xconf->log))
-                    jk_request_log(&s, xconf->log, JK_LOG_DEBUG, "Service finished"
-                                   " with status=%d for worker=%s",
-                                   r->status, worker_name);
+                    jk_log(xconf->log, JK_LOG_DEBUG, "Service finished"
+                           " with status=%d for worker=%s",
+                           r->status, worker_name);
                 JK_TRACE_EXIT(xconf->log);
                 return OK;      /* NOT r->status, even if it has changed. */
             }
             else if (rc == JK_CLIENT_ERROR) {
                 if (is_error != HTTP_REQUEST_ENTITY_TOO_LARGE)
                     r->connection->aborted = 1;
-                jk_request_log(&s, xconf->log, JK_LOG_INFO, "Aborting connection"
-                               " for worker=%s",
-                               worker_name);
+                jk_log(xconf->log, JK_LOG_INFO, "Aborting connection"
+                       " for worker=%s",
+                       worker_name);
                 JK_TRACE_EXIT(xconf->log);
                 return is_error;
             }
             else {
-                jk_request_log(&s, xconf->log, JK_LOG_INFO, "Service error=%d"
-                               " for worker=%s",
-                               rc, worker_name);
+                jk_log(xconf->log, JK_LOG_INFO, "Service error=%d"
+                       " for worker=%s",
+                       rc, worker_name);
                 JK_TRACE_EXIT(xconf->log);
                 return is_error;
             }
@@ -3098,7 +3080,6 @@ static void *create_jk_config(apr_pool_t * p, server_rec * s)
          * request information using meta data send by a
          * proxy in front of us.
          */
-        c->request_id_indicator = JK_ENV_REQUEST_ID;
         c->remote_addr_indicator = JK_ENV_REMOTE_ADDR;
         c->remote_port_indicator = JK_ENV_REMOTE_PORT;
         c->remote_host_indicator = JK_ENV_REMOTE_HOST;
@@ -3178,8 +3159,6 @@ static void *merge_jk_config(apr_pool_t * p, void *basev, void *overridesv)
     if (!overrides->worker_indicator)
         overrides->worker_indicator = base->worker_indicator;
 
-    if (!overrides->request_id_indicator)
-        overrides->request_id_indicator = base->request_id_indicator;
     if (!overrides->remote_addr_indicator)
         overrides->remote_addr_indicator = base->remote_addr_indicator;
     if (!overrides->remote_port_indicator)

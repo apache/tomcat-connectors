@@ -42,19 +42,6 @@
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
   <changelog>
-    <fix>
-      IIS: Fix non-empty check for the Translate header. (rjung)
-    </fix>
-    <update>
-      Common: Add a request id to error log lines. To get a useful
-      request id for the Apache web server, mod_unique_id should
-      be loaded. Alternatively an externally provided request
-      id can be copied to some Apache environment variable and
-      the name of that variable provided to mod_jk using the configuration
-      directive "JkRequestIdIndicator".
-      The request id is not yet supported for IIS.
-      (rjung)
-    </update>
     <update>
       Remove support for the Netscape / Sun ONE / Oracle iPlanet Web Server as
       the product has been retired. (markt)

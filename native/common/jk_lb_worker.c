@@ -561,8 +561,8 @@ static char *get_sessionid(jk_ws_service_t *s, lb_worker_t *p, jk_logger_t *l)
          *       However we should probably return 400
          *       (BAD_REQUEST) in this case
          */
-        jk_request_log(s, l, JK_LOG_INFO,
-                       "Detected empty session identifier.");
+        jk_log(l, JK_LOG_INFO,
+               "Detected empty session identifier.");
         return NULL;
     }
     return val;
@@ -1063,7 +1063,7 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
     }
     if (p->lblock == JK_LB_LOCK_PESSIMISTIC) {
         if (!jk_shm_lock()) {
-            jk_request_log(s, l, JK_LOG_ERROR, "locking failed (errno=%d)", errno);
+            jk_log(l, JK_LOG_ERROR, "locking failed (errno=%d)", errno);
             JK_TRACE_EXIT(l);
             return -1;
         }
@@ -1079,17 +1079,17 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
             if (next)
                *next++ = '\0';
             if (JK_IS_DEBUG_LEVEL(l))
-                jk_request_log(s, l, JK_LOG_DEBUG,
-                               "searching worker for partial sessionid %s",
-                               sessionid);
+                jk_log(l, JK_LOG_DEBUG,
+                       "searching worker for partial sessionid %s",
+                       sessionid);
             session_route = strchr(sessionid, '.');
             if (session_route) {
                 ++session_route;
 
                 if (JK_IS_DEBUG_LEVEL(l))
-                    jk_request_log(s, l, JK_LOG_DEBUG,
-                                   "searching worker for session route %s",
-                                   session_route);
+                    jk_log(l, JK_LOG_DEBUG,
+                           "searching worker for session route %s",
+                           session_route);
 
                 /* We have a session route. Whow! */
                 rc = find_bysession_route(s, p, session_route, states, l);
@@ -1102,9 +1102,9 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
                         JK_LEAVE_CS(&p->cs);
                     }
                     if (JK_IS_DEBUG_LEVEL(l))
-                        jk_request_log(s, l, JK_LOG_DEBUG,
-                                       "found worker %s (%s) for route %s and partial sessionid %s",
-                                       wr->name, wr->route, session_route, sessionid);
+                        jk_log(l, JK_LOG_DEBUG,
+                               "found worker %s (%s) for route %s and partial sessionid %s",
+                               wr->name, wr->route, session_route, sessionid);
                     JK_TRACE_EXIT(l);
                     return rc;
                 }
@@ -1120,9 +1120,9 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
             else {
                 JK_LEAVE_CS(&p->cs);
             }
-            jk_request_log(s, l, JK_LOG_INFO,
-                           "all workers are in error state for session %s",
-                           session);
+            jk_log(l, JK_LOG_INFO,
+                   "all workers are in error state for session %s",
+                   session);
             JK_TRACE_EXIT(l);
             return -1;
         }
@@ -1137,9 +1137,9 @@ static int get_most_suitable_worker(jk_ws_service_t *s,
     if (rc >= 0) {
         lb_sub_worker_t *wr = &(p->lb_workers[rc]);
         if (JK_IS_DEBUG_LEVEL(l))
-            jk_request_log(s, l, JK_LOG_DEBUG,
-                           "found best worker %s (%s) using method '%s'",
-                           wr->name, wr->route, jk_lb_get_method(p, l));
+            jk_log(l, JK_LOG_DEBUG,
+                   "found best worker %s (%s) using method '%s'",
+                   wr->name, wr->route, jk_lb_get_method(p, l));
         JK_TRACE_EXIT(l);
         return rc;
     }
@@ -1231,17 +1231,16 @@ static int JK_METHOD service(jk_endpoint_t *e,
     for (i = 0; i < num_of_workers; i++) {
         lb_sub_worker_t *rec;
         ajp_worker_t *aw;
-        jk_request_log(s, l, JK_LOG_DEBUG, "LB - num_of_workers: %d, retry: %d, lb_retries: %d",
-                       num_of_workers, i, p->worker->lb_retries);
+        jk_log(l, JK_LOG_DEBUG, "LB - num_of_workers: %d, retry: %d, lb_retries: %d", num_of_workers, i, p->worker->lb_retries);
         rec = &(p->worker->lb_workers[i]);
         aw = (ajp_worker_t *)rec->worker->worker_private;
         if (rec->s->state == JK_LB_STATE_BUSY) {
             if ((aw->busy_limit <= 0 || aw->s->busy < aw->busy_limit) &&
                 ajp_has_endpoint(rec->worker, l)) {
                 if (JK_IS_DEBUG_LEVEL(l))
-                    jk_request_log(s, l, JK_LOG_DEBUG,
-                                   "worker %s busy state ended",
-                                   rec->name);
+                    jk_log(l, JK_LOG_DEBUG,
+                           "worker %s busy state ended",
+                           rec->name);
                 rec->s->state = JK_LB_STATE_OK;
             }
         }
@@ -1253,16 +1252,15 @@ static int JK_METHOD service(jk_endpoint_t *e,
     s->reco_buf = jk_b_new(s->pool);
     if (!s->reco_buf) {
         *is_error = JK_HTTP_SERVER_ERROR;
-        jk_request_log(s, l, JK_LOG_ERROR,
-                       "Failed allocating AJP message");
+        jk_log(l, JK_LOG_ERROR,
+               "Failed allocating AJP message");
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
     if (jk_b_set_buffer_size(s->reco_buf, p->worker->max_packet_size)) {
         *is_error = JK_HTTP_SERVER_ERROR;
-        jk_request_log(s, l, JK_LOG_ERROR,
-                       "Failed allocating AJP message buffer of %d bytes.",
-                       p->worker->max_packet_size);
+        jk_log(l, JK_LOG_ERROR,
+               "Failed allocating AJP message buffer of %d bytes.", p->worker->max_packet_size);
         JK_TRACE_EXIT(l);
         return JK_SERVER_ERROR;
     }
@@ -1276,14 +1274,14 @@ static int JK_METHOD service(jk_endpoint_t *e,
         sessionid = get_sessionid(s, p->worker, l);
     }
     if (JK_IS_DEBUG_LEVEL(l))
-        jk_request_log(s, l, JK_LOG_DEBUG,
-                       "service sticky_session=%d id='%s'",
-                       p->worker->sticky_session, sessionid ? sessionid : "empty");
+        jk_log(l, JK_LOG_DEBUG,
+               "service sticky_session=%d id='%s'",
+               p->worker->sticky_session, sessionid ? sessionid : "empty");
 
     while (recoverable == JK_TRUE) {
         if (JK_IS_DEBUG_LEVEL(l))
-            jk_request_log(s, l, JK_LOG_DEBUG, "attempt %d, max attempts %d, worker count %d",
-                            attempt, p->worker->lb_retries, num_of_workers);
+            jk_log(l, JK_LOG_DEBUG, "attempt %d, max attempts %d, worker count %d",
+                    attempt, p->worker->lb_retries, num_of_workers);
         if (attempt >= num_of_workers || attempt >= p->worker->lb_retries) {
             retry++;
             if (retry >= p->worker->retries) {
@@ -1291,9 +1289,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 break;
             }
             if (JK_IS_DEBUG_LEVEL(l))
-                jk_request_log(s, l, JK_LOG_DEBUG,
-                               "retry %d, sleeping for %d ms before retrying",
-                               retry, p->worker->retry_interval);
+                jk_log(l, JK_LOG_DEBUG,
+                       "retry %d, sleeping for %d ms before retrying",
+                       retry, p->worker->retry_interval);
             jk_sleep(p->worker->retry_interval);
             /* Pull shared memory if something changed during sleep */
             if (p->worker->sequence < p->worker->s->h.sequence)
@@ -1324,9 +1322,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
             prec = rec;
 
             if (JK_IS_DEBUG_LEVEL(l))
-                jk_request_log(s, l, JK_LOG_DEBUG,
-                               "service worker=%s route=%s failover=%s",
-                               rec->name, s->route, s->sticky ? "false" : "true");
+                jk_log(l, JK_LOG_DEBUG,
+                       "service worker=%s route=%s failover=%s",
+                       rec->name, s->route, s->sticky ? "false" : "true");
 
             if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                 jk_shm_lock();
@@ -1352,9 +1350,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 }
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                     jk_shm_unlock();
-                jk_request_log(s, l, JK_LOG_INFO,
-                               "could not get free endpoint for worker %s (%d retries)",
-                               rec->name, retry);
+                jk_log(l, JK_LOG_INFO,
+                       "could not get free endpoint for worker %s (%d retries)",
+                       rec->name, retry);
             }
             else {
                 int service_stat = JK_UNSET;
@@ -1389,8 +1387,8 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     s->resp_headers_values = jk_pool_alloc(s->pool,
                                                       (s->num_resp_headers + 1) * sizeof(char *));
                     if (!s->resp_headers_names || !s->resp_headers_values) {
-                        jk_request_log(s, l, JK_LOG_ERROR,
-                                       "Failed allocating %d new response headers.", s->num_resp_headers + 1);
+                        jk_log(l, JK_LOG_ERROR,
+                            "Failed allocating %d new response headers.", s->num_resp_headers + 1);
                         s->resp_headers_names = old_names;
                         s->resp_headers_values = old_values;
                     } else if (s->num_resp_headers) {
@@ -1411,9 +1409,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
                                                                                   (s->is_ssl ? ";Secure" : ""),
                                                                                   NULL);
                     if (JK_IS_DEBUG_LEVEL(l))
-                        jk_request_log(s, l, JK_LOG_DEBUG, "Added cookie header '%s' with value '%s' ",
-                                       s->resp_headers_names[s->num_resp_headers],
-                                       s->resp_headers_values[s->num_resp_headers]);
+                        jk_log(l, JK_LOG_DEBUG, "Added cookie header '%s' with value '%s' ",
+                               s->resp_headers_names[s->num_resp_headers],
+                               s->resp_headers_values[s->num_resp_headers]);
                     s->num_resp_headers++;
                 }
                 service_stat = end->service(end, s, l, &is_service_error);
@@ -1437,16 +1435,16 @@ static int JK_METHOD service(jk_endpoint_t *e,
                     else {
                         rec->s->lb_value = 0;
                         if (JK_IS_DEBUG_LEVEL(l)) {
-                            jk_request_log(s, l, JK_LOG_DEBUG,
-                                           "worker %s has load value to low (%"
-                                           JK_UINT64_T_FMT
-                                           " < %"
-                                           JK_UINT64_T_FMT
-                                           ") ",
-                                           "- correcting to 0",
-                                           rec->name,
-                                           rec->s->lb_value,
-                                           rec->lb_mult);
+                            jk_log(l, JK_LOG_DEBUG,
+                                   "worker %s has load value to low (%"
+                                   JK_UINT64_T_FMT
+                                   " < %"
+                                   JK_UINT64_T_FMT
+                                   ") ",
+                                   "- correcting to 0",
+                                   rec->name,
+                                   rec->s->lb_value,
+                                   rec->lb_mult);
                         }
                     }
                 }
@@ -1584,9 +1582,9 @@ static int JK_METHOD service(jk_endpoint_t *e,
                         (rec->s->first_error_time > 0 &&
                          (int)difftime(now, rec->s->first_error_time) >= p->worker->error_escalation_time)) {
                         if (JK_IS_DEBUG_LEVEL(l))
-                            jk_request_log(s, l, JK_LOG_DEBUG,
-                                           "worker %s escalating local error to global error",
-                                           rec->name);
+                            jk_log(l, JK_LOG_DEBUG,
+                                   "worker %s escalating local error to global error",
+                                   rec->name);
                         rec->s->state = JK_LB_STATE_ERROR;
                     }
                     p->states[rec->i] = JK_LB_STATE_ERROR;
@@ -1599,10 +1597,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 if (p->worker->lblock == JK_LB_LOCK_PESSIMISTIC)
                     jk_shm_unlock();
                 if (p->states[rec->i] == JK_LB_STATE_ERROR)
-                    jk_request_log(s, l, JK_LOG_INFO,
-                                   "service failed, worker %s is in %serror state",
-                                   rec->name,
-                                   rec->s->state == JK_LB_STATE_ERROR ? "" : "local ");
+                    jk_log(l, JK_LOG_INFO,
+                           "service failed, worker %s is in %serror state",
+                           rec->name,
+                           rec->s->state == JK_LB_STATE_ERROR ? "" : "local ");
             }
             if (recoverable == JK_TRUE) {
                 /*
@@ -1610,25 +1608,25 @@ static int JK_METHOD service(jk_endpoint_t *e,
                  * another worker... Lets try to do that.
                  */
                 if (JK_IS_DEBUG_LEVEL(l))
-                    jk_request_log(s, l, JK_LOG_DEBUG,
-                                   "recoverable error... will try to recover on other worker");
+                    jk_log(l, JK_LOG_DEBUG,
+                           "recoverable error... will try to recover on other worker");
             }
             else {
                 /*
                  * Error is not recoverable - break with an error.
                  */
                 if (rc == JK_CLIENT_ERROR)
-                    jk_request_log(s, l, JK_LOG_INFO,
-                                   "unrecoverable error %d, request failed."
-                                   " Client failed in the middle of request,"
-                                   " we can't recover to another instance.",
-                                   *is_error);
+                    jk_log(l, JK_LOG_INFO,
+                           "unrecoverable error %d, request failed."
+                           " Client failed in the middle of request,"
+                           " we can't recover to another instance.",
+                           *is_error);
                 else if (rc != JK_TRUE)
-                    jk_request_log(s, l, JK_LOG_ERROR,
-                                   "unrecoverable error %d, request failed."
-                                   " Tomcat failed in the middle of request,"
-                                   " we can't recover to another instance.",
-                                   *is_error);
+                    jk_log(l, JK_LOG_ERROR,
+                           "unrecoverable error %d, request failed."
+                           " Tomcat failed in the middle of request,"
+                           " we can't recover to another instance.",
+                           *is_error);
             }
             if (first == 1 && s->add_log_items) {
                 first = 0;
@@ -1651,27 +1649,27 @@ static int JK_METHOD service(jk_endpoint_t *e,
                      * Reset the service loop and go again
                      */
                     prec = NULL;
-                    jk_request_log(s, l, JK_LOG_INFO,
-                                   "Forcing recovery once for %d workers", nf);
+                    jk_log(l, JK_LOG_INFO,
+                           "Forcing recovery once for %d workers", nf);
                     continue;
                 }
                 else {
                     /* No workers in error state.
                      * Somebody set them all to disabled?
                      */
-                    jk_request_log(s,l, JK_LOG_INFO,
-                                   "All tomcat instances failed, no more workers "
-                                   "left for recovery (attempt=%d, retry=%d)",
-                                   attempt + 1, retry);
+                    jk_log(l, JK_LOG_INFO,
+                           "All tomcat instances failed, no more workers "
+                           "left for recovery (attempt=%d, retry=%d)",
+                           attempt + 1, retry);
                     *is_error = JK_HTTP_SERVER_BUSY;
                     rc = JK_FALSE;
                 }
             }
             else {
-                jk_request_log(s,l, JK_LOG_INFO,
-                               "All tomcat instances failed, no more workers "
-                               "left (attempt=%d, retry=%d)",
-                               attempt + 1, retry);
+                jk_log(l, JK_LOG_INFO,
+                       "All tomcat instances failed, no more workers "
+                       "left (attempt=%d, retry=%d)",
+                       attempt + 1, retry);
                 *is_error = JK_HTTP_SERVER_BUSY;
                 rc = JK_FALSE;
             }
@@ -1679,13 +1677,13 @@ static int JK_METHOD service(jk_endpoint_t *e,
         attempt++;
     }
     if (recoverable == JK_TRUE) {
-        jk_request_log(s,l, JK_LOG_INFO,
-                       "All tomcat instances are busy or in error state");
+        jk_log(l, JK_LOG_INFO,
+               "All tomcat instances are busy or in error state");
         /* rc and http error must be set above */
     }
     if (rc == JK_FALSE) {
-        jk_request_log(s,l, JK_LOG_ERROR,
-                       "All tomcat instances failed, no more workers left");
+        jk_log(l, JK_LOG_ERROR,
+               "All tomcat instances failed, no more workers left");
     }
     if (prec && s->add_log_items) {
         lb_add_log_items(s, lb_last_log_names, prec, l);

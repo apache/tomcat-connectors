@@ -337,15 +337,6 @@ to add <code>SSLOptions +ExportCertData</code>.
   environment variables or as request headers.
 </p>
 </attribute>
-<attribute name="JkRequestIdIndicator" required="false"><p>
-Name of the Apache environment variable that contains a unique request id.
-The value of the environment variable will be added to most mod_jk error
-log lines and allows easy correlation with Apache logs by adding that
-environment variable there as well.
-<br/>
-The default value is "UNIQUE_ID". Loading the module "mod_unique_id"
-will automatically provide a unique request id under that name.
-</p></attribute>
 <attribute name="JkHTTPSIndicator" required="false"><p>
 Name of the Apache environment variable that contains SSL indication.
 <br/>

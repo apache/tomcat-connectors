@@ -53,11 +53,9 @@ int jk_attach_file_logger(jk_logger_t **l, int fd, int level);
 
 int jk_close_file_logger(jk_logger_t **l);
 
-int jk_request_log(jk_ws_service_t *s, jk_logger_t *l,
-                   const char *file, int line, const char *funcname, int level,
-                   const char *fmt, ...);
-
-#define jk_log(...) jk_request_log(NULL, __VA_ARGS__)
+int jk_log(jk_logger_t *l,
+           const char *file, int line, const char *funcname, int level,
+           const char *fmt, ...);
 
 int jk_check_attribute_length(const char *name, const char *value,
                               jk_logger_t *l);

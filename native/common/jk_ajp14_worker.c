@@ -53,7 +53,7 @@ static int handle_discovery(ajp_endpoint_t * ae,
 
     jk_log(l, JK_LOG_DEBUG, "send query");
 
-    if (ajp_connection_tcp_send_message(NULL, ae, msg, l) != JK_TRUE) {
+    if (ajp_connection_tcp_send_message(ae, msg, l) != JK_TRUE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -61,7 +61,7 @@ static int handle_discovery(ajp_endpoint_t * ae,
 
     jk_b_reset(msg);
 
-    if (ajp_connection_tcp_get_message(NULL, ae, msg, l) != JK_TRUE) {
+    if (ajp_connection_tcp_get_message(ae, msg, l) != JK_TRUE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -151,7 +151,7 @@ static int handle_logon(ajp_endpoint_t * ae,
 
     jk_log(l, JK_LOG_DEBUG, "send init");
 
-    if (ajp_connection_tcp_send_message(NULL, ae, msg, l) != JK_TRUE) {
+    if (ajp_connection_tcp_send_message(ae, msg, l) != JK_TRUE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -159,7 +159,7 @@ static int handle_logon(ajp_endpoint_t * ae,
 
     jk_b_reset(msg);
 
-    if (ajp_connection_tcp_get_message(NULL, ae, msg, l) != JK_TRUE) {
+    if (ajp_connection_tcp_get_message(ae, msg, l) != JK_TRUE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -184,13 +184,13 @@ static int handle_logon(ajp_endpoint_t * ae,
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    if (ajp_connection_tcp_send_message(NULL, ae, msg, l) != JK_TRUE) {
+    if (ajp_connection_tcp_send_message(ae, msg, l) != JK_TRUE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
     jk_b_reset(msg);
 
-    if (ajp_connection_tcp_get_message(NULL, ae, msg, l) != JK_TRUE) {
+    if (ajp_connection_tcp_get_message(ae, msg, l) != JK_TRUE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -331,7 +331,7 @@ static int JK_METHOD init(jk_worker_t *pThis,
     }
     ae = je->endpoint_private;
 
-    if (ajp_connect_to_endpoint(NULL, ae, l) == JK_TRUE) {
+    if (ajp_connect_to_endpoint(ae, l) == JK_TRUE) {
 
         /* connection stage passed - try to get context info
          * this is the long awaited autoconf feature :)
