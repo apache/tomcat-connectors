@@ -42,6 +42,9 @@
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
   <changelog>
+    <fix>
+      IIS: Fix non-empty check for the Translate header. (rjung)
+    </fix>
     <update>
       Remove support for the Netscape / Sun ONE / Oracle iPlanet Web Server as
       the product has been retired. (markt)
