@@ -344,7 +344,8 @@ void wc_maintain(jk_log_context_t *l)
         last_maintain = time(NULL);
         JK_LEAVE_CS(&worker_lock);
 
-        needs_global_maintenance = jk_shm_check_maintain(last_maintain - worker_maintain_time);
+        needs_global_maintenance =
+            jk_shm_check_maintain(last_maintain - worker_maintain_time);
         for (i = 0; i < sz; i++) {
             jk_worker_t *w = jk_map_value_at(worker_map, i);
             if (w && w->maintain) {

@@ -116,17 +116,21 @@ const char *jk_get_worker_route(jk_map_t *m, const char *wname, const char *def)
 
 const char *jk_get_worker_domain(jk_map_t *m, const char *wname, const char *def);
 
-const char *jk_get_worker_redirect(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_worker_redirect(jk_map_t *m, const char *wname,
+                                   const char *def);
 
 const char *jk_get_worker_secret_key(jk_map_t *m, const char *wname);
 
-const char *jk_get_lb_session_cookie(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_lb_session_cookie(jk_map_t *m, const char *wname,
+                                     const char *def);
 
-const char *jk_get_lb_session_path(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_lb_session_path(jk_map_t *m, const char *wname,
+                                   const char *def);
 
 int jk_get_lb_set_session_cookie(jk_map_t *m, const char *wname, int def);
 
-const char *jk_get_lb_session_cookie_path(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_lb_session_cookie_path(jk_map_t *m, const char *wname,
+                                          const char *def);
 
 int jk_get_worker_retries(jk_map_t *m, const char *wname, int def);
 
@@ -213,7 +217,8 @@ int jk_get_worker_maintain_time(jk_map_t *m);
 
 int jk_get_max_packet_size(jk_map_t *m, const char *wname);
 
-const char *jk_get_worker_style_sheet(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_worker_style_sheet(jk_map_t *m, const char *wname,
+                                      const char *def);
 
 int jk_get_is_read_only(jk_map_t *m, const char *wname);
 
@@ -229,13 +234,16 @@ int jk_get_worker_bad_rating(jk_map_t *m,
                              const char *wname,
                              char ***list, unsigned int *num);
 
-const char *jk_get_worker_name_space(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_worker_name_space(jk_map_t *m, const char *wname,
+                                     const char *def);
 
 const char *jk_get_worker_xmlns(jk_map_t *m, const char *wname, const char *def);
 
-const char *jk_get_worker_xml_doctype(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_worker_xml_doctype(jk_map_t *m, const char *wname,
+                                      const char *def);
 
-const char *jk_get_worker_prop_prefix(jk_map_t *m, const char *wname, const char *def);
+const char *jk_get_worker_prop_prefix(jk_map_t *m, const char *wname,
+                                      const char *def);
 
 int jk_get_worker_fail_on_status(jk_map_t *m, const char *wname,
                                  int **list, unsigned int *list_size);
@@ -249,7 +257,8 @@ int jk_wildchar_match(const char *str, const char *exp, int icase);
 
 int jk_servlet_normalize(char *path, jk_log_context_t *log_ctx);
 
-int jk_strip_session_id(char* path, char* session_name, jk_log_context_t *log_ctx);
+int jk_strip_session_id(char* path, char* session_name,
+                        jk_log_context_t *log_ctx);
 
 #define JK_NORMALIZE_BAD_PATH   -1
 #define JK_NORMALIZE_TRAVERSAL  -2

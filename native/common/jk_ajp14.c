@@ -54,7 +54,8 @@ void ajp14_compute_md5(jk_login_service_t *s, jk_log_context_t *l)
  */
 
 int ajp14_marshal_login_init_into_msgb(jk_msg_buf_t *msg,
-                                       jk_login_service_t *s, jk_log_context_t *l)
+                                       jk_login_service_t *s,
+                                       jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
     /* To be on the safe side */
@@ -126,7 +127,8 @@ int ajp14_unmarshal_login_seed(jk_msg_buf_t *msg,
  */
 
 int ajp14_marshal_login_comp_into_msgb(jk_msg_buf_t *msg,
-                                       jk_login_service_t *s, jk_log_context_t *l)
+                                       jk_login_service_t *s,
+                                       jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -192,7 +194,8 @@ int ajp14_unmarshal_log_ok(jk_msg_buf_t *msg,
         return JK_FALSE;
     }
 
-    if (s->servlet_engine_name) /* take care of removing previously allocated data */
+    /* take care of removing previously allocated data */
+    if (s->servlet_engine_name)
         free(s->servlet_engine_name);
 
     s->servlet_engine_name = strdup(sname);
@@ -250,7 +253,8 @@ int ajp14_unmarshal_log_nok(jk_msg_buf_t *msg, jk_log_context_t *l)
  */
 
 int ajp14_marshal_shutdown_into_msgb(jk_msg_buf_t *msg,
-                                     jk_login_service_t *s, jk_log_context_t *l)
+                                     jk_login_service_t *s,
+                                     jk_log_context_t *l)
 {
 
     JK_TRACE_ENTER(l);
@@ -319,7 +323,8 @@ int ajp14_unmarshal_shutdown_nok(jk_msg_buf_t *msg, jk_log_context_t *l)
  */
 
 int ajp14_marshal_unknown_packet_into_msgb(jk_msg_buf_t *msg,
-                                           jk_msg_buf_t *unk, jk_log_context_t *l)
+                                           jk_msg_buf_t *unk,
+                                           jk_log_context_t *l)
 {
     JK_TRACE_ENTER(l);
 
@@ -341,8 +346,8 @@ int ajp14_marshal_unknown_packet_into_msgb(jk_msg_buf_t *msg,
         return JK_FALSE;
     }
     /*
-     * UNHANDLED MESSAGE (Question : Did we have to send all the message or only part of)
-     *                                       (ie: only 1k max)
+     * UNHANDLED MESSAGE (Question : Did we have to send all the message
+     * or only part of) (ie: only 1k max)
      */
     if (jk_b_append_bytes(msg, unk->buf, unk->len)) {
         jk_log(l, JK_LOG_ERROR,
@@ -505,7 +510,8 @@ int ajp14_unmarshal_context_info(jk_msg_buf_t *msg,
 /*
  * Build the Context State Query Cmd
  *
- * We send the list of contexts where we want to know state, empty string end context list*
+ * We send the list of contexts where we want to know state,
+ * empty string ends context list
  * If cname is set, only ask about THIS context
  *
  * +----------------------------+----------------------------------+----------------------------+----+

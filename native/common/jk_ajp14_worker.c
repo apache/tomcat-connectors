@@ -111,7 +111,8 @@ static int handle_discovery(ajp_endpoint_t * ae,
                    "worker %s will handle uri %s in context %s [%s]",
                    ae->worker->name, ci->uris[j], ci->cbase, buf);
 
-            uri_worker_map_add(we->uri_to_worker, buf, ae->worker->name, SOURCE_TYPE_DISCOVER, l);
+            uri_worker_map_add(we->uri_to_worker, buf, ae->worker->name,
+                               SOURCE_TYPE_DISCOVER, l);
         }
     }
 

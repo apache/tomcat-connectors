@@ -174,14 +174,17 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
     if (uw_map) {
         int i, off;
         if (JK_IS_DEBUG_LEVEL(l)) {
-            jk_log(l, JK_LOG_DEBUG, "uri map dump %s: id=%d, index=%d file='%s' reject_unsafe=%d "
-                   "reload=%d modified=%d checked=%d",
-                   reason, uw_map->id, uw_map->index, STRNULL_FOR_NULL(uw_map->fname),
-                   uw_map->reject_unsafe, uw_map->reload, uw_map->modified, uw_map->checked);
+            jk_log(l, JK_LOG_DEBUG, "uri map dump %s: id=%d, index=%d file='%s' "
+                   "reject_unsafe=%d reload=%d modified=%d checked=%d",
+                   reason, uw_map->id, uw_map->index,
+                   STRNULL_FOR_NULL(uw_map->fname),
+                   uw_map->reject_unsafe, uw_map->reload, uw_map->modified,
+                   uw_map->checked);
         }
         for (i = 0; i <= 1; i++) {
             jk_log(l, JK_LOG_DEBUG, "generation %d: size=%d nosize=%d capacity=%d",
-                   i, uw_map->size[i], uw_map->nosize[i], uw_map->capacity[i], uw_map->maps[i]);
+                   i, uw_map->size[i], uw_map->nosize[i], uw_map->capacity[i],
+                   uw_map->maps[i]);
         }
 
         off = uw_map->index;
@@ -193,12 +196,15 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
             for (j = 0; j < uw_map->size[k]; j++) {
                 uri_worker_record_t *uwr = uw_map->maps[k][j];
                 if (uwr && JK_IS_DEBUG_LEVEL(l)) {
-                    jk_log(l, JK_LOG_DEBUG, "%s (%d) map #%d: uri=%s worker=%s context=%s "
-                           "source=%s type=%s len=%d",
+                    jk_log(l, JK_LOG_DEBUG, "%s (%d) map #%d: uri=%s worker=%s "
+                           "context=%s source=%s type=%s len=%d",
                            i ? "NEXT" : "THIS", i, j,
-                           STRNULL_FOR_NULL(uwr->uri), STRNULL_FOR_NULL(uwr->worker_name),
-                           STRNULL_FOR_NULL(uwr->context), STRNULL_FOR_NULL(uri_worker_map_get_source(uwr)),
-                           STRNULL_FOR_NULL(uri_worker_map_get_match(uwr, buf)), uwr->context_len);
+                           STRNULL_FOR_NULL(uwr->uri),
+                           STRNULL_FOR_NULL(uwr->worker_name),
+                           STRNULL_FOR_NULL(uwr->context),
+                           STRNULL_FOR_NULL(uri_worker_map_get_source(uwr)),
+                           STRNULL_FOR_NULL(uri_worker_map_get_match(uwr, buf)),
+                           uwr->context_len);
                 }
             }
         }
@@ -233,7 +239,8 @@ int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map_p,
                      uw_map->buf, sizeof(jk_pool_atom_t) * BIG_POOL_SIZE);
         for (i = 0; i <= 1; i++) {
             jk_open_pool(&(uw_map->p_dyn[i]),
-                         uw_map->buf_dyn[i], sizeof(jk_pool_atom_t) * BIG_POOL_SIZE);
+                         uw_map->buf_dyn[i],
+                         sizeof(jk_pool_atom_t) * BIG_POOL_SIZE);
             uw_map->size[i] = 0;
             uw_map->nosize[i] = 0;
             uw_map->capacity[i] = 0;
@@ -344,9 +351,10 @@ static int uri_worker_map_clear(jk_uri_worker_map_t *uw_map,
     JK_TRACE_ENTER(l);
 
     IND_NEXT(uw_map->maps) =
-            (uri_worker_record_t **) jk_pool_alloc(&(IND_NEXT(uw_map->p_dyn)),
-                                                   sizeof(uri_worker_record_t
-                                                          *) * IND_THIS(uw_map->size));
+            (uri_worker_record_t **)
+                jk_pool_alloc(&(IND_NEXT(uw_map->p_dyn)),
+                              sizeof(uri_worker_record_t *) *
+                              IND_THIS(uw_map->size));
     IND_NEXT(uw_map->capacity) = IND_THIS(uw_map->size);
     IND_NEXT(uw_map->size) = 0;
     IND_NEXT(uw_map->nosize) = 0;
@@ -356,7 +364,8 @@ static int uri_worker_map_clear(jk_uri_worker_map_t *uw_map,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "deleting map rule '%s=%s' source '%s'",
-                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
+                       uwr->context, uwr->worker_name,
+                       uri_worker_map_get_source(uwr));
         }
         else {
             IND_NEXT(uw_map->maps)[new_size] = uwr;
@@ -443,8 +452,8 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
     extensions->fail_on_status_size = cnt;
 
     status = jk_pool_strdup(p, extensions->fail_on_status_str);
-    extensions->fail_on_status = (int *)jk_pool_alloc(p,
-                                            extensions->fail_on_status_size * sizeof(int));
+    extensions->fail_on_status =
+        (int *)jk_pool_alloc(p, extensions->fail_on_status_size * sizeof(int));
     if (!extensions->fail_on_status) {
         jk_log(l, JK_LOG_ERROR,
                "can't alloc extensions fail_on_status list for worker (%s)",
@@ -476,8 +485,10 @@ static void extension_fix_fail_on_status(jk_pool_t *p,
 
 }
 
-static int extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t *jw,
-                                    rule_extension_t *extensions, jk_log_context_t *l)
+static int extension_fix_activation(jk_pool_t *p, const char *name,
+                                    jk_worker_t *jw,
+                                    rule_extension_t *extensions,
+                                    jk_log_context_t *l)
 {
 
     JK_TRACE_ENTER(l);
@@ -493,8 +504,9 @@ static int extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t 
         lb_worker_t *lb = (lb_worker_t *)jw->worker_private;
         if (!extensions->activation) {
             extensions->activation_size = lb->num_of_workers;
-            extensions->activation = (int *)jk_pool_alloc(p,
-                                                    extensions->activation_size * sizeof(int));
+            extensions->activation =
+                (int *)jk_pool_alloc(p,
+                                     extensions->activation_size * sizeof(int));
             if (!extensions->activation) {
                 jk_log(l, JK_LOG_ERROR,
                        "can't alloc extensions activation list");
@@ -542,8 +554,10 @@ static int extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t 
     return JK_TRUE;
 }
 
-static void extension_fix_session(jk_pool_t *p, const char *name, jk_worker_t *jw,
-                                  rule_extension_t *extensions, jk_log_context_t *l)
+static void extension_fix_session(jk_pool_t *p, const char *name,
+                                  jk_worker_t *jw,
+                                  rule_extension_t *extensions,
+                                  jk_log_context_t *l)
 {
     if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie) {
         jk_log(l, JK_LOG_WARNING,
@@ -667,14 +681,19 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
 #endif
     if (param) {
 #ifdef _MT_CODE_PTHREAD
-        for (param = strtok_r(NULL, ";", &lasts); param; param = strtok_r(NULL, ";", &lasts)) {
+        for (param = strtok_r(NULL, ";", &lasts); param;
+             param = strtok_r(NULL, ";", &lasts)) {
 #else
-        for (param = strtok(NULL, ";"); param; param = strtok(NULL, ";")) {
+        for (param = strtok(NULL, ";"); param;
+             param = strtok(NULL, ";")) {
 #endif
-            if (!strncmp(param, JK_UWMAP_EXTENSION_REPLY_TIMEOUT, strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT))) {
-                extensions->reply_timeout = atoi(param + strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT));
+            if (!strncmp(param, JK_UWMAP_EXTENSION_REPLY_TIMEOUT,
+                         strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT))) {
+                extensions->reply_timeout =
+                    atoi(param + strlen(JK_UWMAP_EXTENSION_REPLY_TIMEOUT));
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_STICKY_IGNORE, strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_STICKY_IGNORE,
+                              strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE))) {
                 int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STICKY_IGNORE));
                 if (val) {
                     extensions->sticky_ignore = JK_TRUE;
@@ -683,7 +702,8 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
                     extensions->sticky_ignore = JK_FALSE;
                 }
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_STATELESS, strlen(JK_UWMAP_EXTENSION_STATELESS))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_STATELESS,
+                              strlen(JK_UWMAP_EXTENSION_STATELESS))) {
                 int val = atoi(param + strlen(JK_UWMAP_EXTENSION_STATELESS));
                 if (val) {
                     extensions->stateless = JK_TRUE;
@@ -692,48 +712,67 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
                     extensions->stateless = JK_FALSE;
                 }
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_USE_SRV_ERRORS, strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS))) {
-                extensions->use_server_error_pages = atoi(param + strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS));
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_USE_SRV_ERRORS,
+                              strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS))) {
+                extensions->use_server_error_pages =
+                    atoi(param + strlen(JK_UWMAP_EXTENSION_USE_SRV_ERRORS));
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_ACTIVE, strlen(JK_UWMAP_EXTENSION_ACTIVE))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_ACTIVE,
+                              strlen(JK_UWMAP_EXTENSION_ACTIVE))) {
                 if (extensions->active)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '" JK_UWMAP_EXTENSION_ACTIVE "' only allowed once");
+                           "rule extension '" JK_UWMAP_EXTENSION_ACTIVE
+                           "' only allowed once");
                 else
-                    extensions->active = param + strlen(JK_UWMAP_EXTENSION_ACTIVE);
+                    extensions->active = param +
+                                         strlen(JK_UWMAP_EXTENSION_ACTIVE);
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_DISABLED, strlen(JK_UWMAP_EXTENSION_DISABLED))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_DISABLED,
+                              strlen(JK_UWMAP_EXTENSION_DISABLED))) {
                 if (extensions->disabled)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '" JK_UWMAP_EXTENSION_DISABLED "' only allowed once");
+                           "rule extension '" JK_UWMAP_EXTENSION_DISABLED
+                           "' only allowed once");
                 else
-                    extensions->disabled = param + strlen(JK_UWMAP_EXTENSION_DISABLED);
+                    extensions->disabled = param +
+                                           strlen(JK_UWMAP_EXTENSION_DISABLED);
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_STOPPED, strlen(JK_UWMAP_EXTENSION_STOPPED))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_STOPPED,
+                              strlen(JK_UWMAP_EXTENSION_STOPPED))) {
                 if (extensions->stopped)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '" JK_UWMAP_EXTENSION_STOPPED "' only allowed once");
+                           "rule extension '" JK_UWMAP_EXTENSION_STOPPED
+                           "' only allowed once");
                 else
-                    extensions->stopped = param + strlen(JK_UWMAP_EXTENSION_STOPPED);
+                    extensions->stopped = param +
+                                          strlen(JK_UWMAP_EXTENSION_STOPPED);
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_FAIL_ON_STATUS, strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_FAIL_ON_STATUS,
+                              strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS))) {
                 if (extensions->fail_on_status_str)
                     jk_log(l, JK_LOG_WARNING,
-                           "rule extension '" JK_UWMAP_EXTENSION_FAIL_ON_STATUS "' only allowed once");
+                           "rule extension '" JK_UWMAP_EXTENSION_FAIL_ON_STATUS
+                           "' only allowed once");
                 else
-                    extensions->fail_on_status_str = param + strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
+                    extensions->fail_on_status_str =
+                        param + strlen(JK_UWMAP_EXTENSION_FAIL_ON_STATUS);
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE, strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE,
+                              strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE))) {
                 if (extensions->session_cookie)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '" JK_UWMAP_EXTENSION_SESSION_COOKIE "' in uri worker map only allowed once");
+                           "extension '" JK_UWMAP_EXTENSION_SESSION_COOKIE
+                           "' in uri worker map only allowed once");
                 else
-                    extensions->session_cookie = param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE);
+                    extensions->session_cookie =
+                        param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE);
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_PATH, strlen(JK_UWMAP_EXTENSION_SESSION_PATH))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_PATH,
+                              strlen(JK_UWMAP_EXTENSION_SESSION_PATH))) {
                 if (extensions->session_path)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '" JK_UWMAP_EXTENSION_SESSION_PATH "' in uri worker map only allowed once");
+                           "extension '" JK_UWMAP_EXTENSION_SESSION_PATH
+                           "' in uri worker map only allowed once");
                 else {
                     // Check if the session identifier starts with semicolon.
                     if (!strcmp(param, JK_UWMAP_EXTENSION_SESSION_PATH)) {
@@ -744,15 +783,19 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
 #endif
                         extensions->session_path = param;
                     } else
-                        extensions->session_path = param + strlen(JK_UWMAP_EXTENSION_SESSION_PATH);
+                        extensions->session_path =
+                            param + strlen(JK_UWMAP_EXTENSION_SESSION_PATH);
                 }
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_SET_SESSION_COOKIE, strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SET_SESSION_COOKIE,
+                              strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE))) {
                 if (extensions->set_session_cookie)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '" JK_UWMAP_EXTENSION_SET_SESSION_COOKIE "' in uri worker map only allowed once");
+                           "extension '" JK_UWMAP_EXTENSION_SET_SESSION_COOKIE
+                           "' in uri worker map only allowed once");
                 else {
-                    int val = atoi(param + strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE));
+                    int val = atoi(param +
+                                   strlen(JK_UWMAP_EXTENSION_SET_SESSION_COOKIE));
                     if (val) {
                         extensions->set_session_cookie = JK_TRUE;
                     }
@@ -761,12 +804,15 @@ void parse_rule_extensions(char *rule, rule_extension_t *extensions,
                     }
                 }
             }
-            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH, strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH))) {
+            else if (!strncmp(param, JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH,
+                              strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH))) {
                 if (extensions->session_cookie_path)
                     jk_log(l, JK_LOG_WARNING,
-                           "extension '" JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH "' in uri worker map only allowed once");
+                           "extension '" JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH
+                           "' in uri worker map only allowed once");
                 else
-                    extensions->session_cookie_path = param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH);
+                    extensions->session_cookie_path =
+                        param + strlen(JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH);
             }
             else {
                 jk_log(l, JK_LOG_WARNING,
@@ -846,7 +892,8 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "wildchar rule '%s=%s' source '%s' was added",
-                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
+                       uwr->context, uwr->worker_name,
+                       uri_worker_map_get_source(uwr));
 
         }
         else {
@@ -855,7 +902,8 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "exact rule '%s=%s' source '%s' was added",
-                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
+                       uwr->context, uwr->worker_name,
+                       uri_worker_map_get_source(uwr));
         }
     }
     else {
@@ -915,7 +963,8 @@ int uri_worker_map_open(jk_uri_worker_map_t *uw_map,
                     s = strchr(r, '|');
                     *(s++) = '\0';
                     /* Add first mapping */
-                    if (!uri_worker_map_add(uw_map, r, w, SOURCE_TYPE_JKMOUNT, l)) {
+                    if (!uri_worker_map_add(uw_map, r, w,
+                                            SOURCE_TYPE_JKMOUNT, l)) {
                         jk_log(l, JK_LOG_ERROR,
                                "invalid mapping rule %s->%s", r, w);
                         rc = JK_FALSE;
@@ -924,14 +973,16 @@ int uri_worker_map_open(jk_uri_worker_map_t *uw_map,
                         *(s - 1) = *s;
                     *(s - 1) = '\0';
                     /* add second mapping */
-                    if (!uri_worker_map_add(uw_map, r, w, SOURCE_TYPE_JKMOUNT, l)) {
+                    if (!uri_worker_map_add(uw_map, r, w,
+                                            SOURCE_TYPE_JKMOUNT, l)) {
                         jk_log(l, JK_LOG_ERROR,
                                "invalid mapping rule %s->%s", r, w);
                         rc = JK_FALSE;
                     }
                     free(r);
                 }
-                else if (!uri_worker_map_add(uw_map, u, w, SOURCE_TYPE_JKMOUNT, l)) {
+                else if (!uri_worker_map_add(uw_map, u, w,
+                                             SOURCE_TYPE_JKMOUNT, l)) {
                     jk_log(l, JK_LOG_ERROR,
                            "invalid mapping rule %s->%s",
                            u, w);
@@ -974,8 +1025,10 @@ static int find_match(jk_uri_worker_map_t *uw_map,
             continue;
 
         if (JK_IS_DEBUG_LEVEL(l))
-            jk_log(l, JK_LOG_DEBUG, "Attempting to map context URI '%s=%s' source '%s'",
-                   uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
+            jk_log(l, JK_LOG_DEBUG, "Attempting to map context URI '%s=%s' "
+                   "source '%s'",
+                   uwr->context, uwr->worker_name,
+                   uri_worker_map_get_source(uwr));
 
         if (uwr->match_type & MATCH_TYPE_WILDCHAR_PATH) {
             /* Map is already sorted by context_len */
@@ -1042,7 +1095,8 @@ static int is_nomatch(jk_uri_worker_map_t *uw_map,
                     if (JK_IS_DEBUG_LEVEL(l))
                         jk_log(l, JK_LOG_DEBUG,
                                "Found a wildchar no match '%s=%s' source '%s'",
-                               uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
+                               uwr->context, uwr->worker_name,
+                               uri_worker_map_get_source(uwr));
                     JK_TRACE_EXIT(l);
                     return JK_TRUE;
              }
@@ -1052,7 +1106,8 @@ static int is_nomatch(jk_uri_worker_map_t *uw_map,
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
                            "Found an exact no match '%s=%s' source '%s'",
-                           uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
+                           uwr->context, uwr->worker_name,
+                               uri_worker_map_get_source(uwr));
                 JK_TRACE_EXIT(l);
                 return JK_TRUE;
             }
@@ -1137,7 +1192,8 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
         else {
             strncpy(&url[off], vhost, vhost_len + 1);
             if (JK_IS_DEBUG_LEVEL(l)) {
-                jk_log(l, JK_LOG_DEBUG, "Prefixing mapping uri with vhost '%s'", vhost);
+                jk_log(l, JK_LOG_DEBUG,
+                       "Prefixing mapping uri with vhost '%s'", vhost);
             }
         }
         vhost_len += off;
@@ -1157,7 +1213,8 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
         }
         url[i + vhost_len] = uri[i];
         if (reject_unsafe && (uri[i] == '%' || uri[i] == '\\')) {
-            jk_log(l, JK_LOG_INFO, "Potentially unsafe request url '%s' rejected", uri);
+            jk_log(l, JK_LOG_INFO,
+                   "Potentially unsafe request url '%s' rejected", uri);
             JK_TRACE_EXIT(l);
             return NULL;
         }
@@ -1225,8 +1282,8 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
         int i;
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                   "Loading urimaps from %s with reload check interval %d seconds",
-                   uw_map->fname, uw_map->reload);
+                   "Loading urimaps from %s with reload check interval %d "
+                   "seconds", uw_map->fname, uw_map->reload);
         uri_worker_map_clear(uw_map, l);
         for (i = 0; i < jk_map_size(map); i++) {
             const char *u = jk_map_name_at(map, i);
@@ -1269,7 +1326,9 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
         rc = JK_TRUE;
     }
     else {
-        jk_log(l, JK_LOG_ERROR, "Failed to load uri_worker_map file %s (errno=%d, err=%s).", uw_map->fname, errno, strerror(errno));
+        jk_log(l, JK_LOG_ERROR, "Failed to load uri_worker_map file %s "
+               "(errno=%d, err=%s).",
+               uw_map->fname, errno, strerror(errno));
     }
     jk_map_free(&map);
     return rc;

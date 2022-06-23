@@ -199,7 +199,8 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                p->name, host, port);
 
         if (host) {
-            if (!jk_resolve(host, port, &p->worker_inet_addr, we->pool, JK_FALSE, l)) {
+            if (!jk_resolve(host, port, &p->worker_inet_addr, we->pool,
+                            JK_FALSE, l)) {
                 jk_log(l, JK_LOG_ERROR,
                        "In jk_worker_t::validate, host '%s:%d' resolve failed",
                        host, port);
@@ -212,11 +213,12 @@ static int JK_METHOD validate(jk_worker_t *pThis,
             return JK_FALSE;
         }
         if (source && *source) {
-            if (!jk_resolve(source, 0, &p->worker_source_inet_addr, we->pool, JK_FALSE, l)) {
+            if (!jk_resolve(source, 0, &p->worker_source_inet_addr, we->pool,
+                            JK_FALSE, l)) {
                 p->worker_source_inet_addr.ipaddr_ptr = NULL;
                 jk_log(l, JK_LOG_WARNING,
-                       "In jk_worker_t::validate, source addr '%s' resolve failed - ignored",
-                       source);
+                       "In jk_worker_t::validate, source addr '%s' resolve failed"
+                       " - ignored", source);
             }
         }
         return JK_TRUE;
@@ -410,9 +412,12 @@ static int ajpv12_handle_request(ajp12_endpoint_t * p,
     jk_log(l, JK_LOG_DEBUG,
            "ajpv12_handle_request, sending the ajp12 start sequence");
 
-    ret = (ajpv12_mark(p, 1) && ajpv12_sendstring(p, s->method) && ajpv12_sendstring(p, 0) &&   /* zone */
+    ret = (ajpv12_mark(p, 1) &&
+           ajpv12_sendstring(p, s->method) &&
+           ajpv12_sendstring(p, 0) &&   /* zone */
            ajpv12_sendstring(p, 0) &&   /* servlet */
-           ajpv12_sendstring(p, s->server_name) && ajpv12_sendstring(p, 0) &&   /* doc root */
+           ajpv12_sendstring(p, s->server_name) &&
+           ajpv12_sendstring(p, 0) &&   /* doc root */
            ajpv12_sendstring(p, 0) &&   /* path info */
            ajpv12_sendstring(p, 0) &&   /* path translated */
 #if defined(AS400) && !defined(AS400_UTF8)
@@ -430,21 +435,26 @@ static int ajpv12_handle_request(ajp12_endpoint_t * p,
 #else
            ajpv12_sendstring(p, s->method) &&
 #endif
-           ajpv12_sendstring(p, s->req_uri) && ajpv12_sendstring(p, 0) &&       /* */
+           ajpv12_sendstring(p, s->req_uri) &&
+           ajpv12_sendstring(p, 0) &&
            ajpv12_sendstring(p, 0) &&   /* SCRIPT_NAME */
 #if defined(AS400) && !defined(AS400_UTF8)
            ajpv12_sendasciistring(p, s->server_name) &&
 #else
            ajpv12_sendstring(p, s->server_name) &&
 #endif
-           ajpv12_sendint(p, s->server_port) && ajpv12_sendstring(p, s->protocol) && ajpv12_sendstring(p, 0) && /* SERVER_SIGNATURE */
-           ajpv12_sendstring(p, s->server_software) && ajpv12_sendstring(p, s->route) &&    /* JSERV_ROUTE */
+           ajpv12_sendint(p, s->server_port) &&
+           ajpv12_sendstring(p, s->protocol) &&
+           ajpv12_sendstring(p, 0) && /* SERVER_SIGNATURE */
+           ajpv12_sendstring(p, s->server_software) &&
+           ajpv12_sendstring(p, s->route) &&    /* JSERV_ROUTE */
            ajpv12_sendstring(p, "") &&  /* JSERV ajpv12 compatibility */
            ajpv12_sendstring(p, ""));   /* JSERV ajpv12 compatibility */
 
     if (!ret) {
         jk_log(l, JK_LOG_ERROR,
-               "In ajpv12_handle_request, failed to send the ajp12 start sequence");
+               "In ajpv12_handle_request, "
+               "failed to send the ajp12 start sequence");
         return JK_FALSE;
     }
 
@@ -512,7 +522,8 @@ static int ajpv12_handle_request(ajp12_endpoint_t * p,
 
             if (!s->read(s, buf, to_read, &this_time)) {
                 jk_log(l, JK_LOG_ERROR,
-                       "In ajpv12_handle_request, failed to read from the web server");
+                       "In ajpv12_handle_request, "
+                       "failed to read from the web server");
                 return JK_FALSE;
             }
             jk_log(l, JK_LOG_DEBUG, "ajpv12_handle_request, read %d bytes",
@@ -521,7 +532,8 @@ static int ajpv12_handle_request(ajp12_endpoint_t * p,
                 so_far += this_time;
                 if ((int)this_time != send(p->sd, buf, this_time, 0)) {
                     jk_log(l, JK_LOG_ERROR,
-                           "In ajpv12_handle_request, failed to write to the container");
+                           "In ajpv12_handle_request, "
+                           "failed to write to the container");
                     return JK_FALSE;
                 }
                 jk_log(l, JK_LOG_DEBUG,
@@ -529,7 +541,9 @@ static int ajpv12_handle_request(ajp12_endpoint_t * p,
             }
             else if (this_time == 0) {
                 jk_log(l, JK_LOG_ERROR,
-                       "In ajpv12_handle_request, Error: short read. content length is %" JK_UINT64_T_FMT ", read %" JK_UINT64_T_FMT,
+                       "In ajpv12_handle_request, Error: short read. "
+                       "Content length is %" JK_UINT64_T_FMT
+                       ", read %" JK_UINT64_T_FMT,
                        s->content_length, so_far);
                 return JK_FALSE;
             }
