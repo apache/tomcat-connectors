@@ -485,7 +485,7 @@ static int extension_fix_activation(jk_pool_t *p, const char *name, jk_worker_t 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
                "Checking extension for worker %s of type %s (%d)",
-               name, wc_get_name_for_type(jw->type,l), jw->type);
+               name, wc_get_name_for_type(jw->type, l), jw->type);
 
     if (jw->type == JK_LB_WORKER_TYPE &&
         (extensions->active || extensions->disabled || extensions->stopped)) {
