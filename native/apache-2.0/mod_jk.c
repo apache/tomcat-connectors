@@ -252,6 +252,7 @@ struct jk_request_conf
 {
     rule_extension_t *rule_extensions;
     char *orig_uri;
+    const char *request_id;
     int jk_handled;
 };
 
@@ -324,6 +325,7 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
     unsigned h;
     apache_private_data_t *p = s->ws_private;
     request_rec *r = p->r;
+    jk_log_context_t *l = s->log_ctx;
 
     /* If we use proxy error pages, still pass
      * through context headers needed for special status codes.
@@ -341,10 +343,7 @@ static int JK_METHOD ws_start_response(jk_ws_service_t *s,
                 }
             }
             if (found == JK_FALSE) {
-                jk_server_conf_t *xconf = (jk_server_conf_t *)
-                                           ap_get_module_config(r->server->module_config,
-                                                                &jk_module);
-                jk_log(xconf->log, JK_LOG_INFO,
+                jk_log(l, JK_LOG_INFO,
                        "origin server sent 401 without"
                        " WWW-Authenticate header");
             }
@@ -503,6 +502,8 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
     int rc;
 #endif
 
+    jk_log_context_t *log_ctx = s->log_ctx;
+
     if (s && s->ws_private && b) {
         apache_private_data_t *p = s->ws_private;
 
@@ -513,9 +514,8 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
             const char *bb = (const char *)b;
 
             if (!s->response_started) {
-                if (main_log)
-                    jk_log(main_log, JK_LOG_INFO,
-                           "Write without start, starting with defaults");
+                jk_log(log_ctx, JK_LOG_INFO,
+                       "Write without start, starting with defaults");
                 if (!s->start_response(s, 200, NULL, NULL, NULL, 0)) {
                     return JK_FALSE;
                 }
@@ -539,8 +539,8 @@ static int JK_METHOD ws_write(jk_ws_service_t *s, const void *b, unsigned int l)
 
             while (ll > 0 && !p->r->connection->aborted) {
                 r = ap_rwrite(bb, ll, p->r);
-                if (JK_IS_DEBUG_LEVEL(main_log))
-                    jk_log(main_log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(log_ctx))
+                    jk_log(log_ctx, JK_LOG_DEBUG,
                            "written %d out of %d", r, ll);
 
                 if (r < 0)
@@ -657,60 +657,66 @@ static jk_uri_worker_map_t * JK_METHOD ws_vhost_to_uw_map(void *d)
 static void dump_options(server_rec *srv, apr_pool_t *p)
 {
     char server_name[80];
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     jk_server_conf_t *conf = (jk_server_conf_t *)ap_get_module_config(srv->module_config,
                                                                       &jk_module);
     int options = conf->options;
+
+    l->logger = conf->log;
+    l->id = "CONFIG";
+
     ws_vhost_to_text(srv, server_name, 80);
     if (options & JK_OPT_FWDURICOMPAT)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardURICompat", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDURICOMPAT ? " (default)" : "");
     if (options & JK_OPT_FWDURICOMPATUNPARSED)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardURICompatUnparsed", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDURICOMPATUNPARSED ? " (default)" : "");
     if (options & JK_OPT_FWDURIESCAPED)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardURIEscaped", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDURIESCAPED ? " (default)" : "");
     if (options & JK_OPT_FWDURIPROXY)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardURIProxy", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDURIPROXY ? " (default)" : "");
     if (options & JK_OPT_FWDDIRS)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardDirectories", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDDIRS ? " (default)" : "");
     if (options & JK_OPT_FWDLOCAL)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardLocalAddress", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDLOCAL ? " (default)" : "");
     if (options & JK_OPT_FWDPHYSICAL)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardPhysicalAddress", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDPHYSICAL ? " (default)" : "");
     if (options & JK_OPT_FWDCERTCHAIN)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardSSLCertChain", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDCERTCHAIN ? " (default)" : "");
     if (options & JK_OPT_FWDKEYSIZE)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "ForwardKeySize", server_name,
                JK_OPT_DEFAULT & JK_OPT_FWDKEYSIZE ? " (default)" : "");
     if (options & JK_OPT_FLUSHPACKETS)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "FlushPackets", server_name,
                JK_OPT_DEFAULT & JK_OPT_FLUSHPACKETS ? " (default)" : "");
     if (options & JK_OPT_FLUSHEADER)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "FlushHeader", server_name,
                JK_OPT_DEFAULT & JK_OPT_FLUSHEADER ? " (default)" : "");
     if (options & JK_OPT_DISABLEREUSE)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "DisableReuse", server_name,
                JK_OPT_DEFAULT & JK_OPT_DISABLEREUSE ? " (default)" : "");
     if (options & JK_OPT_REJECTUNSAFE)
-        jk_log(conf->log, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
+        jk_log(l, JK_LOG_DEBUG, "JkOption '%s' set in server '%s'%s",
                "RejectUnsafeURI", server_name,
                JK_OPT_DEFAULT & JK_OPT_REJECTUNSAFE ? " (default)" : "");
 }
@@ -805,6 +811,10 @@ static int init_ws_service(apache_private_data_t * private_data,
     const char *route = NULL;
     rule_extension_t *e;
     jk_request_conf_t *rconf;
+    jk_log_context_t *l = apr_pcalloc(r->pool, sizeof(jk_log_context_t));
+
+    l->logger = conf->log;
+    l->id = NULL;
 
     /* Copy in function pointers (which are really methods) */
     s->start_response = ws_start_response;
@@ -817,11 +827,14 @@ static int init_ws_service(apache_private_data_t * private_data,
     s->vhost_to_text = ws_vhost_to_text;
     s->vhost_to_uw_map = ws_vhost_to_uw_map;
 
+    rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config, &jk_module);
+    l->id = rconf->request_id;
+
     s->auth_type = get_env_string(r, r->ap_auth_type,
                                   conf->auth_type_indicator, 1);
     s->remote_user = get_env_string(r, r->user,
                                     conf->remote_user_indicator, 1);
-
+    s->log_ctx = l;
     s->protocol = r->protocol;
     s->remote_host = (char *)ap_get_remote_host(r->connection,
                                                 r->per_dir_config,
@@ -857,8 +870,6 @@ static int init_ws_service(apache_private_data_t * private_data,
         s->flush_packets = 1;
     if (conf->options & JK_OPT_FLUSHEADER)
         s->flush_header = 1;
-
-    rconf = (jk_request_conf_t *)ap_get_module_config(r->request_config, &jk_module);
 
     e = rconf->rule_extensions;
     if (e) {
@@ -1056,8 +1067,8 @@ static int init_ws_service(apache_private_data_t * private_data,
 
                 if (s->ssl_cert) {
                     s->ssl_cert_len = (unsigned int)strlen(s->ssl_cert);
-                    if (JK_IS_DEBUG_LEVEL(conf->log)) {
-                        jk_log(conf->log, JK_LOG_DEBUG,
+                    if (JK_IS_DEBUG_LEVEL(l)) {
+                        jk_log(l, JK_LOG_DEBUG,
                                "SSL client certificate (%d bytes): %s",
                                s->ssl_cert_len, s->ssl_cert);
                     }
@@ -1175,8 +1186,8 @@ static int init_ws_service(apache_private_data_t * private_data,
     /* Dump all connection param so we can trace what's going to
      * the remote tomcat
      */
-    if (JK_IS_DEBUG_LEVEL(conf->log)) {
-        jk_log(conf->log, JK_LOG_DEBUG,
+    if (JK_IS_DEBUG_LEVEL(l)) {
+        jk_log(l, JK_LOG_DEBUG,
                "Service protocol=%s method=%s ssl=%s host=%s addr=%s name=%s port=%d auth=%s user=%s laddr=%s raddr=%s uaddr=%s uri=%s",
                STRNULL_FOR_NULL(s->protocol),
                STRNULL_FOR_NULL(s->method),
@@ -1651,6 +1662,8 @@ static int request_log_transaction(request_rec * r)
     int *strl;
     jk_server_conf_t *conf;
     jk_request_conf_t *rconf;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     apr_array_header_t *format;
 
     conf = (jk_server_conf_t *) ap_get_module_config(r->server->module_config,
@@ -1665,6 +1678,8 @@ static int request_log_transaction(request_rec * r)
         return DECLINED;
     }
 
+    l->logger = conf->log;
+    l->id = rconf->request_id;
     strs = apr_palloc(r->pool, sizeof(char *) * (format->nelts));
     strl = apr_palloc(r->pool, sizeof(int) * (format->nelts));
     items = (request_log_format_item *) format->elts;
@@ -1681,7 +1696,7 @@ static int request_log_transaction(request_rec * r)
     }
     *s = 0;
 
-    jk_log(conf->log, JK_LOG_REQUEST, "%s", str);
+    jk_log(l, JK_LOG_REQUEST, "%s", str);
     return OK;
 
 }
@@ -2422,6 +2437,8 @@ static const char *jk_set_worker_property(cmd_parms * cmd,
                                           void *dummy,
                                           const char *line)
 {
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     server_rec *s = cmd->server;
     jk_server_conf_t *conf =
         (jk_server_conf_t *) ap_get_module_config(s->module_config,
@@ -2432,10 +2449,12 @@ static const char *jk_set_worker_property(cmd_parms * cmd,
         return err_string;
     }
 
+    l->logger = conf->log;
+    l->id = "CONFIG";
     if (!jk_worker_properties)
         jk_map_alloc(&jk_worker_properties);
     if (jk_map_read_property(jk_worker_properties, NULL, line,
-                             JK_MAP_HANDLE_DUPLICATES, conf->log) == JK_FALSE)
+                             JK_MAP_HANDLE_DUPLICATES, l) == JK_FALSE)
         return apr_pstrcat(cmd->temp_pool, "Invalid JkWorkerProperty ", line, NULL);
 
     return NULL;
@@ -2656,6 +2675,9 @@ static apr_status_t jk_cleanup_proc(void *data)
      * jklogfp makes logging switch to error log.
      */
     jk_logger_t *l = (jk_logger_t *)data;
+    jk_log_context_t log_ctx;
+    log_ctx.logger = l;
+    log_ctx.id = "CLEANUP";
     if (l && l->logger_private) {
         jk_file_logger_t *p = l->logger_private;
         if (p && p->is_piped == JK_TRUE) {
@@ -2663,7 +2685,7 @@ static apr_status_t jk_cleanup_proc(void *data)
             p->is_piped = JK_FALSE;
         }
     }
-    jk_shm_close(l);
+    jk_shm_close(&log_ctx);
     return APR_SUCCESS;
 }
 
@@ -2678,6 +2700,9 @@ static apr_status_t jk_cleanup_child(void *data)
      * jklogfp makes logging switch to error log.
      */
     jk_logger_t *l = (jk_logger_t *)data;
+    jk_log_context_t log_ctx;
+    log_ctx.logger = l;
+    log_ctx.id = "CLEANUP";
     if (l && l->logger_private) {
         jk_file_logger_t *p = l->logger_private;
         if (p && p->is_piped == JK_TRUE) {
@@ -2691,7 +2716,7 @@ static apr_status_t jk_cleanup_child(void *data)
         while (jk_watchdog_running)
             apr_sleep(apr_time_from_sec(1));
     }
-    wc_shutdown(l);
+    wc_shutdown(&log_ctx);
     return jk_cleanup_proc(data);
 }
 
@@ -2702,6 +2727,8 @@ static int jk_handler(request_rec * r)
     const char *worker_name;
     jk_server_conf_t *xconf;
     jk_request_conf_t *rconf;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     int rc, dmt = 1;
     int worker_name_extension = JK_FALSE;
 
@@ -2716,20 +2743,22 @@ static int jk_handler(request_rec * r)
 
     xconf = (jk_server_conf_t *) ap_get_module_config(r->server->module_config,
                                                       &jk_module);
-    JK_TRACE_ENTER(xconf->log);
+    l->logger = xconf->log;
+    l->id = NULL;
+    JK_TRACE_ENTER(l);
     if (apr_table_get(r->subprocess_env, "no-jk")) {
-        if (JK_IS_DEBUG_LEVEL(xconf->log))
-            jk_log(xconf->log, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(l))
+            jk_log(l, JK_LOG_DEBUG,
                    "Into handler no-jk env var detected for uri=%s, declined",
                    r->uri);
 
-        JK_TRACE_EXIT(xconf->log);
+        JK_TRACE_EXIT(l);
         return DECLINED;
     }
 
     /* Was the option to forward directories to Tomcat set? */
     if (!dmt && !(xconf->options & JK_OPT_FWDDIRS)) {
-        JK_TRACE_EXIT(xconf->log);
+        JK_TRACE_EXIT(l);
         return DECLINED;
     }
 
@@ -2739,8 +2768,11 @@ static int jk_handler(request_rec * r)
         rconf->jk_handled = JK_FALSE;
         rconf->rule_extensions = NULL;
         rconf->orig_uri = NULL;
+        rconf->request_id = get_env_string(r, NULL,
+                                           "UNIQUE_ID", 1);
         ap_set_module_config(r->request_config, &jk_module, rconf);
     }
+    l->id = rconf->request_id;
 
     worker_name = apr_table_get(r->notes, JK_NOTE_WORKER_NAME);
 
@@ -2755,15 +2787,15 @@ static int jk_handler(request_rec * r)
            * been used to explicitly set the worker without JkMount.
            * This is useful in combination with LocationMatch or mod_rewrite.
            */
-            if (JK_IS_DEBUG_LEVEL(xconf->log))
-                jk_log(xconf->log, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
                        "Retrieved worker (%s) from env %s for %s",
                        worker_name, xconf->worker_indicator, r->uri);
             if (ap_strchr_c(worker_name, ';')) {
                 rule_extension_t *e = apr_palloc(r->pool, sizeof(rule_extension_t));
                 char *w = apr_pstrdup(r->pool, worker_name);
                 worker_name_extension = JK_TRUE;
-                parse_rule_extensions(w, e, xconf->log);
+                parse_rule_extensions(w, e, l);
                 worker_name = w;
                 rconf->rule_extensions = e;
             }
@@ -2774,15 +2806,15 @@ static int jk_handler(request_rec * r)
               I'm not sure how). We also have a manual config directive that
               explicitly give control to us. */
             worker_name = worker_env.worker_list[0];
-            if (JK_IS_DEBUG_LEVEL(xconf->log))
-                jk_log(xconf->log, JK_LOG_DEBUG,
+            if (JK_IS_DEBUG_LEVEL(l))
+                jk_log(l, JK_LOG_DEBUG,
                        "Single worker (%s) configuration for %s",
                        worker_name, r->uri);
         }
         else {
             if (!xconf->uw_map) {
-                if (JK_IS_DEBUG_LEVEL(xconf->log))
-                    jk_log(xconf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "missing uri map for %s:%s",
                            xconf->s->server_hostname ? xconf->s->server_hostname : "_default_",
                            r->uri);
@@ -2791,14 +2823,14 @@ static int jk_handler(request_rec * r)
                 rule_extension_t *e;
                 char *clean_uri;
                 clean_uri = apr_pstrdup(r->pool, r->uri);
-                rc = jk_servlet_normalize(clean_uri, xconf->log);
+                rc = jk_servlet_normalize(clean_uri, l);
                 if (rc != 0) {
-                    JK_TRACE_EXIT(xconf->log);
+                    JK_TRACE_EXIT(l);
                     return HTTP_BAD_REQUEST;
                 }
 
                 worker_name = map_uri_to_worker_ext(xconf->uw_map, clean_uri,
-                                                    NULL, &e, NULL, xconf->log);
+                                                    NULL, &e, NULL, l);
                 if (worker_name) {
                     rconf->rule_extensions = e;
                     rconf->orig_uri = r->uri;
@@ -2808,8 +2840,8 @@ static int jk_handler(request_rec * r)
 
             if (worker_name == NULL && worker_env.num_of_workers) {
                 worker_name = worker_env.worker_list[0];
-                if (JK_IS_DEBUG_LEVEL(xconf->log))
-                    jk_log(xconf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "Using first worker (%s) from %d workers for %s",
                            worker_name, worker_env.num_of_workers, r->uri);
             }
@@ -2818,8 +2850,8 @@ static int jk_handler(request_rec * r)
             apr_table_setn(r->notes, JK_NOTE_WORKER_NAME, worker_name);
     }
 
-    if (JK_IS_DEBUG_LEVEL(xconf->log))
-       jk_log(xconf->log, JK_LOG_DEBUG, "Into handler %s worker=%s"
+    if (JK_IS_DEBUG_LEVEL(l))
+       jk_log(l, JK_LOG_DEBUG, "Into handler %s worker=%s"
               " r->proxyreq=%d",
               r->handler, STRNULL_FOR_NULL(worker_name), r->proxyreq);
 
@@ -2827,28 +2859,28 @@ static int jk_handler(request_rec * r)
 
     /* If this is a proxy request, we'll notify an error */
     if (r->proxyreq) {
-        jk_log(xconf->log, JK_LOG_INFO, "Proxy request for worker=%s"
+        jk_log(l, JK_LOG_INFO, "Proxy request for worker=%s"
                " is not allowed",
                STRNULL_FOR_NULL(worker_name));
-        JK_TRACE_EXIT(xconf->log);
+        JK_TRACE_EXIT(l);
         return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     /* Set up r->read_chunked flags for chunked encoding, if present */
     if ((rc = ap_setup_client_block(r, REQUEST_CHUNKED_DECHUNK)) != APR_SUCCESS) {
-        JK_TRACE_EXIT(xconf->log);
+        JK_TRACE_EXIT(l);
         return rc;
     }
 
     if (worker_name) {
-        jk_worker_t *worker = wc_get_worker_for_name(worker_name, xconf->log);
+        jk_worker_t *worker = wc_get_worker_for_name(worker_name, l);
 
         /* If the remote client has aborted, just ignore the request */
         if (r->connection->aborted) {
-            jk_log(xconf->log, JK_LOG_INFO, "Client connection aborted for"
+            jk_log(l, JK_LOG_INFO, "Client connection aborted for"
                    " worker=%s",
                    worker_name);
-            JK_TRACE_EXIT(xconf->log);
+            JK_TRACE_EXIT(l);
             return OK;
         }
 
@@ -2869,17 +2901,17 @@ static int jk_handler(request_rec * r)
 
             if (worker_name_extension == JK_TRUE) {
                 extension_fix(&private_data.p, worker_name,
-                              rconf->rule_extensions, xconf->log);
+                              rconf->rule_extensions, l);
             }
 
             /* Maintain will be done by watchdog thread */
             if (!jk_watchdog_interval)
-                wc_maintain(xconf->log);
+                wc_maintain(l);
             jk_init_ws_service(&s);
             s.ws_private = &private_data;
             s.pool = &private_data.p;
             apr_table_setn(r->notes, JK_NOTE_WORKER_TYPE,
-                           wc_get_name_for_type(worker->type, xconf->log));
+                           wc_get_name_for_type(worker->type, l));
 
             request_begin = apr_time_now();
 
@@ -2893,10 +2925,10 @@ static int jk_handler(request_rec * r)
 
                 /* worker->get_endpoint might fail if we are out of memory so check */
                 /* and handle it */
-                if (worker->get_endpoint(worker, &end, xconf->log)) {
-                    rc = end->service(end, &s, xconf->log,
+                if (worker->get_endpoint(worker, &end, l)) {
+                    rc = end->service(end, &s, l,
                                       &is_error);
-                    end->done(&end, xconf->log);
+                    end->done(&end, l);
                     if ((s.content_read < s.content_length ||
                         (s.is_chunked && !s.no_more_chunks)) &&
                         /* This case aborts the connection below and typically
@@ -2918,15 +2950,15 @@ static int jk_handler(request_rec * r)
                                 consumed += rd;
                             }
                         }
-                        if (JK_IS_DEBUG_LEVEL(xconf->log)) {
-                           jk_log(xconf->log, JK_LOG_DEBUG,
+                        if (JK_IS_DEBUG_LEVEL(l)) {
+                           jk_log(l, JK_LOG_DEBUG,
                                   "Consumed %d bytes of remaining request data for worker=%s",
                                   consumed, STRNULL_FOR_NULL(worker_name));
                         }
                     }
                 }
                 else {            /* this means we couldn't get an endpoint */
-                    jk_log(xconf->log, JK_LOG_ERROR, "Could not get endpoint"
+                    jk_log(l, JK_LOG_ERROR, "Could not get endpoint"
                            " for worker=%s",
                            worker_name);
                     rc = 0;       /* just to make sure that we know we've failed */
@@ -2934,11 +2966,11 @@ static int jk_handler(request_rec * r)
                 }
             }
             else {
-                jk_log(xconf->log, JK_LOG_ERROR, "Could not init service"
+                jk_log(l, JK_LOG_ERROR, "Could not init service"
                        " for worker=%s",
                        worker_name);
                 jk_close_pool(&private_data.p);
-                JK_TRACE_EXIT(xconf->log);
+                JK_TRACE_EXIT(l);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }
             rd = apr_time_now() - request_begin;
@@ -2955,58 +2987,58 @@ static int jk_handler(request_rec * r)
             if (rc > 0) {
                 if (s.extension.use_server_error_pages &&
                     s.http_response_status >= s.extension.use_server_error_pages) {
-                    if (JK_IS_DEBUG_LEVEL(xconf->log))
-                        jk_log(xconf->log, JK_LOG_DEBUG, "Forwarding status=%d"
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG, "Forwarding status=%d"
                                " for worker=%s",
                                s.http_response_status, worker_name);
-                    JK_TRACE_EXIT(xconf->log);
+                    JK_TRACE_EXIT(l);
                     return s.http_response_status;
                 }
                 /* If tomcat returned no body and the status is not OK,
                    let apache handle the error code */
 
                 if (!r->sent_bodyct && r->status >= HTTP_BAD_REQUEST) {
-                    jk_log(xconf->log, JK_LOG_INFO, "No body with status=%d"
+                    jk_log(l, JK_LOG_INFO, "No body with status=%d"
                            " for worker=%s",
                            r->status, worker_name);
-                    JK_TRACE_EXIT(xconf->log);
+                    JK_TRACE_EXIT(l);
                     return r->status;
                 }
-                if (JK_IS_DEBUG_LEVEL(xconf->log))
-                    jk_log(xconf->log, JK_LOG_DEBUG, "Service finished"
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG, "Service finished"
                            " with status=%d for worker=%s",
                            r->status, worker_name);
-                JK_TRACE_EXIT(xconf->log);
+                JK_TRACE_EXIT(l);
                 return OK;      /* NOT r->status, even if it has changed. */
             }
             else if (rc == JK_CLIENT_ERROR) {
                 if (is_error != HTTP_REQUEST_ENTITY_TOO_LARGE)
                     r->connection->aborted = 1;
-                jk_log(xconf->log, JK_LOG_INFO, "Aborting connection"
+                jk_log(l, JK_LOG_INFO, "Aborting connection"
                        " for worker=%s",
                        worker_name);
-                JK_TRACE_EXIT(xconf->log);
+                JK_TRACE_EXIT(l);
                 return is_error;
             }
             else {
-                jk_log(xconf->log, JK_LOG_INFO, "Service error=%d"
+                jk_log(l, JK_LOG_INFO, "Service error=%d"
                        " for worker=%s",
                        rc, worker_name);
-                JK_TRACE_EXIT(xconf->log);
+                JK_TRACE_EXIT(l);
                 return is_error;
             }
         }
         else {
-            jk_log(xconf->log, JK_LOG_INFO, "Could not find a worker"
+            jk_log(l, JK_LOG_INFO, "Could not find a worker"
                    " for worker name=%s",
                    worker_name);
-            JK_TRACE_EXIT(xconf->log);
+            JK_TRACE_EXIT(l);
             return HTTP_INTERNAL_SERVER_ERROR;
         }
     }
 
     rconf->jk_handled = JK_FALSE;
-    JK_TRACE_EXIT(xconf->log);
+    JK_TRACE_EXIT(l);
     return DECLINED;
 }
 
@@ -3403,10 +3435,14 @@ static int open_jklog(server_rec * s, apr_pool_t * p)
 static void * APR_THREAD_FUNC jk_watchdog_func(apr_thread_t *thd, void *data)
 {
     int i;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     jk_server_conf_t *conf = (jk_server_conf_t *)data;
+    l->logger = conf->log;
+    l->id = "WATCHDOG";
 
-    if (JK_IS_DEBUG_LEVEL(conf->log))
-        jk_log(conf->log, JK_LOG_DEBUG,
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG,
                "Watchdog thread initialized with %d second interval",
                jk_watchdog_interval);
     for (;;) {
@@ -3418,11 +3454,11 @@ static void * APR_THREAD_FUNC jk_watchdog_func(apr_thread_t *thd, void *data)
         }
         if (!jk_watchdog_interval)
             break;
-        if (JK_IS_DEBUG_LEVEL(conf->log))
-           jk_log(conf->log, JK_LOG_DEBUG,
+        if (JK_IS_DEBUG_LEVEL(l))
+           jk_log(l, JK_LOG_DEBUG,
                   "Watchdog thread running");
         jk_watchdog_running = 1;
-        wc_maintain(conf->log);
+        wc_maintain(l);
         if (!jk_watchdog_interval)
             break;
     }
@@ -3436,12 +3472,16 @@ static void * APR_THREAD_FUNC jk_watchdog_func(apr_thread_t *thd, void *data)
  */
 static void jk_child_init(apr_pool_t * pconf, server_rec * s)
 {
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     jk_server_conf_t *conf;
     apr_status_t rv;
     int rc;
     apr_thread_t *wdt;
 
     conf = ap_get_module_config(s->module_config, &jk_module);
+    l->logger = conf->log;
+    l->id = "CHILD_INIT";
 
     rv = apr_global_mutex_child_init(&jk_log_lock, NULL, pconf);
     if (rv != APR_SUCCESS) {
@@ -3449,13 +3489,13 @@ static void jk_child_init(apr_pool_t * pconf, server_rec * s)
                      "mod_jk: could not init JK log lock in child");
     }
 
-    JK_TRACE_ENTER(conf->log);
+    JK_TRACE_ENTER(l);
 
     if (jk_watchdog_interval) {
 #if APR_HAS_THREADS
         rv = apr_thread_create(&wdt, NULL, jk_watchdog_func, conf, pconf);
         if (rv != APR_SUCCESS) {
-            jk_log(conf->log, JK_LOG_ERROR,
+            jk_log(l, JK_LOG_ERROR,
                    "Could not init watchdog thread, error=%d", rv);
             jk_watchdog_interval = 0;
         }
@@ -3463,17 +3503,17 @@ static void jk_child_init(apr_pool_t * pconf, server_rec * s)
 #endif
     }
 
-    if ((rc = jk_shm_attach(jk_shm_file, jk_shm_size, conf->log)) == 0) {
-        apr_pool_cleanup_register(pconf, conf->log, jk_cleanup_child,
+    if ((rc = jk_shm_attach(jk_shm_file, jk_shm_size, l)) == 0) {
+        apr_pool_cleanup_register(pconf, l->logger, jk_cleanup_child,
                                   apr_pool_cleanup_null);
     }
     else {
-        jk_log(conf->log, JK_LOG_ERROR, "Attaching shm:%s errno=%d",
+        jk_log(l, JK_LOG_ERROR, "Attaching shm:%s errno=%d",
                jk_shm_name(), rc);
     }
-    if (JK_IS_DEBUG_LEVEL(conf->log))
-        jk_log(conf->log, JK_LOG_DEBUG, "Initialized %s", JK_FULL_EXPOSED_VERSION);
-    JK_TRACE_EXIT(conf->log);
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG, "Initialized %s", JK_FULL_EXPOSED_VERSION);
+    JK_TRACE_EXIT(l);
 }
 
 /** Initialize jk, using worker.properties.
@@ -3491,6 +3531,10 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
     int rc;
     int is_threaded;
     int mpm_threads = 1;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
+    l->logger = conf->log;
+    l->id = "JK_INIT";
 
     if (!jk_worker_properties)
         jk_map_alloc(&jk_worker_properties);
@@ -3505,17 +3549,17 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
     if (mpm_threads > 1) {
 #if _MT_CODE
         /* _MT_CODE  */
-        if (JK_IS_DEBUG_LEVEL(conf->log)) {
+        if (JK_IS_DEBUG_LEVEL(l)) {
 #if !defined(WIN32)
 #if USE_FLOCK_LK
-            jk_log(conf->log, JK_LOG_DEBUG,
+            jk_log(l, JK_LOG_DEBUG,
                    "Using flock() for locking.");
 #else
-            jk_log(conf->log, JK_LOG_DEBUG,
+            jk_log(l, JK_LOG_DEBUG,
                    "Using fcntl() for locking.");
 #endif /* USE_FLOCK_LK */
 #else  /* WIN32 */
-            jk_log(conf->log, JK_LOG_DEBUG,
+            jk_log(l, JK_LOG_DEBUG,
                    "Not using locking.");
 #endif
         }
@@ -3526,15 +3570,15 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
         return JK_FALSE;
 #endif
     }
-    if (JK_IS_DEBUG_LEVEL(conf->log))
-        jk_log(conf->log, JK_LOG_DEBUG,
+    if (JK_IS_DEBUG_LEVEL(l))
+        jk_log(l, JK_LOG_DEBUG,
                "Setting default connection pool max size to %d",
                mpm_threads);
     jk_set_worker_def_cache_size(mpm_threads);
 
     if ((jk_worker_file != NULL) &&
         !jk_map_read_properties(jk_worker_properties, NULL, jk_worker_file, NULL,
-                                JK_MAP_HANDLE_DUPLICATES, conf->log)) {
+                                JK_MAP_HANDLE_DUPLICATES, l)) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s,
                      "Error in reading worker properties from '%s'",
                      jk_worker_file);
@@ -3542,7 +3586,7 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
     }
 
     if (jk_map_resolve_references(jk_worker_properties, "worker.",
-                                  1, 1, conf->log) == JK_FALSE) {
+                                  1, 1, l) == JK_FALSE) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s,
                      "Error in resolving configuration references");
         return JK_FALSE;
@@ -3558,16 +3602,16 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
     }
 #endif
     if (jk_shm_size == 0) {
-        jk_shm_size = jk_shm_calculate_size(jk_worker_properties, conf->log);
+        jk_shm_size = jk_shm_calculate_size(jk_worker_properties, l);
     }
     else if (jk_shm_size_set) {
-        jk_log(conf->log, JK_LOG_WARNING,
+        jk_log(l, JK_LOG_WARNING,
                "The optimal shared memory size can now be determined automatically.");
-        jk_log(conf->log, JK_LOG_WARNING,
+        jk_log(l, JK_LOG_WARNING,
                "You can remove the JkShmSize directive if you want to use the optimal size.");
     }
-    if ((rc = jk_shm_open(jk_shm_file, jk_shm_size, conf->log)) == 0) {
-        apr_pool_cleanup_register(pconf, conf->log,
+    if ((rc = jk_shm_open(jk_shm_file, jk_shm_size, l)) == 0) {
+        apr_pool_cleanup_register(pconf, l->logger,
                                   jk_cleanup_proc,
                                   apr_pool_cleanup_null);
     }
@@ -3587,9 +3631,9 @@ static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
 #endif
     worker_env.pool = pconf;
 
-    if (wc_open(jk_worker_properties, &worker_env, conf->log)) {
+    if (wc_open(jk_worker_properties, &worker_env, l)) {
         ap_add_version_component(pconf, JK_EXPOSED_VERSION);
-        jk_log(conf->log, JK_LOG_INFO,
+        jk_log(l, JK_LOG_INFO,
                "%s initialized",
                JK_FULL_EXPOSED_VERSION);
     }
@@ -3608,11 +3652,15 @@ static int jk_post_config(apr_pool_t * pconf,
 {
     apr_status_t rv;
     jk_server_conf_t *conf;
+    jk_log_context_t log_ctx;
+    jk_log_context_t *l = &log_ctx;
     server_rec *srv = s;
     const char *err_string = NULL;
     int remain;
     void *data = NULL;
 
+    l->logger = NULL;
+    l->id = "POST_CONFIG";
     remain = jk_check_buffer_size();
     if (remain < 0) {
         ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s,
@@ -3657,6 +3705,7 @@ static int jk_post_config(apr_pool_t * pconf,
     if (!s->is_virtual) {
         conf = (jk_server_conf_t *)ap_get_module_config(s->module_config,
                                                         &jk_module);
+        l->logger = conf->log;
         if (conf->was_initialized == JK_FALSE) {
             /* step through the servers and open each jk logfile
              * and do additional post config initialization.
@@ -3682,11 +3731,12 @@ static int jk_post_config(apr_pool_t * pconf,
                     sconf->was_initialized = JK_TRUE;
                     if (open_jklog(srv, pconf))
                         return HTTP_INTERNAL_SERVER_ERROR;
+                    l->logger = sconf->log;
                     sconf->options &= ~sconf->exclude_options;
                     dump_options(srv, pconf);
                     if (sconf->uri_to_context) {
                         if (!uri_worker_map_alloc(&(sconf->uw_map),
-                                                  sconf->uri_to_context, sconf->log))
+                                                  sconf->uri_to_context, l))
                             jk_error_exit(JKLOG_MARK, APLOG_EMERG, srv,
                                           srv->process->pool, "Memory error");
                         if (sconf->options & JK_OPT_REJECTUNSAFE)
@@ -3696,8 +3746,8 @@ static int jk_post_config(apr_pool_t * pconf,
                         if (sconf->mount_file) {
                             sconf->uw_map->fname = sconf->mount_file;
                             sconf->uw_map->reload = sconf->mount_file_reload;
-                            uri_worker_map_switch(sconf->uw_map, sconf->log);
-                            uri_worker_map_load(sconf->uw_map, sconf->log);
+                            uri_worker_map_switch(sconf->uw_map, l);
+                            uri_worker_map_load(sconf->uw_map, l);
                         }
                         if (sconf->options & JK_OPT_COLLAPSEMASK) {
                             ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
@@ -3746,18 +3796,20 @@ static int jk_post_config(apr_pool_t * pconf,
                 }
             }
             conf->was_initialized = JK_TRUE;
+            l->logger = conf->log;
             if (init_jk(pconf, conf, s) == JK_FALSE)
                 return HTTP_INTERNAL_SERVER_ERROR;
             if (conf->uw_map) {
-                uri_worker_map_ext(conf->uw_map, conf->log);
-                uri_worker_map_switch(conf->uw_map, conf->log);
+                uri_worker_map_ext(conf->uw_map, l);
+                uri_worker_map_switch(conf->uw_map, l);
             }
             for (srv = s; srv; srv = srv->next) {
                 jk_server_conf_t *sconf = (jk_server_conf_t *)ap_get_module_config(srv->module_config,
                                                                                    &jk_module);
+                l->logger = sconf->log;
                 if (conf->uw_map != sconf->uw_map && sconf->uw_map) {
-                    uri_worker_map_ext(sconf->uw_map, sconf->log);
-                    uri_worker_map_switch(sconf->uw_map, sconf->log);
+                    uri_worker_map_ext(sconf->uw_map, l);
+                    uri_worker_map_switch(sconf->uw_map, l);
                 }
             }
 
@@ -3779,43 +3831,50 @@ static int jk_translate(request_rec * r)
     ap_set_module_config(r->request_config, &jk_module, rconf);
 
     if (!r->proxyreq) {
+        jk_log_context_t log_ctx;
+        jk_log_context_t *l = &log_ctx;
         jk_server_conf_t *conf =
             (jk_server_conf_t *) ap_get_module_config(r->server->
                                                       module_config,
                                                       &jk_module);
+        l->logger = conf->log;
+        l->id = "JK_TRANSLATE";
 
         if (conf) {
             char *clean_uri;
             int rc;
             const char *worker;
 
-            JK_TRACE_ENTER(conf->log);
+            JK_TRACE_ENTER(l);
 
+            rconf->request_id = get_env_string(r, NULL,
+                                               "UNIQUE_ID", 1);
+            l->id = rconf->request_id;
             if ((r->handler != NULL) && (!strcmp(r->handler, JK_HANDLER))) {
                 /* Somebody already set the handler, probably manual config
                  * or "native" configuration, no need for extra overhead
                  */
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "Manually mapped, no need to call uri_to_worker");
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return DECLINED;
             }
 
             if (apr_table_get(r->subprocess_env, "no-jk")) {
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "Into translate no-jk env var detected for uri=%s, declined",
                            r->uri);
 
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return DECLINED;
             }
 
             clean_uri = apr_pstrdup(r->pool, r->uri);
-            rc = jk_servlet_normalize(clean_uri, conf->log);
+            rc = jk_servlet_normalize(clean_uri, l);
             if (rc != 0) {
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return HTTP_BAD_REQUEST;
             }
 
@@ -3841,27 +3900,27 @@ static int jk_translate(request_rec * r)
                     }
                 }
                 if (finfo.filetype != APR_REG) {
-                    if (JK_IS_DEBUG_LEVEL(conf->log))
-                        jk_log(conf->log, JK_LOG_DEBUG,
+                    if (JK_IS_DEBUG_LEVEL(l))
+                        jk_log(l, JK_LOG_DEBUG,
                                "JkAutoAlias, no DirectoryIndex file for URI %s",
                                r->uri);
-                    JK_TRACE_EXIT(conf->log);
+                    JK_TRACE_EXIT(l);
                     return DECLINED;
                 }
             }
             if (!conf->uw_map) {
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "missing uri map for %s:%s",
                            conf->s->server_hostname ? conf->s->server_hostname : "_default_",
                            r->uri);
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return DECLINED;
             }
             else {
                 rule_extension_t *e;
                 worker = map_uri_to_worker_ext(conf->uw_map, clean_uri,
-                                               NULL, &e, NULL, conf->log);
+                                               NULL, &e, NULL, l);
                 if (worker) {
                     rconf->rule_extensions = e;
                     rconf->orig_uri = r->uri;
@@ -3880,13 +3939,13 @@ static int jk_translate(request_rec * r)
                     apr_table_setn(r->main->notes, JK_NOTE_WORKER_NAME, worker);
                 }
 
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return OK;
             }
             else if (conf->alias_dir != NULL) {
                 /* Automatically map uri to a context static file */
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "check alias_dir: %s",
                            conf->alias_dir);
                 if (strlen(clean_uri) > 1) {
@@ -3911,17 +3970,17 @@ static int jk_translate(request_rec * r)
                         }
                         /* Deny access to WEB-INF and META-INF directories */
                         if (child_dir != NULL) {
-                            if (JK_IS_DEBUG_LEVEL(conf->log))
-                                jk_log(conf->log, JK_LOG_DEBUG,
+                            if (JK_IS_DEBUG_LEVEL(l))
+                                jk_log(l, JK_LOG_DEBUG,
                                        "AutoAlias child_dir: %s",
                                        child_dir);
                             if (!strcasecmp(child_dir, "WEB-INF")
                                 || !strcasecmp(child_dir, "META-INF")) {
-                                if (JK_IS_DEBUG_LEVEL(conf->log))
-                                    jk_log(conf->log, JK_LOG_DEBUG,
+                                if (JK_IS_DEBUG_LEVEL(l))
+                                    jk_log(l, JK_LOG_DEBUG,
                                            "AutoAlias HTTP_NOT_FOUND for URI: %s",
                                            r->uri);
-                                JK_TRACE_EXIT(conf->log);
+                                JK_TRACE_EXIT(l);
                                 return HTTP_NOT_FOUND;
                             }
                         }
@@ -3940,12 +3999,12 @@ static int jk_translate(request_rec * r)
                             char *ret = apr_pstrcat(r->pool, conf->alias_dir, clean_uri, NULL);
                             /* Add code to verify real path ap_os_canonical_name */
                             if (ret != NULL) {
-                                if (JK_IS_DEBUG_LEVEL(conf->log))
-                                    jk_log(conf->log, JK_LOG_DEBUG,
+                                if (JK_IS_DEBUG_LEVEL(l))
+                                    jk_log(l, JK_LOG_DEBUG,
                                            "AutoAlias OK for file: %s",
                                            ret);
                                 r->filename = ret;
-                                JK_TRACE_EXIT(conf->log);
+                                JK_TRACE_EXIT(l);
                                 return OK;
                             }
                         }
@@ -3955,11 +4014,11 @@ static int jk_translate(request_rec * r)
                             if (size > 4
                                 && !strcasecmp(context_dir + (size - 4),
                                                ".war")) {
-                                if (JK_IS_DEBUG_LEVEL(conf->log))
-                                    jk_log(conf->log, JK_LOG_DEBUG,
+                                if (JK_IS_DEBUG_LEVEL(l))
+                                    jk_log(l, JK_LOG_DEBUG,
                                            "AutoAlias HTTP_FORBIDDEN for URI: %s",
                                            r->uri);
-                                JK_TRACE_EXIT(conf->log);
+                                JK_TRACE_EXIT(l);
                                 return HTTP_FORBIDDEN;
                             }
                         }
@@ -3967,8 +4026,8 @@ static int jk_translate(request_rec * r)
                 }
             }
             else {
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "no match for %s found",
                            r->uri);
             }
@@ -3982,6 +4041,7 @@ static int jk_translate(request_rec * r)
 static int jk_map_to_storage(request_rec * r)
 {
 
+    jk_server_conf_t *conf;
     jk_request_conf_t *rconf = ap_get_module_config(r->request_config, &jk_module);
     if (rconf == NULL) {
         rconf = apr_palloc(r->pool, sizeof(jk_request_conf_t));
@@ -3991,69 +4051,79 @@ static int jk_map_to_storage(request_rec * r)
         ap_set_module_config(r->request_config, &jk_module, rconf);
     }
 
-    if (!r->proxyreq && !apr_table_get(r->notes, JK_NOTE_WORKER_NAME)) {
-        jk_server_conf_t *conf =
+    if (!r->proxyreq) {
+        conf =
             (jk_server_conf_t *) ap_get_module_config(r->server->
                                                       module_config,
                                                       &jk_module);
+        if (conf) {
+            rconf->request_id = get_env_string(r, NULL,
+                                               "UNIQUE_ID", 1);
+        }
+    }
 
+    if (!r->proxyreq && !apr_table_get(r->notes, JK_NOTE_WORKER_NAME)) {
         if (conf) {
             char *clean_uri;
             int rc;
             const char *worker;
+            jk_log_context_t log_ctx;
+            jk_log_context_t *l = &log_ctx;
+            l->logger = conf->log;
+            l->id = rconf->request_id;
 
-            JK_TRACE_ENTER(conf->log);
+            JK_TRACE_ENTER(l);
 
             if ((r->handler != NULL) && (!strcmp(r->handler, JK_HANDLER))) {
                 /* Somebody already set the handler, probably manual config
                  * or "native" configuration, no need for extra overhead
                  */
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "Manually mapped, no need to call uri_to_worker");
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return DECLINED;
             }
 
             if (apr_table_get(r->subprocess_env, "no-jk")) {
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "Into map_to_storage no-jk env var detected for uri=%s, declined",
                            r->uri);
 
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return DECLINED;
             }
 
             // Not a URI based request - e.g. file based SSI include
             if (strlen(r->uri) == 0) {
-                jk_log(conf->log, JK_LOG_DEBUG,
+                jk_log(l, JK_LOG_DEBUG,
                        "File based (sub-)request for file=%s. No URI to match.",
                        r->filename);
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return DECLINED;
             }
 
             clean_uri = apr_pstrdup(r->pool, r->uri);
-            rc = jk_servlet_normalize(clean_uri, conf->log);
+            rc = jk_servlet_normalize(clean_uri, l);
             if (rc != 0) {
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return HTTP_BAD_REQUEST;
             }
 
             if (!conf->uw_map) {
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "missing uri map for %s:%s",
                            conf->s->server_hostname ? conf->s->server_hostname : "_default_",
                            r->uri);
-                JK_TRACE_EXIT(conf->log);
+                JK_TRACE_EXIT(l);
                 return DECLINED;
             }
             else {
                 rule_extension_t *e;
                 worker = map_uri_to_worker_ext(conf->uw_map, clean_uri,
-                                               NULL, &e, NULL, conf->log);
+                                               NULL, &e, NULL, l);
                 if (worker) {
                     rconf->rule_extensions = e;
                     rconf->orig_uri = r->uri;
@@ -4071,22 +4141,22 @@ static int jk_map_to_storage(request_rec * r)
 
             }
             else {
-                if (JK_IS_DEBUG_LEVEL(conf->log))
-                    jk_log(conf->log, JK_LOG_DEBUG,
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
                            "no match for %s found",
                            r->uri);
                 if (conf->strip_session == JK_TRUE && conf->strip_session_name) {
                     if (r->uri) {
-                        jk_strip_session_id(r->uri, conf->strip_session_name, conf->log);
+                        jk_strip_session_id(r->uri, conf->strip_session_name, l);
                     }
                     if (r->filename) {
-                        jk_strip_session_id(r->filename, conf->strip_session_name, conf->log);
+                        jk_strip_session_id(r->filename, conf->strip_session_name, l);
                     }
-                    JK_TRACE_EXIT(conf->log);
+                    JK_TRACE_EXIT(l);
                     return DECLINED;
                 }
             }
-            JK_TRACE_EXIT(conf->log);
+            JK_TRACE_EXIT(l);
         }
     }
 
