@@ -35,7 +35,7 @@ extern "C"
 #define JK_STATUS_WORKER_TYPE     (6)
 
 int JK_METHOD status_worker_factory(jk_worker_t **w,
-                                    const char *name, jk_logger_t *l);
+                                    const char *name, jk_log_context_t *log_ctx);
 
 #ifdef __cplusplus
 }

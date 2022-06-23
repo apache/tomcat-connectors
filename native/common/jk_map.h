@@ -83,9 +83,9 @@ int jk_map_add(jk_map_t *m, const char *name, const void *value);
 
 int jk_map_put(jk_map_t *m, const char *name, const void *value, void **old);
 
-int jk_map_read_property(jk_map_t *m, jk_map_t *env, const char *str, int treatment, jk_logger_t *l);
+int jk_map_read_property(jk_map_t *m, jk_map_t *env, const char *str, int treatment, jk_log_context_t *log_ctx);
 
-int jk_map_read_properties(jk_map_t *m, jk_map_t *env, const char *f, time_t *modified, int treatment, jk_logger_t *l);
+int jk_map_read_properties(jk_map_t *m, jk_map_t *env, const char *f, time_t *modified, int treatment, jk_log_context_t *log_ctx);
 
 int jk_map_size(jk_map_t *m);
 
@@ -93,13 +93,13 @@ const char *jk_map_name_at(jk_map_t *m, int idex);
 
 void *jk_map_value_at(jk_map_t *m, int idex);
 
-void jk_map_dump(jk_map_t *m, jk_logger_t *l);
+void jk_map_dump(jk_map_t *m, jk_log_context_t *log_ctx);
 
 int jk_map_copy(jk_map_t *src, jk_map_t *dst);
 
-int jk_map_resolve_references(jk_map_t *m, const char *prefix, int wildcard, int depth, jk_logger_t *l);
+int jk_map_resolve_references(jk_map_t *m, const char *prefix, int wildcard, int depth, jk_log_context_t *log_ctx);
 
-int jk_map_inherit_properties(jk_map_t *m, const char *from, const char *to, jk_logger_t *l);
+int jk_map_inherit_properties(jk_map_t *m, const char *from, const char *to, jk_log_context_t *log_ctx);
 
 #ifdef __cplusplus
 }

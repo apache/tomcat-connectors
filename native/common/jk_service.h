@@ -156,6 +156,11 @@ struct jk_ws_service
     jk_pool_t *pool;
 
     /*
+     * log context
+     */
+    jk_log_context_t *log_ctx;
+
+    /*
      * CGI Environment needed by servlets
      */
     const char *method;
@@ -430,7 +435,7 @@ struct jk_endpoint
      */
     int (JK_METHOD * service) (jk_endpoint_t *e,
                                jk_ws_service_t *s,
-                               jk_logger_t *l, int *is_error);
+                               jk_log_context_t *log_ctx, int *is_error);
 
     /*
      * Called when this particular endpoint has finished processing a
@@ -442,7 +447,7 @@ struct jk_endpoint
      * rather a pointer to a 'this' pointer.  This is necessary, because
      * we may need to free this object.
      */
-    int (JK_METHOD * done) (jk_endpoint_t **p, jk_logger_t *l);
+    int (JK_METHOD * done) (jk_endpoint_t **p, jk_log_context_t *log_ctx);
 };
 
 /*
@@ -511,14 +516,14 @@ struct jk_worker
      */
     int (JK_METHOD * validate) (jk_worker_t *w,
                                 jk_map_t *props,
-                                jk_worker_env_t *we, jk_logger_t *l);
+                                jk_worker_env_t *we, jk_log_context_t *log_ctx);
 
     /*
      * Update worker either from jk_status or reloading from workers.properties
      */
     int (JK_METHOD * update) (jk_worker_t *w,
                               jk_map_t *props,
-                              jk_worker_env_t *we, jk_logger_t *l);
+                              jk_worker_env_t *we, jk_log_context_t *log_ctx);
 
     /*
      * Do whatever initialization needs to be done to start this worker up.
@@ -526,7 +531,7 @@ struct jk_worker
      */
     int (JK_METHOD * init) (jk_worker_t *w,
                             jk_map_t *props,
-                            jk_worker_env_t *we, jk_logger_t *l);
+                            jk_worker_env_t *we, jk_log_context_t *log_ctx);
 
 
     /*
@@ -534,24 +539,24 @@ struct jk_worker
      * the endpoint is stored in pend.
      */
     int (JK_METHOD * get_endpoint) (jk_worker_t *w,
-                                    jk_endpoint_t **pend, jk_logger_t *l);
+                                    jk_endpoint_t **pend, jk_log_context_t *log_ctx);
 
     /*
      * Shutdown this worker.  The first argument is not a 'this' pointer,
      * but rather a pointer to 'this', so that the object can be free'd (I
      * think -- though that doesn't seem to be happening.  Hmmm).
      */
-    int (JK_METHOD * destroy) (jk_worker_t **w, jk_logger_t *l);
+    int (JK_METHOD * destroy) (jk_worker_t **w, jk_log_context_t *log_ctx);
 
     /*
      * Maintain this worker.
      */
-    int (JK_METHOD * maintain) (jk_worker_t *w, time_t now, int global, jk_logger_t *l);
+    int (JK_METHOD * maintain) (jk_worker_t *w, time_t now, int global, jk_log_context_t *log_ctx);
 
     /*
      * Shut this worker down.
      */
-    int (JK_METHOD * shutdown) (jk_worker_t *w, jk_logger_t *l);
+    int (JK_METHOD * shutdown) (jk_worker_t *w, jk_log_context_t *log_ctx);
 
 };
 
@@ -570,7 +575,7 @@ struct jk_worker
  */
 typedef int (JK_METHOD * worker_factory) (jk_worker_t **w,
                                           const char *name,
-                                          jk_logger_t *l);
+                                          jk_log_context_t *log_ctx);
 
 void jk_init_ws_service(jk_ws_service_t *s);
 

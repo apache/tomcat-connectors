@@ -179,45 +179,45 @@ struct jk_uri_worker_map
 typedef struct jk_uri_worker_map jk_uri_worker_map_t;
 
 void extension_fix(jk_pool_t *p, const char *name,
-                                      rule_extension_t *extensions, jk_logger_t *l);
+                                      rule_extension_t *extensions, jk_log_context_t *log_ctx);
 
 void parse_rule_extensions(char *rule, rule_extension_t *extensions,
-                           jk_logger_t *l);
+                           jk_log_context_t *log_ctx);
 
 const char *uri_worker_map_get_source(uri_worker_record_t *uwr);
 
 char *uri_worker_map_get_match(uri_worker_record_t *uwr, char *buf);
 
 int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map,
-                         jk_map_t *init_data, jk_logger_t *l);
+                         jk_map_t *init_data, jk_log_context_t *log_ctx);
 
-int uri_worker_map_free(jk_uri_worker_map_t **uw_map, jk_logger_t *l);
+int uri_worker_map_free(jk_uri_worker_map_t **uw_map, jk_log_context_t *log_ctx);
 
 int uri_worker_map_open(jk_uri_worker_map_t *uw_map,
-                        jk_map_t *init_data, jk_logger_t *l);
+                        jk_map_t *init_data, jk_log_context_t *log_ctx);
 
-void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_logger_t *l);
+void uri_worker_map_switch(jk_uri_worker_map_t *uw_map, jk_log_context_t *log_ctx);
 
-void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_logger_t *l);
+void uri_worker_map_ext(jk_uri_worker_map_t *uw_map, jk_log_context_t *log_ctx);
 
 int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
                        const char *puri, const char *worker,
-                       unsigned int source_type, jk_logger_t *l);
+                       unsigned int source_type, jk_log_context_t *log_ctx);
 
 const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
                                   const char *uri, const char *vhost,
                                   rule_extension_t **extensions,
                                   int *index,
-                                  jk_logger_t *l);
+                                  jk_log_context_t *log_ctx);
 
 rule_extension_t *get_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
                                         int index);
 
 int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
-                        jk_logger_t *l);
+                        jk_log_context_t *log_ctx);
 
 int uri_worker_map_update(jk_uri_worker_map_t *uw_map,
-                          int force, jk_logger_t *l);
+                          int force, jk_log_context_t *log_ctx);
 
 #ifdef __cplusplus
 }

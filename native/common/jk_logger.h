@@ -59,6 +59,13 @@ struct jk_file_logger_t
     int is_piped;
 };
 
+typedef struct jk_log_context_t jk_log_context_t;
+struct jk_log_context_t
+{
+    jk_logger_t *logger;
+    const char *id;
+};
+
 /* Level like Java tracing, but available only
    at compile time on DEBUG preproc define.
  */
@@ -108,7 +115,7 @@ struct jk_file_logger_t
 #define JK_IS_PRODUCTION    0
 #define JK_TRACE_ENTER(l)                               \
     do {                                                \
-        if ((l) && (l)->level == JK_LOG_TRACE_LEVEL) {  \
+        if ((l) && (l)->logger && (l)->logger->level == JK_LOG_TRACE_LEVEL) {  \
             int tmp_errno = errno;                      \
             jk_log((l), JK_LOG_TRACE, "enter");         \
             errno = tmp_errno;                          \
@@ -116,7 +123,7 @@ struct jk_file_logger_t
 
 #define JK_TRACE_EXIT(l)                                \
     do {                                                \
-        if ((l) && (l)->level == JK_LOG_TRACE_LEVEL) {  \
+        if ((l) && (l)->logger && (l)->logger->level == JK_LOG_TRACE_LEVEL) {  \
             int tmp_errno = errno;                      \
             jk_log((l), JK_LOG_TRACE, "exit");          \
             errno = tmp_errno;                          \
@@ -130,7 +137,7 @@ struct jk_file_logger_t
  * It is more efficient to check the level prior
  * calling function that will not execute anyhow because of level
  */
-#define JK_IS_DEBUG_LEVEL(l)  ((l) && (l)->level <  JK_LOG_INFO_LEVEL)
+#define JK_IS_DEBUG_LEVEL(l)  ((l) && (l)->logger && (l)->logger->level < JK_LOG_INFO_LEVEL)
 
 
 #ifdef __cplusplus

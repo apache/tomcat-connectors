@@ -332,7 +332,7 @@ struct ajp_worker
      * Post physical connect handler.
      * AJP14 will set here its login handler
      */
-    int (*logon) (ajp_endpoint_t * ae, jk_logger_t *l);
+    int (*logon) (ajp_endpoint_t * ae, jk_log_context_t *log_ctx);
 
     /*
      * Handle Socket Timeouts
@@ -441,50 +441,50 @@ struct ajp_operation
  */
 
 
-const char *jk_ajp_get_state(ajp_worker_t *aw, jk_logger_t *l);
+const char *jk_ajp_get_state(ajp_worker_t *aw, jk_log_context_t *log_ctx);
 
 int jk_ajp_get_state_code(const char *v);
 
 int ajp_validate(jk_worker_t *pThis,
                  jk_map_t *props,
-                 jk_worker_env_t *we, jk_logger_t *l, int proto);
+                 jk_worker_env_t *we, jk_log_context_t *log_ctx, int proto);
 
 int ajp_init(jk_worker_t *pThis,
              jk_map_t *props,
-             jk_worker_env_t *we, jk_logger_t *l, int proto);
+             jk_worker_env_t *we, jk_log_context_t *log_ctx, int proto);
 
 int JK_METHOD ajp_worker_factory(jk_worker_t **w,
-                                 const char *name, jk_logger_t *l);
+                                 const char *name, jk_log_context_t *log_ctx);
 
-int ajp_destroy(jk_worker_t **pThis, jk_logger_t *l, int proto);
+int ajp_destroy(jk_worker_t **pThis, jk_log_context_t *log_ctx, int proto);
 
-int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l);
+int JK_METHOD ajp_done(jk_endpoint_t **e, jk_log_context_t *log_ctx);
 
 int ajp_get_endpoint(jk_worker_t *pThis,
-                     jk_endpoint_t **pend, jk_logger_t *l, int proto);
+                     jk_endpoint_t **pend, jk_log_context_t *log_ctx, int proto);
 
-int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_logger_t *l);
+int ajp_connect_to_endpoint(ajp_endpoint_t * ae, jk_log_context_t *log_ctx);
 
-void ajp_close_endpoint(ajp_endpoint_t * ae, jk_logger_t *l);
+void ajp_close_endpoint(ajp_endpoint_t * ae, jk_log_context_t *log_ctx);
 
-void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_logger_t *l);
+void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_log_context_t *log_ctx);
 
-void jk_ajp_push(ajp_worker_t * aw, int locked, jk_logger_t *l);
+void jk_ajp_push(ajp_worker_t * aw, int locked, jk_log_context_t *log_ctx);
 
 int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
-                                    jk_msg_buf_t *msg, jk_logger_t *l);
+                                    jk_msg_buf_t *msg, jk_log_context_t *log_ctx);
 
 int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
-                                   jk_msg_buf_t *msg, jk_logger_t *l);
+                                   jk_msg_buf_t *msg, jk_log_context_t *log_ctx);
 
-int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t now, int global, jk_logger_t *l);
+int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t now, int global, jk_log_context_t *log_ctx);
 
-int JK_METHOD ajp_shutdown(jk_worker_t *pThis, jk_logger_t *l);
+int JK_METHOD ajp_shutdown(jk_worker_t *pThis, jk_log_context_t *log_ctx);
 
 void jk_ajp_get_cping_text(int mode, char *buf);
 int jk_ajp_get_cping_mode(const char *m, int def);
 
-int ajp_has_endpoint(jk_worker_t *pThis, jk_logger_t *l);
+int ajp_has_endpoint(jk_worker_t *pThis, jk_log_context_t *log_ctx);
 
 #ifdef __cplusplus
 }

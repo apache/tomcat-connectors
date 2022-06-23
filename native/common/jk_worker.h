@@ -33,22 +33,22 @@ extern "C"
 {
 #endif                          /* __cplusplus */
 
-int wc_open(jk_map_t *init_data, jk_worker_env_t *we, jk_logger_t *l);
+int wc_open(jk_map_t *init_data, jk_worker_env_t *we, jk_log_context_t *log_ctx);
 
-void wc_close(jk_logger_t *l);
+void wc_close(jk_log_context_t *log_ctx);
 
-jk_worker_t *wc_get_worker_for_name(const char *name, jk_logger_t *l);
+jk_worker_t *wc_get_worker_for_name(const char *name, jk_log_context_t *log_ctx);
 
-const char *wc_get_name_for_type(int type, jk_logger_t *l);
+const char *wc_get_name_for_type(int type, jk_log_context_t *log_ctx);
 
 int wc_create_worker(const char *name, int use_map,
                      jk_map_t *init_data,
                      jk_worker_t **rc,
-                     jk_worker_env_t *we, jk_logger_t *l);
+                     jk_worker_env_t *we, jk_log_context_t *log_ctx);
 
-void wc_maintain(jk_logger_t *l);
+void wc_maintain(jk_log_context_t *log_ctx);
 
-void wc_shutdown(jk_logger_t *l);
+void wc_shutdown(jk_log_context_t *log_ctx);
 
 #ifdef __cplusplus
 }

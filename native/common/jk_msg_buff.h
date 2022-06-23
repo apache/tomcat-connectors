@@ -136,7 +136,7 @@ unsigned short jk_b_pget_int(jk_msg_buf_t *msg, int pos);
 unsigned long jk_b_pget_long(jk_msg_buf_t *msg, int pos);
 
 /* --------------------- Help ------------------------ */
-void jk_dump_buff(jk_logger_t *l,
+void jk_dump_buff(jk_log_context_t *log_ctx,
                   const char *file,
                   int line, const char *funcname,
                   int level, char *what, jk_msg_buf_t *msg);

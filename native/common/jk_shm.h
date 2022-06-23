@@ -188,39 +188,39 @@ typedef struct jk_shm_lb_worker jk_shm_lb_worker_t;
 const char *jk_shm_name(void);
 
 /* Calculate needed shm size */
-int jk_shm_calculate_size(jk_map_t *init_data, jk_logger_t *l);
+int jk_shm_calculate_size(jk_map_t *init_data, jk_log_context_t *log_ctx);
 
 /* Open the shared memory creating file if needed
  */
-int jk_shm_open(const char *fname, int sz, jk_logger_t *l);
+int jk_shm_open(const char *fname, int sz, jk_log_context_t *log_ctx);
 
 /* Close the shared memory
  */
-void jk_shm_close(jk_logger_t *l);
+void jk_shm_close(jk_log_context_t *log_ctx);
 
 /* Attach the shared memory in child process.
  * File has to be opened in parent.
  */
-int jk_shm_attach(const char *fname, int sz, jk_logger_t *l);
+int jk_shm_attach(const char *fname, int sz, jk_log_context_t *log_ctx);
 
 /* allocate shm ajp worker record
  * If there is no shm present the pool will be used instead
  */
 jk_shm_ajp_worker_t *jk_shm_alloc_ajp_worker(jk_pool_t *p, const char *name,
-                                             jk_logger_t *l);
+                                             jk_log_context_t *log_ctx);
 
 /* allocate shm lb sub worker record
  * If there is no shm present the pool will be used instead
  */
 jk_shm_lb_sub_worker_t *jk_shm_alloc_lb_sub_worker(jk_pool_t *p,
                                                    int lb_id, const char *name,
-                                                   jk_logger_t *l);
+                                                   jk_log_context_t *log_ctx);
 
 /* allocate shm lb worker record
  * If there is no shm present the pool will be used instead
  */
 jk_shm_lb_worker_t *jk_shm_alloc_lb_worker(jk_pool_t *p, const char *name,
-                                           jk_logger_t *l);
+                                           jk_log_context_t *log_ctx);
 
 int jk_shm_check_maintain(time_t trigger);
 

@@ -40,7 +40,7 @@ extern "C"
 #define JK_AJP13_WORKER_TYPE (2)
 
 int JK_METHOD ajp13_worker_factory(jk_worker_t **w,
-                                   const char *name, jk_logger_t *l);
+                                   const char *name, jk_log_context_t *log_ctx);
 
 #ifdef __cplusplus
 }
