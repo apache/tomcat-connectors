@@ -184,9 +184,9 @@ void extension_fix(jk_pool_t *p, const char *name,
 void parse_rule_extensions(char *rule, rule_extension_t *extensions,
                            jk_logger_t *l);
 
-const char *uri_worker_map_get_source(uri_worker_record_t *uwr, jk_logger_t *l);
+const char *uri_worker_map_get_source(uri_worker_record_t *uwr);
 
-char *uri_worker_map_get_match(uri_worker_record_t *uwr, char *buf, jk_logger_t *l);
+char *uri_worker_map_get_match(uri_worker_record_t *uwr, char *buf);
 
 int uri_worker_map_alloc(jk_uri_worker_map_t **uw_map,
                          jk_map_t *init_data, jk_logger_t *l);

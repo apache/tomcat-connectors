@@ -1660,8 +1660,8 @@ static void display_map(jk_ws_service_t *s,
                 jk_printf(s, l, JK_STATUS_URI_MAP_TABLE_ROW2,
                           server_name,
                           uwr->uri,
-                          uri_worker_map_get_match(uwr, buf, l),
-                          uri_worker_map_get_source(uwr, l),
+                          uri_worker_map_get_match(uwr, buf),
+                          uri_worker_map_get_source(uwr),
                           uwr->extensions.reply_timeout,
                           uwr->extensions.sticky_ignore,
                           uwr->extensions.stateless,
@@ -1673,8 +1673,8 @@ static void display_map(jk_ws_service_t *s,
             else
                 jk_printf(s, l, JK_STATUS_URI_MAP_TABLE_ROW,
                           uwr->uri,
-                          uri_worker_map_get_match(uwr, buf, l),
-                          uri_worker_map_get_source(uwr, l),
+                          uri_worker_map_get_match(uwr, buf),
+                          uri_worker_map_get_source(uwr),
                           uwr->extensions.reply_timeout,
                           uwr->extensions.sticky_ignore,
                           uwr->extensions.stateless,
@@ -1690,8 +1690,8 @@ static void display_map(jk_ws_service_t *s,
             if (server_name)
                 jk_print_xml_att_string(s, l, 8, "server", server_name);
             jk_print_xml_att_string(s, l, 8, "uri", uwr->uri);
-            jk_print_xml_att_string(s, l, 8, "type", uri_worker_map_get_match(uwr, buf, l));
-            jk_print_xml_att_string(s, l, 8, "source", uri_worker_map_get_source(uwr, l));
+            jk_print_xml_att_string(s, l, 8, "type", uri_worker_map_get_match(uwr, buf));
+            jk_print_xml_att_string(s, l, 8, "source", uri_worker_map_get_source(uwr));
             jk_print_xml_att_int(s, l, 8, "reply_timeout", uwr->extensions.reply_timeout);
             jk_print_xml_att_int(s, l, 8, "sticky_ignore", uwr->extensions.sticky_ignore);
             jk_print_xml_att_int(s, l, 8, "stateless", uwr->extensions.stateless);
@@ -1708,8 +1708,8 @@ static void display_map(jk_ws_service_t *s,
             if (server_name)
                 jk_printf(s, l, " server=\"%s\"", server_name);
             jk_printf(s, l, " uri=\"%s\"", uwr->uri);
-            jk_printf(s, l, " type=\"%s\"", uri_worker_map_get_match(uwr, buf, l));
-            jk_printf(s, l, " source=\"%s\"", uri_worker_map_get_source(uwr, l));
+            jk_printf(s, l, " type=\"%s\"", uri_worker_map_get_match(uwr, buf));
+            jk_printf(s, l, " source=\"%s\"", uri_worker_map_get_source(uwr));
             jk_printf(s, l, " reply_timeout=\"%d\"", uwr->extensions.reply_timeout);
             jk_printf(s, l, " sticky_ignore=\"%d\"", uwr->extensions.sticky_ignore);
             jk_printf(s, l, " stateless=\"%d\"", uwr->extensions.stateless);
@@ -1724,8 +1724,8 @@ static void display_map(jk_ws_service_t *s,
             if (server_name)
                jk_print_prop_item_string(s, l, w, worker, "map", count, "server", server_name);
             jk_print_prop_item_string(s, l, w, worker, "map", count, "uri", uwr->uri);
-            jk_print_prop_item_string(s, l, w, worker, "map", count, "type", uri_worker_map_get_match(uwr, buf, l));
-            jk_print_prop_item_string(s, l, w, worker, "map", count, "source", uri_worker_map_get_source(uwr, l));
+            jk_print_prop_item_string(s, l, w, worker, "map", count, "type", uri_worker_map_get_match(uwr, buf));
+            jk_print_prop_item_string(s, l, w, worker, "map", count, "source", uri_worker_map_get_source(uwr));
             jk_print_prop_item_int(s, l, w, worker, "map", count, "reply_timeout", uwr->extensions.reply_timeout);
             jk_print_prop_item_int(s, l, w, worker, "map", count, "sticky_ignore", uwr->extensions.sticky_ignore);
             jk_print_prop_item_int(s, l, w, worker, "map", count, "stateless", uwr->extensions.stateless);

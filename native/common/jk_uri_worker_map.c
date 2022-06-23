@@ -70,13 +70,13 @@ static const char *uri_worker_map_source_type[] = {
 
 
 /* Return the string representation of the uwr source */
-const char *uri_worker_map_get_source(uri_worker_record_t *uwr, jk_logger_t *l)
+const char *uri_worker_map_get_source(uri_worker_record_t *uwr)
 {
     return uri_worker_map_source_type[uwr->source_type];
 }
 
 /* Return the string representation of the uwr match type */
-char *uri_worker_map_get_match(uri_worker_record_t *uwr, char *buf, jk_logger_t *l)
+char *uri_worker_map_get_match(uri_worker_record_t *uwr, char *buf)
 {
     unsigned int match;
 
@@ -197,8 +197,8 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
                            "source=%s type=%s len=%d",
                            i ? "NEXT" : "THIS", i, j,
                            STRNULL_FOR_NULL(uwr->uri), STRNULL_FOR_NULL(uwr->worker_name),
-                           STRNULL_FOR_NULL(uwr->context), STRNULL_FOR_NULL(uri_worker_map_get_source(uwr,l)),
-                           STRNULL_FOR_NULL(uri_worker_map_get_match(uwr,buf,l)), uwr->context_len);
+                           STRNULL_FOR_NULL(uwr->context), STRNULL_FOR_NULL(uri_worker_map_get_source(uwr)),
+                           STRNULL_FOR_NULL(uri_worker_map_get_match(uwr, buf)), uwr->context_len);
                 }
             }
         }
@@ -356,7 +356,7 @@ static int uri_worker_map_clear(jk_uri_worker_map_t *uw_map,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "deleting map rule '%s=%s' source '%s'",
-                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr, l));
+                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
         }
         else {
             IND_NEXT(uw_map->maps)[new_size] = uwr;
@@ -846,7 +846,7 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "wildchar rule '%s=%s' source '%s' was added",
-                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr, l));
+                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
 
         }
         else {
@@ -855,7 +855,7 @@ int uri_worker_map_add(jk_uri_worker_map_t *uw_map,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "exact rule '%s=%s' source '%s' was added",
-                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr, l));
+                       uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
         }
     }
     else {
@@ -975,7 +975,7 @@ static int find_match(jk_uri_worker_map_t *uw_map,
 
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG, "Attempting to map context URI '%s=%s' source '%s'",
-                   uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr, l));
+                   uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
 
         if (uwr->match_type & MATCH_TYPE_WILDCHAR_PATH) {
             /* Map is already sorted by context_len */
@@ -1042,7 +1042,7 @@ static int is_nomatch(jk_uri_worker_map_t *uw_map,
                     if (JK_IS_DEBUG_LEVEL(l))
                         jk_log(l, JK_LOG_DEBUG,
                                "Found a wildchar no match '%s=%s' source '%s'",
-                               uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr, l));
+                               uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
                     JK_TRACE_EXIT(l);
                     return JK_TRUE;
              }
@@ -1052,7 +1052,7 @@ static int is_nomatch(jk_uri_worker_map_t *uw_map,
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
                            "Found an exact no match '%s=%s' source '%s'",
-                           uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr, l));
+                           uwr->context, uwr->worker_name, uri_worker_map_get_source(uwr));
                 JK_TRACE_EXIT(l);
                 return JK_TRUE;
             }
