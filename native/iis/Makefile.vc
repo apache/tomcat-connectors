@@ -48,7 +48,7 @@ CFLAGS = $(CFLAGS) -DPCRE_STATIC -DJK_ISAPI -DISAPI_EXPORTS $(EXTRA_CFLAGS)
 CLOPTS = /c /nologo -MD -W3 -O2 -Ob2 -Zi -EHsc
 PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
 LFLAGS = /nologo /DLL /INCREMENTAL:NO /DEBUG /OPT:REF /SUBSYSTEM:WINDOWS /MACHINE:$(MACHINE) $(EXTRA_LDFLAGS)
-LDLIBS = kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib $(EXTRA_LIBS)
+LDLIBS = Ole32.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib $(EXTRA_LIBS)
 INCDIR = -I.\pcre -I..\common
 
 OBJECTS = \

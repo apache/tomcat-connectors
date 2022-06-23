@@ -33,6 +33,7 @@
 #include <httpext.h>
 #include <httpfilt.h>
 #include <wininet.h>
+#include <Objbase.h>
 
 #include "jk_global.h"
 #include "jk_url.h"
@@ -80,6 +81,7 @@
  */
 #define URI_HEADER_NAME_BASE              "TOMCATURI"
 #define QUERY_HEADER_NAME_BASE            "TOMCATQUERY"
+#define REQUEST_ID_HEADER_NAME_BASE       "TOMCATREQUESTID"
 #define WORKER_HEADER_NAME_BASE           "TOMCATWORKER"
 #define WORKER_HEADER_INDEX_BASE          "TOMCATWORKERIDX"
 #define TOMCAT_TRANSLATE_HEADER_NAME_BASE "TOMCATTRANSLATE"
@@ -104,6 +106,7 @@
 
 static char URI_HEADER_NAME[RES_BUFFER_SIZE];
 static char QUERY_HEADER_NAME[RES_BUFFER_SIZE];
+static char REQUEST_ID_HEADER_NAME[RES_BUFFER_SIZE];
 static char WORKER_HEADER_NAME[RES_BUFFER_SIZE];
 static char TOMCAT_TRANSLATE_HEADER_NAME[RES_BUFFER_SIZE];
 static char WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
@@ -113,6 +116,7 @@ static char WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
  */
 static char HTTP_URI_HEADER_NAME[RES_BUFFER_SIZE];
 static char HTTP_QUERY_HEADER_NAME[RES_BUFFER_SIZE];
+static char HTTP_REQUEST_ID_HEADER_NAME[RES_BUFFER_SIZE];
 static char HTTP_WORKER_HEADER_NAME[RES_BUFFER_SIZE];
 static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 
@@ -136,6 +140,7 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define ENABLE_CHUNKED_ENCODING_TAG   "enable_chunked_encoding"
 #define ERROR_PAGE_TAG                "error_page"
 #define FLUSH_PACKETS_TAG             "flush_packets"
+#define REQUEST_ID_HEADER_TAG         "request_id_header"
 
 #define LOG_ROTATION_TIME_TAG         "log_rotationtime"
 #define LOG_FILESIZE_TAG              "log_filesize"
@@ -172,6 +177,10 @@ static char HTTP_WORKER_HEADER_INDEX[RES_BUFFER_SIZE];
 #define BAD_PATH            -2
 #define MAX_SERVERNAME      1024
 #define MAX_INSTANCEID      32
+
+/* UUID Template and buffer size */
+#define UUID_TEMPLATE       "%08X-%04hX-%04hX-%02X%02X-%02X%02X%02X%02X%02X%02X"
+#define UUID_BUFFER_SIZE    50
 
 char HTML_ERROR_HEAD[] =        "<!--\n"
                                 "  Licensed to the Apache Software Foundation (ASF) under one or more\n"
@@ -512,6 +521,9 @@ static HANDLE watchdog_handle = NULL;
 static char error_page_buf[INTERNET_MAX_URL_LENGTH] = {0};
 static char *error_page = NULL;
 static int flush_packets = JK_FALSE;
+static char request_id_header_buf[HDR_BUFFER_SIZE] = {0};
+static char *request_id_header = NULL;
+static char *request_id_header_colon = NULL;
 
 #define URI_SELECT_OPT_PARSED       0
 #define URI_SELECT_OPT_UNPARSED     1
@@ -1711,9 +1723,11 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     char *cleanuri  = NULL;
     char *uri = NULL;
     char *host = NULL;
+    char *request_id = NULL;
     char *translate = NULL;
     char szHB[HDR_BUFFER_SIZE] = "/";
     char szUB[HDR_BUFFER_SIZE] = "";
+    char szRIDB[512] = "";
     char szTB[16] = "";
     char szPB[16] = "";
     char swindex[32] = "";
@@ -1732,6 +1746,7 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
      */
     clear_header(pfp, pfc, URI_HEADER_NAME);
     clear_header(pfp, pfc, QUERY_HEADER_NAME);
+    clear_header(pfp, pfc, REQUEST_ID_HEADER_NAME);
     clear_header(pfp, pfc, WORKER_HEADER_NAME);
     clear_header(pfp, pfc, WORKER_HEADER_INDEX);
     clear_header(pfp, pfc, TOMCAT_TRANSLATE_HEADER_NAME);
@@ -1880,6 +1895,39 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         rs = pfp->AddHeader(pfc, URI_HEADER_NAME, forwardURI);
         if (rs && query)
             rs = pfp->AddHeader(pfc, QUERY_HEADER_NAME, query);
+
+        request_id = get_pheader(&pool, pfp, pfc, request_id_header,
+                                 szRIDB, sizeof(szRIDB));
+        if (request_id  == NULL || *request_id == '\0') {
+            char uuid[UUID_BUFFER_SIZE];
+            GUID guid;
+            HRESULT hr = CoCreateGuid(&guid);
+            if (FAILED(hr)) {
+                jk_log(l, JK_LOG_WARNING, "Could not create UUID for request id");
+                request_id = "NO-ID";
+            }
+            else {
+                _snprintf_s(uuid, sizeof(uuid), _TRUNCATE, UUID_TEMPLATE,
+                            guid.Data1, guid.Data2, guid.Data3,
+                            guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+                            guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+                request_id = jk_pool_strdup(&pool, uuid);
+                l->id = request_id;
+                if (JK_IS_DEBUG_LEVEL(l)) {
+                    jk_log(l, JK_LOG_DEBUG,
+                           "Created request id [%s]", request_id);
+                }
+            }
+        }
+        else {
+            l->id = request_id;
+            if (JK_IS_DEBUG_LEVEL(l)) {
+                jk_log(l, JK_LOG_DEBUG,
+                       "Received request id [%s]", request_id);
+            }
+        }
+
+        rs = rs && pfp->AddHeader(pfc, REQUEST_ID_HEADER_NAME, request_id);
         rs = rs && pfp->AddHeader(pfc, WORKER_HEADER_NAME, (LPSTR)worker);
         rs = rs && pfp->AddHeader(pfc, WORKER_HEADER_INDEX, swindex);
         rs = rs && pfp->SetHeader(pfc, "url", extension_uri);
@@ -1931,6 +1979,8 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
             if (query)
                 jk_log(l, JK_LOG_DEBUG,
                        "forward query : %s%s", QUERY_HEADER_NAME, query);
+            jk_log(l, JK_LOG_DEBUG,
+                   "request id: %s%s", REQUEST_ID_HEADER_NAME, request_id);
             jk_log(l, JK_LOG_DEBUG,
                    "forward worker: %s%s", WORKER_HEADER_NAME, worker);
             jk_log(l, JK_LOG_DEBUG,
@@ -2033,9 +2083,17 @@ DWORD WINAPI HttpExtensionProc(LPEXTENSION_CONTROL_BLOCK lpEcb)
     char *worker_name;
     jk_log_context_t log_ctx;
     jk_log_context_t *l = &log_ctx;
+    char id[HDR_BUFFER_SIZE];
+    DWORD idLen = HDR_BUFFER_SIZE;
 
     l->logger = logger;
-    l->id = "EXTENSION";
+    if (lpEcb->GetServerVariable(lpEcb->ConnID, HTTP_REQUEST_ID_HEADER_NAME,
+                                 id, &idLen)) {
+        l->id = id;
+    }
+    else {
+        l->id = "EXTENSION";
+    }
 
     lpEcb->dwHttpStatusCode = HTTP_STATUS_SERVER_ERROR;
 
@@ -2294,6 +2352,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         /* Construct redirector headers to use for this redirector instance */
         StringCbPrintf(URI_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
         StringCbPrintf(QUERY_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, QUERY_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(REQUEST_ID_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, REQUEST_ID_HEADER_NAME_BASE, hInst);
         StringCbPrintf(WORKER_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
         StringCbPrintf(WORKER_HEADER_INDEX, RES_BUFFER_SIZE, HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
         StringCbPrintf(TOMCAT_TRANSLATE_HEADER_NAME, RES_BUFFER_SIZE, HEADER_TEMPLATE, TOMCAT_TRANSLATE_HEADER_NAME_BASE, hInst);
@@ -2301,6 +2360,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst,    /* Instance Handle of the DLL           
         /* Construct the HTTP_ headers that will be seen in ExtensionProc */
         StringCbPrintf(HTTP_URI_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, URI_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_QUERY_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, QUERY_HEADER_NAME_BASE, hInst);
+        StringCbPrintf(HTTP_REQUEST_ID_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, REQUEST_ID_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_WORKER_HEADER_NAME, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_NAME_BASE, hInst);
         StringCbPrintf(HTTP_WORKER_HEADER_INDEX, RES_BUFFER_SIZE, HTTP_HEADER_TEMPLATE, WORKER_HEADER_INDEX_BASE, hInst);
 
@@ -2569,11 +2629,15 @@ static int init_jk(char *serverName)
         }
         jk_log(l, JK_LOG_DEBUG, "Using uri header %s.", URI_HEADER_NAME);
         jk_log(l, JK_LOG_DEBUG, "Using query header %s.", QUERY_HEADER_NAME);
+        jk_log(l, JK_LOG_DEBUG, "Using request id header %s.", REQUEST_ID_HEADER_NAME);
         jk_log(l, JK_LOG_DEBUG, "Using worker header %s.", WORKER_HEADER_NAME);
         jk_log(l, JK_LOG_DEBUG, "Using worker index %s.", WORKER_HEADER_INDEX);
         jk_log(l, JK_LOG_DEBUG, "Using translate header %s.", TOMCAT_TRANSLATE_HEADER_NAME);
         jk_log(l, JK_LOG_DEBUG, "Using a default of %d connections per pool.",
                DEFAULT_WORKER_THREADS);
+        if (request_id_header) {
+            jk_log(l, JK_LOG_DEBUG, "Using incoming request id header '%s'.", request_id_header);
+        }
     }
 
     if ((log_rotationtime > 0) && (log_filesize > 0)) {
@@ -2888,6 +2952,14 @@ static int read_registry_init_data(jk_log_context_t *l)
     if (get_config_parameter(src, ERROR_PAGE_TAG, error_page_buf, sizeof(error_page_buf))) {
         error_page = error_page_buf;
     }
+    if (get_config_parameter(src, REQUEST_ID_HEADER_TAG, request_id_header_buf, sizeof(request_id_header_buf))) {
+        size_t size = strlen(request_id_header_buf);
+        if (size + 2 <= sizeof(request_id_header_buf)) {
+            request_id_header_buf[size + 1] = '\0';
+            request_id_header_buf[size] = ':';
+        }
+        request_id_header = request_id_header_buf;
+    }
     ok = JK_TRUE;
 cleanup:
     if (using_ini_file) {
@@ -3008,6 +3080,7 @@ static int init_ws_service(isapi_private_data_t * private_data,
     l = jk_pool_alloc(s->pool, sizeof(jk_log_context_t));
     l->logger = logger;
     l->id = "INIT_WS_SERVICE";
+    GET_SERVER_VARIABLE_VALUE(HTTP_REQUEST_ID_HEADER_NAME, l->id, "NO-ID");
     s->log_ctx = l;
 
     GET_SERVER_VARIABLE_VALUE(HTTP_URI_HEADER_NAME, s->req_uri, NULL);
@@ -3031,10 +3104,11 @@ static int init_ws_service(isapi_private_data_t * private_data,
     }
 
     if (JK_IS_DEBUG_LEVEL(l)) {
-        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_WORKER_HEADER_NAME, (*worker_name));
-        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %d", HTTP_WORKER_HEADER_INDEX, worker_index);
-        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_URI_HEADER_NAME, s->req_uri);
-        jk_log(l, JK_LOG_DEBUG, "Reading extension header %s: %s", HTTP_QUERY_HEADER_NAME, s->query_string);
+        jk_log(l, JK_LOG_DEBUG, "Read extension header %s: %s", HTTP_WORKER_HEADER_NAME, (*worker_name));
+        jk_log(l, JK_LOG_DEBUG, "Read extension header %s: %d", HTTP_WORKER_HEADER_INDEX, worker_index);
+        jk_log(l, JK_LOG_DEBUG, "Read extension header %s: %s", HTTP_URI_HEADER_NAME, s->req_uri);
+        jk_log(l, JK_LOG_DEBUG, "Read extension header %s: %s", HTTP_QUERY_HEADER_NAME, s->query_string);
+        jk_log(l, JK_LOG_DEBUG, "Read extension header %s: %s", HTTP_REQUEST_ID_HEADER_NAME, s->log_ctx->id);
     }
 
     GET_SERVER_VARIABLE_VALUE("AUTH_TYPE", s->auth_type, NULL);
@@ -3241,7 +3315,8 @@ static int init_ws_service(isapi_private_data_t * private_data,
             if (!strnicmp(tmp, URI_HEADER_NAME, strlen(URI_HEADER_NAME)) ||
                 !strnicmp(tmp, WORKER_HEADER_NAME, strlen(WORKER_HEADER_NAME)) ||
                 !strnicmp(tmp, WORKER_HEADER_INDEX, strlen(WORKER_HEADER_INDEX)) ||
-                !strnicmp(tmp, QUERY_HEADER_NAME, strlen(QUERY_HEADER_NAME))) {
+                !strnicmp(tmp, QUERY_HEADER_NAME, strlen(QUERY_HEADER_NAME)) ||
+                !strnicmp(tmp, REQUEST_ID_HEADER_NAME, strlen(REQUEST_ID_HEADER_NAME))) {
                 /* Skip redirector headers */
                 cnt--;
                 real_header = JK_FALSE;
