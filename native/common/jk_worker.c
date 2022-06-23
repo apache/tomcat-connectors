@@ -60,8 +60,8 @@ int wc_open(jk_map_t *init_data, jk_worker_env_t *we, jk_logger_t *l)
     JK_INIT_CS(&worker_lock, rc);
     if (rc == JK_FALSE) {
         jk_log(l, JK_LOG_ERROR,
-                "creating thread lock (errno=%d)",
-                errno);
+               "creating thread lock (errno=%d)",
+               errno);
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
@@ -187,8 +187,8 @@ int wc_create_worker(const char *name, int use_map,
             for (i = 0; i < num_of_maps; i++) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                            "mounting %s to worker %s",
-                            map_names[i], name);
+                           "mounting %s to worker %s",
+                           map_names[i], name);
                 if (uri_worker_map_add(we->uri_to_worker, map_names[i],
                                        name, SOURCE_TYPE_WORKERDEF, l) == JK_FALSE) {
                     w->destroy(&w, l);

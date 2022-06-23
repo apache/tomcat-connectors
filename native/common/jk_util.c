@@ -510,7 +510,7 @@ static int set_time_str(char *str, int len, jk_logger_t *l)
     log_fmt[0] = '\0';
 
 #ifndef NO_GETTIMEOFDAY
-    if ( l->log_fmt_type != JK_TIME_SUBSEC_NONE ) {
+    if (l->log_fmt_type != JK_TIME_SUBSEC_NONE) {
         struct timeval tv;
         int rc = 0;
 
@@ -734,7 +734,7 @@ int jk_log(jk_logger_t *l,
             rc = snprintf(buf + used, usable_size - used,
                           "[%" JK_PID_T_FMT ":%" JK_PTHREAD_T_FMT "] ", getpid(), jk_gettid());
             used += rc;
-            if (rc < 0 ) {
+            if (rc < 0) {
                 strcpy(buf, "Logging failed in pid/tid formatting");
                 l->log(l, level, (int)strlen(buf), buf);
                 return 0;
@@ -2253,9 +2253,9 @@ int jk_servlet_normalize(char *path, jk_logger_t *logger)
             // Wind w back to remove the previous segment
             if (w == 1) {
                 jk_log(logger,
-                        JK_LOG_EMERG,
-                        "[%s] contains a '/../' sequence that tries to escape above the root.",
-                        path);
+                       JK_LOG_EMERG,
+                       "[%s] contains a '/../' sequence that tries to escape above the root.",
+                       path);
                 return JK_NORMALIZE_TRAVERSAL;
             }
             do {
@@ -2291,7 +2291,7 @@ int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
         int j;
         if (JK_IS_DEBUG_LEVEL(logger)) {
             jk_log(logger, JK_LOG_DEBUG,
-                    "removing session identifier for non servlet uri [%s]", path);
+                   "removing session identifier for non servlet uri [%s]", path);
         }
         // Found a session path parameter.
         // Need to skip at least as many characters as there are in
@@ -2311,7 +2311,7 @@ int jk_strip_session_id(char* path, char* session_name, jk_logger_t *logger) {
 
         if (JK_IS_DEBUG_LEVEL(logger)) {
             jk_log(logger, JK_LOG_DEBUG,
-                    "result of removing session identifier for non servlet uri is [%s]", path);
+                   "result of removing session identifier for non servlet uri is [%s]", path);
         }
         return 1;
     }

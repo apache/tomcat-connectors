@@ -205,7 +205,8 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                        host, port);
                 return JK_FALSE;
             }
-        } else {
+        }
+        else {
             jk_log(l, JK_LOG_ERROR,
                    "In jk_worker_t::validate, Error no host name given");
             return JK_FALSE;

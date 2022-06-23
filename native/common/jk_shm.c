@@ -377,10 +377,10 @@ int jk_shm_attach(const char *fname, int sz, jk_logger_t *l)
             jk_shmem.attached = 1;
             if (JK_IS_DEBUG_LEVEL(l)) {
                 jk_log(l, JK_LOG_DEBUG,
-                   "Attached shared memory %s [%d] size=%u free=%u addr=%#lx",
-                   jk_shm_name(), jk_shmem.hdr->h.data.childs, jk_shmem.size,
-                   jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos,
-                   jk_shmem.hdr);
+                       "Attached shared memory %s [%d] size=%u free=%u addr=%#lx",
+                       jk_shm_name(), jk_shmem.hdr->h.data.childs, jk_shmem.size,
+                       jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos,
+                       jk_shmem.hdr);
             }
         }
         JK_TRACE_EXIT(l);

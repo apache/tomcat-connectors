@@ -342,7 +342,7 @@ int ajp14_marshal_unknown_packet_into_msgb(jk_msg_buf_t *msg,
     }
     /*
      * UNHANDLED MESSAGE (Question : Did we have to send all the message or only part of)
-     *                                       (           ie: only 1k max                                                                )
+     *                                       (ie: only 1k max)
      */
     if (jk_b_append_bytes(msg, unk->buf, unk->len)) {
         jk_log(l, JK_LOG_ERROR,

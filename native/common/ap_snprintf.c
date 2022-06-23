@@ -264,14 +264,14 @@ static char *ap_gcvt(double number, int ndigit, char *buf, boolean_e altform)
                 cc++;                                           \
             }
 
-#define NUM( c )                        ( c - '0' )
+#define NUM(c)                          (c - '0')
 
-#define STR_TO_DEC( str, num )          \
-    num = NUM( *str++ ) ;               \
-    while ( ap_isdigit( *str ) )                \
-    {                                   \
-        num *= 10 ;                     \
-        num += NUM( *str++ ) ;          \
+#define STR_TO_DEC(str, num)                \
+    num = NUM(*str++);                      \
+    while (ap_isdigit(*str))                \
+    {                                       \
+        num *= 10;                          \
+        num += NUM(*str++);                 \
     }
 
 /*
@@ -284,13 +284,13 @@ static char *ap_gcvt(double number, int ndigit, char *buf, boolean_e altform)
  * NOTE: this makes use of the magic info that s is
  * always based on num_buf with a size of NUM_BUF_SIZE.
  */
-#define FIX_PRECISION( adjust, precision, s, s_len )    \
-    if ( adjust ) {                                     \
+#define FIX_PRECISION(adjust, precision, s, s_len)      \
+    if (adjust) {                                       \
         int p = precision < NUM_BUF_SIZE - 1 ? precision : NUM_BUF_SIZE - 1; \
-        while ( s_len < p )                             \
+        while (s_len < p)                               \
         {                                               \
-            *--s = '0' ;                                \
-            s_len++ ;                                   \
+            *--s = '0';                                 \
+            s_len++;                                    \
         }                                               \
     }
 
@@ -298,19 +298,19 @@ static char *ap_gcvt(double number, int ndigit, char *buf, boolean_e altform)
  * Macro that does padding. The padding is done by printing
  * the character ch.
  */
-#define PAD( width, len, ch )   do              \
+#define PAD(width, len, ch)   do                \
         {                                       \
-            INS_CHAR( ch, sp, bep, cc ) ;       \
-            width-- ;                           \
+            INS_CHAR(ch, sp, bep, cc);          \
+            width--;                            \
         }                                       \
-        while ( width > len )
+        while (width > len)
 
 /*
  * Prefix the character ch to the string str
  * Increase length
  * Set the has_prefix flag
  */
-#define PREFIX( str, length, ch )        *--str = ch ; length++ ; has_prefix = YES
+#define PREFIX(str, length, ch)        *--str = ch; length++; has_prefix = YES
 
 
 /*
@@ -389,7 +389,7 @@ static char *conv_10_quad(widest_int num, register bool_int is_unsigned,
      * punt to the quicker version.
      */
     if ((num <= ULONG_MAX && is_unsigned) || (num <= LONG_MAX && !is_unsigned))
-        return(conv_10( (wide_int)num, is_unsigned, is_negative,
+        return(conv_10((wide_int)num, is_unsigned, is_negative,
                buf_end, len));
 
     if (is_unsigned) {
@@ -605,7 +605,7 @@ static char *conv_p2_quad(u_widest_int num, register int nbits,
     register const char *digits = (format == 'X') ? upper_digits : low_digits;
 
     if (num <= ULONG_MAX)
-        return(conv_p2( (u_wide_int)num, nbits, format, buf_end, len));
+        return(conv_p2((u_wide_int)num, nbits, format, buf_end, len));
 
     do {
         *--p = digits[num & mask];

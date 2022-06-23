@@ -787,7 +787,8 @@ static const char *windows_strftime_preprocess(const char *pattern,
                      (tz.Bias >= 0 ? '+' : '-'), tz.Bias / 60, tz.Bias % 60);
         }
         return buf;
-    } else {
+    }
+    else {
         return pattern;
     }
 }
@@ -2057,7 +2058,7 @@ static void display_worker_ajp_details(jk_ws_service_t *s,
             jk_print_xml_att_int(s, l, off+2, "map_count", map_count);
         jk_print_xml_att_long(s, l, off+2, "last_reset_at", (long)aw->s->last_reset);
         jk_print_xml_att_int(s, l, off+2, "last_reset_ago", delta_reset);
-        if (rc_time > 0 ) {
+        if (rc_time > 0) {
             jk_print_xml_att_string(s, l, off+2, "error_time_datetime", buf_time);
             jk_print_xml_att_string(s, l, off+2, "error_time_tz", buf_tz);
             jk_print_xml_att_int(s, l, off+2, "error_time_unix_seconds", (int)error_time);
@@ -2264,9 +2265,9 @@ static void display_worker_lb(jk_ws_service_t *s,
         lb_sub_worker_t *wr = &(lb->lb_workers[j]);
         int rate;
         rate = status_rate(wr, w, l);
-        if (rate > 0 )
+        if (rate > 0)
            good++;
-        else if (rate < 0 )
+        else if (rate < 0)
            bad++;
         else
            degraded++;
@@ -3458,11 +3459,11 @@ static int commit_member(jk_ws_service_t *s,
                 snprintf(p->msg, size, msg, arg, aw->name);
                 rc = JK_FALSE;
             }
-            else if (strncmp(wr->route, arg, JK_SHM_STR_SIZ )) {
+            else if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->route, arg);
-                strncpy(wr->route, arg, JK_SHM_STR_SIZ );
+                strncpy(wr->route, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
                 if (!wr->domain[0]) {
                     char * id_domain = strchr(wr->route, '.');
@@ -3484,11 +3485,11 @@ static int commit_member(jk_ws_service_t *s,
                 snprintf(p->msg, size, msg, arg, aw->name);
                 rc = JK_FALSE;
             }
-            else if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ )) {
+            else if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->redirect, arg);
-                strncpy(wr->redirect, arg, JK_SHM_STR_SIZ );
+                strncpy(wr->redirect, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
             }
         }
@@ -3502,7 +3503,7 @@ static int commit_member(jk_ws_service_t *s,
                 snprintf(p->msg, size, msg, arg, aw->name);
                 rc = JK_FALSE;
             }
-            else if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ )) {
+            else if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->domain, arg);
@@ -3545,8 +3546,8 @@ static int commit_member(jk_ws_service_t *s,
         }
         else if (strncmp(aw->host, arg, JK_SHM_STR_SIZ)) {
             jk_log(l, JK_LOG_INFO,
-                    "Status worker '%s' changing 'host' for sub worker '%s' from '%s' to '%s'",
-                    w->name, aw->name, aw->host, arg);
+                   "Status worker '%s' changing 'host' for sub worker '%s' from '%s' to '%s'",
+                   w->name, aw->name, aw->host, arg);
             strncpy(host, arg, JK_SHM_STR_SIZ);
             resolve = JK_TRUE;
         }
@@ -4375,8 +4376,8 @@ static int update_worker(jk_ws_service_t *s,
                 }
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                       "Status worker '%s' %s lb worker '%s' sub worker '%s'",
-                       w->name, "updating", lb->name, wr->name);
+                           "Status worker '%s' %s lb worker '%s' sub worker '%s'",
+                           w->name, "updating", lb->name, wr->name);
                 aw = (ajp_worker_t *)wr->worker->worker_private;
                 rv = 0;
                 rc = commit_member(s, p, lb, wr, aw, &rv, l);
@@ -4925,7 +4926,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 jk_print_xml_att_int(s, l, 2, "port", s->server_port);
                 jk_print_xml_stop_elt(s, l, 0, 1);
                 if (cmd_props & JK_STATUS_CMD_PROP_HEAD) {
-                    if (rc_time > 0 ) {
+                    if (rc_time > 0) {
                         jk_print_xml_start_elt(s, l, w, 0, 0, "time");
                         jk_print_xml_att_string(s, l, 2, "datetime", buf_time);
                         jk_print_xml_att_string(s, l, 2, "tz", buf_tz);
@@ -5317,9 +5318,9 @@ static int JK_METHOD init(jk_worker_t *pThis,
             for (i = 0; i < p->num_of_users; i++) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                            "Status worker '%s' restricting access to user '%s' case %s",
-                            p->name, p->user_names[i],
-                            p->user_case_insensitive ? "insensitive" : "sensitive");
+                           "Status worker '%s' restricting access to user '%s' case %s",
+                           p->name, p->user_names[i],
+                           p->user_case_insensitive ? "insensitive" : "sensitive");
             }
         }
         if (jk_get_worker_good_rating(props, p->name,
@@ -5329,8 +5330,8 @@ static int JK_METHOD init(jk_worker_t *pThis,
             for (i = 0; i < num_of_good; i++) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                            "Status worker '%s' rating as good: '%s'",
-                            p->name, good_rating[i]);
+                           "Status worker '%s' rating as good: '%s'",
+                           p->name, good_rating[i]);
                 p->good_mask |= status_get_rating(good_rating[i], l);
             }
         }
@@ -5344,8 +5345,8 @@ static int JK_METHOD init(jk_worker_t *pThis,
             for (i = 0; i < num_of_bad; i++) {
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                            "Status worker '%s' rating as bad: '%s'",
-                            p->name, bad_rating[i]);
+                           "Status worker '%s' rating as bad: '%s'",
+                           p->name, bad_rating[i]);
                 p->bad_mask |= status_get_rating(bad_rating[i], l);
             }
         }

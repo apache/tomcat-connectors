@@ -787,7 +787,7 @@ int jk_map_resolve_references(jk_map_t *m, const char *prefix,
                 if (v && *v &&
                     !strncmp(m->names[i], prefix, prelen)) {
                     size_t remain = strlen(m->names[i]) - prelen;
-                    if ((remain == JK_MAP_REFERENCE_SZ ) || (wildcard && remain > JK_MAP_REFERENCE_SZ)) {
+                    if ((remain == JK_MAP_REFERENCE_SZ) || (wildcard && remain > JK_MAP_REFERENCE_SZ)) {
                         remain = strlen(m->names[i]) - JK_MAP_REFERENCE_SZ;
                         if (!strncmp(m->names[i] + remain, JK_MAP_REFERENCE, JK_MAP_REFERENCE_SZ)) {
                             char *from = jk_pool_alloc(&m->p,
@@ -868,7 +868,7 @@ int jk_map_inherit_properties(jk_map_t *m, const char *from, const char *to, jk_
                 }
                 strcpy(to_prp, to);
                 strcat(to_prp, prp);
-                if (jk_map_get_id(m, to_prp) < 0 ) {
+                if (jk_map_get_id(m, to_prp) < 0) {
                     rc = jk_map_add(m, to_prp, m->values[i]);
                     if (rc == JK_FALSE) {
                         jk_log(l, JK_LOG_ERROR,
@@ -879,7 +879,7 @@ int jk_map_inherit_properties(jk_map_t *m, const char *from, const char *to, jk_
                 }
             }
         }
-        if ( rc == JK_FALSE) {
+        if (rc == JK_FALSE) {
             jk_log(l, JK_LOG_ERROR,
                    "Reference '%s' not found",
                    from);

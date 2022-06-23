@@ -162,7 +162,7 @@ static void worker_qsort(jk_uri_worker_map_t *uw_map)
 
    /* Sort remaining args using Quicksort algorithm: */
    qsort((void *)IND_NEXT(uw_map->maps), IND_NEXT(uw_map->size),
-         sizeof(uri_worker_record_t *), worker_compare );
+         sizeof(uri_worker_record_t *), worker_compare);
 
 }
 
@@ -175,7 +175,7 @@ static void uri_worker_map_dump(jk_uri_worker_map_t *uw_map,
         int i, off;
         if (JK_IS_DEBUG_LEVEL(l)) {
             jk_log(l, JK_LOG_DEBUG, "uri map dump %s: id=%d, index=%d file='%s' reject_unsafe=%d "
-                  "reload=%d modified=%d checked=%d",
+                   "reload=%d modified=%d checked=%d",
                    reason, uw_map->id, uw_map->index, STRNULL_FOR_NULL(uw_map->fname),
                    uw_map->reject_unsafe, uw_map->reload, uw_map->modified, uw_map->checked);
         }
@@ -547,27 +547,27 @@ static void extension_fix_session(jk_pool_t *p, const char *name, jk_worker_t *j
 {
     if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie) {
         jk_log(l, JK_LOG_WARNING,
-                "Worker %s is not of type lb, extension "
-                JK_UWMAP_EXTENSION_SESSION_COOKIE " for %s ignored",
-                name, extensions->session_cookie);
+               "Worker %s is not of type lb, extension "
+               JK_UWMAP_EXTENSION_SESSION_COOKIE " for %s ignored",
+               name, extensions->session_cookie);
     }
     if (jw->type != JK_LB_WORKER_TYPE && extensions->session_path) {
         jk_log(l, JK_LOG_WARNING,
-                "Worker %s is not of type lb, extension "
-                JK_UWMAP_EXTENSION_SESSION_PATH " for %s ignored",
-                name, extensions->session_path);
+               "Worker %s is not of type lb, extension "
+               JK_UWMAP_EXTENSION_SESSION_PATH " for %s ignored",
+               name, extensions->session_path);
     }
     if (jw->type != JK_LB_WORKER_TYPE && extensions->set_session_cookie) {
         jk_log(l, JK_LOG_WARNING,
-                "Worker %s is not of type lb, extension "
-                JK_UWMAP_EXTENSION_SET_SESSION_COOKIE " for %s ignored",
-                name, extensions->set_session_cookie ? "'true'" : "'false'");
+               "Worker %s is not of type lb, extension "
+               JK_UWMAP_EXTENSION_SET_SESSION_COOKIE " for %s ignored",
+               name, extensions->set_session_cookie ? "'true'" : "'false'");
     }
     if (jw->type != JK_LB_WORKER_TYPE && extensions->session_cookie_path) {
         jk_log(l, JK_LOG_WARNING,
-                "Worker %s is not of type lb, extension "
-                JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH " for %s ignored",
-                name, extensions->session_cookie_path);
+               "Worker %s is not of type lb, extension "
+               JK_UWMAP_EXTENSION_SESSION_COOKIE_PATH " for %s ignored",
+               name, extensions->session_cookie_path);
     }
 }
 
@@ -917,7 +917,7 @@ int uri_worker_map_open(jk_uri_worker_map_t *uw_map,
                     /* Add first mapping */
                     if (!uri_worker_map_add(uw_map, r, w, SOURCE_TYPE_JKMOUNT, l)) {
                         jk_log(l, JK_LOG_ERROR,
-                        "invalid mapping rule %s->%s", r, w);
+                               "invalid mapping rule %s->%s", r, w);
                         rc = JK_FALSE;
                     }
                     for (; *s; s++)
@@ -981,11 +981,11 @@ static int find_match(jk_uri_worker_map_t *uw_map,
             /* Map is already sorted by context_len */
             if (jk_wildchar_match(url, uwr->context,
 #ifdef WIN32
-                               0
+                                  0
 #else
-                               0
+                                  0
 #endif
-                               ) == 0) {
+                                   ) == 0) {
                     if (JK_IS_DEBUG_LEVEL(l))
                         jk_log(l, JK_LOG_DEBUG,
                                "Found a wildchar match '%s=%s'",
@@ -1034,11 +1034,11 @@ static int is_nomatch(jk_uri_worker_map_t *uw_map,
             /* Map is already sorted by context_len */
             if (jk_wildchar_match(uri, uwr->context,
 #ifdef WIN32
-                               0
+                                  0
 #else
-                               0
+                                  0
 #endif
-                               ) == 0) {
+                                   ) == 0) {
                     if (JK_IS_DEBUG_LEVEL(l))
                         jk_log(l, JK_LOG_DEBUG,
                                "Found a wildchar no match '%s=%s' source '%s'",
@@ -1093,7 +1093,8 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
                 jk_log(l, JK_LOG_DEBUG,
                        "Uri %s can't be mapped.", uri);
             }
-        } else {
+        }
+        else {
             jk_log(l, JK_LOG_WARNING,
                    "Uri %s is invalid. Uri must start with /", uri);
         }
@@ -1244,7 +1245,7 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
                 /* Add first mapping */
                 if (!uri_worker_map_add(uw_map, r, w, SOURCE_TYPE_URIMAP, l)) {
                     jk_log(l, JK_LOG_ERROR,
-                    "invalid mapping rule %s->%s", r, w);
+                           "invalid mapping rule %s->%s", r, w);
                 }
                 for (; *s; s++)
                    *(s - 1) = *s;
@@ -1252,7 +1253,7 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
                 /* add second mapping */
                 if (!uri_worker_map_add(uw_map, r, w, SOURCE_TYPE_URIMAP, l)) {
                     jk_log(l, JK_LOG_ERROR,
-                    "invalid mapping rule %s->%s", r, w);
+                           "invalid mapping rule %s->%s", r, w);
                 }
                 free(r);
             }
@@ -1266,7 +1267,8 @@ int uri_worker_map_load(jk_uri_worker_map_t *uw_map,
         if (JK_IS_DEBUG_LEVEL(l))
             uri_worker_map_dump(uw_map, "after file load", l);
         rc = JK_TRUE;
-    } else {
+    }
+    else {
         jk_log(l, JK_LOG_ERROR, "Failed to load uri_worker_map file %s (errno=%d, err=%s).", uw_map->fname, errno, strerror(errno));
     }
     jk_map_free(&map);

@@ -845,8 +845,8 @@ static void ajp_reset_endpoint(ajp_endpoint_t * ae, jk_logger_t *l)
 
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-        "(%s) resetting endpoint with socket %d%s",
-         ae->worker->name, ae->sd, ae->reuse? "" : " (socket shutdown)");
+               "(%s) resetting endpoint with socket %d%s",
+               ae->worker->name, ae->sd, ae->reuse? "" : " (socket shutdown)");
     if (!ae->reuse) {
         ajp_abort_endpoint(ae, JK_TRUE, l);
     }
@@ -914,8 +914,8 @@ static int ajp_next_connection(ajp_endpoint_t *ae, jk_logger_t *l)
         ret = JK_TRUE;
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                    "(%s) Will try pooled connection socket %d from slot %d",
-                    ae->worker->name, ae->sd, i);
+                   "(%s) Will try pooled connection socket %d from slot %d",
+                   ae->worker->name, ae->sd, i);
     }
     JK_TRACE_EXIT(l);
     return ret;
@@ -1270,7 +1270,7 @@ int ajp_connection_tcp_send_message(ajp_endpoint_t * ae,
     else {
         jk_log(l, JK_LOG_ERROR,
                "(%s) unknown protocol %d, supported are AJP13/AJP14",
-                ae->worker->name, ae->proto);
+               ae->worker->name, ae->proto);
         /* We've got a protocol error.
          * We can't trust this connection any more,
          * because we might have send already parts of the request.
@@ -1368,7 +1368,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) wrong message format 0x%04x from %s",
                        ae->worker->name, header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
-                                             buf, sizeof(buf)));
+                                                               buf, sizeof(buf)));
             }
             /* We've got a protocol error.
              * We can't trust this connection any more.
@@ -1390,7 +1390,7 @@ int ajp_connection_tcp_get_message(ajp_endpoint_t * ae,
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) wrong message format 0x%04x from %s",
                        ae->worker->name, header, jk_dump_hinfo(&ae->worker->worker_inet_addr,
-                                             buf, sizeof(buf)));
+                                                               buf, sizeof(buf)));
             }
             /* We've got a protocol error.
              * We can't trust this connection any more.
@@ -1536,7 +1536,8 @@ static int ajp_read_into_msg_buff(ajp_endpoint_t * ae,
      */
     if (r->is_chunked && ae->left_bytes_to_send == 0) {
         len = maxlen;
-    } else {
+    }
+    else {
         if ((jk_uint64_t)maxlen > ae->left_bytes_to_send) {
             maxlen = (int)ae->left_bytes_to_send;
         }
@@ -1621,9 +1622,9 @@ static int ajp_send_request(jk_endpoint_t *e,
     if (ae->last_op != JK_AJP13_END_RESPONSE &&
         ae->last_op != AJP13_CPONG_REPLY) {
         jk_log(l, JK_LOG_INFO,
-                "(%s) did not receive END_RESPONSE, "
-                "closing socket %d",
-                ae->worker->name, ae->sd);
+               "(%s) did not receive END_RESPONSE, "
+               "closing socket %d",
+               ae->worker->name, ae->sd);
         ajp_abort_endpoint(ae, JK_TRUE, l);
     }
     /* First try to check open connections...
@@ -1650,7 +1651,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                 jk_log(l, JK_LOG_INFO,
                        "(%s) failed sending request, "
                        "socket %d prepost cping/cpong failure (errno=%d)",
-                        ae->worker->name, ae->sd, ae->last_errno);
+                       ae->worker->name, ae->sd, ae->last_errno);
                 /* XXX: Is there any reason to try other
                  * connections to the node if one of them fails
                  * the cping/cpong heartbeat?
@@ -1683,9 +1684,9 @@ static int ajp_send_request(jk_endpoint_t *e,
             jk_log(l, JK_LOG_INFO,
                    "(%s) failed sending request (%srecoverable) "
                    "(errno=%d)",
-                    ae->worker->name,
-                    op->recoverable ? "" : "un",
-                    ae->last_errno);
+                   ae->worker->name,
+                   op->recoverable ? "" : "un",
+                   ae->last_errno);
             JK_TRACE_EXIT(l);
             return JK_FATAL_ERROR;
         }
@@ -1738,7 +1739,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                 jk_log(l, JK_LOG_INFO,
                        "(%s) failed sending request, "
                        "socket %d prepost cping/cpong failure (errno=%d)",
-                        ae->worker->name, ae->sd, ae->last_errno);
+                       ae->worker->name, ae->sd, ae->last_errno);
                 JK_TRACE_EXIT(l);
                 return JK_FATAL_ERROR;
             }
@@ -1756,8 +1757,8 @@ static int ajp_send_request(jk_endpoint_t *e,
             jk_log(l, JK_LOG_ERROR,
                    "(%s) failed sending request on a fresh connection (%srecoverable), "
                    "socket %d (errno=%d)",
-                    ae->worker->name, op->recoverable ? "" : "un",
-                    ae->sd, ae->last_errno);
+                   ae->worker->name, op->recoverable ? "" : "un",
+                   ae->sd, ae->last_errno);
             JK_TRACE_EXIT(l);
             return JK_FATAL_ERROR;
         }
@@ -1800,8 +1801,8 @@ static int ajp_send_request(jk_endpoint_t *e,
             jk_log(l, JK_LOG_ERROR,
                    "(%s) failed sending request body of size %d "
                    "(%srecoverable), socket %d (errno=%d)",
-                    ae->worker->name, postlen, op->recoverable ? "" : "un",
-                    ae->sd, ae->last_errno);
+                   ae->worker->name, postlen, op->recoverable ? "" : "un",
+                   ae->sd, ae->last_errno);
             JK_TRACE_EXIT(l);
             return JK_FATAL_ERROR;
         }
@@ -1826,8 +1827,8 @@ static int ajp_send_request(jk_endpoint_t *e,
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) failed sending request body of size %d (lb mode) "
                        "(%srecoverable), socket %d (errno=%d)",
-                        ae->worker->name, postlen, op->recoverable ? "" : "un",
-                        ae->sd, ae->last_errno);
+                       ae->worker->name, postlen, op->recoverable ? "" : "un",
+                       ae->sd, ae->last_errno);
                 JK_TRACE_EXIT(l);
                 return JK_FATAL_ERROR;
             }
@@ -1846,7 +1847,7 @@ static int ajp_send_request(jk_endpoint_t *e,
          * doing a read (not yet)
          *
          * || s->is_chunked - this can't be done here. The original protocol
-         * sends the first chunk of post data ( based on Content-Length ),
+         * sends the first chunk of post data (based on Content-Length),
          * and that's what the java side expects.
          * Sending this data for chunked would break other ajp13 servers.
          *
@@ -1858,7 +1859,7 @@ static int ajp_send_request(jk_endpoint_t *e,
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
                            "(%s) browser stop sending data, no need to recover",
-                            ae->worker->name);
+                           ae->worker->name);
                 op->recoverable = JK_FALSE;
                 /* Send an empty POST message since per AJP protocol
                  * spec whenever we have content length the message
@@ -1881,7 +1882,7 @@ static int ajp_send_request(jk_endpoint_t *e,
             if (JK_IS_DEBUG_LEVEL(l))
                 jk_log(l, JK_LOG_DEBUG,
                        "(%s) sending %d bytes of request body",
-                        ae->worker->name, len);
+                       ae->worker->name, len);
 
             s->content_read = (jk_uint64_t)len;
             rc = ajp_connection_tcp_send_message(ae, op->post, l);
@@ -1893,8 +1894,8 @@ static int ajp_send_request(jk_endpoint_t *e,
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) failed sending request body of size %d "
                        "(%srecoverable), socket %d (errno=%d)",
-                        ae->worker->name, len, op->recoverable ? "" : "un",
-                        ae->sd, ae->last_errno);
+                       ae->worker->name, len, op->recoverable ? "" : "un",
+                       ae->sd, ae->last_errno);
                 JK_TRACE_EXIT(l);
                 return JK_FATAL_ERROR;
             }
@@ -1944,8 +1945,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 char **old_values = res.header_values;
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG, "(%s) Adding %d response headers to %d "
-                    "headers received from tomcat",
-                    ae->worker->name, r->num_resp_headers, res.num_headers);
+                           "headers received from tomcat",
+                           ae->worker->name, r->num_resp_headers, res.num_headers);
                 res.header_names  = jk_pool_alloc(r->pool,
                                                   (r->num_resp_headers + res.num_headers) *
                                                    sizeof(char *));
@@ -1958,7 +1959,8 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                            ae->worker->name, r->num_resp_headers + res.num_headers);
                     res.header_names = old_names;
                     res.header_values = old_values;
-                } else {
+                }
+                else {
                     if (res.num_headers) {
                         memcpy(res.header_names, old_names, res.num_headers * sizeof(char *));
                         memcpy(res.header_values, old_values, res.num_headers * sizeof(char *));
@@ -2064,15 +2066,15 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
                 }
                 else {
                     jk_log(l, JK_LOG_DEBUG,
-                        "(%s) Ignoring flush message received before headers",
-                        ae->worker->name);
+                           "(%s) Ignoring flush message received before headers",
+                           ae->worker->name);
                 }
             }
             else {
                 if (!r->write(r, msg->buf + msg->pos, len)) {
                     jk_log(l, JK_LOG_INFO,
-                        "(%s) Writing to client aborted or client network problems",
-                        ae->worker->name);
+                           "(%s) Writing to client aborted or client network problems",
+                           ae->worker->name);
                     JK_TRACE_EXIT(l);
                     return JK_CLIENT_WR_ERROR;
                 }
@@ -2325,7 +2327,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
                  */
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) Tomcat already send headers",
-                        p->worker->name);
+                       p->worker->name);
                 op->recoverable = JK_FALSE;
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
@@ -2356,7 +2358,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
             if (rc != JK_TRUE) {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) Tomcat is down or network problems",
-                        p->worker->name);
+                       p->worker->name);
                 JK_TRACE_EXIT(l);
                 return JK_FALSE;
             }
@@ -2403,7 +2405,7 @@ static int ajp_get_reply(jk_endpoint_t *e,
             op->recoverable = JK_FALSE;
             jk_log(l, JK_LOG_ERROR,
                    "(%s) Callback returns with unknown value %d",
-                    p->worker->name, rc);
+                   p->worker->name, rc);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -2576,8 +2578,8 @@ static int JK_METHOD ajp_service(jk_endpoint_t *e,
     if (!ajp_marshal_into_msgb(op->request, s, l, p)) {
         *is_error = JK_HTTP_REQUEST_TOO_LARGE;
         jk_log(l, JK_LOG_INFO,
-                "(%s) Creating AJP message failed "
-                "without recovery - check max_packet_size", aw->name);
+               "(%s) Creating AJP message failed "
+               "without recovery - check max_packet_size", aw->name);
         aw->s->client_errors++;
         JK_TRACE_EXIT(l);
         return JK_CLIENT_ERROR;
@@ -2937,8 +2939,8 @@ static int ajp_create_endpoint_cache(ajp_worker_t *p, int proto, jk_logger_t *l)
         p->ep_cache[i] = (ajp_endpoint_t *)calloc(1, sizeof(ajp_endpoint_t));
         if (!p->ep_cache[i]) {
             jk_log(l, JK_LOG_ERROR,
-                    "(%s) allocating endpoint slot %d (errno=%d)",
-                    p->name, i, errno);
+                   "(%s) allocating endpoint slot %d (errno=%d)",
+                   p->name, i, errno);
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
@@ -3119,19 +3121,19 @@ int ajp_init(jk_worker_t *pThis,
 
             jk_log(l, JK_LOG_DEBUG,
                    "retries:                %d",
-                    p->retries);
+                   p->retries);
 
             jk_log(l, JK_LOG_DEBUG,
                    "max packet size:        %d",
-                    p->max_packet_size);
+                   p->max_packet_size);
 
             jk_log(l, JK_LOG_DEBUG,
                    "retry interval:         %d",
-                    p->retry_interval);
+                   p->retry_interval);
 
             jk_log(l, JK_LOG_DEBUG,
                    "busy limit:         %d",
-                    p->busy_limit);
+                   p->busy_limit);
         }
         /*
          *  Need to initialize secret here since we could return from inside
@@ -3285,8 +3287,8 @@ int JK_METHOD ajp_done(jk_endpoint_t **e, jk_logger_t *l)
 
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG,
-                    "recycling connection pool for worker %s and socket %d",
-                    p->worker->name, (int)p->sd);
+                   "recycling connection pool for worker %s and socket %d",
+                   p->worker->name, (int)p->sd);
         JK_TRACE_EXIT(l);
         return JK_TRUE;
     }
@@ -3363,15 +3365,15 @@ int ajp_get_endpoint(jk_worker_t *pThis,
                 retry++;
                 if (JK_IS_DEBUG_LEVEL(l))
                     jk_log(l, JK_LOG_DEBUG,
-                            "could not get free endpoint for worker %s"
-                            " (retry %d, sleeping for %d ms)",
-                            aw->name, retry, JK_SLEEP_DEF);
+                           "could not get free endpoint for worker %s"
+                           " (retry %d, sleeping for %d ms)",
+                           aw->name, retry, JK_SLEEP_DEF);
                 jk_sleep(JK_SLEEP_DEF);
             }
         }
         jk_log(l, JK_LOG_WARNING,
-                "Unable to get the free endpoint for worker %s from %u slots",
-                aw->name, aw->ep_cache_sz);
+               "Unable to get the free endpoint for worker %s from %u slots",
+               aw->name, aw->ep_cache_sz);
     }
     else {
         JK_LOG_NULL_PARAMS(l);
@@ -3438,8 +3440,8 @@ int JK_METHOD ajp_maintain(jk_worker_t *pThis, time_t mstarted, int global, jk_l
                 if (cnt <= aw->ep_mincache_sz + n) {
                     if (JK_IS_DEBUG_LEVEL(l)) {
                         jk_log(l, JK_LOG_DEBUG,
-                        "(%s) reached pool min size %u from %u cache slots",
-                        aw->name, aw->ep_mincache_sz, aw->ep_cache_sz);
+                               "(%s) reached pool min size %u from %u cache slots",
+                               aw->name, aw->ep_mincache_sz, aw->ep_cache_sz);
                     }
                     break;
                 }

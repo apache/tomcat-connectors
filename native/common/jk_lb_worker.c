@@ -944,7 +944,8 @@ static int find_bysession_route(jk_ws_service_t *s,
     if (candidate < 0) {
         uses_domain = 1;
         candidate = find_best_bydomain(s, p, session_route, states, l);
-    } else {
+    }
+    else {
         s->sticky = JK_TRUE;
     }
     if (candidate >= 0) {
@@ -975,7 +976,8 @@ static int find_bysession_route(jk_ws_service_t *s,
                 candidate = find_best_bydomain(s, p, wr.domain, states, l);
                 if (candidate >= 0) {
                     s->route = wr.domain;
-                } else {
+                }
+                else {
                     s->route = NULL;
                 }
             }
@@ -1281,7 +1283,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     while (recoverable == JK_TRUE) {
         if (JK_IS_DEBUG_LEVEL(l))
             jk_log(l, JK_LOG_DEBUG, "attempt %d, max attempts %d, worker count %d",
-                    attempt, p->worker->lb_retries, num_of_workers);
+                   attempt, p->worker->lb_retries, num_of_workers);
         if (attempt >= num_of_workers || attempt >= p->worker->lb_retries) {
             retry++;
             if (retry >= p->worker->retries) {
@@ -1388,7 +1390,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                                                       (s->num_resp_headers + 1) * sizeof(char *));
                     if (!s->resp_headers_names || !s->resp_headers_values) {
                         jk_log(l, JK_LOG_ERROR,
-                            "Failed allocating %d new response headers.", s->num_resp_headers + 1);
+                               "Failed allocating %d new response headers.", s->num_resp_headers + 1);
                         s->resp_headers_names = old_names;
                         s->resp_headers_values = old_values;
                     } else if (s->num_resp_headers) {

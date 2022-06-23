@@ -664,7 +664,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
                    sizeof(set))) {
         JK_GET_SOCKET_ERRNO();
         jk_log(l, JK_LOG_ERROR,
-                "failed setting TCP_NODELAY (errno=%d)", errno);
+               "failed setting TCP_NODELAY (errno=%d)", errno);
         jk_close_socket(sd, l);
         JK_TRACE_EXIT(l);
         return JK_INVALID_SOCKET;
@@ -719,7 +719,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
                         sizeof(set))) {
             JK_GET_SOCKET_ERRNO();
             jk_log(l, JK_LOG_ERROR,
-                    "failed setting SO_SNDBUF (errno=%d)", errno);
+                   "failed setting SO_SNDBUF (errno=%d)", errno);
             jk_close_socket(sd, l);
             JK_TRACE_EXIT(l);
             return JK_INVALID_SOCKET;
@@ -730,7 +730,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
                                 sizeof(set))) {
             JK_GET_SOCKET_ERRNO();
             jk_log(l, JK_LOG_ERROR,
-                    "failed setting SO_RCVBUF (errno=%d)", errno);
+                   "failed setting SO_RCVBUF (errno=%d)", errno);
             jk_close_socket(sd, l);
             JK_TRACE_EXIT(l);
             return JK_INVALID_SOCKET;
@@ -773,7 +773,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
                    sizeof(int))) {
         JK_GET_SOCKET_ERRNO();
         jk_log(l, JK_LOG_ERROR,
-                "failed setting SO_NOSIGPIPE (errno=%d)", errno);
+               "failed setting SO_NOSIGPIPE (errno=%d)", errno);
         jk_close_socket(sd, l);
         JK_TRACE_EXIT(l);
         return JK_INVALID_SOCKET;
@@ -786,7 +786,7 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
                    sizeof(li))) {
         JK_GET_SOCKET_ERRNO();
         jk_log(l, JK_LOG_ERROR,
-                "failed setting SO_LINGER (errno=%d)", errno);
+               "failed setting SO_LINGER (errno=%d)", errno);
         jk_close_socket(sd, l);
         JK_TRACE_EXIT(l);
         return JK_INVALID_SOCKET;
@@ -795,8 +795,8 @@ jk_sock_t jk_open_socket(jk_sockaddr_t *addr, jk_sockaddr_t *source,
     /* Tries to connect to Tomcat (continues trying while error is EINTR) */
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
-                "trying to connect socket %d to %s", sd,
-                jk_dump_hinfo(addr, buf, sizeof(buf)));
+               "trying to connect socket %d to %s", sd,
+               jk_dump_hinfo(addr, buf, sizeof(buf)));
 
 /* Need more infos for BSD 4.4 and Unix 98 defines, for now only
 iSeries when Unix98 is required at compile time */
@@ -1209,7 +1209,8 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
             else {
                 cur.len++;
             }
-        } else {
+        }
+        else {
             if (cur.base != -1) {
                 if (best.base == -1 || cur.len > best.len) {
                     best = cur;
@@ -1285,7 +1286,8 @@ char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf, size_t size)
 
     if (saddr->ipaddr_ptr == NULL) {
         strcpy(buf, "UnresolvedIP");
-    } else {
+    }
+    else {
         if (saddr->family == JK_INET) {
             inet_ntop4(saddr->ipaddr_ptr, buf, size);
         }

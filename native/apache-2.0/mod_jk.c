@@ -745,7 +745,7 @@ static void jk_error_exit(const char *file,
 #else
     ap_log_error(file, line, level, 0, s, "%s", res);
 #endif
-    if ( s ) {
+    if (s) {
 #if (MODULE_MAGIC_NUMBER_MAJOR >= 20100606)
         ap_log_error(file, line, APLOG_MODULE_INDEX, level, 0, NULL, "%s", res);
 #else
@@ -838,7 +838,8 @@ static int init_ws_service(apache_private_data_t * private_data,
         if (conf->options & JK_OPT_FWDPHYSICAL) {
             s->remote_addr = r->connection->client_ip;
             s->remote_port = apr_itoa(r->pool, r->connection->client_addr->port);
-        } else {
+        }
+        else {
             s->remote_addr = r->useragent_ip;
             s->remote_port = apr_itoa(r->pool, r->useragent_addr->port);
         }
@@ -1259,7 +1260,7 @@ static const char *jk_mount_context(cmd_parms * cmd,
                                                   &jk_module);
     const char *c, *w;
 
-    if (worker != NULL && cmd->path == NULL ) {
+    if (worker != NULL && cmd->path == NULL) {
         c = context;
         w = worker;
     }
@@ -1307,7 +1308,7 @@ static const char *jk_unmount_context(cmd_parms * cmd,
     char *uri;
     const char *c, *w;
 
-    if (worker != NULL && cmd->path == NULL ) {
+    if (worker != NULL && cmd->path == NULL) {
         c = context;
         w = worker;
     }
@@ -2744,9 +2745,9 @@ static int jk_handler(request_rec * r)
     worker_name = apr_table_get(r->notes, JK_NOTE_WORKER_NAME);
 
     if (worker_name == NULL) {
-        /* we may be here because of a manual directive ( that overrides
+        /* we may be here because of a manual directive (that overrides
            translate and
-           sets the handler directly ). We still need to know the worker.
+           sets the handler directly). We still need to know the worker.
          */
         worker_name = apr_table_get(r->subprocess_env, xconf->worker_indicator);
         if (worker_name) {
@@ -2768,9 +2769,9 @@ static int jk_handler(request_rec * r)
             }
         }
         else if (worker_env.num_of_workers == 1) {
-          /** We have a single worker ( the common case ).
-              ( lb is a bit special, it should count as a single worker but
-              I'm not sure how ). We also have a manual config directive that
+          /** We have a single worker (the common case).
+              (lb is a bit special, it should count as a single worker but
+              I'm not sure how). We also have a manual config directive that
               explicitly give control to us. */
             worker_name = worker_env.worker_list[0];
             if (JK_IS_DEBUG_LEVEL(xconf->log))
@@ -2827,8 +2828,8 @@ static int jk_handler(request_rec * r)
     /* If this is a proxy request, we'll notify an error */
     if (r->proxyreq) {
         jk_log(xconf->log, JK_LOG_INFO, "Proxy request for worker=%s"
-              " is not allowed",
-              STRNULL_FOR_NULL(worker_name));
+               " is not allowed",
+               STRNULL_FOR_NULL(worker_name));
         JK_TRACE_EXIT(xconf->log);
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -2885,7 +2886,7 @@ static int jk_handler(request_rec * r)
             if (init_ws_service(&private_data, &s, xconf)) {
                 jk_endpoint_t *end = NULL;
 
-                /* Use per/thread pool ( or "context" ) to reuse the
+                /* Use per/thread pool (or "context") to reuse the
                    endpoint. It's a bit faster, but I don't know
                    how to deal with load balancing - but it's usefull for JNI
                  */
@@ -3476,13 +3477,13 @@ static void jk_child_init(apr_pool_t * pconf, server_rec * s)
 }
 
 /** Initialize jk, using worker.properties.
-    We also use apache commands ( JkWorker, etc), but this use is
+    We also use apache commands (JkWorker, etc), but this use is
     deprecated, as we'll try to concentrate all config in
     workers.properties, urimap.properties, and ajp14 autoconf.
 
     Apache config will only be used for manual override, using
-    SetHandler and normal apache directives ( but minimal jk-specific
-    stuff )
+    SetHandler and normal apache directives (but minimal jk-specific
+    stuff)
 */
 static int init_jk(apr_pool_t * pconf, jk_server_conf_t * conf,
                     server_rec * s)
@@ -3731,7 +3732,7 @@ static int jk_post_config(apr_pool_t * pconf,
                                     return HTTP_INTERNAL_SERVER_ERROR;
                                 item->name = elts[i].key;
                                 envvar_def = apr_table_get(sconf->envvars_def, elts[i].key);
-                                if (envvar_def && !strcmp("1", envvar_def) ) {
+                                if (envvar_def && !strcmp("1", envvar_def)) {
                                     item->value = elts[i].val;
                                     item->has_default = 1;
                                 }
@@ -4028,7 +4029,7 @@ static int jk_map_to_storage(request_rec * r)
             if (strlen(r->uri) == 0) {
                 jk_log(conf->log, JK_LOG_DEBUG,
                        "File based (sub-)request for file=%s. No URI to match.",
-					   r->filename);
+                       r->filename);
                 JK_TRACE_EXIT(conf->log);
                 return DECLINED;
             }
@@ -4085,7 +4086,7 @@ static int jk_map_to_storage(request_rec * r)
                     return DECLINED;
                 }
             }
-		JK_TRACE_EXIT(conf->log);
+            JK_TRACE_EXIT(conf->log);
         }
     }
 
