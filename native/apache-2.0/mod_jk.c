@@ -2786,6 +2786,9 @@ static int jk_handler(request_rec * r)
         rconf->orig_uri = NULL;
         rconf->request_id = get_env_string(r, NULL,
                                            xconf->request_id_indicator, 1);
+        if (rconf->request_id == NULL) {
+            rconf->request_id = get_env_string(r, NULL, JK_ENV_REQUEST_ID, 1);
+        }
         ap_set_module_config(r->request_config, &jk_module, rconf);
     }
     l->id = rconf->request_id;
@@ -3868,6 +3871,9 @@ static int jk_translate(request_rec * r)
 
             rconf->request_id = get_env_string(r, NULL,
                                                conf->request_id_indicator, 1);
+            if (rconf->request_id == NULL) {
+                rconf->request_id = get_env_string(r, NULL, JK_ENV_REQUEST_ID, 1);
+            }
             l->id = rconf->request_id;
             if ((r->handler != NULL) && (!strcmp(r->handler, JK_HANDLER))) {
                 /* Somebody already set the handler, probably manual config
@@ -4078,6 +4084,9 @@ static int jk_map_to_storage(request_rec * r)
         if (conf) {
             rconf->request_id = get_env_string(r, NULL,
                                                conf->request_id_indicator, 1);
+            if (rconf->request_id == NULL) {
+                rconf->request_id = get_env_string(r, NULL, JK_ENV_REQUEST_ID, 1);
+            }
         }
     }
 
