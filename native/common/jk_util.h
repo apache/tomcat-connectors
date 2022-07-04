@@ -57,9 +57,6 @@ int jk_log(jk_log_context_t *log_ctx,
            const char *file, int line, const char *funcname, int level,
            const char *fmt, ...);
 
-int jk_check_attribute_length(const char *name, const char *value,
-                              jk_log_context_t *log_ctx);
-
 const char *jk_get_worker_host(jk_map_t *m, const char *wname, const char *def);
 
 const char *jk_get_worker_source(jk_map_t *m, const char *wname, const char *def);

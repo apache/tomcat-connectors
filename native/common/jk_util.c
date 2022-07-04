@@ -446,15 +446,15 @@ void jk_set_time_fmt(jk_logger_t *l, const char *jk_log_fmt)
             if (offset + len < JK_TIME_MAX_SIZE) {
                 l->log_fmt_type = JK_TIME_SUBSEC_MILLI;
                 l->log_fmt_offset = offset;
-                strncpy(l->log_fmt_subsec, jk_log_fmt, offset);
-                strncpy(l->log_fmt_subsec + offset, JK_TIME_PATTERN_MILLI, len);
-                strncpy(l->log_fmt_subsec + offset + len,
-                        s + strlen(JK_TIME_CONV_MILLI),
-                        JK_TIME_MAX_SIZE - offset - len - 1);
+                memcpy(l->log_fmt_subsec, jk_log_fmt, offset);
+                memcpy(l->log_fmt_subsec + offset, JK_TIME_PATTERN_MILLI, len);
+                memcpy(l->log_fmt_subsec + offset + len,
+                       s + strlen(JK_TIME_CONV_MILLI),
+                       JK_TIME_MAX_SIZE - offset - len - 1);
                 /* Now we put a stop mark into the string to make it's length
                  * at most JK_TIME_MAX_SIZE-1 plus terminating '\0'.
                  */
-                l->log_fmt_subsec[JK_TIME_MAX_SIZE-1] = '\0';
+                l->log_fmt_subsec[JK_TIME_MAX_SIZE - 1] = '\0';
                 l->log_fmt_size = strlen(l->log_fmt_subsec);
             }
         }
@@ -471,15 +471,15 @@ void jk_set_time_fmt(jk_logger_t *l, const char *jk_log_fmt)
             if (offset + len < JK_TIME_MAX_SIZE) {
                 l->log_fmt_type = JK_TIME_SUBSEC_MICRO;
                 l->log_fmt_offset = offset;
-                strncpy(l->log_fmt_subsec, jk_log_fmt, offset);
-                strncpy(l->log_fmt_subsec + offset, JK_TIME_PATTERN_MICRO, len);
-                strncpy(l->log_fmt_subsec + offset + len,
-                        s + strlen(JK_TIME_CONV_MICRO),
-                        JK_TIME_MAX_SIZE - offset - len - 1);
+                memcpy(l->log_fmt_subsec, jk_log_fmt, offset);
+                memcpy(l->log_fmt_subsec + offset, JK_TIME_PATTERN_MICRO, len);
+                memcpy(l->log_fmt_subsec + offset + len,
+                       s + strlen(JK_TIME_CONV_MICRO),
+                       JK_TIME_MAX_SIZE - offset - len - 1);
                 /* Now we put a stop mark into the string to make it's length
                  * at most JK_TIME_MAX_SIZE-1 plus terminating '\0'.
                  */
-                l->log_fmt_subsec[JK_TIME_MAX_SIZE-1] = '\0';
+                l->log_fmt_subsec[JK_TIME_MAX_SIZE - 1] = '\0';
                 l->log_fmt_size = strlen(l->log_fmt_subsec);
             }
         }
@@ -833,20 +833,6 @@ int jk_log(jk_log_context_t *log_ctx,
     }
 
     return rc;
-}
-
-int jk_check_attribute_length(const char *name, const char *value,
-                              jk_log_context_t *l)
-{
-    size_t len = strlen(value);
-    if (len > JK_MAX_NAME_LEN) {
-        jk_log(l, JK_LOG_ERROR,
-               "Worker %s '%s' is %d bytes too long, "
-               "a maximum of %d bytes is supported",
-               name, value, len - JK_MAX_NAME_LEN, JK_MAX_NAME_LEN);
-        return JK_FALSE;
-    }
-    return JK_TRUE;
 }
 
 const char *jk_get_worker_type(jk_map_t *m, const char *wname)

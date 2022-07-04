@@ -1122,7 +1122,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_log_context_t *l)
 {
     int address_change = JK_FALSE;
     int port = 0;
-    char host[JK_SHM_STR_SIZ];
+    shm_str host;
     jk_sockaddr_t inet_addr;
     JK_TRACE_ENTER(l);
 
@@ -1148,7 +1148,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_log_context_t *l)
     if (aw->addr_sequence != aw->s->addr_sequence) {
         address_change = JK_TRUE;
         aw->addr_sequence = aw->s->addr_sequence;
-        strncpy(host, aw->s->host, JK_SHM_STR_SIZ);
+        jk_shm_str_copy(host, aw->s->host, l);
         port = aw->s->port;
     }
     if (locked == JK_FALSE)
@@ -1156,7 +1156,7 @@ void jk_ajp_pull(ajp_worker_t * aw, int locked, jk_log_context_t *l)
 
     if (address_change == JK_TRUE && port != 0) {
         aw->port = port;
-        strncpy(aw->host, host, JK_SHM_STR_SIZ);
+        jk_shm_str_copy(aw->host, host, l);
         if (!jk_resolve(host, port, &inet_addr,
                         aw->worker.we->pool, aw->prefer_ipv6, l)) {
             jk_log(l, JK_LOG_ERROR,
@@ -1222,7 +1222,7 @@ void jk_ajp_push(ajp_worker_t * aw, int locked, jk_log_context_t *l)
     if (aw->s->addr_sequence != aw->addr_sequence) {
         ++aw->s->addr_sequence;
         address_change = JK_TRUE;
-        strncpy(aw->s->host, aw->host, JK_SHM_STR_SIZ);
+        jk_shm_str_copy(aw->s->host, aw->host, l);
         aw->s->port = aw->port;
         aw->addr_sequence = aw->s->addr_sequence;
     }
@@ -2925,18 +2925,16 @@ int ajp_validate(jk_worker_t *pThis,
             host = "undefined";
         }
         tmp = jk_get_worker_host(props, p->name, host);
-        if (jk_check_attribute_length("host name", tmp, l) == JK_FALSE) {
+        if (jk_shm_str_init(p->host, tmp, "host name", l) == JK_FALSE) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
-        strncpy(p->host, tmp, JK_SHM_STR_SIZ);
         p->prefer_ipv6 = jk_get_worker_prefer_ipv6(props, p->name, JK_FALSE);
         tmp = jk_get_worker_source(props, p->name, "");
-        if (jk_check_attribute_length("source address", tmp, l) == JK_FALSE) {
+        if (jk_shm_str_init(p->source, tmp, "source address", l) == JK_FALSE) {
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
-        strncpy(p->source, tmp, JK_SHM_STR_SIZ);
         if (p->s->h.sequence == 0) {
             /* Initial setup.
              */
@@ -2971,7 +2969,7 @@ int ajp_validate(jk_worker_t *pThis,
             p->s->last_maintain_time = time(NULL);
             p->s->last_reset = p->s->last_maintain_time;
             p->s->port = p->port;
-            strncpy(p->s->host, p->host, JK_SHM_STR_SIZ);
+            jk_shm_str_copy(p->s->host, p->host, l);
             jk_ajp_push(p, JK_TRUE, l);
         }
         else {
@@ -3266,7 +3264,10 @@ int JK_METHOD ajp_worker_factory(jk_worker_t **w,
                  aw->buf,
                  sizeof(jk_pool_atom_t) * TINY_POOL_SIZE);
 
-    strncpy(aw->name, name, JK_SHM_STR_SIZ);
+    if (jk_shm_str_init(aw->name, name, "name", l) == JK_FALSE) {
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
     aw->login = NULL;
 
     aw->ep_cache_sz = 0;

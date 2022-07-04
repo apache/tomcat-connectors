@@ -806,14 +806,60 @@ void jk_shm_close(jk_log_context_t *l)
 
 #endif
 
+static int jk_shm_check_str_length(const char *name, const char *value,
+                                   jk_log_context_t *l)
+{
+    size_t len = strlen(value);
+    if (len >= JK_SHM_STR_SIZ) {
+        jk_log(l, JK_LOG_ERROR,
+               "Worker %s '%s' is %d bytes too long, "
+               "a maximum of %d bytes is supported",
+               name, value, len - (JK_SHM_STR_SIZ - 1), JK_SHM_STR_SIZ - 1);
+        return JK_FALSE;
+    }
+    return JK_TRUE;
+}
+
+int jk_shm_str_init(shm_str dst, const char *src,
+                    const char *name, jk_log_context_t *l)
+{
+    if (jk_shm_check_str_length(name, src, l) == JK_FALSE) {
+        return JK_FALSE;
+    }
+    strncpy(dst, src, JK_SHM_STR_SIZ - 1);
+    dst[JK_SHM_STR_SIZ - 1] = '\0';
+    return JK_TRUE;
+}
+
+int jk_shm_str_init_ne(shm_str dst, const char *src,
+                       const char *name, jk_log_context_t *l)
+{
+    if (jk_shm_check_str_length(name, src, l) == JK_FALSE) {
+        return -1;
+    }
+    if (!strncmp(dst, src, JK_SHM_STR_SIZ)) {
+        return 0;
+    }
+    strncpy(dst, src, JK_SHM_STR_SIZ - 1);
+    dst[JK_SHM_STR_SIZ - 1] = '\0';
+    return 1;
+}
+
+void jk_shm_str_copy(shm_str dst, shm_str src,
+                     jk_log_context_t *l)
+{
+    memcpy((dst), (src), JK_SHM_STR_SIZ);
+}
+
 jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
                                             int parent_id, const char *name,
                                             jk_log_context_t *l)
 {
     unsigned int i;
     jk_shm_worker_header_t *w = 0;
+    shm_str str;
 
-    if (jk_check_attribute_length("name", name, l) == JK_FALSE) {
+    if (jk_shm_str_init(str, name, "name", l) == JK_FALSE) {
         return NULL;
     }
 
@@ -832,7 +878,7 @@ jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
         if ((jk_shmem.hdr->h.data.size - jk_shmem.hdr->h.data.pos) >= JK_SHM_SLOT_SIZE) {
             w = (jk_shm_worker_header_t *)(jk_shmem.hdr->buf + jk_shmem.hdr->h.data.pos);
             memset(w, 0, JK_SHM_SLOT_SIZE);
-            strncpy(w->name, name, JK_SHM_STR_SIZ);
+            jk_shm_str_copy(w->name, str, l);
             jk_shmem.hdr->h.data.workers++;
             w->id = jk_shmem.hdr->h.data.workers;
             w->type = type;
@@ -853,7 +899,7 @@ jk_shm_worker_header_t *jk_shm_alloc_worker(jk_pool_t *p, int type,
         w = (jk_shm_worker_header_t *)jk_pool_alloc(p, JK_SHM_SLOT_SIZE);
         if (w) {
             memset(w, 0, JK_SHM_SLOT_SIZE);
-            strncpy(w->name, name, JK_SHM_STR_SIZ);
+            jk_shm_str_copy(w->name, str, l);
             w->id = 0;
             w->type = type;
             w->parent_id = parent_id;

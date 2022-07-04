@@ -3416,7 +3416,7 @@ static int commit_member(jk_ws_service_t *s,
     int i;
     int old;
     int resolve = JK_FALSE;
-    char host[JK_SHM_STR_SIZ];
+    shm_str host;
     int  port = 0;
 
     JK_TRACE_ENTER(l);
@@ -3451,7 +3451,8 @@ static int commit_member(jk_ws_service_t *s,
             *side_effect |= JK_STATUS_NEEDS_UPDATE_MULT | JK_STATUS_NEEDS_PUSH;
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_ROUTE,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (jk_check_attribute_length("route", arg, l) == JK_FALSE) {
+            int ret = jk_shm_str_init_ne(wr->route, arg, "route", l);
+            if (ret == -1) {
                 const char *msg = "Update failed (at least partially): new route '%s' "
                                   "too long for sub worker '%s', see log file for details.";
                 size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
@@ -3459,11 +3460,10 @@ static int commit_member(jk_ws_service_t *s,
                 snprintf(p->msg, size, msg, arg, aw->name);
                 rc = JK_FALSE;
             }
-            else if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
+            else if (ret != 0) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->route, arg);
-                strncpy(wr->route, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
                 if (!wr->domain[0]) {
                     char * id_domain = strchr(wr->route, '.');
@@ -3477,7 +3477,8 @@ static int commit_member(jk_ws_service_t *s,
         }
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_REDIRECT,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (jk_check_attribute_length("redirect", arg, l) == JK_FALSE) {
+            int ret = jk_shm_str_init_ne(wr->redirect, arg, "redirect", l);
+            if (ret == -1) {
                 const char *msg = "Update failed (at least partially): new redirect '%s' "
                                   "too long for sub worker '%s', see log file for details.";
                 size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
@@ -3485,17 +3486,17 @@ static int commit_member(jk_ws_service_t *s,
                 snprintf(p->msg, size, msg, arg, aw->name);
                 rc = JK_FALSE;
             }
-            else if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
+            else if (ret != 0) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->redirect, arg);
-                strncpy(wr->redirect, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
             }
         }
         if ((rv = status_get_string(p, JK_STATUS_ARG_LBM_DOMAIN,
                                     NULL, &arg, l)) == JK_TRUE) {
-            if (jk_check_attribute_length("domain", arg, l) == JK_FALSE) {
+            int ret = jk_shm_str_init_ne(wr->domain, arg, "domain", l);
+            if (ret == -1) {
                 const char *msg = "Update failed (at least partially): new domain '%s' "
                                   "too long for sub worker '%s', see log file for details.";
                 size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
@@ -3503,11 +3504,10 @@ static int commit_member(jk_ws_service_t *s,
                 snprintf(p->msg, size, msg, arg, aw->name);
                 rc = JK_FALSE;
             }
-            else if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
+            else if (ret != 0) {
                 jk_log(l, JK_LOG_INFO,
                        "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                        w->name, wr->name, lb_name, wr->domain, arg);
-                strncpy(wr->domain, arg, JK_SHM_STR_SIZ);
                 *side_effect |= JK_STATUS_NEEDS_PUSH;
             }
         }
@@ -3531,12 +3531,13 @@ static int commit_member(jk_ws_service_t *s,
     port = aw->port;
     if (set_int_if_changed(p, aw->name, "port", JK_STATUS_ARG_AJP_PORT,
                            0, INT_MAX, &port, lb_name, l)) {
-        strncpy(host, aw->host, JK_SHM_STR_SIZ);
+        jk_shm_str_copy(host, aw->host, l);
         resolve = JK_TRUE;
     }
     if ((rv = status_get_string(p, JK_STATUS_ARG_AJP_HOST_STR,
                                 NULL, &arg, l)) == JK_TRUE) {
-        if (jk_check_attribute_length("host name", arg, l) == JK_FALSE) {
+        int ret = jk_shm_str_init_ne(host, arg, "host name", l);
+        if (ret == -1) {
             const char *msg = "Update failed (at least partially): new host name '%s' "
                               "too long for sub worker '%s', see log file for details.";
             size_t size = strlen(msg) + strlen(arg) + strlen(aw->name) + 1;
@@ -3544,11 +3545,10 @@ static int commit_member(jk_ws_service_t *s,
             snprintf(p->msg, size, msg, arg, aw->name);
             rc = JK_FALSE;
         }
-        else if (strncmp(aw->host, arg, JK_SHM_STR_SIZ)) {
+        else if (ret != 0) {
             jk_log(l, JK_LOG_INFO,
                    "Status worker '%s' changing 'host' for sub worker '%s' from '%s' to '%s'",
                    w->name, aw->name, aw->host, arg);
-            strncpy(host, arg, JK_SHM_STR_SIZ);
             resolve = JK_TRUE;
         }
     }
@@ -3568,7 +3568,7 @@ static int commit_member(jk_ws_service_t *s,
         else {
             /* This is not atomic and not thread safe */
             aw->port = port;
-            strncpy(aw->host, host, JK_SHM_STR_SIZ);
+            jk_shm_str_copy(aw->host, host, l);
             jk_clone_sockaddr(&(aw->worker_inet_addr), &inet_addr);
             *side_effect |= JK_STATUS_NEEDS_PUSH | JK_STATUS_NEEDS_ADDR_PUSH;
         }
@@ -3802,7 +3802,8 @@ static void commit_all_members(jk_ws_service_t *s,
                 }
                 else if (!strcmp(attribute, JK_STATUS_ARG_LBM_ROUTE)) {
                     if (rv == JK_TRUE) {
-                        if (jk_check_attribute_length("route", arg, l) == JK_FALSE) {
+                        int ret = jk_shm_str_init_ne(wr->route, arg, "route", l);
+                        if (ret == -1) {
                             const char *msg = "Update failed (at least partially): new route '%s' "
                                               "too long for sub worker '%s', see log file for details.";
                             size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
@@ -3810,11 +3811,10 @@ static void commit_all_members(jk_ws_service_t *s,
                             snprintf(p->msg, size, msg, arg, aw->name);
                             rc = JK_FALSE;
                         }
-                        else if (strncmp(wr->route, arg, JK_SHM_STR_SIZ)) {
+                        else if (ret != 0) {
                             jk_log(l, JK_LOG_INFO,
                                    "Status worker '%s' changing 'route' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                                    w->name, wr->name, name, wr->route, arg);
-                            strncpy(wr->route, arg, JK_SHM_STR_SIZ);
                             sync_needed = JK_TRUE;
                             if (!wr->domain[0]) {
                                 char * id_domain = strchr(wr->route, '.');
@@ -3829,7 +3829,8 @@ static void commit_all_members(jk_ws_service_t *s,
                 }
                 else if (!strcmp(attribute, JK_STATUS_ARG_LBM_REDIRECT)) {
                     if (rv == JK_TRUE) {
-                        if (jk_check_attribute_length("redirect", arg, l) == JK_FALSE) {
+                        int ret = jk_shm_str_init_ne(wr->redirect, arg, "redirect", l);
+                        if (ret == -1) {
                             const char *msg = "Update failed (at least partially): new redirect '%s' "
                                               "too long for sub worker '%s', see log file for details.";
                             size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
@@ -3837,18 +3838,18 @@ static void commit_all_members(jk_ws_service_t *s,
                             snprintf(p->msg, size, msg, arg, aw->name);
                             rc = JK_FALSE;
                         }
-                        else if (strncmp(wr->redirect, arg, JK_SHM_STR_SIZ)) {
+                        else if (ret != 0) {
                             jk_log(l, JK_LOG_INFO,
                                    "Status worker '%s' changing 'redirect' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                                    w->name, wr->name, name, wr->redirect, arg);
-                            strncpy(wr->redirect, arg, JK_SHM_STR_SIZ);
                             sync_needed = JK_TRUE;
                         }
                     }
                 }
                 else if (!strcmp(attribute, JK_STATUS_ARG_LBM_DOMAIN)) {
                     if (rv == JK_TRUE) {
-                        if (jk_check_attribute_length("domain", arg, l) == JK_FALSE) {
+                        int ret = jk_shm_str_init_ne(wr->domain, arg, "domain", l);
+                        if (ret == -1) {
                             const char *msg = "Update failed (at least partially): new domain '%s' "
                                               "too long for sub worker '%s', see log file for details.";
                             size_t size = strlen(msg) + strlen(arg) + strlen(wr->name) + 1;
@@ -3856,11 +3857,10 @@ static void commit_all_members(jk_ws_service_t *s,
                             snprintf(p->msg, size, msg, arg, aw->name);
                             rc = JK_FALSE;
                         }
-                        else if (strncmp(wr->domain, arg, JK_SHM_STR_SIZ)) {
+                        else if (ret != 0) {
                             jk_log(l, JK_LOG_INFO,
                                    "Status worker '%s' changing 'domain' for sub worker '%s' of lb worker '%s' from '%s' to '%s'",
                                    w->name, wr->name, name, wr->domain, arg);
-                            strncpy(wr->domain, arg, JK_SHM_STR_SIZ);
                             sync_needed = JK_TRUE;
                         }
                     }

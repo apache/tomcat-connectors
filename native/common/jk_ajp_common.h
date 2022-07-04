@@ -287,7 +287,7 @@ struct ajp_worker
     /* Shared memory worker data */
     jk_shm_ajp_worker_t *s;
 
-    char         name[JK_SHM_STR_SIZ];
+    shm_str name;
     /* Sequence counter starting at 0 and increasing
      * every time we change the config
      */
@@ -301,9 +301,9 @@ struct ajp_worker
     jk_sockaddr_t worker_inet_addr;    /* Contains host and port */
     jk_sockaddr_t worker_source_inet_addr; /* Contains source ip */
     unsigned connect_retry_attempts;
-    char host[JK_SHM_STR_SIZ];
+    shm_str host;
     int port;
-    char source[JK_SHM_STR_SIZ];
+    shm_str source;
     int addr_sequence;  /* Whether the address is resolved */
     int maintain_time;
     int prefer_ipv6;

@@ -316,9 +316,9 @@ static void jk_lb_pull_worker(lb_worker_t *p, int i, jk_log_context_t *l)
                    w->name, p->name);
 
         jk_ajp_pull(aw, JK_TRUE, l);
-        strncpy(w->route, w->s->route, JK_SHM_STR_SIZ);
-        strncpy(w->domain, w->s->domain, JK_SHM_STR_SIZ);
-        strncpy(w->redirect, w->s->redirect, JK_SHM_STR_SIZ);
+        jk_shm_str_copy(w->route, w->s->route, l);
+        jk_shm_str_copy(w->domain, w->s->domain, l);
+        jk_shm_str_copy(w->redirect, w->s->redirect, l);
         w->distance = w->s->distance;
         w->activation = w->s->activation;
         w->lb_factor = w->s->lb_factor;
@@ -402,9 +402,9 @@ void jk_lb_push(lb_worker_t *p, int locked, int push_all_members, jk_log_context
                        w->name, p->name);
 
             jk_ajp_push(aw, JK_TRUE, l);
-            strncpy(w->s->route, w->route, JK_SHM_STR_SIZ);
-            strncpy(w->s->domain, w->domain, JK_SHM_STR_SIZ);
-            strncpy(w->s->redirect, w->redirect, JK_SHM_STR_SIZ);
+            jk_shm_str_copy(w->s->route, w->route, l);
+            jk_shm_str_copy(w->s->domain, w->domain, l);
+            jk_shm_str_copy(w->s->redirect, w->redirect, l);
             w->s->distance = w->distance;
             w->s->activation = w->activation;
             w->s->lb_factor = w->lb_factor;
@@ -1745,10 +1745,11 @@ static int JK_METHOD validate(jk_worker_t *pThis,
             }
             memset(p->lb_workers, 0, num_of_workers * sizeof(lb_sub_worker_t));
             for (i = 0; i < num_of_workers; i++) {
-                if (jk_check_attribute_length("host name", worker_names[i], l) == JK_FALSE) {
+                if (jk_shm_str_init(p->lb_workers[i].name, worker_names[i], "name", l) == JK_FALSE) {
                     JK_TRACE_EXIT(l);
                     return JK_FALSE;
                 }
+                jk_shm_str_copy(p->lb_workers[i].route, p->lb_workers[i].name, l);
                 p->lb_workers[i].s = jk_shm_alloc_lb_sub_worker(&p->p, p->s->h.id, worker_names[i], l);
                 if (p->lb_workers[i].s == NULL) {
                     jk_log(l, JK_LOG_ERROR,
@@ -1757,7 +1758,6 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                     return JK_FALSE;
                 }
                 p->lb_workers[i].i = i;
-                strncpy(p->lb_workers[i].name, worker_names[i], JK_SHM_STR_SIZ);
             }
 
             for (i = 0; i < num_of_workers; i++) {
@@ -1796,27 +1796,22 @@ static int JK_METHOD validate(jk_worker_t *pThis,
                 p->lb_workers[i].distance =
                     jk_get_distance(props, worker_names[i]);
                 if ((s = jk_get_worker_route(props, worker_names[i], NULL))) {
-                    if (jk_check_attribute_length("route", s, l) == JK_FALSE) {
+                    if (jk_shm_str_init(p->lb_workers[i].route, s, "route", l) == JK_FALSE) {
                         JK_TRACE_EXIT(l);
                         return JK_FALSE;
                     }
-                    strncpy(p->lb_workers[i].route, s, JK_SHM_STR_SIZ);
                 }
-                else
-                    strncpy(p->lb_workers[i].route, worker_names[i], JK_SHM_STR_SIZ);
                 if ((s = jk_get_worker_domain(props, worker_names[i], NULL))) {
-                    if (jk_check_attribute_length("domain", s, l) == JK_FALSE) {
+                    if (jk_shm_str_init(p->lb_workers[i].domain, s, "domain", l) == JK_FALSE) {
                         JK_TRACE_EXIT(l);
                         return JK_FALSE;
                     }
-                    strncpy(p->lb_workers[i].domain, s, JK_SHM_STR_SIZ);
                 }
                 if ((s = jk_get_worker_redirect(props, worker_names[i], NULL))) {
-                    if (jk_check_attribute_length("redirect", s, l) == JK_FALSE) {
+                    if (jk_shm_str_init(p->lb_workers[i].redirect, s, "redirect", l) == JK_FALSE) {
                         JK_TRACE_EXIT(l);
                         return JK_FALSE;
                     }
-                    strncpy(p->lb_workers[i].redirect, s, JK_SHM_STR_SIZ);
                 }
 
                 p->lb_workers[i].s->lb_value = 0;
@@ -1943,24 +1938,21 @@ static int JK_METHOD init(jk_worker_t *pThis,
 #endif
     p->lblock   = jk_get_lb_lock(props, p->name);
     s = jk_get_lb_session_cookie(props, p->name, JK_SESSION_IDENTIFIER);
-    if (jk_check_attribute_length("session_cookie", s, l) == JK_FALSE) {
+    if (jk_shm_str_init(p->session_cookie, s, "session_cookie", l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    strncpy(p->session_cookie, s, JK_SHM_STR_SIZ);
     s = jk_get_lb_session_path(props, p->name, JK_PATH_SESSION_IDENTIFIER);
-    if (jk_check_attribute_length("session_path", s, l) == JK_FALSE) {
+    if (jk_shm_str_init(p->session_path, s, "session_path", l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    strncpy(p->session_path, s, JK_SHM_STR_SIZ);
     p->set_session_cookie = jk_get_lb_set_session_cookie(props, p->name, JK_FALSE);
     s = jk_get_lb_session_cookie_path(props, p->name, "/");
-    if (jk_check_attribute_length("session_cookie_path", s, l) == JK_FALSE) {
+    if (jk_shm_str_init(p->session_cookie_path, s, "session_cookie_path", l) == JK_FALSE) {
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
-    strncpy(p->session_cookie_path, s, JK_SHM_STR_SIZ);
 
     JK_INIT_CS(&(p->cs), i);
     if (i == JK_FALSE) {
@@ -2057,7 +2049,10 @@ int JK_METHOD lb_worker_factory(jk_worker_t **w,
             JK_TRACE_EXIT(l);
             return 0;
         }
-        strncpy(private_data->name, name, JK_SHM_STR_SIZ);
+        if (jk_shm_str_init(private_data->name, name, "name", l) == JK_FALSE) {
+            JK_TRACE_EXIT(l);
+            return 0;
+        }
         private_data->lb_workers = NULL;
         private_data->num_of_workers = 0;
         private_data->worker.worker_private = private_data;

@@ -1190,7 +1190,7 @@ const char *map_uri_to_worker_ext(jk_uri_worker_map_t *uw_map,
                    vhost, JK_MAX_URI_LEN - off);
         }
         else {
-            strncpy(&url[off], vhost, vhost_len + 1);
+            memcpy(&url[off], vhost, vhost_len + 1);
             if (JK_IS_DEBUG_LEVEL(l)) {
                 jk_log(l, JK_LOG_DEBUG,
                        "Prefixing mapping uri with vhost '%s'", vhost);

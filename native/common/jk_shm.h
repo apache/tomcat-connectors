@@ -54,6 +54,8 @@ extern "C"
 #define JK_SHM_MIN_SIZE           ((JK_SHM_SLOT_SIZE * JK_SHM_DEF_WORKERS * 3) + \
                                    JK_SHM_ALIGNMENT)
 
+typedef char shm_str[JK_SHM_STR_SIZ];
+
 /** jk shm generic worker record structure */
 struct jk_shm_worker_header
 {
@@ -62,7 +64,7 @@ struct jk_shm_worker_header
     /* JK_XXX_WORKER_TYPE */
     int     type;
     /* worker name */
-    char    name[JK_SHM_STR_SIZ];
+    shm_str name;
     /* parent slot id.
      * Zero in case worker does not belong to balancer.
      */
@@ -78,7 +80,7 @@ typedef struct jk_shm_worker_header jk_shm_worker_header_t;
 struct jk_shm_ajp_worker
 {
     jk_shm_worker_header_t h;
-    char host[JK_SHM_STR_SIZ];
+    shm_str host;
     int port;
     volatile int addr_sequence;
 
@@ -131,11 +133,11 @@ struct jk_shm_lb_sub_worker
     jk_shm_worker_header_t h;
 
     /* route */
-    char    route[JK_SHM_STR_SIZ];
+    shm_str route;
     /* worker domain */
-    char    domain[JK_SHM_STR_SIZ];
+    shm_str domain;
     /* worker redirect route */
-    char    redirect[JK_SHM_STR_SIZ];
+    shm_str redirect;
     /* worker distance */
     volatile int distance;
     /* current activation state (config) of the worker */
@@ -185,6 +187,15 @@ struct jk_shm_lb_worker
     volatile time_t last_maintain_time;
 };
 typedef struct jk_shm_lb_worker jk_shm_lb_worker_t;
+
+int jk_shm_str_init(shm_str dst, const char *src,
+                    const char *name, jk_log_context_t *l);
+
+int jk_shm_str_init_ne(shm_str dst, const char *src,
+                       const char *name, jk_log_context_t *l);
+
+void jk_shm_str_copy(shm_str dst, shm_str src,
+                     jk_log_context_t *l);
 
 const char *jk_shm_name(void);
 
