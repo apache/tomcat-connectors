@@ -37,7 +37,7 @@ AC_CACHE_VAL(AC_CV_NAME,
 [AC_TRY_RUN([#include <stdio.h>
 #include <stdlib.h>
 $1
-main()
+int main()
 {
   FILE *f=fopen("conftestval","w");
   if (!f) exit(1);
