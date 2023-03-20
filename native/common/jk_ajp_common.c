@@ -1512,7 +1512,7 @@ static int ajp_read_fully_from_server(jk_ws_service_t *s, jk_log_context_t *l,
 
     while (rdlen < padded_len) {
         unsigned int this_time = 0;
-        if (!s->read(s, buf + rdlen, len - rdlen, &this_time)) {
+        if (!s->read(s, buf + rdlen, padded_len - rdlen, &this_time)) {
             /* Remote Client read failed.
              */
             JK_TRACE_EXIT(l);
