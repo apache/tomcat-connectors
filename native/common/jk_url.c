@@ -169,9 +169,9 @@ static char x2c(const char *what)
  * @param plus If non zero, '+' is converted to ' ' as per
  * application/x-www-form-urlencoded encoding
  * @param len If set, the length of the unescaped string will be returned
- * @return JK_TRUE on success, JK_FALSE if no characters are
- * decoded or the string is NULL, if a bad escape sequence is
- * found, or if a character on the forbid list is found.
+ * @return JK_TRUE on success, JK_FALSE if the string is NULL,
+ * if a bad escape sequence is found, or if a character on the
+ * forbid list is found.
  * Implementation copied from APR 1.5.x.
  */
 int jk_unescape_url(char *const unescaped,
