@@ -43,7 +43,7 @@
 <section name="Changes between 1.2.48 and 1.2.49">
   <changelog>
     <fix>
-      Common: Fix compiler warning when nitializing and copying fixed length
+      Common: Fix compiler warning when initializing and copying fixed length
       strings. (rjung)
     </fix>
     <update>
