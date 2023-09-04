@@ -1003,7 +1003,7 @@ static int ajp_handle_cping_cpong(ajp_endpoint_t * ae, int timeout,
         }
 
         if ((cmd = jk_b_get_byte(msg)) != AJP13_CPONG_REPLY) {
-            /* If the respose was not CPONG it means that
+            /* If the response was not CPONG it means that
              * the previous response was not consumed by the
              * client but the AJP messages was already in
              * the network buffer.
