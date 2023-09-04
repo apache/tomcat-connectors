@@ -79,6 +79,11 @@
       Common: Fix Clang 15/16 compatability. Pull request <pr>6</pr> provided by
       Sam James. (markt)
     </fix>
+    <fix>
+      Apache: <bug>65901</bug>: Don't delegate the generatation of the response
+      body to httpd when the status code represents an error if the request used
+      the HEAD method. (markt)
+    </fix>
   </changelog>
 </section>
 <section name="Changes between 1.2.47 and 1.2.48">

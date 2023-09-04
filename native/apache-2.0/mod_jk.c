@@ -3013,10 +3013,11 @@ static int jk_handler(request_rec * r)
                     JK_TRACE_EXIT(l);
                     return s.http_response_status;
                 }
-                /* If tomcat returned no body and the status is not OK,
-                   let apache handle the error code */
-
-                if (!r->sent_bodyct && r->status >= HTTP_BAD_REQUEST) {
+                /*
+                 * If Tomcat returned no body, the status is not OK and it is
+                 * not a HEAD request, let httpd generate the response body.
+                 */
+                if (!r->sent_bodyct && r->status >= HTTP_BAD_REQUEST && strcmp(r->method, "HEAD")) {
                     jk_log(l, JK_LOG_INFO, "No body with status=%d"
                            " for worker=%s",
                            r->status, worker_name);
