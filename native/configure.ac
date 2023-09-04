@@ -306,6 +306,7 @@ AC_TRY_RUN([
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <stdlib.h>
 
 int main(void)
 {
@@ -344,6 +345,7 @@ AC_TRY_RUN([
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <stdlib.h>
 
 int main(void)
 {
@@ -395,6 +397,7 @@ AC_TRY_RUN([
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <stdlib.h>
 
 int main(void)
 {
@@ -416,6 +419,7 @@ AC_TRY_RUN([
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 
 int main(void)
 {
