@@ -75,6 +75,10 @@
       <bug>64878</bug>: Common: Enable configure to find the correct sizes for
       pid_t and pthread_t when building on MacOS. (markt)
     </fix>
+    <fix>
+      Common: Fix Clang 15/16 compatability. Pull request <pr>6</pr> provided by
+      Sam James. (markt)
+    </fix>
   </changelog>
 </section>
 <section name="Changes between 1.2.47 and 1.2.48">
