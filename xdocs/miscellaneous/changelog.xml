@@ -129,7 +129,7 @@
         (markt)
       </update>
       <update>
-        Common; Update release script for migration to git. (rjung)
+        Common: Update release script for migration to git. (rjung)
       </update>
     </changelog>
   </subsection>
