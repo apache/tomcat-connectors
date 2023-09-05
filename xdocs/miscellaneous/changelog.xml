@@ -31,6 +31,16 @@
   </properties>
 
 <body>
+<!--
+  Subsection ordering:
+  Apache, IIS, Common, Docs
+
+  Item Ordering:
+
+  There is no ordering by add/update/fix/scode/docs/design.
+
+  Fixed issues are added to the end of the list, chronologically.
+-->
 
 <section name="Preface">
   <p>
@@ -41,107 +51,131 @@
   </p>
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
-  <changelog>
-    <fix>
-      Common: Fix compiler warning when initializing and copying fixed length
-      strings. (rjung)
-    </fix>
-    <update>
-      IIS: Set default request id as a GUID.
-      It can also be taken from an arbitrary request
-      header by configuring "request_id_header". (rjung)
-    </update>
-    <update>
-      Apache: Retrieve default request id from mod_unique_id.
-      It can also be taken from an arbitrary environment
-      variable by configuring "JkRequestIdIndicator". (rjung)
-    </update>
-    <update>
-      Common: Add a request id to mod_jk log lines. (rjung)
-    </update>
-    <fix>
-      IIS: Fix non-empty check for the Translate header. (rjung)
-    </fix>
-    <update>
-      Remove support for the Netscape / Sun ONE / Oracle iPlanet Web Server as
-      the product has been retired. (markt)
-    </update>
-    <update>
-      Remove links to the old JK2 documentation. The JK2 documentation is still
-      available, it is just no longer linked from the current JK documentation.
-      (markt)
-    </update>
-    <fix>
-      <bug>64878</bug>: Common: Enable configure to find the correct sizes for
-      pid_t and pthread_t when building on MacOS. (markt)
-    </fix>
-    <fix>
-      Common: Fix Clang 15/16 compatability. Pull request <pr>6</pr> provided by
-      Sam James. (markt)
-    </fix>
-    <fix>
-      Apache: <bug>65901</bug>: Don't delegate the generatation of the response
-      body to httpd when the status code represents an error if the request used
-      the HEAD method. (markt)
-    </fix>
-    <fix>
-      Apache: <bug>66005</bug>: Only export the main module symbol. Visibility
-      of module internal symbols led to crashes when conflicting with library
-      symbols. Based on a patch provided by Josef Čejka. (rjung)
-    </fix>
-    <update>
-      Status: Improve XSS hardening. (rjung)
-    </update>
-  </changelog>
+  <subsection name="Apache">
+    <changelog>
+      <update>
+        Retrieve default request id from mod_unique_id.
+        It can also be taken from an arbitrary environment
+        variable by configuring "JkRequestIdIndicator". (rjung)
+      </update>
+      <fix>
+        <bug>65901</bug>: Don't delegate the generatation of the response
+        body to httpd when the status code represents an error if the request used
+        the HEAD method. (markt)
+      </fix>
+      <fix>
+        <bug>66005</bug>: Only export the main module symbol. Visibility
+        of module internal symbols led to crashes when conflicting with library
+        symbols. Based on a patch provided by Josef Čejka. (rjung)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="IIS">
+    <changelog>
+      <update>
+        Set default request id as a GUID.
+        It can also be taken from an arbitrary request
+        header by configuring "request_id_header". (rjung)
+      </update>
+      <fix>
+        Fix non-empty check for the Translate header. (rjung)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Common">
+    <changelog>
+      <fix>
+        Fix compiler warning when initializing and copying fixed length
+        strings. (rjung)
+      </fix>
+      <update>
+        Add a request id to mod_jk log lines. (rjung)
+      </update>
+      <fix>
+        <bug>64878</bug>: Enable configure to find the correct sizes for
+        pid_t and pthread_t when building on MacOS. (markt)
+      </fix>
+      <fix>
+        Fix Clang 15/16 compatability. Pull request <pr>6</pr> provided by
+        Sam James. (markt)
+      </fix>
+      <update>
+        Improve XSS hardening i status worker. (rjung)
+      </update>
+    </changelog>
+  </subsection>
+  <subsection name="Docs">
+    <changelog>
+      <update>
+        Remove support for the Netscape / Sun ONE / Oracle iPlanet Web Server as
+        the product has been retired. (markt)
+      </update>
+      <update>
+        Remove links to the old JK2 documentation. The JK2 documentation is still
+        available, it is just no longer linked from the current JK documentation.
+        (markt)
+      </update>
+      <update>
+        Restructure subsections in changelog starting with version 1.2.45.
+        (rjung)
+      </update>
+    </changelog>
+  </subsection>
 </section>
 <section name="Changes between 1.2.47 and 1.2.48">
-  <changelog>
-    <update>
-      IIS: Update the installation how-to to remove windows versions that are no
-      longer supported and to add Windows Server 2019. (markt)
-    </update>
-  </changelog>
+  <subsection name="IIS">
+    <changelog>
+      <update>
+        Update the installation how-to to remove windows versions that are no
+        longer supported and to add Windows Server 2019. (markt)
+      </update>
+    </changelog>
+  </subsection>
 </section>
 <section name="Changes between 1.2.46 and 1.2.47">
-  <subsection name="Native">
+  <subsection name="Apache">
     <changelog>
       <add>
-        Apache: Extend trace level logging of method entry/exit to aid debugging
+        Extend trace level logging of method entry/exit to aid debugging
         of request mapping issues. (markt)
       </add>
       <fix>
-        Apache: Fix a bug in the normalization checks that prevented file based
+        Fix a bug in the normalization checks that prevented file based
         requests, such as SSI file includes, from being processed. (markt)
       </fix>
       <fix>
-        <bug>63214</bug>: Apache: When using <code>JkAutoAlias</code>, ensure
+        <bug>63214</bug>: When using <code>JkAutoAlias</code>, ensure
         that files that include spaces in their name are accessible. (markt)
       </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Common">
+    <changelog>
       <update>
-        Common: Update the documentation to reflect that the source code for the
+        Update the documentation to reflect that the source code for the
         Apache Tomcat Connectors has moved from Subversion to Git. (markt)
       </update>
       <fix>
-        <bug>64051</bug>: Common. When using <code>set_session_cookie</code>,
+        <bug>64051</bug>: When using <code>set_session_cookie</code>,
         ensure that an updated session cookie is issued if the load-balancer has
         to failover to a different worker. (markt)
       </fix>
       <update>
-        Common: Update config.guess and config.sub from
+        Update config.guess and config.sub from
         <a href="https://git.savannah.gnu.org/git/config.git">https://git.savannah.gnu.org/git/config.git</a>.
         (markt)
       </update>
       <update>
-        Common: Update release script for migration to git. (rjung)
+        Update release script for migration to git. (rjung)
       </update>
     </changelog>
   </subsection>
 </section>
 <section name="Changes between 1.2.45 and 1.2.46">
-  <subsection name="Native">
+  <subsection name="Apache">
     <changelog>
       <fix>
-        <bug>62751</bug>: Apache: Fix regression in 1.2.44 which resulted in
+        <bug>62751</bug>: Fix regression in 1.2.44 which resulted in
         socket_connect_timeout to be interpreted in units of seconds
         instead of milliseconds on platforms that provide poll(). (rjung)
       </fix>
@@ -149,35 +183,43 @@
   </subsection>
 </section>
 <section name="Changes between 1.2.44 and 1.2.45">
-  <subsection name="Native">
+  <subsection name="Apache">
+    <changelog>
+      <update>
+        Update the documentation to note additional limitations of the
+        JkAutoAlias directive. (markt)
+      </update>
+      <fix>
+        Improve path parameter handling so that
+        <code>JkStripSession</code> can remove session IDs that are specified on
+        path parameters in any segment of the URI rather than only the final
+        segment. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="IIS">
+    <changelog>
+      <fix>
+        Improve path parameter handling so that <code>strip_session</code>
+        can remove session IDs that are specified on path parameters in any
+        segment of the URI rather than only the final segment. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Common">
     <changelog>
       <fix>
         <bug>62689</bug>: Correct regression in 1.2.44 that broke request
         handling for <code>OPTIONS *</code> requests. (rjung)
       </fix>
-      <update>
-        Apache: Update the documentation to note additional limitations of the
-        JkAutoAlias directive. (markt)
-      </update>
       <scode>
-        Common: Optimize path parameter handling. (rjung)
+        Optimize path parameter handling. (rjung)
       </scode>
       <fix>
         Improve path parameter parsing so that the session ID specified by the
         <code>session_path</code> worker property for load-balanced workers can
         be extracted from a path parameter in any segment of the URI, rather
         than only from the final segment. (markt)
-      </fix>
-      <fix>
-        Apache: Improve path parameter handling so that
-        <code>JkStripSession</code> can remove session IDs that are specified on
-        path parameters in any segment of the URI rather than only the final
-        segment. (markt)
-      </fix>
-      <fix>
-        IIS: Improve path parameter handling so that <code>strip_session</code>
-        can remove session IDs that are specified on path parameters in any
-        segment of the URI rather than only the final segment. (markt)
       </fix>
     </changelog>
   </subsection>
