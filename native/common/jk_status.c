@@ -424,6 +424,7 @@ struct status_endpoint
 {
     status_worker_t *worker;
 
+    char            *req_uri;
     char            *query_string;
     jk_map_t        *req_params;
     char            *msg;
@@ -1136,7 +1137,7 @@ static void status_start_form(jk_ws_service_t *s,
     jk_map_t *m = p->req_params;
 
     if (method)
-        jk_printf(s, l, JK_STATUS_FORM_START, method, s->req_uri);
+        jk_printf(s, l, JK_STATUS_FORM_START, method, p->req_uri);
     else
         return;
     if (cmd != JK_STATUS_CMD_UNKNOWN) {
@@ -1179,7 +1180,7 @@ static void status_write_uri(jk_ws_service_t *s,
 
     if (text)
         jk_puts(s, "<a href=\"");
-    jk_puts(s, s->req_uri);
+    jk_puts(s, p->req_uri);
     status_get_string(p, JK_STATUS_ARG_FROM, NULL, &arg, l);
     from = status_cmd_int(arg);
     status_get_string(p, JK_STATUS_ARG_CMD, NULL, &arg, l);
@@ -1288,6 +1289,32 @@ static void status_write_uri(jk_ws_service_t *s,
                   JK_STATUS_ARG_OPTIONS, (opt | add_options) & ~rm_options);
     if (text)
         jk_putv(s, "\">", text, "</a>", NULL);
+}
+
+static int status_unescape_uri(jk_ws_service_t *s,
+                               status_endpoint_t *p,
+                               jk_log_context_t *l)
+{
+    status_worker_t *w = p->worker;
+    char *req_uri;
+
+    JK_TRACE_ENTER(l);
+
+    req_uri = p->req_uri = jk_pool_strdup(s->pool, s->req_uri);
+    /* percent decoding */
+    if (jk_unescape_url(req_uri, req_uri, -1, NULL, NULL, 1, NULL) != JK_TRUE) {
+        jk_log(l, JK_LOG_ERROR,
+               "Status worker '%s' could not decode request uri",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+    /* XXX We simply mask special chars in the request uri with '@' to prevent cross site scripting */
+    while ((req_uri = strpbrk(req_uri, JK_STATUS_ESC_CHARS)))
+        req_uri[0] = '@';
+
+    JK_TRACE_EXIT(l);
+    return JK_TRUE;
 }
 
 static int status_parse_uri(jk_ws_service_t *s,
@@ -4777,6 +4804,14 @@ static int JK_METHOD service(jk_endpoint_t *e,
         }
     }
 
+    /* Step 0: Unescape request uri and make safe against XSS */
+    if (status_unescape_uri(s, p, l) != JK_TRUE) {
+        if (is_error)
+            *is_error = JK_HTTP_SERVER_ERROR;
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
     /* Step 1: Process GET params and update configuration */
     if (status_parse_uri(s, p, l) != JK_TRUE) {
         err = "Error during parsing of URI";
@@ -5011,7 +5046,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                 if (cmd_props & JK_STATUS_CMD_PROP_REFRESH &&
                     refresh > 0) {
                     jk_printf(s, l, "\n<meta http-equiv=\"Refresh\" content=\"%d;url=%s?%s\">",
-                          refresh, s->req_uri, p->query_string);
+                          refresh, p->req_uri, p->query_string);
                 }
                 if (w->css) {
                     jk_putv(s, "\n<link rel=\"stylesheet\" type=\"text/css\" href=\"",
@@ -5072,7 +5107,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
                         }
                         buf[result] = '\0';
 
-                        jk_putv(s, "[<a href=\"", s->req_uri, NULL);
+                        jk_putv(s, "[<a href=\"", p->req_uri, NULL);
                         if (buf && buf[0])
                             jk_putv(s, "?", buf, NULL);
                         jk_puts(s, "\">Stop auto refresh</a>]");
@@ -5189,7 +5224,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
         jk_log(l, JK_LOG_WARNING, "Status worker '%s': %s", w->name, err);
         if (mime == JK_STATUS_MIME_HTML) {
             jk_putv(s, "<p><b>Result: ERROR - ", err, "</b><br/>", NULL);
-            jk_putv(s, "<a href=\"", s->req_uri, "\">JK Status Manager Start Page</a></p>", NULL);
+            jk_putv(s, "<a href=\"", p->req_uri, "\">JK Status Manager Start Page</a></p>", NULL);
         }
         else if (mime == JK_STATUS_MIME_XML) {
             jk_print_xml_start_elt(s, l, w, 2, 0, "result");
@@ -5210,7 +5245,7 @@ static int JK_METHOD service(jk_endpoint_t *e,
     }
     else {
         if (mime == JK_STATUS_MIME_HTML) {
-            jk_putv(s, "<p><a href=\"", s->req_uri, "\">JK Status Manager Start Page</a></p>", NULL);
+            jk_putv(s, "<p><a href=\"", p->req_uri, "\">JK Status Manager Start Page</a></p>", NULL);
         }
         else if (mime == JK_STATUS_MIME_XML) {
             jk_print_xml_start_elt(s, l, w, 2, 0, "result");

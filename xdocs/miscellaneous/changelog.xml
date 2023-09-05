@@ -89,6 +89,9 @@
       of module internal symbols led to crashes when conflicting with library
       symbols. Based on a patch provided by Josef Čejka. (rjung)
     </fix>
+    <update>
+      Status: Improve XSS hardening. (rjung)
+    </update>
   </changelog>
 </section>
 <section name="Changes between 1.2.47 and 1.2.48">
