@@ -23,6 +23,8 @@ MKDIR=@MKDIR@
 APXSCFLAGS=@APXSCFLAGS@
 APXSCPPFLAGS=@APXSCPPFLAGS@
 APXSLDFLAGS=@APXSLDFLAGS@
+JKLDFLAGS=-export-symbols-regexp ^jk_module$
+
 CC=@CC@
 SHELL=@SHELL@
 
@@ -80,7 +82,7 @@ mod_jk.lo: ${srcdir}/mod_jk.c
 	${LT_COMPILE}
 
 mod_jk.la: mod_jk.lo $(APACHE_OBJECTS)
-	$(LIBTOOL) --mode=link ${COMPILE} $(APXSLDFLAGS) -o $@ -module -rpath ${libexecdir} -avoid-version mod_jk.lo $(APACHE_OBJECTS)
+	$(LIBTOOL) --mode=link ${COMPILE} $(APXSLDFLAGS) ${JKLDFLAGS} -o $@ -module -rpath ${libexecdir} -avoid-version mod_jk.lo $(APACHE_OBJECTS)
 
 mod_jk.so: mod_jk.la
 	${top_srcdir}/scripts/build/instdso.sh SH_LIBTOOL='$(LIBTOOL)' mod_jk.la `pwd`

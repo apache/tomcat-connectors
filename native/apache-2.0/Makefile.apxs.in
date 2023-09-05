@@ -19,8 +19,9 @@ srcdir=@srcdir@
 top_srcdir=@top_srcdir@
 top_builddir=@top_builddir@
 APXS=@APXS@
-APXSLDFLAGS=@APXSLDFLAGS@
 APXSCFLAGS=@APXSCFLAGS@
+APXSLDFLAGS=@APXSLDFLAGS@
+JKLDFLAGS=-export-symbols-regex ^jk_module$
 
 COMMON=common
 JK_INCL=-DUSE_APACHE_MD5 -I${top_builddir}/${COMMON} -I ${top_srcdir}/${COMMON}
@@ -32,7 +33,7 @@ include @top_builddir@/common/list.mk
 all: mod_jk.la
 
 mod_jk.la:
-	$(APXS) -c -o $@ -Wc,"${APXSCFLAGS} ${JK_INCL}" ${APXSLDFLAGS} ${srcdir}/mod_jk.c ${APACHE_OBJECTS}
+	$(APXS) -c -o $@ -Wc,"${APXSCFLAGS} ${JK_INCL}" ${APXSLDFLAGS} ${JKLDFLAGS} ${srcdir}/mod_jk.c ${APACHE_OBJECTS}
 
 install: mod_jk.la
 	$(APXS) -i mod_jk.la

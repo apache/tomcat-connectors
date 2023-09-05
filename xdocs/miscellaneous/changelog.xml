@@ -84,6 +84,11 @@
       body to httpd when the status code represents an error if the request used
       the HEAD method. (markt)
     </fix>
+    <fix>
+      Apache: <bug>66005</bug>: Only export the main module symbol. Visibility
+      of module internal symbols led to crashes when conflicting with library
+      symbols. Based on a patch provided by Josef Čejka. (rjung)
+    </fix>
   </changelog>
 </section>
 <section name="Changes between 1.2.47 and 1.2.48">
