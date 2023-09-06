@@ -2819,17 +2819,6 @@ static int jk_handler(request_rec * r)
                 rconf->rule_extensions = e;
             }
         }
-        else if (worker_env.num_of_workers == 1) {
-          /** We have a single worker (the common case).
-              (lb is a bit special, it should count as a single worker but
-              I'm not sure how). We also have a manual config directive that
-              explicitly give control to us. */
-            worker_name = worker_env.worker_list[0];
-            if (JK_IS_DEBUG_LEVEL(l))
-                jk_log(l, JK_LOG_DEBUG,
-                       "Single worker (%s) configuration for %s",
-                       worker_name, r->uri);
-        }
         else {
             if (!xconf->uw_map) {
                 if (JK_IS_DEBUG_LEVEL(l))
@@ -2855,14 +2844,6 @@ static int jk_handler(request_rec * r)
                     rconf->orig_uri = r->uri;
                     r->uri = clean_uri;
                 }
-            }
-
-            if (worker_name == NULL && worker_env.num_of_workers) {
-                worker_name = worker_env.worker_list[0];
-                if (JK_IS_DEBUG_LEVEL(l))
-                    jk_log(l, JK_LOG_DEBUG,
-                           "Using first worker (%s) from %d workers for %s",
-                           worker_name, worker_env.num_of_workers, r->uri);
             }
         }
         if (worker_name)

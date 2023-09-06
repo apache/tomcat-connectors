@@ -68,6 +68,10 @@
         of module internal symbols led to crashes when conflicting with library
         symbols. Based on a patch provided by Josef Čejka. (rjung)
       </fix>
+      <fix>
+        Remove support for implicit mapping of requests to workers. All mappings
+        must now be explicit. (rjung) 
+      </fix>
     </changelog>
   </subsection>
   <subsection name="IIS">
