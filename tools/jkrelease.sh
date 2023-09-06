@@ -375,10 +375,10 @@ cd ${JK_DIST}/native
 if [ $txtgen = y ]
 then
 # Check for links, elinks or w3m
-W3MOPTS="-dump -cols 80 -t 4 -S -O iso-8859-1 -T text/html"
-ELNKOPTS="-dump -dump-width 80 -dump-charset iso-8859-1 -no-numbering -no-home -no-references"
-LNKOPTS="-dump -width 80 -codepage iso-8859-1 -no-g -html-numbered-links 0"
-LYXOPTS="-dump -width=80 -nolist -nostatus -noprint -assume_local_charset=iso-8859-1"
+W3MOPTS="-dump -cols 80 -t 4 -S -O UTF-8 -T text/html"
+ELNKOPTS="-dump -dump-width 80 -dump-charset UTF-8 -no-numbering -no-home -no-references"
+LNKOPTS="-dump -width 80 -codepage UTF-8 -no-g -html-numbered-links 0"
+LYXOPTS="-dump -width=80 -nolist -nostatus -noprint -assume_local_charset=UTF-8"
 failed=true
 for tool in `echo "w3m elinks links lynx"`
 do

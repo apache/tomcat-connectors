@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE document [
   <!ENTITY project SYSTEM "project.xml">
 ]>
@@ -1080,11 +1080,11 @@ Then go to the System I command line:
 </ul>
 <screen>
 <note>Create mod_jk library</note>
-<type5250>CRTLIB MOD_JK TEXT(‘Apache mod'jk tomcat connector module')</type5250>
+<type5250>CRTLIB MOD_JK TEXT(Â‘Apache mod'jk tomcat connector module')</type5250>
 <note>Create service program source file</note>
-<type5250>CRTSRCPF MOD_JK/QSRVSRC TEXT(‘Service program source file’)</type5250>
+<type5250>CRTSRCPF MOD_JK/QSRVSRC TEXT(Â‘Service program source fileÂ’)</type5250>
 <note>Create the CL build program source file</note>
-<type5250>CRTSRCPF FILE(MOD_JK/QCLSRC) TEXT(‘Build program source file’)</type5250>
+<type5250>CRTSRCPF FILE(MOD_JK/QCLSRC) TEXT(Â‘Build program source fileÂ’)</type5250>
 <note>Edit the service program source file</note>
 <type5250>STRSEU MOD_JK/QSRVSRC MOD_JK</type5250>
 </screen>
