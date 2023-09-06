@@ -411,7 +411,7 @@ do
     esac
     rm -f CHANGES
     echo "Creating the CHANGES file using '$TOOL' ..."
-    ${TOOL} ../docs/miscellaneous/printer/changelog.html > CHANGES 2>/dev/null
+    ${TOOL} ../docs/miscellaneous/changelog.html > CHANGES 2>/dev/null
     if [ -f CHANGES -a -s CHANGES ]
     then
       failed=false
@@ -431,7 +431,7 @@ rm -f NEWS
 touch NEWS
 for news in `ls -r ../xdocs/news/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].xml`
 do
-  print=`echo $news | sed -e 's#xdocs/news#docs/news/printer#' -e 's#\.xml#.html#'`
+  print=`echo $news | sed -e 's#xdocs/news#docs/news#' -e 's#\.xml#.html#'`
   echo "Adding $print to NEWS file ..."
   ${TOOL} $print >>NEWS
 done
