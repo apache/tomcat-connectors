@@ -730,6 +730,12 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
+    if (d->status == 0xFFFF) {
+        jk_log(l, JK_LOG_ERROR,
+               "(%s) Not enough bytes available to read status", ae->worker->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
 
     d->msg = jk_b_get_string(msg);
     if (d->msg) {
@@ -743,6 +749,12 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
                "(%s) status = %d", ae->worker->name, d->status);
 
     d->num_headers = jk_b_get_int(msg);
+    if (d->num_headers == 0xFFFF) {
+        jk_log(l, JK_LOG_ERROR,
+               "(%s) Not enough bytes available to read header count", ae->worker->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
     d->header_names = d->header_values = NULL;
 
     if (JK_IS_DEBUG_LEVEL(l))
@@ -757,9 +769,15 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
         if (d->header_names && d->header_values) {
             unsigned int i;
             for (i = 0; i < d->num_headers; i++) {
+                /*
+                 * Looking for a specific value. No need to check for errors.
+                 * That will be handled by jk_b_get_string if the specific
+                 * value is not found.
+                 */
                 unsigned short name = jk_b_pget_int(msg, msg->pos);
 
                 if ((name & 0XFF00) == 0XA000) {
+                    /* Consume bytes just peeked with jk_b_pget_int */
                     jk_b_get_int(msg);
                     name = name & 0X00FF;
                     if (name <= SC_RES_HEADERS_NUM) {
@@ -2076,16 +2094,26 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
             return JK_AJP13_ERROR;
         }
         if (!s->response_blocked) {
-            unsigned int len = (unsigned int)jk_b_get_int(msg);
-            /*
-             * Do a sanity check on len to prevent write reading beyond buffer
-             * boundaries and thus revealing possible sensitive memory
-             * contents to the client.
-             * len cannot be larger than msg->len - 3 because the ajp message
-             * contains the magic byte for JK_AJP13_SEND_BODY_CHUNK (1 byte)
-             * and the length of the chunk (2 bytes). The remaining part of
-             * the message is the chunk.
+            unsigned int len;
+            /* Check there is sufficient data in the ajp message to read a valid
+             * length. It must be at least 3 bytes - the magic byte for
+             * JK_AJP13_SEND_BODY_CHUNK (1 byte) and the length of the chunk
+             * (2 bytes). The remaining part of the message is the chunk.
              */
+            if (msg->len < 3) {
+                jk_log(l, JK_LOG_ERROR,
+                       "(%s) Invalid AJP message. Length of AJP message "
+                       "is %d, but it should be at least 3.",
+                       ae->worker->name, msg->len);
+                JK_TRACE_EXIT(l);
+                return JK_INTERNAL_ERROR;
+            }
+            /*
+             * Once we have len, do a sanity check to prevent reading beyond
+             * buffer boundaries and thus revealing possible sensitive memory
+             * contents to the client.
+             */
+            len = (unsigned int)jk_b_get_int(msg);
             if (len > (unsigned int)(msg->len - 3)) {
                 jk_log(l, JK_LOG_ERROR,
                        "(%s) Chunk length too large. Length of AJP message "
@@ -2126,9 +2154,12 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
     case JK_AJP13_GET_BODY_CHUNK:
         {
             int len = (int)jk_b_get_int(msg);
-
-            if (len < 0) {
-                len = 0;
+            if (len == 0xFFFF) {
+                jk_log(l, JK_LOG_ERROR,
+                       "(%s) Invalid AJP message: Not enough bytes available to read chunk length",
+                       ae->worker->name);
+                JK_TRACE_EXIT(l);
+                return JK_AJP13_ERROR;
             }
 
             /* the right place to add file storage for upload
@@ -2150,7 +2181,13 @@ static int ajp_process_callback(jk_msg_buf_t *msg,
 
     case JK_AJP13_END_RESPONSE:
         ae->reuse = (int)jk_b_get_byte(msg);
-        if (!ae->reuse) {
+        if (ae->reuse == 0xFF) {
+            jk_log(l, JK_LOG_ERROR,
+                   "(%s) Not enough bytes available to read reuse flag",
+                   ae->worker->name);
+            JK_TRACE_EXIT(l);
+            return JK_AJP13_ERROR;
+        } else  if (!ae->reuse) {
             /*
              * AJP13 protocol reuse flag set to false.
              * Tomcat will close its side of the connection.

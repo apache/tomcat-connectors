@@ -215,7 +215,7 @@ int jk_b_append_bytes(jk_msg_buf_t *msg, const unsigned char *param, int len)
 unsigned long jk_b_get_long(jk_msg_buf_t *msg)
 {
     unsigned long i;
-    if (msg->pos + 3 > msg->len) {
+    if (msg->pos + 4 > msg->len) {
         return 0xFFFFFFFF;
     }
     i = ((msg->buf[(msg->pos++)] & 0xFF) << 24);
@@ -228,6 +228,9 @@ unsigned long jk_b_get_long(jk_msg_buf_t *msg)
 unsigned long jk_b_pget_long(jk_msg_buf_t *msg, int pos)
 {
     unsigned long i;
+    if (pos + 4 > msg->len) {
+        return 0xFFFFFFFF;
+    }
     i = ((msg->buf[(pos++)] & 0xFF) << 24);
     i |= ((msg->buf[(pos++)] & 0xFF) << 16);
     i |= ((msg->buf[(pos++)] & 0xFF) << 8);
@@ -239,7 +242,7 @@ unsigned long jk_b_pget_long(jk_msg_buf_t *msg, int pos)
 unsigned short jk_b_get_int(jk_msg_buf_t *msg)
 {
     unsigned short i;
-    if (msg->pos + 1 > msg->len) {
+    if (msg->pos + 2 > msg->len) {
         return 0xFFFF;
     }
     i = ((msg->buf[(msg->pos++)] & 0xFF) << 8);
@@ -250,6 +253,9 @@ unsigned short jk_b_get_int(jk_msg_buf_t *msg)
 unsigned short jk_b_pget_int(jk_msg_buf_t *msg, int pos)
 {
     unsigned short i;
+    if (pos + 2 > msg->len) {
+        return 0xFFFF;
+    }
     i = ((msg->buf[pos++] & 0xFF) << 8);
     i += ((msg->buf[pos] & 0xFF));
     return i;
@@ -258,7 +264,7 @@ unsigned short jk_b_pget_int(jk_msg_buf_t *msg, int pos)
 unsigned char jk_b_get_byte(jk_msg_buf_t *msg)
 {
     unsigned char rc;
-    if (msg->pos > msg->len) {
+    if (msg->pos + 1 > msg->len) {
         return 0xFF;
     }
     rc = msg->buf[msg->pos++];
@@ -268,6 +274,9 @@ unsigned char jk_b_get_byte(jk_msg_buf_t *msg)
 
 unsigned char jk_b_pget_byte(jk_msg_buf_t *msg, int pos)
 {
+    if (pos + 1 > msg->len) {
+        return 0xFF;
+    }
     return msg->buf[pos];
 }
 

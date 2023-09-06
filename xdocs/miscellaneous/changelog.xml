@@ -100,7 +100,11 @@
         Sam James. (markt)
       </fix>
       <update>
-        Improve XSS hardening i status worker. (rjung)
+        Improve XSS hardening in status worker. (rjung)
+      </update>
+      <update>
+        Add additional bounds and error checking when reading AJP messages.
+        (schultz/markt)
       </update>
     </changelog>
   </subsection>
