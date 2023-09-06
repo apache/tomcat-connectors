@@ -433,7 +433,7 @@ for news in `ls -r ../xdocs/news/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].xml`
 do
   print=`echo $news | sed -e 's#xdocs/news#docs/news#' -e 's#\.xml#.html#'`
   echo "Adding $print to NEWS file ..."
-  ${TOOL} $print >>NEWS
+  ${TOOL} $print | awk '/[0-9][0-9][0-9][0-9] News/ {o=1} o>0' >> NEWS
 done
 if [ ! -s NEWS ]
 then
