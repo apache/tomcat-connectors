@@ -412,6 +412,10 @@ do
     rm -f CHANGES
     echo "Creating the CHANGES file using '$TOOL' ..."
     ${TOOL} ../docs/miscellaneous/changelog.html > CHANGES 2>/dev/null
+    # Remove page navigation data from converted file.
+    cp -p CHANGES CHANGES.tmp
+    awk '/Preface/ {o=1} o>0' CHANGES.tmp > CHANGES
+    rm CHANGES.tmp
     if [ -f CHANGES -a -s CHANGES ]
     then
       failed=false
