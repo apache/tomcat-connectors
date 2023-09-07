@@ -46,7 +46,7 @@ RELEASING
 
 Construct the binary distributions    
 
-  set VER=1.2.49
+  set VER=1.2.50
   mkdir tomcat-connectors-%VER%-windows-i386-iis
   copy ..\LICENSE tomcat-connectors-%VER%-windows-i386-iis\
   copy ..\NOTICE tomcat-connectors-%VER%-windows-i386-iis\
