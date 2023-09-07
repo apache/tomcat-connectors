@@ -13,8 +13,8 @@ environment:
 
 - Git client
 - Mladen's Custom Microsoft Compiler Toolkit Compilation  
-    https://github.com/mturk/cmsc/releases/tag/v15.0.28
-    download cmsc-15.0_28-win7-x86_x64.zip and unzip in C:
+    https://github.com/mturk/cmsc/releases/tag/v15.0.47
+    download cmsc-15.0_47-win7-x86_x64.zip and unzip in C:
 
 
 BUILDING
@@ -28,12 +28,12 @@ Obtain the source code:
 
 Build  isapi_redirector.dll:
 
-    c:\cmsc-15.0_28\setenv.bat x86
+    c:\cmsc-15.0_47\setenv.bat x86
     nmake -f Makefile.vc
 
     open new cmd.exe
 
-    c:\cmsc-15.0_28\setenv.bat x64
+    c:\cmsc-15.0_47\setenv.bat x64
     nmake -f Makefile.vc
 
 Tomcat isapi_redirect DLLs may then be found in
