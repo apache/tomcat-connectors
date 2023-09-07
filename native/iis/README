@@ -51,22 +51,22 @@ Construct the binary distributions
   copy ..\LICENSE tomcat-connectors-%VER%-windows-i386-iis\
   copy ..\NOTICE tomcat-connectors-%VER%-windows-i386-iis\
   copy README tomcat-connectors-%VER%-windows-i386-iis\
-  copy Release_x86\isapi_redirect.dll tomcat-connectors-%VER%-windows-i386-iis\
+  copy x86_RELEASE\isapi_redirect.dll tomcat-connectors-%VER%-windows-i386-iis\
   mkdir tomcat-connectors-%VER%-windows-x86_64-iis
   copy ..\LICENSE tomcat-connectors-%VER%-windows-x86_64-iis\
   copy ..\NOTICE tomcat-connectors-%VER%-windows-x86_64-iis\
   copy README tomcat-connectors-%VER%-windows-x86_64-iis\
-  copy Release_amd64\isapi_redirect.dll tomcat-connectors-%VER%-windows-x86_64-iis\
+  copy x64_RELEASE\isapi_redirect.dll tomcat-connectors-%VER%-windows-x86_64-iis\
   mkdir tomcat-connectors-%VER%-windows-i386-symbols
   copy ..\LICENSE tomcat-connectors-%VER%-windows-i386-symbols
   copy ..\NOTICE tomcat-connectors-%VER%-windows-i386-symbols
   copy README tomcat-connectors-%VER%-windows-i386-symbols\
-  copy Release_x86\isapi_redirect.pdb tomcat-connectors-%VER%-windows-i386-symbols\
+  copy x86_RELEASE\isapi_redirect.pdb tomcat-connectors-%VER%-windows-i386-symbols\
   mkdir tomcat-connectors-%VER%-windows-x86_64-symbols
   copy ..\LICENSE tomcat-connectors-%VER%-windows-x86_64-symbols
   copy ..\NOTICE tomcat-connectors-%VER%-windows-x86_64-symbols
   copy README tomcat-connectors-%VER%-windows-x86_64-symbols\
-  copy Release_amd64\isapi_redirect.pdb tomcat-connectors-%VER%-windows-x86_64-symbols\
+  copy x64_RELEASE\isapi_redirect.pdb tomcat-connectors-%VER%-windows-x86_64-symbols\
   SET JAVA_HOME=C:\Program Files\Java\jdk1.7.0_71   
   set PATH=%PATH%;%JAVA_HOME%\bin
   cd tomcat-connectors-%VER%-windows-i386-iis
