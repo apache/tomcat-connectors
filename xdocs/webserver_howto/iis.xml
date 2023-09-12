@@ -34,8 +34,8 @@ This document explains how to set up the ISAPI redirector for IIS to cooperate w
 </p>
 
 <p>
-Normally IIS can not execute Servlets and Java Server Pages (JSPs), 
-configuring IIS to use the ISAPI redirector plugin will let IIS send servlet and 
+Normally IIS can not execute Servlets and Java Server Pages (JSPs).
+Configuring IIS to use the ISAPI redirector plugin will let IIS send servlet and
 JSP requests to Tomcat (and this way, serve them to clients).
 </p>
 
@@ -178,8 +178,8 @@ Adding more contexts to the configuration.
 <subsection name="Configuring the ISAPI Redirector">
 
 <p>These instructions have been written based on Windows Server 2012 R2 and
-tested with all supported Windows operating systems up to Windows 10 / Windows
-Server 2019.
+tested with all supported Windows operating systems up to Windows 11 / Windows
+Server 2022.
 </p>
 
 <p>
@@ -337,17 +337,17 @@ to your uriworkermap.properties file (for example <b>c:\tomcat\conf\uriworkermap
 
 <subsection name="64 Bit notes">
 <p>
-In a 64 Bit environment the used IIS Application Pool should have "Enable 32-bit
+In a 64-bit environment the IIS Application Pool should have "Enable 32-bit
 Applications" set to "False". To check this, select <b>Application Pools</b> in
 the IIS management console, then right-click on the pool you are using and
-select <b>Set Application Pool Defaults...</b>. <b>Enable 32-Bit
+select <b>Set Application Pool Defaults...</b>. <b>Enable 32-bit
 Applications</b> may be found in the <b>General</b> section. If this is not
 configured correctly, the redirector will not be called and IIS will return an
 HTTP code 404.
 </p>
 <p>
 You must use the 64-bit version of the ISAPI redirector on 64-bit operating
-systems. If you attempt to use the 32bit version, you will get an HTTP code 500
+systems. If you attempt to use the 32-bit version, you will get an HTTP code 500
 for every request because the library is not loadable into a 64-bit IIS.
 </p>
 </subsection>
@@ -360,7 +360,7 @@ but you will also need to add your own contexts. Adding a new context requires t
 <p>
 <ol>
 <li>
-Adding the context to Tomcat (I am not going to talk about this).
+Adding the context to Tomcat (not discussed here).
 </li>
 <li>
 Adding the context to the ISAPI redirector.
@@ -376,40 +376,46 @@ your uriworkermap.properties and to add a line that looks like:
 </source>
 
 <p>
-Workers and their name are defined in workers.properties, by default workers.properties comes 
-with a single pre-configured worker named <b>"defworker"</b> so you can use it. 
-As an example, if you want to add a context named "shop", the line that you should add to 
-uriworkermap.properties will be:
+Workers and their name are defined in workers.properties. As an example, if you
+want to add a context named "shop", to be served by the worker named "tomcat01"
+the line that you should add to uriworkermap.properties will be:
 </p>
 
-<source>/shop/*=defworker
+<source>/shop/*=tomcat01
 </source>
 
-After saving uriworkermap.properties restart IIS and it will serve the new context.
+After saving uriworkermap.properties restart IIS and it will serve the new
+context.
 <p>
-The above should be all you need for IIS to pass through to Tomcat any request for any URI which corresponds
-to a Tomcat context (webapp).
+The above should be all you need for IIS to pass through to Tomcat any request
+for any URI which corresponds to a Tomcat context (webapp).
 </p>
 </subsection>
 
 <subsection name="Advanced Context Configuration">
 <p>
-If your webiste is very busy (more than 100 requests/second, or more than 100 simultaneous client connections),
-it might sometimes be desirable to have IIS serve static content (html, gif, jpeg etc.) directly, 
-even if these files are part of a context served by Tomcat.  Allowing IIS to serve such files directly may
- avoid the small overhead consisting of passing the request to Tomcat via the redirector, and may free up
- Tomcat somewhat, by using it only to process requests that only Tomcat can handle (e.g. requests to JSP pages and java servlets).
+If your website is very busy (more than 100 requests/second, or more than 100
+simultaneous client connections), it might sometimes be desirable to have IIS
+serve static content (html, gif, jpeg etc.) directly,  even if these files are
+part of a context served by Tomcat. Allowing IIS to serve such files directly
+may avoid the small overhead consisting of passing the request to Tomcat via
+the redirector, and may free up Tomcat somewhat, by using it only to process
+requests that only Tomcat can handle (e.g. requests to JSP pages and java
+servlets).
 </p>
 <p>
-For example, consider the html and gif files in the examples context: you could serve these files directly
-with IIS; there is no need to serve them from the Tomcat process.
+For example, consider the html and gif files in the examples context: you could
+serve these files directly with IIS; there is no need to serve them from the
+Tomcat process.
 </p>
-<warn>However, you should be very careful when you implement the following configuration style, because by doing so you are
-in fact providing a "back-door" to IIS, and allowing it to serve files out of a Tomcat context without Tomcat's knowledge,
-thus bypassing any security
-restrictions which Tomcat itself and the Tomcat context (webapp) may place on those files.</warn>
+<warn>However, you should be very careful when you implement the following 
+configuration style, because by doing so you are in fact providing a "back-door"
+to IIS, and allowing it to serve files out of a Tomcat context without Tomcat's
+knowledge, thus bypassing any security restrictions which Tomcat itself and the
+Tomcat context (webapp) may place on those files.</warn>
 <p>
-Making IIS serve static files that are part of the Tomcat contexts requires the following:
+Making IIS serve static files that are part of the Tomcat contexts requires the
+following:
 <ol>
 <li>
 Configuring IIS to know about the Tomcat contexts
@@ -421,66 +427,73 @@ Configuring the redirector to leave the static files for IIS
 </p>
 
 <p>
-Adding a Tomcat context to IIS requires the addition of a new IIS virtual directory that covers the Tomcat context. 
-For example adding a /example IIS virtual directory that covers the c:\tomcat\webapps\examples directory.
+Adding a Tomcat context to IIS requires the addition of a new IIS virtual
+directory that covers the Tomcat context.  For example adding a /example IIS
+virtual directory that covers the c:\tomcat\webapps\examples directory.
 </p>
 
 <p>
-Configuring the redirector is somewhat harder, you will need to specify the exact 
-URL-Path pattern(s) which you want Tomcat to handle (usually only JSP files and servlets). 
-This requires a change to the uriworkermap.properties: 
+Configuring the redirector is somewhat harder, you will need to specify the
+exact URL-Path pattern(s) which you want Tomcat to handle (usually only JSP
+files and servlets).  This requires a change to the uriworkermap.properties: 
 
 <source>For the examples context it requires to replace the following line
-/examples/*=defworker
+/examples/*=tomcat01
 with the following two lines
-/examples/*.jsp=defworker
-/examples/servlet/*=defworker
+/examples/*.jsp=tomcat01
+/examples/servlet/*=tomcat01
 </source>
 </p>
 
 <p>
-As you can see the second configuration is more explicit, it actually instruct the redirector 
-to redirect only requests to resources under /examples/servlet/ and resources under /examples/ 
-whose name ends with .jsp. 
+As you can see the second configuration is more explicit, it actually instruct
+the redirector  to redirect only requests to resources under /examples/servlet/
+and resources under /examples/ whose name ends with .jsp. 
 </p>
 
 <p>
 You can even be more explicit and provide lines such as:
 
-<source>/example/servlets/chat=defworker
+<source>/example/servlets/chat=tomcat01
 </source>
 </p>
 
 <p>
-that instructs the redirector to redirect all requests whose URL-path matches the leading string "/example/servlets/chat" 
-to the worker named defworker.
+that instructs the redirector to redirect all requests whose URL-path matches
+the leading string "/example/servlets/chat"  to the worker named tomcat01.
 </p>
 
 </subsection>
 
 <subsection name="Protecting the content of your Tomcat contexts">
-<p>Once again, be aware that by allowing IIS to access the content of your Tomcat context directly, you are
-potentially bypassing Tomcat's protection of that content.  You should thus make sure to protect this content
-at the IIS level if needed, by using the corresponding IIS management console functions. 
+<p>Once again, be aware that by allowing IIS to access the content of your
+Tomcat context directly, you are potentially bypassing Tomcat's protection of
+that content. You should thus make sure to protect this content at the IIS level
+if needed, by using the corresponding IIS management console functions. 
 </p>
 <p>
-In particular, each servlet application (context) has a special directory named WEB-INF, 
-which contains sensitive configuration data and Java classes, and which should always be kept hidden from web users. 
-Using the IIS management console it is possible to protect the WEB-INF directory from user access, but considering that
-this is a general requirement, and considering that it is easy to forget to implement this protection
-at the IIS level, the ISAPI redirector plugin does it automatically for you, and it will reject any request
-which contains WEB-INF in its URL path. It will also reject any request which contains META-INF in its URL path.
+In particular, each servlet application (context) has a special directory named
+WEB-INF, which contains sensitive configuration data and Java classes, and which
+should always be kept hidden from web users.  Using the IIS management console
+it is possible to protect the WEB-INF directory from user access, but
+considering that this is a general requirement, and considering that it is easy
+to forget to implement this protection at the IIS level, the ISAPI redirector
+plugin does it automatically for you, and it will reject any request which
+contains WEB-INF in its URL path. It will also reject any request which contains
+META-INF in its URL path.
 </p>
 </subsection>
 
 <subsection name="Advanced Worker Configuration">
 <p>
-Sometimes you may want to serve different contexts with different Tomcat processes 
-(for example to spread the load among different machines). 
-To achieve such a goal you will need to define several workers and assign each context to its own worker.
+Sometimes you may want to serve different contexts with different Tomcat
+processes  (for example to spread the load among different machines). To achieve
+such a goal you will need to define several workers and assign each context to
+its own worker.
 </p>
 <p>
-Defining additional workers is done in the workers.properties file. This file includes two types of entries:
+Defining additional workers is done in the workers.properties file. This file
+includes two types of entries:
 </p>
 
 <p>
@@ -497,8 +510,8 @@ worker.worker2.type=ajp13
 </p>
 
 <p>
-The above example defined two workers, now we can use these workers to serve two different contexts 
-each with its own worker: 
+The above example defined two workers, now we can use these workers to serve two
+different contexts  each with its own worker: 
 <source>example uriworkermap.properties fragment
 /examples/*=worker1
 /webpages/*=worker2
@@ -511,8 +524,9 @@ As you can see the <b>examples</b> context is served by <b>worker1</b> while the
 </p>
 
 <p>
-More information on using and configuring workers in the <a href="../common_howto/workers.html">Workers HowTo</a>
-and in the <a href="../reference/workers.html">worker.properties configuration reference</a>.
+More information on using and configuring workers in the
+<a href="../common_howto/workers.html">Workers HowTo</a> and in the
+<a href="../reference/workers.html">worker.properties configuration reference</a>.
 </p>
 
 </subsection>
@@ -521,216 +535,168 @@ and in the <a href="../reference/workers.html">worker.properties configuration r
 
 <section name="Building the ISAPI redirector">
 <p>
-The redirector was developed using Microsoft Visual C++, so having Visual Studio installed
-is a prerequisite if you want to perform your own build.</p>
-<p>
-You can build the source using the IDE GUI, or using a pure
-commandline build based on nmake. The IDE build currently only
-supports building 32 Bit binaries. The  nmake builds are available
-for 32 Bit, 64 Bit and Itanium binaries.
+To build the ISAPI redirector you will need Mladen's Custom Microsoft Compiler.
+The remainder of this document assumes this installed to c:\cmsc.
 </p>
 <p>
-The common steps for all build procedures are:
+The steps to build the ISAPI redirector are:
 <ul>
-<li>
-Set up your build environment for 32 Bits or 64 Bits.
-The IDE build only supports 32 Bits.
-</li>
 <li>
 Download the sources as a zip file and unpack it.
 </li>
 <li>
 Change directory to the ISAPI redirector source directory.
 </li>
+<li>
+<source>c:\cmsc\setenv.bat x86
+nmake -f Makefile.vc
+c:\cmsc\setenv.bat x64
+nmake -f Makefile.vc
+</source>
+</li>
 </ul>
-<screen>
-<note>Set up 32 or 64 Bit build environment</note>
-<typedos>setenv /Release /X86</typedos>
-<note>or (not available for IDE build)</note>
-<typedos>setenv /Release /X64</typedos>
-<note>Download tomcat-connectors-xxx-src.zip from</note>
-<note>https://tomcat.apache.org/download-connectors.cgi</note>
-<note>and unpack it</note>
-<typedos>unzip tomcat-connectors-xxx-src.zip</typedos>
-<note>Change directory to the ISAPI redirector source directory</note>
-<typedos>cd tomcat-connectors-xxx-src\native\iis</typedos>
-</screen>
 </p>
 <p>
-The steps for an IDE build are then:
-<ul>
-<li>
-Start Visual Studio using "start isapi.dsw"
-</li>
-<li>
-During IDE startup choose "Yes" in all conversion popups.
-</li>
-<li>
-Next choose "Debug" or "Release" in the Configuration dropdown.
-</li>
-<li>
-Finally choose "Build Solution" in the "Build" menu.
-</li>
-</ul>
 The resulting file isapi_redirect.dll (and the debug symbol file
-isapi_redirect.pdb) is located in the "Debug" resp. "Release" sub
-directory depending on the build Configuration chosen. As an
-intermediate step the build first creates a static PCRE library
-named pcre.lib in the sub directory "pcre/LibD" resp. "pcre/LibR".
-</p>
-<p>
-Alternatively the steps for an nmake commandline build are:
-<ul>
-<li>
-Issue "nmake -f Makefile.x86" for a 32 Bit build, or
-</li>
-<li>
-Issue "nmake -f Makefile.amd64" for a 64 Bit build
-</li>
-</ul>
-The resulting file isapi_redirect.dll (and the debug symbol file
-isapi_redirect.pdb) is located in the "Release_x86" or "Release_amd64"
-sub directory. As an intermediate step the build first creates a static
-PCRE library named pcre.lib in the sub directory "pcre/Release_x86" or
-"pcre/Release_amd64".
+isapi_redirect.pdb) is located in the "x86_RELEASE" or "x64_RELEASE"
+sub directory.
 </p>
 </section>
 
 <section name="Troubleshooting">
 <p>
-It is easy to have the ISAPI redirector not work the first time you try to install it.
+It is easy to have the ISAPI redirector not work the first time you try to
+install it.
 </p>
 <p>
-If this happens to you, here are some steps to follow to try to correct the problem.
+If this happens to you, here are some steps to follow to try to correct the
+problem.
 </p>
 <p>
-These steps aren't guaranteed to cover all possible problems, 
-but they should help find the typical mistakes.
+These steps aren't guaranteed to cover all possible problems, but they should
+help find the typical mistakes.
 </p>
 <p>
-If you make any corrections during these steps, restart the IIS service as described above in the last step 
-of the installation, then retry the step.
+If you make any corrections during these steps, restart the IIS service as
+described above in the last step  of the installation, then retry the step.
 </p>
 
-<p>To enable error tracking, make sure web site activity is being logged. 
-For PWS 4.0 make sure "Save Web Site Activity Log" is checked in the Advanced Options of the Personal Web Manager.
-</p>
-   
 <p>
-Note: These steps assume your <b>worker_mount_file</b> setting points to an unmodified copy of the 
-<b>uriworkermap.properties</b> file.<br/>
-Results may be misleading if <b>worker_mount_file</b> points to a modified <b>uriworkermap.properties</b>
-or the <b>uriworkermap.properties-auto</b> file.<br/>
-It is also assumed that the <b>"/examples" context</b> works correctly if you access Tomcat directly.
+Note: These steps are based on the configuration used in the installation
+instructions that proxies requests for the examples web application to a single
+Tomcat instance. It is also assumed that the <b>"/examples" context</b> works
+correctly if you access Tomcat directly.
 </p>
 
-<subsection name="Win98">
+<subsection name="Diagnostics steps">
+<p>
+Delete (or move elsewhere) the ISAPI redirector log file if present.
+</p>
 <p>
 Start the IIS service and Tomcat.
 </p>
 <p>
-Check for the presence of the ISAPI redirector log file you specified in the log_file setting. 
-If not found, verify the following:
-</p>
+Check for the presence of the ISAPI redirector log file at the specified
+location. If not found, that indicates that the ISAPI redirector has not started
+correctly. This is usually caused by incorrect configuration settings.
 <ul>
 <li>
-Check the "Filter DLLs" setting in the "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\W3SVC\Parameters" 
-key and make sure the path is correct.
+Check your configuration carefully against the installation instructions,
+particularly the location, name and contents of the
+<b>${tomcat_home}\isapi\isapi_redirect.properties</b> file.
 </li>
 <li>
-Check the spelling of the "HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0" key. 
-Case isn't important, but an incorrect letter will prevent the isapi_redirect.dll from finding its registry settings.
+If using the registry based configuration, check the path, name and values of
+the registry keys. Registry names are not case sensitive.
 </li>
 <li>
-Check the log_file setting for typos, name and data. Also insure the directory in which the log file will appear already exists.
+Check that the directory specified for the log file exists and that the file
+permissions have been configured as per the installation instructions.
 </li>
-If the above are set correctly, the ISAPI redirector should be able to create the log file.
 </ul>
+If the above are set correctly, the ISAPI redirector should be able to create
+the log file.
+</p>
+
 <p>
-Invoke the URL <a href="http://localhost/examples/">http://localhost/examples/</a>
-in your browser. 
-Case is important in Tomcat. The characters following "localhost" in the URL must be lower case. 
-If the page fails to appear, stop the IIS service (required to view the IIS log file). 
-Then examine the last line in the IIS log file in found in SYSTEM/LogFiles/W3SVC1:
+Invoke the URL
+<a href="http://localhost/examples/">http://localhost/examples/</a> in your
+browser. Case is important in URLs. The characters following "localhost" in the
+URL must be lower case.  If the page fails to appear, stop the IIS service
+(required to view the IIS log file).  Then examine the last line in the IIS log
+file in found in C:\inetpub\logs\LogFiles\W3SVC1:
 </p>
 <p>
 If the last line contains: 
-</p>
 <source>GET "/examples/ HTTP/1.1" 404
 </source>
-<p> 
-then the ISAPI redirector is not recognising that it should be handling requests for the "/examples" context. 
-Check the following:
+then the ISAPI redirector is not recognising that it should be handling requests
+for the "/examples" context.
 </p>
-<ul>
-<li>
-Check the extension_uri name for typos.
-</li>
-<li>
-Check the worker_file setting for typos, name and data.
-</li>
-<li>
-Check the worker_mount_file setting typos, name and data.
-</li>
-If these are set correctly, the ISAPI redirector should recognise that it should handle requests for the "/examples" context.
-</ul>
-
-<p>If the last line contains something like:
-</p>
-
+<p>
+If the last line contains something like:
 <source>GET "/jakarta/isapi_redirect.dll HTTP1.1"
 </source>
-
+then the ISAPI redirector is recognising that it should handle the request, but
+is not successful at getting Tomcat to service the request.
+</p>
 <p>
-then the ISAPI redirector is recognising that it should handle the request, 
-but is not successful at getting Tomcat to service the request.
+Check the following:
+<ul>
+<li>
+Check your configuration carefully against the installation instructions,
+particularly the name of the virtual directory and the location, name and
+contents of the  <b>${tomcat_home}\isapi\uriworkermap.properties</b> and
+<b>${tomcat_home}\isapi\workers.properties</b> files.
+</li>
+If these are set correctly, the ISAPI redirector should recognise that it should
+handle requests for the "/examples" context.
+</ul>
 </p>
 
 <p>
-You should check the HTTP error code following GET "/...":
+If the browser shows a 503 error page then the ISAPI redirector is recognising
+that it should handle the request but is not receiving a timely response from
+Tomcat. Check the following:
+<ul>
+<li>
+Check your configuration carefully against the installation instructions,
+particularly the location, name and
+<b>${tomcat_home}\isapi\workers.properties</b> file.
+</li>
+<li>
+Check the AJP connector configuration in Tomcta matches the configuration in the
+<b>${tomcat_home}\isapi\workers.properties</b> file.
+</li>
+</ul>
 </p>
 
-<source>Error 404
-  GET "/..." 404
-</source>
+<p>
+If the browser shows a 500 error page then an internal error has occurred within
+IIS or the ISAPI redirector when trying to serve the request. There should be a
+textual description of the error towards the top of the page and an 8-digit hex
+error code towards the end of the page. The last four digits should be the
+standard windows error code associated with the problem.
+</p>
 
-<ul>
-<li>
-Make sure you entered the URL correctly.
-</li>
-<li>
-Make sure the virtual directory created was called "jakarta". 
-It should display in Personal Web Manager as "/jakarta" (without the quotes).
-</li>
-<li>
-Make sure the extension_uri data begins with "/jakarta/" (without the quotes).
-</li>
-</ul>
+<p>
+A common cause of 500 errors is Windows creating configuration files with hidden
+".txt" file extensions that are not shown in Windows Explorer. Even if file
+extensions are shown for other files, double check to make sure that Windows
+Explorer is configured to show file extensions for all files.
+</p>
 
-<source>Error 500
-GET "/..." 500
-</source>
-
-<ul>
-<li>
-Make sure that "isapi_redirect.dll" follows "/jakarta/" in the extension_uri setting.
-</li>
-<li>
-Check the workers.properties file and make sure the port setting for worker.ajp13.port is the same as the port specified in the server.xml for the "AJP" connector.
-</li>
-</ul>
-
-<source>Error 200 or 403
-GET "/..." 200
-GET "/..." 403
-</source>
-
-<ul>
-<li>
-Make sure you have checked Execute Access 
-for the jakarta virtual directory in the Advanced Options of the Personal Web Manager.
-</li>
-</ul>
+<p>
+If the error message is <b>Calling GetFilterVersion on ISAPI filter
+"...isapi_redirect.dll" failed</b> and the code is <b>0x8007047e</b> then the
+code translates to an error code 0x047e or 1150 which is "The specified program
+requires a newer version of Windows". Together these indicate that the
+initialisation of the ISAPI redirector failed because the configuration could
+not be read - either from <b>${tomcat_home}\isapi\isapi_redirect.properties</b>
+of from the registry. Check the name location and contents of the
+<b>${tomcat_home}\isapi\isapi_redirect.properties</b> file or the registry keys
+as appropriate.
+</p>
 
 <p>
 If the above settings are correct, the index.html page should appear in your browser. 
@@ -738,101 +704,6 @@ You should also be able to click the links to execute some Servlet or JSP exampl
 </p>
 
 </subsection>
-
-<subsection name="WinNT/Win2K/WinXP">
-<p>
-Start the World Wide Web Publishing Service and Tomcat.
-</p>
-<p>
-Check for the presence of the ISAPI redirector log file you specified in the log_file setting. 
-If not found, check the following:
-</p>
-<ul>
-<li>
-Check the "executable" you set for the filter in the IIS Management Console and make sure the path is correct.
-</li>
-<li>Check the spelling of the "HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Jakarta Isapi Redirector\1.0" key.
-Case isn't important, but an incorrect letter will prevent the isapi_redirect.dll from finding its registry settings.
-</li>
-<li>
-Check the log_file setting for typos, name and data. Also insure the directory in which the log file will appear already exists.
-</li>
-If the above are set correctly, the ISAPI redirector should be able to create the log file.
-</ul>
-
-<p>
-Check the tomcat filter you added and make sure its status shows a green upward-pointing arrow. 
-If not, check the following:
-</p>
-<ul>
-<li>
-Check the worker_file setting for typos, name and data.
-</li>
-<li>
-Check the worker_mount_file setting typos, name and data.
-</li>
-If the above are set correctly, the green upward-pointing arrow should appear, even if the other settings are wrong.
-</ul>
-
-<p>
-Invoke the URL <a href="http://localhost/examples/">http://localhost/examples/</a> 
-in your browser. Case is important in Tomcat. The characters following "localhost" in the URL must be lower case. 
-If the page fails to appear, examine the last line in the IIS server log file in found in SYSTEM32/LogFiles/W3SVC1.
-</p>
-
-<p>
-The last line should contain something like: GET "/jakarta/isapi_redirect.dll HTTP1.1", 
-which indicates the ISAPI redirector is recognising that it should handle the request.
-</p>
-
-<p>
-You should check the HTTP error code following GET "/...":
-</p>
-
-<source>Error 404
-GET "/..." 404
-</source>
-
-<ul>
-<li>
-Make sure you entered the URL correctly.
-</li>
-</ul>
-
-<source>Error 500
-GET "/..." 500
-</source>
-
-<ul>
-<li>
-Make sure the virtual directory created was called "jakarta".
-</li>
-<li>
-Make sure that the extension_uri setting is correct.
-</li>
-<li>
-Check the workers.properties file and make sure the port setting for worker.ajp13.port is the same as the port specified in the server.xml for the "AJP" connector.
-</li>
-</ul>
-
-<source>Error 200 or 403
-GET "/..." 200
-GET "/..." 403
-</source>
-
-<ul>
-<li>
-Make sure you have checked Execute Access for the jakarta virtual directory in the 
-Advanced Options of the Personal Web Manager.
-</li>
-</ul>
-
-<p>
-If the above settings are correct, the index.html page should appear in your browser. 
-You should also be able to click the links to execute some Servlet or JSP examples.
-</p>
-</subsection>
-
 
 </section>
 </body>
