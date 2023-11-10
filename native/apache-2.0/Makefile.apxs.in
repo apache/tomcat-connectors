@@ -21,7 +21,7 @@ top_builddir=@top_builddir@
 APXS=@APXS@
 APXSCFLAGS=@APXSCFLAGS@
 APXSLDFLAGS=@APXSLDFLAGS@
-JKLDFLAGS=-export-symbols-regex ^jk_module$
+JKLDFLAGS=-export-symbols-regex ^jk_module\$$
 
 COMMON=common
 JK_INCL=-DUSE_APACHE_MD5 -I${top_builddir}/${COMMON} -I ${top_srcdir}/${COMMON}

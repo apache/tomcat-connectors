@@ -23,7 +23,7 @@ MKDIR=@MKDIR@
 APXSCFLAGS=@APXSCFLAGS@
 APXSCPPFLAGS=@APXSCPPFLAGS@
 APXSLDFLAGS=@APXSLDFLAGS@
-JKLDFLAGS=-export-symbols-regexp ^jk_module$
+JKLDFLAGS=-export-symbols-regex ^jk_module\$$
 
 CC=@CC@
 SHELL=@SHELL@

@@ -51,6 +51,15 @@
   </p>
 </section>
 <section name="Changes between 1.2.49 and 1.2.50">
+  <subsection name="Apache">
+    <changelog>
+      <fix>
+        <bug>68117</bug>: Fix typo in new libtool flag introduced in 1.2.49
+        to reduce symbol visibility. Also improve escaping of it in the Makefile.
+        Patch provided by lzsiga@freemail.c3.hu. (rjung)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
   <subsection name="Apache">
