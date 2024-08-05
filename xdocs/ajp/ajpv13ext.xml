@@ -41,13 +41,13 @@ ajp13 is a good protocol to link a servlet engine like tomcat to a web server li
 
 <ul>
 <li>
-use persistants connections to avoid reconnect time at each request
+use persistent connections to avoid reconnect time at each request
 </li>
 <li>
 encode many http commands to reduce stream size
 </li>
 <li>
-send to servlet engine many info from web server (like SSL certs)
+send to servlet engine much info from web server (like SSL certs)
 </li>
 </ul>
 <p>
@@ -66,7 +66,7 @@ But ajp13 lacks support for:
   indicate to the web server which URI to handle. 
   The mod_jk JkMount directive, told to web server which URI must be 
   forwarded to servlet engine.
-  A servlet engine allready knows which URI it handle and TC 3.3 is
+  A servlet engine already knows which URI it handle and TC 3.3 is
   allready capable to generate a config file for JK from the list
   of available contexts.
 </li>
@@ -91,7 +91,7 @@ But ajp13 lacks support for:
 
 <subsection name="Proposed add-ons to AJP13">
 <p>
-Let's descrive here the features and add-on that could be added to AJP13.
+Let's describe here the features and add-on that could be added to AJP13.
 Since this document is a proposal, a reasonable level of chaos must be expected at first.
 Be sure that discussion on tomcat list will help clarify points, add 
 features but the current list seems to be a 'minimun vital'
