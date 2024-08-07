@@ -60,6 +60,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="IIS">
+    <changelog>
+      <update>
+        Update PCRE bundled with the ISAPI redirector to 8.45. (rjung)
+      </update>
+    </changelog>
+  </subsection>
   <subsection name="Common">
     <changelog>
       <fix>
