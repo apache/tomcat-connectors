@@ -24,7 +24,7 @@
 
 #define JK_VERMAJOR     1
 #define JK_VERMINOR     2
-#define JK_VERMICRO     49
+#define JK_VERMICRO     50
 
 #if defined(JK_ISAPI)
 #define JK_DISTNAME "isapi_redirector"
