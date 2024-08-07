@@ -216,7 +216,6 @@ int jk_shm_open(const char *fname, int sz, jk_log_context_t *l)
         return EINVAL;
     }
     jk_shmem.size = JK_SHM_ALIGN(JK_SHM_SLOT_SIZE + sz);
-#if defined (WIN32)
     jk_shm_map   = NULL;
     jk_shm_hlock = NULL;
     if (fname) {
@@ -293,10 +292,8 @@ int jk_shm_open(const char *fname, int sz, jk_log_context_t *l)
                                                         shmsz);
     }
     else
-#endif
     jk_shmem.hdr = (jk_shm_header_t *)calloc(1, jk_shmem.size);
     if (!jk_shmem.hdr) {
-#if defined (WIN32)
         rc = GetLastError();
         if (jk_shm_map) {
             CloseHandle(jk_shm_map);
@@ -306,7 +303,6 @@ int jk_shm_open(const char *fname, int sz, jk_log_context_t *l)
             CloseHandle(jk_shm_hlock);
             jk_shm_hlock = NULL;
         }
-#endif
         JK_LEAVE_CS(&jk_shmem.cs);
         JK_TRACE_EXIT(l);
         return rc;
@@ -349,12 +345,10 @@ int jk_shm_open(const char *fname, int sz, jk_log_context_t *l)
         jk_shmem.hdr->h.data.workers = 0;
 #endif
     }
-#if defined (WIN32)
     if (jk_shm_hlock != NULL) {
         /* Unlock shared memory */
         ReleaseMutex(jk_shm_hlock);
     }
-#endif
     JK_LEAVE_CS(&jk_shmem.cs);
     if (JK_IS_DEBUG_LEVEL(l))
         jk_log(l, JK_LOG_DEBUG,
@@ -403,7 +397,6 @@ void jk_shm_close(jk_log_context_t *l)
                    "Closed shared memory %s childs=%u",
                    jk_shm_name(), jk_shmem.hdr->h.data.childs);
         }
-#if defined (WIN32)
         if (jk_shm_hlock) {
             WaitForSingleObject(jk_shm_hlock, 60000);
             ReleaseMutex(jk_shm_hlock);
@@ -417,7 +410,6 @@ void jk_shm_close(jk_log_context_t *l)
             jk_shm_map = NULL;
         }
         else
-#endif
         free(jk_shmem.hdr);
     }
     jk_shmem.hdr = NULL;
