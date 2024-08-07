@@ -73,6 +73,11 @@
         <pr>8</pr>: Fix compilation on musl.
         Patch provided by conrad+github@kostecki.com. (rjung)
       </fix>
+      <update>
+        Update config.guess and config.sub from
+        <a href="https://git.savannah.gnu.org/git/config.git">https://git.savannah.gnu.org/git/config.git</a>.
+        (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>
