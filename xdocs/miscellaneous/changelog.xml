@@ -60,6 +60,14 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Common">
+    <changelog>
+      <fix>
+        <pr>8</pr>: Fix compilation on musl.
+        Patch provided by conrad+github@kostecki.com. (rjung)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 <section name="Changes between 1.2.48 and 1.2.49">
   <subsection name="Apache">
