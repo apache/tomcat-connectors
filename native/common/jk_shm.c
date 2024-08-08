@@ -451,7 +451,7 @@ static int do_shm_open_lock(const char *fname, int attached, jk_log_context_t *l
 
     if (attached && jk_shmem.lockname) {
 #ifdef JK_SHM_LOCK_REOPEN
-        jk_shmem.fd_lock = open(jk_shmem.lockname, O_RDWR, 0666);
+        jk_shmem.fd_lock = open(jk_shmem.lockname, O_RDWR, 0600);
 #else
         errno = EINVAL;
 #endif
@@ -475,7 +475,7 @@ static int do_shm_open_lock(const char *fname, int attached, jk_log_context_t *l
         for (i = 0; i < 8; i++) {
             strcpy(flkname, "/tmp/jkshmlock.XXXXXX");
             if (mktemp(flkname)) {
-                jk_shmem.fd_lock = open(flkname, O_RDWR|O_CREAT|O_TRUNC, 0666);
+                jk_shmem.fd_lock = open(flkname, O_RDWR|O_CREAT|O_TRUNC, 0600);
                 if (jk_shmem.fd_lock >= 0)
                     break;
             }
@@ -487,10 +487,10 @@ static int do_shm_open_lock(const char *fname, int attached, jk_log_context_t *l
 #ifdef AS400_UTF8
         wptr = (char *)malloc(strlen(flkname) + 1);
         jk_ascii2ebcdic((char *)flkname, wptr);
-        jk_shmem.fd_lock = open(wptr, O_RDWR|O_CREAT|O_TRUNC, 0666);
+        jk_shmem.fd_lock = open(wptr, O_RDWR|O_CREAT|O_TRUNC, 0600);
         free(wptr);
 #else
-        jk_shmem.fd_lock = open(flkname, O_RDWR|O_CREAT|O_TRUNC, 0666);
+        jk_shmem.fd_lock = open(flkname, O_RDWR|O_CREAT|O_TRUNC, 0600);
 #endif
 #endif
         if (jk_shmem.fd_lock == -1) {
@@ -581,10 +581,10 @@ static int do_shm_open(const char *fname, int attached,
 #ifdef AS400_UTF8
         wptr = (char *)malloc(strlen(jk_shmem.filename) + 1);
         jk_ascii2ebcdic((char *)jk_shmem.filename, wptr);
-        fd = open(wptr, O_RDWR|O_CREAT|O_TRUNC, 0666);
+        fd = open(wptr, O_RDWR|O_CREAT|O_TRUNC, 0600);
         free(wptr);
 #else
-        fd = open(jk_shmem.filename, O_RDWR|O_CREAT|O_TRUNC, 0666);
+        fd = open(jk_shmem.filename, O_RDWR|O_CREAT|O_TRUNC, 0600);
 #endif
         if (fd == -1) {
             jk_shmem.size = 0;

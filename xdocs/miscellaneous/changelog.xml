@@ -58,6 +58,9 @@
         to reduce symbol visibility. Also improve escaping of it in the Makefile.
         Patch provided by lzsiga@freemail.c3.hu. (rjung)
       </fix>
+      <fix>
+        Improve shared memory handling on non-Windows. (rjung)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="IIS">
