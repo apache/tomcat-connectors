@@ -17,7 +17,6 @@
 
 /***************************************************************************
  * Description: URL manipulation subroutines. (ported from mod_proxy).     *
- * Version:     $Revision: 531816 $                                        *
  ***************************************************************************/
 
 #include "jk_global.h"

@@ -17,7 +17,6 @@
 
 /***************************************************************************
  * Description: URL manipulation subroutines header file. (mod_proxy)      *
- * Version:     $Revision: 500534 $                                        *
  ***************************************************************************/
 #ifndef _JK_URL_H
 #define _JK_URL_H
