@@ -66,11 +66,11 @@ Use the pattern below for tagging the tomcat-connectors directory.
 
 TAG=JK_{MAJOR_REVISION}_{MINOR_REVISION}_{RELEASE}
 
-Here is an example for mod_jk 1.2.50
+Here is an example for mod_jk 1.2.51
 
-git commit -a -m "Tag JK_1_2_50"
-git tag JK_1_2_50
-git push origin JK_1_2_50
+git commit -a -m "Tag JK_1_2_51"
+git tag JK_1_2_51
+git push origin JK_1_2_51
 # reset main
 
 
@@ -91,9 +91,9 @@ Create the new source distribution
 A tool named jkrelease.sh in the directory tools creates
 a release tarball and a zip including signature files.
 
-Here is an example for mod_jk 1.2.50
+Here is an example for mod_jk 1.2.51
 
-./jkrelease.sh -R git -v 1.2.50 -h
+./jkrelease.sh -R git -v 1.2.51 -h
 
 
 

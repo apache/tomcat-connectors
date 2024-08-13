@@ -32,7 +32,7 @@
   <property name="dist.dir"        value="../dist"/>
   <property name="dist.name"       value="docs"/>
 
-  <property name="version"         value="1.2.50"/>
+  <property name="version"         value="1.2.51"/>
 
   <tstamp>
     <format property="year" pattern="yyyy" locale="en" timezone="UTC"/>
