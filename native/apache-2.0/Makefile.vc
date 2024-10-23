@@ -16,38 +16,25 @@
 PROJECT = mod_jk
 # Tools
 CC = cl.exe
-LINK = link.exe
+LN = link.exe
 RC = rc.exe
-MT = mt.exe
 
 !IF !DEFINED(APACHE2_HOME) || "$(APACHE2_HOME)" == ""
 !ERROR Cannot find APACHE2_HOME. Use nmake -f Makefile.vc APACHE2_HOME=dir
 !ENDIF
 !IF !DEFINED(APACHE2_LDIR) || "$(APACHE2_LDIR)" == ""
-APACHE2_LDIR=$(APACHE2_HOME)\lib
+APACHE2_LDIR = lib
 !ENDIF
 !IF !DEFINED(APACHE2_IDIR) || "$(APACHE2_IDIR)" == ""
-APACHE2_IDIR=$(APACHE2_HOME)\include
+APACHE2_IDIR = include
 !ENDIF
-!IF !DEFINED(PREFIX) || "$PREFIX)" == ""
-PREFIX=$(APACHE2_HOME)\modules
-!ENDIF
+LDIRS = /libpath:"$(APACHE2_HOME)\$(APACHE2_LDIR)"
+INCLUDES = -I$(APACHE2_HOME)\$(APACHE2_IDIR) -I$(APACHE2_HOME)\$(APACHE2_IDIR)\httpd -I$(APACHE2_HOME)\$(APACHE2_IDIR)\apr-1
 
-LIB = $(LIB);$(APACHE2_LDIR)
-INCLUDE = $(INCLUDE);$(APACHE2_IDIR)
-
-!IF !DEFINED(BUILD_CPU) || "$(BUILD_CPU)" == ""
-!ERROR Must specify BUILD_CPU matching compiler x86 or x64
-!ENDIF
-!IF "$(BUILD_CPU)" == "x86"
-CPUFLAGS = -D_X86_=1
-MACHINE = X86
-!ELSE
-CPUFLAGS = -DWIN64 -D_WIN64
-MACHINE = AMD64
-!ENDIF
+CPUFLAGS = -DWIN32 -D_WIN32 -DWIN64 -D_WIN64
+MACHINE = X64
 !IF !DEFINED(WINVER) || "$(WINVER)" == ""
-WINVER = 0x0601
+WINVER = 0x0A00
 !ENDIF
 
 # Modify library names or list them when calling nmake
@@ -56,19 +43,27 @@ APACHE2_LIBS = libhttpd.lib libapr-1.lib libaprutil-1.lib
 BUILDBIN = $(WORKDIR)\$(PROJECT).so
 BUILDRES = $(WORKDIR)\$(PROJECT).res
 BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
-BUILDMFT = $(BUILDBIN).manifest
 
-WORKDIR = $(BUILD_CPU)_RELEASE
-CLEANTARGET = rd /s /q $(WORKDIR)
-MAKEWORKDIR = md $(WORKDIR)
+WORKDIR = $(MACHINE)_RELEASE
+CLEANTARGET = -rd /S /Q $(WORKDIR) 2>NUL
+MAKEWORKDIR = -md $(WORKDIR) 2>NUL
 
-CFLAGS = $(CFLAGS) -DNDEBUG -DWIN32 -D_WINNT -DWINNT -D_WIN32_WINNT=$(WINVER) -DWINVER=$(WINVER) $(CPUFLAGS)
-CFLAGS = $(CFLAGS) $(EXTRA_CFLAGS)
-CLOPTS = /c /nologo -MD -W3 -O2 -Ob2 -Zi -EHsc
+CFLAGS = $(CFLAGS) -DNDEBUG -D_WIN32_WINNT=$(WINVER) -DWINVER=$(WINVER) $(CPUFLAGS)
+CFLAGS = $(CFLAGS) -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE $(EXTRA_CFLAGS)
+CLOPTS = -c -nologo -W3 -O2 -Ob2 -GF -Gs0 -Zi
 PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
-LFLAGS = /nologo /DLL /INCREMENTAL:NO /DEBUG /OPT:REF /SUBSYSTEM:WINDOWS /MACHINE:$(MACHINE) $(EXTRA_LDLAGS)
-LDLIBS = kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib $(APACHE2_LIBS) $(EXTRA_LIBS)
-INCDIR = -I..\common
+
+LFLAGS = /nologo /DLL /INCREMENTAL:NO /DEBUG /OPT:REF /MACHINE:$(MACHINE)
+!IF DEFINED(HYBRIDCRT)
+LFLAGS = $(LFLAGS) /NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib $(EXTRA_LDLAGS)
+CLOPTS = $(CLOPTS) -MT
+!ELSE
+CLOPTS = $(CLOPTS) -MD
+!ENDIF
+
+LDLIBS = kernel32.lib advapi32.lib ws2_32.lib mswsock.lib $(APACHE2_LIBS) $(EXTRA_LIBS)
+RFLAGS = /nologo /l 0x409 /n /d NDEBUG /d WIN32 /d WINNT /d WINVER=$(WINVER)
+RFLAGS = $(RFLAGS) /d _WIN32_WINNT=$(WINVER) $(EXTRA_RFLAGS)
 
 OBJECTS = \
 	$(WORKDIR)\jk_ajp12_worker.obj \
@@ -93,28 +88,27 @@ OBJECTS = \
 	$(WORKDIR)\jk_worker.obj \
 	$(WORKDIR)\mod_jk.obj
 
+CMNDIR = ..\common
+
 all : $(WORKDIR) $(BUILDBIN)
 
 $(WORKDIR) :
 	@$(MAKEWORKDIR)
 
 .c{$(WORKDIR)}.obj:
-	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
+	$(CC) $(CLOPTS) $(CFLAGS) -I$(CMNDIR) $(INCLUDES) $(PDBFLAGS) $<
 
-{..\common}.c{$(WORKDIR)}.obj:
-	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
+{$(CMNDIR)}.c{$(WORKDIR)}.obj:
+	$(CC) $(CLOPTS) $(CFLAGS) -I$(CMNDIR) $(INCLUDES) $(PDBFLAGS) $<
 
-$(BUILDRES): ..\common\jk.rc
-	$(RC) /l 0x409 /n /i ..\common /d NDEBUG /fo $(BUILDRES) ..\common\jk.rc
+$(BUILDRES): $(CMNDIR)\jk.rc
+	$(RC) $(RFLAGS) /i $(CMNDIR) /fo $(BUILDRES) $(CMNDIR)\jk.rc
 
 $(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
-	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LDLIBS) /out:$(BUILDBIN) /pdb:$(BUILDPDB)
-	@if exist $(BUILDMFT) \
-		$(MT) -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
+	$(LN) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LDIRS) $(LDLIBS) /out:$(BUILDBIN) /pdb:$(BUILDPDB)
 
 install : all
-	@-xcopy /I /Y /Q "$(WORKDIR)\*.so"  "$(PREFIX)"
-	@-xcopy /I /Y /Q "$(WORKDIR)\*.pdb" "$(PREFIX)"
+	-robocopy /NP "$(WORKDIR)" "$(PREFIX)" *.so *.pdb >NUL
 
 clean:
-	@-$(CLEANTARGET) 2>NUL
+	@$(CLEANTARGET)
