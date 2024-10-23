@@ -52,12 +52,12 @@ BEGIN
   BEGIN
     BLOCK "040904b0"
     BEGIN
-      VALUE "Comments", ASF_LICENSE
+      VALUE "Comments", "Licensed under the Apache-2.0 License"
       VALUE "CompanyName", "Apache Software Foundation"
       VALUE "FileDescription", "Apache Tomcat Connector"
       VALUE "FileVersion", JK_VERSTRING
       VALUE "InternalName", JK_DISTNAME
-      VALUE "LegalCopyright", ASF_COPYRIGHT
+      VALUE "LegalCopyright", "Copyright 2024 The Apache Software Foundation."
       VALUE "OriginalFilename", JK_DISTNAME "." JK_DLL_SUFFIX
       VALUE "ProductName", "Apache Tomcat " JK_DISTNAME " Connector"
       VALUE "ProductVersion", JK_EXPOSED_VERSION
