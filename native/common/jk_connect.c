@@ -1329,13 +1329,13 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
             if (lsaddr.sa_family == JK_INET) {
                 struct sockaddr_in  *sa = (struct sockaddr_in  *)&lsaddr;
                 inet_ntop4((unsigned char *)&sa->sin_addr, buf, size);
-                sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
+                snprintf(pb, sizeof(pb), ":%d", (unsigned int)ntohs(sa->sin_port));
             }
 #if JK_HAVE_IPV6
             else {
                 struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&lsaddr;
                 inet_ntop6((unsigned char *)&sa->sin6_addr, buf, size);
-                sprintf(pb, ":%d", (unsigned int)htons(sa->sin6_port));
+                snprintf(pb, sizeof(pb), ":%d", (unsigned int)ntohs(sa->sin6_port));
             }
 #endif
             ps = strlen(buf);
@@ -1346,13 +1346,13 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
             if (rsaddr.sa_family == JK_INET) {
                 struct sockaddr_in  *sa = (struct sockaddr_in  *)&rsaddr;
                 inet_ntop4((unsigned char *)&sa->sin_addr,  buf + ps, size - ps);
-                sprintf(pb, ":%d", (unsigned int)htons(sa->sin_port));
+                snprintf(pb, sizeof(pb), ":%d", (unsigned int)ntohs(sa->sin_port));
             }
 #if JK_HAVE_IPV6
             else {
                 struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&rsaddr;
                 inet_ntop6((unsigned char *)&sa->sin6_addr, buf + ps, size - ps);
-                sprintf(pb, ":%d", (unsigned int)htons(sa->sin6_port));
+                snprintf(pb, sizeof(pb), ":%d", (unsigned int)ntohs(sa->sin6_port));
             }
 #endif
             strncat(buf, pb, size - strlen(buf) - 1);
