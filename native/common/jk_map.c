@@ -74,13 +74,13 @@
  *                  -- Ralf S. Engelschall <rse@engelschall.com>
  */
 #define COMPUTE_KEY_HASH(key, hash)    \
-{                                                    \
-    const unsigned char *p;                          \
-    hash = 0;                                        \
-    for (p = (const unsigned char *)key; *p; p++) {  \
-        hash = hash * 33 + *p;                       \
-    }                                                \
-}
+do {                                                   \
+    const unsigned char *p;                            \
+    (hash) = 0u;                                       \
+    for (p = (const unsigned char *)(key); *p; p++) {  \
+        (hash) = (hash) * 33u + *p;                    \
+    }                                                  \
+} while(0)
 
 static volatile int global_map_id = 0;
 static void trim_prp_comment(char *prp);
@@ -149,7 +149,7 @@ void *jk_map_get(jk_map_t *m, const char *name, const void *def)
     if (m && name) {
         unsigned int i;
         unsigned int hash;
-        COMPUTE_KEY_HASH(name, hash)
+        COMPUTE_KEY_HASH(name, hash);
         for (i = 0; i < m->size; i++) {
             if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 rc = m->values[i];
@@ -167,7 +167,7 @@ int jk_map_get_id(jk_map_t *m, const char *name)
     if (m && name) {
         unsigned int i;
         unsigned int hash;
-        COMPUTE_KEY_HASH(name, hash)
+        COMPUTE_KEY_HASH(name, hash);
         for (i = 0; i < m->size; i++) {
             if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 rc = i;
@@ -186,7 +186,7 @@ const char *jk_map_get_string(jk_map_t *m, const char *name, const char *def)
     if (m && name) {
         unsigned int i;
         unsigned int hash;
-        COMPUTE_KEY_HASH(name, hash)
+        COMPUTE_KEY_HASH(name, hash);
         for (i = 0; i < m->size; i++) {
             if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 rc = m->values[i];
@@ -376,7 +376,7 @@ int jk_map_add(jk_map_t *m, const char *name, const void *value)
 
     if (m && name) {
         unsigned int hash;
-        COMPUTE_KEY_HASH(name, hash)
+        COMPUTE_KEY_HASH(name, hash);
         map_realloc(m);
 
         if (m->size < m->capacity) {
@@ -398,7 +398,7 @@ int jk_map_put(jk_map_t *m, const char *name, const void *value, void **old)
     if (m && name) {
         unsigned int i;
         unsigned int hash;
-        COMPUTE_KEY_HASH(name, hash)
+        COMPUTE_KEY_HASH(name, hash);
         for (i = 0; i < m->size; i++) {
             if (m->keys[i] == hash && strcmp(m->names[i], name) == 0) {
                 break;
