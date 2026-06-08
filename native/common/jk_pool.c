@@ -104,7 +104,7 @@ void *jk_pool_realloc(jk_pool_t *p, size_t sz, const void *old, size_t old_sz)
     char *rc;
 
     if (!p || (sz < old_sz)) {
-        return NULL;
+        return (void*)old;
     }
     if (!old)
         return jk_pool_calloc(p, sz);
