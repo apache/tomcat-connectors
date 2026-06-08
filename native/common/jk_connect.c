@@ -1333,10 +1333,12 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
                 snprintf(pb, sizeof(pb), ":%u", ntohs(insa->sin_port));
             }
 #if JK_HAVE_IPV6
-            else {
+            else if (sa->sa_family == JK_INET6) {
                 struct sockaddr_in6 *insa = (struct sockaddr_in6 *)&lsaddr;
                 inet_ntop6((unsigned char *)&insa->sin6_addr, buf, size);
                 snprintf(pb, sizeof(pb), ":%u", ntohs(insa->sin6_port));
+            } else {
+                snprintf(pb, sizeof(pb), "UnknownFamily");
             }
 #endif
             ps = strlen(buf);
@@ -1352,10 +1354,12 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
                 snprintf(pb, sizeof(pb), ":%u", ntohs(insa->sin_port));
             }
 #if JK_HAVE_IPV6
-            else {
+            else if (sa->sa_family == JK_INET6) {
                 struct sockaddr_in6 *insa = (struct sockaddr_in6 *)&rsaddr;
                 inet_ntop6((unsigned char *)&insa->sin6_addr, buf + ps, size - ps);
                 snprintf(pb, sizeof(pb), ":%u", ntohs(insa->sin6_port));
+            } else {
+                snprintf(pb, sizeof(pb), "UnknownFamily");
             }
 #endif
             strncat(buf, pb, size - strlen(buf) - 1);
