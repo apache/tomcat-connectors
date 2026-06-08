@@ -1285,24 +1285,31 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
  */
 char *jk_dump_hinfo(jk_sockaddr_t *saddr, char *buf, size_t size)
 {
-    char pb[8];
+    if (size == 0) {
+        return buf;
+    }
 
     if (saddr->ipaddr_ptr == NULL) {
-        strcpy(buf, "UnresolvedIP");
+        snprintf(buf, size, "UnresolvedIP");
     }
     else {
+        const char *ret;
+
         if (saddr->family == JK_INET) {
-            inet_ntop4(saddr->ipaddr_ptr, buf, size);
+            ret = inet_ntop4(saddr->ipaddr_ptr, buf, size);
         }
 #if JK_HAVE_IPV6
         else {
-            inet_ntop6(saddr->ipaddr_ptr, buf, size);
+            ret = inet_ntop6(saddr->ipaddr_ptr, buf, size);
         }
 #endif
+        if (ret == NULL) {
+            snprintf(buf, size, "InvalidIP");
+        }
     }
 
-    sprintf(pb, ":%d", saddr->port);
-    strncat(buf, pb, size - strlen(buf) - 1);
+    size_t len = strlen(buf);
+    snprintf(buf + len, size - len, ":%d", saddr->port);
 
     return buf;
 }
