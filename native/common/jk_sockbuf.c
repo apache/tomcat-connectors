@@ -40,7 +40,11 @@ int jk_sb_open(jk_sockbuf_t *sb, jk_sock_t sd)
 int jk_sb_write(jk_sockbuf_t *sb, const void *buf, unsigned sz)
 {
     if (sb && buf && sz) {
-        if ((SOCKBUF_SIZE - sb->end) >= sz) {
+        if (sb->end >= SOCKBUF_SIZE) {
+            return JK_FALSE;
+        }
+
+        if (sz <= SOCKBUF_SIZE - sb->end) {
             memcpy(sb->buf + sb->end, buf, sz);
             sb->end += sz;
         }
