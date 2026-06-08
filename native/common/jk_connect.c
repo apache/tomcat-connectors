@@ -1345,10 +1345,15 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
             }
 
             ps = strlen(buf);
-            strncat(buf, pb, size - ps - 1);
-            ps = strlen(buf);
-            strncat(buf, " -> ", size - ps - 1);
-            ps = strlen(buf);
+            if (ps < size) {
+                strncat(buf, pb, size - ps - 1);
+                ps = strlen(buf);
+            }
+
+            if (ps < size) {
+                strncat(buf, " -> ", size - ps - 1);
+                ps = strlen(buf);
+            }
 
             sa = (struct sockaddr *)&rsaddr;
             if (sa->sa_family == JK_INET) {
@@ -1365,9 +1370,12 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
 #endif
             else {
                 buf[ps] = '\0';
-                snprintf(pb, sizeof(pb), "UnknownFamily");
+		snprintf(pb, sizeof(pb), "UnknownFamily");
             }
-            strncat(buf, pb, size - strlen(buf) - 1);
+            ps = strlen(buf);
+            if (ps < size) {
+                strncat(buf, pb, size - ps - 1);
+            }
             return buf;
         }
     }
