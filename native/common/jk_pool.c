@@ -64,6 +64,11 @@ void *jk_pool_alloc(jk_pool_t *p, size_t size)
 
     if (size == 0)
         return NULL;
+
+    if (sz > SIZE_MAX - JK_ALIGN_DEFAULT(1)) {
+        return NULL;
+    }
+
     size = JK_ALIGN_DEFAULT(size);
     if ((p->size - p->pos) >= size) {
         rc = &(p->buf[p->pos]);
