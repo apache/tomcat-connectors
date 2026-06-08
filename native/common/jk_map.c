@@ -201,31 +201,35 @@ const char *jk_map_get_string(jk_map_t *m, const char *name, const char *def)
 
 int jk_map_get_int(jk_map_t *m, const char *name, int def)
 {
-    char buf[100];
-    const char *rc;
-    size_t len;
-    int int_res;
+    const char *rc = jk_map_get_string(m, name, NULL);
+    char *end;
+    long l;
+    long multit = 1;
 
-    sprintf(buf, "%d", def);
-    rc = jk_map_get_string(m, name, buf);
-
-    len = strlen(rc);
-    if (len) {
-        const char *lastchar = &rc[0] + len - 1;
-        int multit = 1;
-        if ('m' == *lastchar || 'M' == *lastchar) {
-            multit = 1024 * 1024;
-        }
-        else if ('k' == *lastchar || 'K' == *lastchar) {
-            multit = 1024;
-        }
-        /* Safe because atoi() will stop at any non-numeric lastchar */
-        int_res = atoi(rc) * multit;
+    if (rc == NULL) {
+        return def;
     }
-    else
-        int_res = def;
 
-    return int_res;
+    errno = 0;
+
+    l = strtol(rc, &end, 10);
+
+    if (end == rc || errno == ERANGE) {
+        return def;
+    }
+
+    char c = *end;
+    if (c == 'm' || c == 'M') {
+        multit = 1024 * 1024;
+    } else if (c == 'k' || c == 'K') {
+        multit = 1024;
+    }
+
+    if (l > INT_MAX / multit || l < INT_MIN / multit) {
+        return def;
+    }
+
+    return (int)(l * multit);
 }
 
 double jk_map_get_double(jk_map_t *m, const char *name, double def)
@@ -239,6 +243,7 @@ double jk_map_get_double(jk_map_t *m, const char *name, double def)
     }
 
     errno = 0;
+
     d = strtod(rc, &end);
 
     if (end == rc || errno == ERANGE) {
