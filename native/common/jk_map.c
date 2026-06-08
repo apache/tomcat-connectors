@@ -230,13 +230,22 @@ int jk_map_get_int(jk_map_t *m, const char *name, int def)
 
 double jk_map_get_double(jk_map_t *m, const char *name, double def)
 {
-    char buf[100];
-    const char *rc;
+    const char *rc = jk_map_get_string(m, name, NULL);
+    char *end;
+    double d;
 
-    sprintf(buf, "%f", def);
-    rc = jk_map_get_string(m, name, buf);
+    if (rc == NULL) {
+        return def;
+    }
 
-    return atof(rc);
+    errno = 0;
+    d = strtod(rc, &end);
+
+    if (end == rc || errno == ERANGE) {
+        return def;
+    }
+
+    return d;
 }
 
 int jk_map_get_bool(jk_map_t *m, const char *name, int def)
