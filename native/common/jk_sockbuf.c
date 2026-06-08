@@ -37,33 +37,77 @@ int jk_sb_open(jk_sockbuf_t *sb, jk_sock_t sd)
     return JK_FALSE;
 }
 
-int jk_sb_write(jk_sockbuf_t *sb, const void *buf, unsigned sz)
+/* send all data in buf (up to len) to the file descriptor */
+static int jk_sb_send_all(int sd, const void *buf, size_t len)
 {
-    if (sb && buf && sz) {
-        if (sb->end >= SOCKBUF_SIZE) {
+    size_t total = 0;
+
+    if (len == 0) {
+        return JK_TRUE;
+    }
+
+    while (total < len) {
+        ssize_t n = send(sd,
+                         (const char *)buf + total,
+                         len - total,
+                         0);
+
+        if (n > 0) {
+            total += (size_t)n;
+            continue;
+        }
+
+        if (n == -1) {
+            if (errno == EINTR) {
+                continue; // interrupted, retry
+            }
+
+            // Any other error is fatal for this write
             return JK_FALSE;
         }
 
-        if (sz <= SOCKBUF_SIZE - sb->end) {
-            memcpy(sb->buf + sb->end, buf, sz);
-            sb->end += sz;
-        }
-        else {
-            if (!jk_sb_flush(sb)) {
-                return JK_FALSE;
-            }
-            if (sz > SOCKBUF_SIZE) {
-                return (send(sb->sd, (char *)buf, sz, 0) == (int)sz);
-            }
+        // n == 0: treat as connection closed or invalid state
+        return JK_FALSE;
+    }
 
-            memcpy(sb->buf + sb->end, buf, sz);
-            sb->end += sz;
-        }
+    return JK_TRUE;
+}
+
+int jk_sb_write(jk_sockbuf_t *sb, const void *buf, unsigned sz)
+{
+    if (!sb || !buf) {
+        return JK_FALSE;
+    }
+    if (sz == 0) {
+        return JK_TRUE;
+    }
+
+    if (sb->end >= SOCKBUF_SIZE) {
+        return JK_FALSE;
+    }
+
+    if (sz <= SOCKBUF_SIZE - sb->end) {
+        memcpy(sb->buf + sb->end, buf, sz);
+        sb->end += sz;
 
         return JK_TRUE;
     }
 
-    return JK_FALSE;
+    /* write cannot fit into remaining buffer, so flush */
+    if (!jk_sb_flush(sb)) {
+        return JK_FALSE;
+    }
+
+    /* don't buffer writes that will never fit */
+    if (sz > SOCKBUF_SIZE) {
+        return jk_sb_send_all(sb->sd, buf, sz);
+    }
+
+    /* buffer small write-after-flush */
+    memcpy(sb->buf + sb->end, buf, sz);
+    sb->end += sz;
+
+    return JK_TRUE;
 }
 
 int jk_sb_flush(jk_sockbuf_t *sb)
