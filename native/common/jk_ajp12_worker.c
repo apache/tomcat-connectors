@@ -390,8 +390,8 @@ static int ajpv12_mark(ajp12_endpoint_t * p, unsigned char type)
 
 static int ajpv12_sendint(ajp12_endpoint_t * p, int d)
 {
-    char buf[20];
-    sprintf(buf, "%d", d);
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%d", d);
     return ajpv12_sendstring(p, buf);
 }
 
