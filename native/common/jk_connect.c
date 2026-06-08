@@ -1337,8 +1337,9 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
                 struct sockaddr_in6 *insa = (struct sockaddr_in6 *)&lsaddr;
                 inet_ntop6((unsigned char *)&insa->sin6_addr, buf, size);
                 snprintf(pb, sizeof(pb), ":%u", ntohs(insa->sin6_port));
+            }
 #endif
-            } else {
+            else {
                 buf[0] = '\0';
                 snprintf(pb, sizeof(pb), "UnknownFamily");
             }
@@ -1360,8 +1361,9 @@ char *jk_dump_sinfo(jk_sock_t sd, char *buf, size_t size)
                 struct sockaddr_in6 *insa = (struct sockaddr_in6 *)&rsaddr;
                 inet_ntop6((unsigned char *)&insa->sin6_addr, buf + ps, size - ps);
                 snprintf(pb, sizeof(pb), ":%u", ntohs(insa->sin6_port));
+            }
 #endif
-            } else {
+            else {
                 buf[ps] = '\0';
                 snprintf(pb, sizeof(pb), "UnknownFamily");
             }
