@@ -961,6 +961,12 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
             reason = status_reason(status);
         }
         status_str = (char *)malloc((6 + strlen(reason)));
+        if (status_str == NULL) {
+            jk_log(l, JK_LOG_ERROR,
+                   "malloc failed allocating response status string");
+            rv = JK_FALSE;
+            goto start_response_cleanup;
+        }
         StringCbPrintf(status_str, 6 + strlen(reason), "%d %s", status, reason);
 
         if (chunked_encoding_enabled) {
@@ -1031,6 +1037,12 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
         /* Allocate and init the headers string */
         len_of_headers += 3;       /* crlf and terminating null char */
         headers_str = (char *)malloc(len_of_headers);
+        if (headers_str == NULL) {
+            jk_log(l, JK_LOG_ERROR,
+                   "malloc failed allocating response headers string");
+            rv = JK_FALSE;
+            goto start_response_cleanup;
+        }
         headers_str[0] = '\0';
 
         /* Copy headers into headers block for sending */
@@ -1098,6 +1110,7 @@ static int JK_METHOD start_response(jk_ws_service_t *s,
                    (keep_alive ? "_EX" : ""), GetLastError(), GetLastError());
             rv = JK_FALSE;
         }
+start_response_cleanup:
         if (headers_str)
             free(headers_str);
         if (status_str)
@@ -1596,6 +1609,9 @@ static char *ap_pregsub(const char *input,
     }
 
     dest = dst = calloc(1, len + 1);
+    if (dest == NULL) {
+        return NULL;
+    }
 
     /* Now actually fill in the string */
 
@@ -1666,12 +1682,17 @@ static char *rregex_rewrite(jk_pool_t *p, const char *uri)
                     size_t lefts = orgsz - regm[0].rm_eo;
 
                     ptr = buf = jk_pool_alloc(p, regm[0].rm_so + subsz + lefts + 1);
+                    if (buf == NULL) {
+                        free(subs);
+                        return NULL;
+                    }
                     memcpy(buf, uri, regm[0].rm_so);
                     ptr += regm[0].rm_so;
                     memcpy(ptr, subs, subsz);
                     ptr += subsz;
                     memcpy(ptr, uri + regm[0].rm_eo, lefts);
                     ptr[lefts] = '\0';
+                    free(subs);
                     return buf;
                 }
             }
@@ -1762,23 +1783,38 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
     if (uri == NULL) {
         jk_log(l, JK_LOG_ERROR,
                "error while getting the url");
-        return SF_STATUS_REQ_ERROR;
+        rv = SF_STATUS_REQ_ERROR;
+        goto cleanup;
     }
     if (*uri == '\0') {
         /* Empty url */
-        return SF_STATUS_REQ_NEXT_NOTIFICATION;
+        rv = SF_STATUS_REQ_NEXT_NOTIFICATION;
+        goto cleanup;
     }
     query = strchr(uri, '?');
     if (query) {
         *query++ = '\0';
-        if (*query)
+        if (*query) {
             query = jk_pool_strdup(&pool, query);
+            if (query == NULL) {
+                jk_log(l, JK_LOG_ERROR,
+                       "jk_pool_strdup failed duplicating request query string");
+                rv = SF_STATUS_REQ_ERROR;
+                goto cleanup;
+            }
+        }
         else
             query = NULL;
     }
 
     /* Duplicate unparsed uri */
     uri_undec = jk_pool_strdup(&pool, uri);
+    if (uri_undec == NULL) {
+        jk_log(l, JK_LOG_ERROR,
+               "jk_pool_strdup failed duplicating undecoded request URI");
+        rv = SF_STATUS_REQ_ERROR;
+        goto cleanup;
+    }
 
     rc = unescape_url(uri);
     if (rc == BAD_REQUEST) {
@@ -1798,6 +1834,12 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         goto cleanup;
     }
     cleanuri = jk_pool_strdup(&pool, uri);
+    if (cleanuri == NULL) {
+        jk_log(l, JK_LOG_ERROR,
+               "jk_pool_strdup failed duplicating normalized request URI");
+        rv = SF_STATUS_REQ_ERROR;
+        goto cleanup;
+    }
     if (jk_servlet_normalize(cleanuri, l)) {
         write_error_response(pfc, 404);
         rv = SF_STATUS_REQ_FINISHED;
@@ -1840,6 +1882,12 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         else if (uri_select_option == URI_SELECT_OPT_ESCAPED) {
             size_t elen  = strlen(uri) * 3 + 1;
             char *escuri = jk_pool_alloc(&pool, elen);
+            if (escuri == NULL) {
+                jk_log(l, JK_LOG_ERROR,
+                       "jk_pool_alloc failed allocating escaped URI buffer");
+                rv = SF_STATUS_REQ_ERROR;
+                goto cleanup;
+            }
             if (!escape_url(uri, escuri, (int)elen)) {
                 jk_log(l, JK_LOG_ERROR,
                        "[%s] re-encoding request exceeds maximum buffer size.",
@@ -1857,6 +1905,12 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
         else if (uri_select_option == URI_SELECT_OPT_PROXY) {
             size_t elen  = strlen(uri) * 3 + 1;
             char *escuri = jk_pool_alloc(&pool, elen);
+            if (escuri == NULL) {
+                jk_log(l, JK_LOG_ERROR,
+                       "jk_pool_alloc failed allocating canonical URI buffer");
+                rv = SF_STATUS_REQ_ERROR;
+                goto cleanup;
+            }
             if (!jk_canonenc(uri, escuri, (int)elen)) {
                 jk_log(l, JK_LOG_ERROR,
                        "[%s] re-encoding request exceeds maximum buffer size.",
@@ -1912,6 +1966,11 @@ static DWORD handle_notify_event(PHTTP_FILTER_CONTEXT pfc,
                             guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
                             guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
                 request_id = jk_pool_strdup(&pool, uuid);
+                if (request_id == NULL) {
+                    jk_log(l, JK_LOG_WARNING,
+                           "jk_pool_strdup failed duplicating generated request id");
+                    request_id = "NO-ID";
+                }
                 l->id = request_id;
                 if (JK_IS_DEBUG_LEVEL(l)) {
                     jk_log(l, JK_LOG_DEBUG,
@@ -2665,30 +2724,40 @@ static int init_jk(char *serverName)
                        rewrite_rule_file);
 
             }
-            jk_map_alloc(&rregexp_map);
-            for (i = 0; i < jk_map_size(rewrite_map); i++) {
-                const char *src = jk_map_name_at(rewrite_map, i);
-                if (*src == '~') {
-                    ap_regex_t *regexp = malloc(sizeof(ap_regex_t));
-                    const char *val = jk_map_value_at(rewrite_map, i);
-                    /* Skip leading tilde */
-                    src++;
-                    regexp->fake = val;
-                    if (ap_regcomp(regexp, src) == JK_TRUE) {
-                        jk_map_add(rregexp_map, src, regexp);
-                        if (JK_IS_DEBUG_LEVEL(l)) {
-                            jk_log(l, JK_LOG_DEBUG,
-                                   "Added regular expression rule %s -> %s",
-                                   src, regexp->fake);
+            if (jk_map_alloc(&rregexp_map)) {
+                for (i = 0; i < jk_map_size(rewrite_map); i++) {
+                    const char *src = jk_map_name_at(rewrite_map, i);
+                    if (*src == '~') {
+                        ap_regex_t *regexp = malloc(sizeof(ap_regex_t));
+                        const char *val = jk_map_value_at(rewrite_map, i);
+                        if (regexp == NULL) {
+                            jk_log(l, JK_LOG_ERROR,
+                                   "malloc failed allocating regular expression rule");
+                            continue;
+                        }
+                        /* Skip leading tilde */
+                        src++;
+                        regexp->fake = val;
+                        if (ap_regcomp(regexp, src) == JK_TRUE) {
+                            jk_map_add(rregexp_map, src, regexp);
+                            if (JK_IS_DEBUG_LEVEL(l)) {
+                                jk_log(l, JK_LOG_DEBUG,
+                                       "Added regular expression rule %s -> %s",
+                                       src, regexp->fake);
+                            }
+                        }
+                        else {
+                            jk_log(l, JK_LOG_ERROR,
+                                   "Unable to compile regular expression %s",
+                                   src);
+                            free(regexp);
                         }
                     }
-                    else {
-                        jk_log(l, JK_LOG_ERROR,
-                               "Unable to compile regular expression %s",
-                               src);
-                        free(regexp);
-                    }
                 }
+            }
+            else {
+                jk_log(l, JK_LOG_ERROR,
+                       "Unable to allocate regular expression rewrite map");
             }
         }
         else {
@@ -3089,6 +3158,10 @@ static int init_ws_service(isapi_private_data_t * private_data,
     s->done  = iis_done;
 
     l = jk_pool_alloc(s->pool, sizeof(jk_log_context_t));
+    if (l == NULL) {
+        JK_TRACE_EXIT(s->log_ctx);
+        return JK_FALSE;
+    }
     l->logger = logger;
     l->id = "INIT_WS_SERVICE";
     GET_SERVER_VARIABLE_VALUE(HTTP_REQUEST_ID_HEADER_NAME, l->id, "NO-ID");
@@ -3174,24 +3247,44 @@ static int init_ws_service(isapi_private_data_t * private_data,
         s->extension.use_server_error_pages = e->use_server_error_pages;
         if (e->activation) {
             s->extension.activation = jk_pool_alloc(s->pool, e->activation_size * sizeof(int));
+            if (!s->extension.activation) {
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
             memcpy(s->extension.activation, e->activation, e->activation_size * sizeof(int));
         }
         if (e->fail_on_status_size > 0) {
             s->extension.fail_on_status_size = e->fail_on_status_size;
             s->extension.fail_on_status = jk_pool_alloc(s->pool, e->fail_on_status_size * sizeof(int));
+            if (!s->extension.fail_on_status) {
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
             memcpy(s->extension.fail_on_status, e->fail_on_status, e->fail_on_status_size * sizeof(int));
         }
         if (e->session_cookie) {
             s->extension.session_cookie = jk_pool_strdup(s->pool, e->session_cookie);
+            if (!s->extension.session_cookie) {
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
         }
         if (e->session_path) {
             s->extension.session_path = jk_pool_strdup(s->pool, e->session_path);
+            if (!s->extension.session_path) {
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
         }
         if (e->set_session_cookie) {
             s->extension.set_session_cookie = e->set_session_cookie;
         }
         if (e->session_cookie_path) {
             s->extension.session_cookie_path = jk_pool_strdup(s->pool, e->session_cookie_path);
+            if (!s->extension.session_cookie_path) {
+                JK_TRACE_EXIT(l);
+                return JK_FALSE;
+            }
         }
 
     }
@@ -3276,6 +3369,10 @@ static int init_ws_service(isapi_private_data_t * private_data,
                            cc.dwCertificateFlags);
                     s->ssl_cert = jk_pool_alloc(&private_data->p,
                                                 base64_encode_cert_len(cc.CertContext.cbCertEncoded));
+                    if (!s->ssl_cert) {
+                        JK_TRACE_EXIT(l);
+                        return JK_FALSE;
+                    }
                     s->ssl_cert_len = base64_encode_cert(s->ssl_cert, cb,
                                                          cc.CertContext.cbCertEncoded) - 1;
                 }

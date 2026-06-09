@@ -54,8 +54,12 @@
   <subsection name="IIS">
     <changelog>
       <fix>
-        Prevent a crash in the unliklely case of a very long destination URI
+        Prevent a crash in the unlikely case of a very long destination URI
         after a rewrite. (markt)
+      </fix>
+      <fix>
+        Add various missing allocation checks and fix a memory leak in rewrite
+        processing. (markt)
       </fix>
     </changelog>
   </subsection>
