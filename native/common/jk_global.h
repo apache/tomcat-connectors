@@ -352,7 +352,6 @@ extern "C"
                                (tv)->tv_usec = tb.millitm * 1000; }
 #define HAVE_VSNPRINTF
 #define HAVE_SNPRINTF
-#define HAVE_SOCKADDR_STORAGE
 #define HAVE_AF_INET6
 #define HAVE_GETADDRINFO
 #ifdef HAVE_APR
@@ -473,13 +472,7 @@ struct jk_sockaddr_t {
         /** IPv6 sockaddr structure */
         struct sockaddr_in6 sin6;
 #endif
-        /** Placeholder to ensure that the size of this union is not
-         * dependent on whether JK_HAVE_IPV6 is defined. */
-#ifdef HAVE_SOCKADDR_STORAGE
         struct sockaddr_storage sas;
-#else
-        char sas[128];
-#endif
     } sa;
 };
 

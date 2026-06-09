@@ -413,24 +413,12 @@ int main(void)
 )
 ])dnl
 
-AC_DEFUN([JK_CHECK_SASTORAGE], [
-AC_MSG_CHECKING(for struct sockaddr_storage)
-AC_TRY_RUN([
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-
-int main(void)
-{
-    struct sockaddr_storage sa;
-    exit(sizeof(sa) == 0);
-}
-]
-, [ AC_MSG_RESULT([yes]) AC_DEFINE(HAVE_SOCKADDR_STORAGE, 1, [Define to 1 if you have struct sockaddr_storage]) ]
-, [ AC_MSG_RESULT([no]) ]
-)
-])dnl
+AC_CHECK_TYPE([struct sockaddr_storage], [], [
+  AC_MSG_ERROR([struct sockaddr_storage is required but not found])
+], [
+  #include <sys/types.h>
+  #include <sys/socket.h>
+])
 
 JK_HAVE_IPV6
 JK_CHECK_SASTORAGE
