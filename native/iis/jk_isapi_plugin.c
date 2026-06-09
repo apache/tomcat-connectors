@@ -1517,7 +1517,7 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
             ovector = &(small_ovector[0]);
         }
         else {
-            ovector = (int *)malloc(sizeof(int) * nmatch * 3);
+            ovector = (int *)calloc(nmatch, 3 * sizeof(int));
             if (ovector == NULL)
                 return -1;
             allocated_ovector = 1;
@@ -1566,7 +1566,7 @@ static char *ap_pregsub(const char *input,
     char *dest, *dst;
     char c;
     int no;
-    int len;
+    size_t len;
 
     if (!source)
         return NULL;
