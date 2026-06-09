@@ -1566,7 +1566,7 @@ static char *ap_pregsub(const char *input,
     char *dest, *dst;
     char c;
     int no;
-    int len;
+    size_t len;
 
     if (!source)
         return NULL;

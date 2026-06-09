@@ -51,6 +51,14 @@
   </p>
 </section>
 <section name="Changes between 1.2.50 and 1.2.51">
+  <subsection name="IIS">
+    <changelog>
+      <fix>
+        Prevent a crash in the unliklely case of a very long destination URI
+        after a rewrite. (markt)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 <section name="Changes between 1.2.49 and 1.2.50">
   <subsection name="Apache">
