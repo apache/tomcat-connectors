@@ -472,6 +472,8 @@ struct jk_sockaddr_t {
         /** IPv6 sockaddr structure */
         struct sockaddr_in6 sin6;
 #endif
+        /** A useful side-effect of including sockaddr_storage is that
+         *  the sise of the union does not depend on JK_HAVE_IPV6. */
         struct sockaddr_storage sas;
     } sa;
 };
