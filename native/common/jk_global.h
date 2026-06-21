@@ -139,7 +139,16 @@ extern char *strdup(const char *str);
 #include <process.h>
 #include <io.h>
 #include <ws2tcpip.h>
+
+#ifndef ssize_t
+#include <BaseTsd.h>
+#define ssize_t SSIZE_T
+#else
+#define ssize_t ptrdiff_t
+#endif
+
 #else /* WIN32 */
+
 #include <unistd.h>
 #include <netdb.h>
 #include <netinet/in.h>
