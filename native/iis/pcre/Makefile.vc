@@ -13,26 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 PROJECT = pcre
-# Tools
-CC = cl.exe
-LINK = link.exe
-RC = rc.exe
-MT = mt.exe
 
-!IF !DEFINED(BUILD_CPU) || "$(BUILD_CPU)" == ""
-!ERROR Must specify BUILD_CPU matching compiler x86 or x64
-!ENDIF
+TARGET = LIB
 
-WORKDIR = $(BUILD_CPU)_RELEASE
-BUILDLIB = $(WORKDIR)\$(PROJECT).lib
-CLEANTARGET = rd /s /q $(WORKDIR)
-MAKEWORKDIR = md $(WORKDIR)
-CFLAGS = $(CFLAGS) -DNDEBUG -DWIN32 -D_WINNT -DWINNT -D_WIN32_WINNT=$(WINVER) -DWINVER=$(WINVER)
-CFLAGS = $(CFLAGS) -DPCRE_STATIC -DHAVE_CONFIG_H $(CPUFLAGS) $(EXTRA_CFLAGS)
-CLOPTS = /c /nologo -MD -W3 -O2 -Ob2 -Zi -EHsc
+!include <..\NMAKEmakefile.inc>
+
+INCLUDES = -I.
+
+CFLAGS = $(CFLAGS) -DHAVE_CONFIG_H -DPCRE_STATIC
+
+RCFLAGS = $(RCFLAGS) /d JK_ISAPI
+
 PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
-LFLAGS = -lib /nologo $(EXTRA_LFLAGS)
 
 OBJECTS = \
 	$(WORKDIR)\pcre_byte_order.obj \
@@ -58,6 +52,9 @@ OBJECTS = \
 	$(WORKDIR)\pcre_xclass.obj
 
 
+LINK_WRAPPER = $(LINK)
+
+BUILDLIB = $(WORKDIR)\$(PROJECT).lib
 
 all : $(WORKDIR) $(BUILDLIB)
 
@@ -65,10 +62,10 @@ $(WORKDIR) :
 	@$(MAKEWORKDIR)
 
 .c{$(WORKDIR)}.obj:
-	$(CC) $(CLOPTS) $(CFLAGS) $(PDBFLAGS) $<
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
 
-$(BUILDLIB): $(WORKDIR) $(OBJECTS)
-	$(LINK) $(LFLAGS) $(OBJECTS) /out:$(BUILDLIB)
+$(BUILDLIB): $(OBJECTS)
+	$(LINK_WRAPPER) $(LFLAGS) $** /out:$(BUILDLIB)
 
 clean:
 	@-$(CLEANTARGET) 2>NUL

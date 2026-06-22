@@ -13,43 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 PROJECT = isapi_redirect
-# Tools
-CC = cl.exe
-LINK = link.exe
-RC = rc.exe
-MT = mt.exe
 
-!IF !DEFINED(BUILD_CPU) || "$(BUILD_CPU)" == ""
-!ERROR Must specify BUILD_CPU matching compiler x86 or x64
-!ENDIF
-!IF "$(BUILD_CPU)" == "x86"
-CPUFLAGS = -D_X86_=1
-MACHINE = X86
-!ELSE
-CPUFLAGS = -DWIN64 -D_WIN64
-MACHINE = AMD64
-!ENDIF
-!IF !DEFINED(WINVER) || "$(WINVER)" == ""
-WINVER = 0x0601
+TARGET = DLL
+
+# pcre or pcre2
+PCRE = pcre
+
+!include <NMAKEmakefile.inc>
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = ..\common
 !ENDIF
 
-BUILDBIN = $(WORKDIR)\$(PROJECT).dll
-BUILDRES = $(WORKDIR)\$(PROJECT).res
-BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
-BUILDMFT = $(BUILDBIN).manifest
-PCRELIB  = .\pcre\$(WORKDIR)\pcre.lib
+PCREDIR = $(PCRE)
 
-WORKDIR = $(BUILD_CPU)_RELEASE
-CLEANTARGET = rd /s /q $(WORKDIR)
-MAKEWORKDIR = md $(WORKDIR)
-CFLAGS = $(CFLAGS) -DNDEBUG -DWIN32 -D_WINNT -DWINNT -D_WIN32_WINNT=$(WINVER) -DWINVER=$(WINVER) -DHAVE_CONFIG_H $(CPUFLAGS)
-CFLAGS = $(CFLAGS) -DPCRE_STATIC -DJK_ISAPI -DISAPI_EXPORTS $(EXTRA_CFLAGS)
-CLOPTS = /c /nologo -MD -W3 -O2 -Ob2 -Zi -EHsc
+INCLUDES = -I$(SRCDIR)
+!IF "$(PCRE)" == "pcre"
+INCLUDES = $(INCLUDES) -I$(PCREDIR)
+!ELSEIF "$(PCRE)" == "pcre2"
+INCLUDES = $(INCLUDES) -I$(PCREDIR)\src
+!ENDIF
+
+LIBS = $(LIBS) user32.lib mswsock.lib strsafe.lib Ole32.lib
+
+CFLAGS = $(CFLAGS) -DHAVE_CONFIG_H -DJK_ISAPI -DISAPI_EXPORTS
+!IF "$(PCRE)" == "pcre"
+CFLAGS = $(CFLAGS) -DPCRE_STATIC
+!ELSEIF "$(PCRE)" == "pcre2"
+CFLAGS = $(CFLAGS) -DPCRE2_STATIC -DPCRE2_CODE_UNIT_WIDTH=8 -DHAVE_PCRE2
+!ENDIF
+
+RCFLAGS = $(RCFLAGS) /d JK_ISAPI
+
 PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
-LFLAGS = /nologo /DLL /INCREMENTAL:NO /DEBUG /OPT:REF /SUBSYSTEM:WINDOWS /MACHINE:$(MACHINE) $(EXTRA_LDFLAGS)
-LDLIBS = Ole32.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib mswsock.lib strsafe.lib $(EXTRA_LIBS)
-INCDIR = -I.\pcre -I..\common
+
+PCRELIB  = $(PCREDIR)\$(WORKDIR_LIB)\$(PCRE).lib
 
 OBJECTS = \
 	$(WORKDIR)\jk_ajp12_worker.obj \
@@ -74,32 +74,45 @@ OBJECTS = \
 	$(WORKDIR)\jk_util.obj \
 	$(WORKDIR)\jk_worker.obj
 
+LINK_WRAPPER = $(LINK)
+
+BUILDBIN = $(WORKDIR)\$(PROJECT).dll
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMFT = $(BUILDBIN).manifest
+
+{$(SRCDIR)\src}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\os\win32}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
 all : libpcre $(WORKDIR) $(BUILDBIN)
 
 $(WORKDIR) :
 	@$(MAKEWORKDIR)
 
-.c{$(WORKDIR)}.obj:
-	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
-
-{..\common}.c{$(WORKDIR)}.obj:
-	$(CC) $(CLOPTS) $(CFLAGS) $(INCDIR) $(PDBFLAGS) $<
-
-$(BUILDRES): ..\common\jk.rc
-	$(RC) /l 0x409 /n /i ..\common /d JK_ISAPI /d NDEBUG /fo $(BUILDRES) ..\common\jk.rc
-
 libpcre:
-	@cd .\pcre
-	@$(MAKE) -f Makefile.vc WINVER=$(WINVER) BUILD_CPU=$(BUILD_CPU) CPUFLAGS="$(CPUFLAGS)"
+	@cd .\$(PCRE)
+	@$(MAKE) -f Makefile.vc NMAKE_WINVER=$(NMAKE_WINVER) BUILD_CPU=$(BUILD_CPU) CPU_CFLAGS="$(CPU_CFLAGS)"
 	@cd ..
 
-$(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
-	$(LINK) $(LFLAGS) $(OBJECTS) $(PCRELIB) $(BUILDRES) $(LDLIBS) /def:isapi.def /out:$(BUILDBIN) /pdb:$(BUILDPDB)
+.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(BUILDRES): $(SRCDIR)\jk.rc
+	$(RC) $(RCFLAGS) /i $(SRCDIR) /fo $(BUILDRES) $**
+
+$(BUILDBIN): $(OBJECTS) $(BUILDRES)
+	$(LINK_WRAPPER) $(LFLAGS) $** $(PCRELIB) $(LIBS) /def:isapi.def /pdb:$(BUILDPDB) /out:$(BUILDBIN)
 	@if exist $(BUILDMFT) \
 		$(MT) -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
 
 clean:
-	@cd .\pcre
+	@cd .\$(PCRE)
 	@$(MAKE) -f Makefile.vc clean
 	@cd ..
 	@-$(CLEANTARGET) 2>NUL

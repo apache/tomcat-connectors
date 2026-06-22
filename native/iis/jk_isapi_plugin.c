@@ -45,7 +45,11 @@
 #include "jk_uri_worker_map.h"
 #include "jk_shm.h"
 #include "jk_ajp13.h"
+#ifdef HAVE_PCRE2
+#include "pcre2.h"
+#else
 #include "pcre.h"
+#endif
 
 #ifndef POSIX_MALLOC_THRESHOLD
 #define POSIX_MALLOC_THRESHOLD 10
@@ -1461,12 +1465,21 @@ BOOL WINAPI GetFilterVersion(PHTTP_FILTER_VERSION pVer)
 typedef struct {
     void *re_pcre;
     const char *fake;
+#ifdef HAVE_PCRE2
+    int re_nsub;
+    size_t re_erroffset;
+#endif
 } ap_regex_t;
 
 /* The structure in which a captured offset is returned. */
 typedef struct {
+#ifdef HAVE_PCRE2
+    PCRE2_SIZE rm_so;
+    PCRE2_SIZE rm_eo;
+#else
     int rm_so;
     int rm_eo;
+#endif
 } ap_regmatch_t;
 
 
@@ -1476,7 +1489,11 @@ typedef struct {
 
 static void ap_regfree(ap_regex_t *preg)
 {
+#ifdef HAVE_PCRE2
+    pcre2_code_free(preg->re_pcre);
+#else
     (pcre_free)(preg->re_pcre);
+#endif
 }
 
 
@@ -1495,13 +1512,31 @@ Returns:      JK_TRUE on success
 
 static int ap_regcomp(ap_regex_t *preg, const char *pattern)
 {
+
+#ifdef HAVE_PCRE2
+    uint32_t capcount;
+    size_t erroffset;
+    int errcode = 0;
+
+    preg->re_pcre = pcre2_compile((const unsigned char *)pattern,
+                                  PCRE2_ZERO_TERMINATED, 0, &errcode,
+                                  &erroffset, NULL);
+    preg->re_erroffset = erroffset;
+#else
     const char *errorptr;
     int erroffset;
 
     preg->re_pcre = pcre_compile(pattern, 0, &errorptr, &erroffset, NULL);
-
+#endif
+ 
     if (preg->re_pcre == NULL)
         return JK_FALSE;
+
+#ifdef HAVE_PCRE2
+    pcre2_pattern_info((const pcre2_code *)preg->re_pcre,
+                       PCRE2_INFO_CAPTURECOUNT, &capcount);
+    preg->re_nsub = capcount;
+#endif
 
     return JK_TRUE;
 }
@@ -1511,16 +1546,56 @@ static int ap_regcomp(ap_regex_t *preg, const char *pattern)
  *************************************************/
 
 /* Unfortunately, PCRE requires 3 ints of working space for each captured
-substring, so we have to get and release working store instead of just using
-the POSIX structures as was done in earlier releases when PCRE needed only 2
-ints. However, if the number of possible capturing brackets is small, use a
-block of store on the stack, to reduce the use of malloc/free. The threshold is
-in a macro that can be changed at configure time. */
+ * substring, so we have to get and release working store instead of just using
+ * the POSIX structures as was done in earlier releases when PCRE needed only 2
+ * ints. However, if the number of possible capturing brackets is small, use a
+ * block of store on the stack, to reduce the use of malloc/free. The threshold is
+ * in a macro that can be changed at configure time. 
+ * Yet more unfortunately, PCRE2 wants an opaque context by providing the API
+ * to allocate and free it, Since we do not use thread local storage,
+ * we do the allocation and freeing for each ap_regexec().
+ */
 
-static int ap_regexec(const ap_regex_t *preg, const char *string,
+static int ap_regexec(const ap_regex_t *preg, const char *buff,
                       int nmatch, ap_regmatch_t pmatch[])
 {
     int rc;
+#ifdef HAVE_PCRE2
+    int options = 0, to_free = 0;
+    PCRE2_SIZE *ovector = NULL;
+    uint32_t ncaps = (size_t)preg->re_nsub + 1;
+    pcre2_match_data *data = pcre2_match_data_create(ncaps, NULL);
+    to_free = 1;
+
+    if (!data) {
+        return -1;
+    }
+
+    rc = pcre2_match((const pcre2_code *)preg->re_pcre,
+                     (const unsigned char *)buff, lstrlenA(buff),
+                     0, 0, data, NULL);
+    ovector = pcre2_get_ovector_pointer(data);
+
+    if (rc >= 0) {
+        int n = rc, i;
+        if (n == 0 || n > nmatch)
+            rc = n = nmatch; /* All capture slots were filled in */
+        for (i = 0; i < n; i++) {
+            pmatch[i].rm_so = ovector[i * 2];
+            pmatch[i].rm_eo = ovector[i * 2 + 1];
+        }
+        for (; i < nmatch; i++)
+            pmatch[i].rm_so = pmatch[i].rm_eo = -1;
+        if (to_free) {
+            pcre2_match_data_free(data);
+        }
+    }
+    else {
+        if (to_free) {
+            pcre2_match_data_free(data);
+        }
+    }
+#else
     int *ovector = NULL;
     int small_ovector[POSIX_MALLOC_THRESHOLD * 3];
     int allocated_ovector = 0;
@@ -1537,8 +1612,8 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
         }
     }
 
-    rc = pcre_exec((const pcre *)preg->re_pcre, NULL, string,
-                   lstrlenA(string),
+    rc = pcre_exec((const pcre *)preg->re_pcre, NULL, buff,
+                   lstrlenA(buff),
                     0, 0, ovector, nmatch * 3);
 
     if (rc == 0)
@@ -1554,6 +1629,7 @@ static int ap_regexec(const ap_regex_t *preg, const char *string,
     }
     if (allocated_ovector)
         free(ovector);
+#endif
     return rc;
 }
 
@@ -2665,6 +2741,21 @@ static int init_jk(char *serverName)
     /* Logging the initialization type: registry or properties file in virtual dir
      */
     if (JK_IS_DEBUG_LEVEL(l)) {
+#ifdef HAVE_PCRE2
+        int sz = pcre2_config(PCRE2_CONFIG_VERSION, NULL);
+        if (sz > 0) {
+            char *buf = malloc(sz + 1);
+            if (buf != NULL) {
+                sz = pcre2_config(PCRE2_CONFIG_VERSION, buf);
+                if (sz > 0) {
+                    jk_log(l, JK_LOG_DEBUG, "Detected PCRE2 version %s", buf);
+                }
+                free(buf);
+            }
+        }
+#else
+        jk_log(l, JK_LOG_DEBUG, "Detected PCRE version %s", pcre_version());
+#endif
         jk_log(l, JK_LOG_DEBUG, "Detected IIS version %d.%d", iis_info.major, iis_info.minor);
         if (using_ini_file) {
             jk_log(l, JK_LOG_DEBUG, "Using ini file %s.", ini_file_name);

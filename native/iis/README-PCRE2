@@ -1,0 +1,65 @@
+PCRE2 and Tomcat Connectors
+:::::::::::::::::::::::::::
+
+Using PCRE2
+-----------
+
+The Windows ISAPI Redirector, which is part of the Tomcat Connectors
+project, can use PCRE2 based regular expressions to rewrite URLs.
+
+The rewrite rules must be put into a file, whose path and name
+are given via the key rewrite_rule_file either in the registry
+or the isapi_redirect.properties file.
+
+Rewriting is done after mapping requests via uriworkermap.properties.
+
+There are two types of rewrite rules:
+
+- simple prefix rules (not using PCRE2):
+
+/original/path/prefix=/some/new/path/prefix
+
+- regular expression rules:
+
+~PATTERN=REPLACEMENT
+
+Example for a regular expression rule:
+
+~/([^/]+)/([^/]+)/=/myapp/$2/$1
+
+
+Adding and maintaining PCRE2 in the sources
+-------------------------------------------
+
+The sub directory "pcre2" contains the extracted contents of the
+original PCRE2 source download in zip form.
+
+Two files have been added:
+
+- pcre2/config.h.win
+  This is a simple file defining what type of PCRE2 build
+  is requested. It should be pretty stable over time.
+
+- pcre2/Makefile.vc
+  This is a simple Makefile, which should also be pretty
+  stable. If PCRE2 needs new file to be build after an update,
+  they have to be added to the OBJECTS list.
+
+The type of PCRE2 library we build, has the following properties:
+
+- static library
+- code unit width 8 (for ASCII and UTF-8)
+- no posix library build
+- no pcre2grep or test build
+
+Other config.h value, which are mostly default:
+
+#define LINK_SIZE               2
+#define HEAP_LIMIT              20000000
+#define MATCH_LIMIT             10000000
+#define MATCH_LIMIT_DEPTH       MATCH_LIMIT
+#define MAX_VARLOOKBEHIND       255
+#define NEWLINE_DEFAULT         5
+#define PARENS_NEST_LIMIT       250
+#define MAX_NAME_SIZE           128
+#define MAX_NAME_COUNT          10000
