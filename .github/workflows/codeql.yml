@@ -82,7 +82,6 @@ jobs:
         sudo apt-get install libtool-bin apache2-dev
         cd native
         sh buildconf.sh
-        ls -ld /usr/bin/apxs2 /usr/sbin/apxs2
         ./configure --with-apxs=/usr/bin/apxs2
         make
     - name: Perform CodeQL Analysis
