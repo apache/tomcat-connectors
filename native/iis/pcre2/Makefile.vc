@@ -63,20 +63,25 @@ OBJECTS = \
 	$(WORKDIR)\pcre2_valid_utf.obj \
 	$(WORKDIR)\pcre2_xclass.obj
 
+ADDFILES= $(SRCDIR)\config.h $(SRCDIR)\pcre2.h $(SRCDIR)\pcre2_chartables.c
 
 LINK_WRAPPER = $(LINK)
 
 BUILDLIB = $(WORKDIR)\$(PROJECT).lib
 
-all : $(WORKDIR) additions $(BUILDLIB)
+all : $(WORKDIR) $(ADDFILES) $(BUILDLIB)
 
 $(WORKDIR) :
 	@$(MAKEWORKDIR)
 
-additions:
-	copy config.h.win src\config.h
-	copy src\pcre2.h.generic src\pcre2.h
-	copy src\pcre2_chartables.c.dist src\pcre2_chartables.c
+$(SRCDIR)\config.h: config.h.win
+	copy $? $@
+
+$(SRCDIR)\pcre2.h: $(SRCDIR)\pcre2.h.generic
+	copy $? $@
+
+$(SRCDIR)\pcre2_chartables.c: $(SRCDIR)\pcre2_chartables.c.dist
+	copy $? $@
 
 {$(SRCDIR)}.c{$(WORKDIR)}.obj:
 	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
@@ -86,3 +91,4 @@ $(BUILDLIB): $(OBJECTS)
 
 clean:
 	@-$(CLEANTARGET) 2>NUL
+	del $(ADDFILES)
