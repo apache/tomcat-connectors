@@ -1,0 +1,43 @@
+name: Makefile CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Default
+            triplet: x64-windows
+            arch: x64
+            build-arch: X64
+            build-type: Debug
+            generator: "Ninja"
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Download and install strawberryperl
+      shell: pwsh
+      run: |
+            echo on
+            curl -L -o perl.msi https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54021_64bit_UCRT/strawberry-perl-5.40.2.1-64bit.msi
+            msiexec.exe /i perl.msi
+    - name: Build using Nmake
+      shell: cmd
+      run: |
+            echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
+            cd native
+            cd iis
+            echo "Building for ${{ matrix.build-arch }}"
+            nmake -f Makefile.vc CPU=${{ matrix.build-arch }} STATIC_CRT=Hybrid PCRE=pcre2
+    - uses: actions/upload-artifact@v7
+      with:
+        name: windows-artifact
+        path: native\iis\WIN10_X64_DLL_RELEASE\isapi_redirect.dll
