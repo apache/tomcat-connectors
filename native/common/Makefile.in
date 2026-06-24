@@ -30,11 +30,11 @@ LIBTOOL = @LIBTOOL@
 CC = @CC@
 
 OEXT=.lo
-include list.mk
+include ${top_srcdir}/common/list.mk
 
 CFLAGS=-I. @apache_include@ @CFLAGS@ ${APXSCFLAGS} ${APXSCPPFLAGS}
 
-include @top_srcdir@/scripts/build/rules.mk
+include ${top_srcdir}/scripts/build/rules.mk
 
 JK=./
 

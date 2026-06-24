@@ -661,7 +661,6 @@ AC_OUTPUT([
     apache-2.0/Makefile
     apache-2.0/Makefile.apxs
     common/Makefile
-    common/list.mk
     common/jk_types.h
 ])
 

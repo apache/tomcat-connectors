@@ -4,7 +4,6 @@
 .libs
 Makefile
 stamp-h.in
-list.mk
 stamp-h
 config.h.in
 config.h
