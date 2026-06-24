@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## Object needed for mod_jk for Apache-1.3
+## Objects needed for mod_jk for Apache-2.0
 APACHE_OBJECTS= ${JK}jk_ajp12_worker${OEXT} ${JK}jk_connect${OEXT} \
                 ${JK}jk_msg_buff${OEXT} ${JK}jk_util${OEXT} \
                 ${JK}jk_ajp13${OEXT} ${JK}jk_pool${OEXT} \

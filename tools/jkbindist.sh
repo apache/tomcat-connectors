@@ -86,7 +86,7 @@ case "$websrv" in
     ;;
     *)
         echo "Unknown web server: $webserv"
-        echo "   Supported are: httpd, iis, nsapi"
+        echo "   Supported are: httpd, iis"
     ;;
 esac
 

@@ -134,7 +134,7 @@ typedef struct svc_extension svc_extension_t;
  * seeing the internal vtables of your favorite OO language.  Whatever
  * works for you.
  *
- * See apache1.3/mod_jk.c and iis/jk_isapi_plugin.c for examples.
+ * See apache2.0/mod_jk.c and iis/jk_isapi_plugin.c for examples.
  */
 struct jk_ws_service
 {

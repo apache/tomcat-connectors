@@ -495,36 +495,7 @@ to the Apache source directory.])],
 
     if ${TEST} -n "${withval}" && ${TEST} -d "${withval}" ; then
         if ${TEST} -d "${withval}/src" ; then
-           # handle the case where people use relative paths to
-           # the apache source directory by pre-pending the current
-           # build directory to the path. there are probably
-           # errors with this if configure is run while in a
-           # different directory than what you are in at the time
-           if ${TEST} -n "`${ECHO} ${withval}|${GREP} \"^\.\.\"`" ; then
-               withval=`pwd`/${withval}
-           fi
-
-           apache_dir=${withval}
-           apache_dir_is_src="true"
-           AC_MSG_RESULT(${apache_dir})
-
-           AC_MSG_CHECKING(for Apache include directory)
-
-           if ${TEST} -d "${withval}/src/include" ; then
-               # read osdir from the existing apache.
-               osdir=`${GREP} '^OSDIR=' ${withval}/src/Makefile.config | ${SED} -e 's:^OSDIR=.*/os:os:'`
-               if ${TEST} -z "${osdir}" ; then
-                   osdir=os/unix
-               fi
-               apache_include="-I${withval}/src/include \
-                   -I${withval}/src/${osdir}"
-               WEBSERVER="apache-1.3"
-               LIB_JK_TYPE=mod_jk.a
-               CFLAGS="${CFLAGS} -DJK_PREFORK"
-               AC_MSG_RESULT([${apache_include}, version 1.3])
-           else
-               AC_MSG_ERROR([Sorry Apache 1.2.x is no longer supported.])
-           fi
+           AC_MSG_ERROR([Sorry Apache 1.3.x is no longer supported.])
         else
            if ${TEST} -d "${withval}/include" ; then
               # osdir for Apache20.
@@ -557,21 +528,6 @@ to the Apache source directory.])],
 AC_SUBST(apache_include)
 APACHE_DIR=${apache_dir}
 AC_SUBST(APACHE_DIR)
-
-dnl CFLAGS for EAPI mod_ssl (Apache 1.3)
-dnl it also allows the CFLAGS environment variable.
-CFLAGS="${CFLAGS}"
-AC_ARG_ENABLE(EAPI,
-[AS_HELP_STRING([--enable-EAPI],[Enable EAPI support (mod_ssl, Apache 1.3)])],
-[
-case "${enableval}" in
-    y | Y | YES | yes | TRUE | true )
-        CFLAGS="${CFLAGS} -DEAPI"
-        AC_MSG_RESULT([...Enabling EAPI Support...])
-        ;;
-esac
-])
-AC_SUBST(CFLAGS)
 
 dnl CFLAGS for maintainer mode
 dnl it also allows the CFLAGS environment variable.

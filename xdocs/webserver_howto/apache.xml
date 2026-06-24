@@ -854,20 +854,14 @@ Start over with the apxs location for your next Apache HTTP Server version.
   <tr valign="top">
   <td>--with-apxs[=FILE]</td>
   <td>FILE is the location of the apxs tool. Default is finding apxs in PATH.
-It builds a shared Apache module. It detects automatically the Apache version.
-(2.x and 1.3)</td>
+It builds a shared Apache module. It detects automatically the Apache version.</td>
   </tr>
   <tr valign="top"><td>--with-apache=DIR</td>
   <td>DIR is the path where Apache sources are located.
 The Apache sources should have been configured before configuring mod_jk.
-DIR is something like: /home/apache/apache_1.3.19
+DIR is something like: /home/apache/apache_2.4.68
 It builds a static Apache module.</td>
   </tr>
-  <tr valign="top"><td>--enable-EAPI</td>
-  <td>This parameter is needed when using Apache-1.3 and mod_ssl, otherwise you will get the error message:
-"this module might crash under EAPI!" when loading mod_jk.so in Apache.
-Not needed when --with-apxs has been used</td>
-</tr>
   <tr valign="top"><td>--enable-prefork</td>
   <td>
 In case you build mod_jk for a multi-threaded Apache HTTP Server 2.x MPM (Multi-Processing Module),
@@ -876,8 +870,7 @@ Because configure can not easily detect, whether your are using a multi-threaded
 mod_jk by default is always build thread-safe for Apache HTTP Server 2.x.
 If you are sure, that your MPM is not multi-threaded, you can use "--enable-prefork"
 to force the removal of the synchronisation code (thus increasing performance a bit).
-For instance, the prefork MPM is not multi-threaded. For Apache HTTP Server 1.3
-this flag will be set automatically.</td>
+For instance, the prefork MPM is not multi-threaded.</td>
 </tr>
   <tr valign="top"><td>--disable-trace</td>
   <td>

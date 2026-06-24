@@ -57,19 +57,14 @@
 
   FILE is the location of the apxs tool. Default is finding apxs in PATH.
   It builds a shared Apache module. It detects automatically the Apache
-  version. (2.x and 1.3)
+  version.
 
   --with-apache=DIR
 
   DIR is the path where apache sources are located.
   The apache sources should have been configured before configuring mod_jk.
-  DIR is something like: /home/apache/apache_1.3.19
+  DIR is something like: /home/apache/apache_2.4.68
   It builds a static Apache module.
-
-  --enable-EAPI
-  This parameter is needed when using Apache 1.3 and mod_ssl, otherwise you
-  will get the error message: "this module might crash under EAPI!" when
-  loading libjk.so in httpd.
 
   Static build needs more tests, and we strongly recommend dynamic build
   using DSO/APXS.
