@@ -300,21 +300,10 @@ extern "C"
 
 #else                           /* APR_CHARSET_EBCDIC */
 
-/* Check for Apache 1.3 running on an EBCDIC system */
-#ifdef CHARSET_EBCDIC
-
-#define USE_CHARSET_EBCDIC
-#define jk_xlate_to_ascii(b, l) ebcdic2ascii(b, b, l)
-#define jk_xlate_from_ascii(b, l) ascii2ebcdic(b, b, l)
-
-#else                           /* CHARSET_EBCDIC */
-
 /* We're in on an ASCII system */
 
 #define jk_xlate_to_ascii(b, l) /* NOOP */
 #define jk_xlate_from_ascii(b, l)       /* NOOP */
-
-#endif                          /* CHARSET_EBCDIC */
 
 #endif                          /* APR_CHARSET_EBCDIC */
 

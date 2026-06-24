@@ -24,7 +24,6 @@
 
 static void jk_c2hex(int ch, char *x)
 {
-#if !CHARSET_EBCDIC
     int i;
 
     x[0] = '%';
@@ -43,20 +42,6 @@ static void jk_c2hex(int ch, char *x)
     else {
         x[2] = '0' + i;
     }
-#else /*CHARSET_EBCDIC*/
-    static const char ntoa[] = { "0123456789ABCDEF" };
-    char buf[1];
-
-    ch &= 0xFF;
-
-    buf[0] = ch;
-    jk_xlate_to_ascii(buf, 1);
-
-    x[0] = '%';
-    x[1] = ntoa[(buf[0] >> 4) & 0x0F];
-    x[2] = ntoa[buf[0] & 0x0F];
-    x[3] = '\0';
-#endif /*CHARSET_EBCDIC*/
 }
 
 /*
