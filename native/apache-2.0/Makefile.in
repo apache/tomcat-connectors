@@ -24,6 +24,7 @@ APXSCFLAGS=@APXSCFLAGS@
 APXSCPPFLAGS=@APXSCPPFLAGS@
 APXSLDFLAGS=@APXSLDFLAGS@
 JKLDFLAGS=-export-symbols-regex ^jk_module\$$
+COMMON=common
 
 CC=@CC@
 SHELL=@SHELL@
@@ -40,7 +41,6 @@ include ${top_srcdir}/${COMMON}/list.mk
 include @APACHE_CONFIG_VARS@
 
 # Local settings ( overriding/appending to Apache's )
-COMMON=common
 JK_INCL=-DUSE_APACHE_MD5 -I${top_builddir}/${COMMON} -I ${top_srcdir}/${COMMON}
 CFLAGS=@apache_include@ @CFLAGS@ ${JK_INCL} ${APXSCPPFLAGS} ${APXSCFLAGS} ${EXTRA_CFLAGS} ${EXTRA_CPPFLAGS}
 
