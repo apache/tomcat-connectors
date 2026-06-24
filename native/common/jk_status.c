@@ -460,7 +460,6 @@ static const char *worker_type[] = {
     "ajp12",
     "ajp13",
     "ajp14",
-    "jni",
     "lb",
     "status",
     NULL
