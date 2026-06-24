@@ -18,7 +18,7 @@
 <project name="Apache Tomcat Connectors Documentation"
         href="http://tomcat.apache.org/">
 
-    <title>The Apache Tomcat Connectors: mod_jk, ISAPI redirector, NSAPI redirector</title>
+    <title>The Apache Tomcat Connectors: mod_jk and ISAPI redirector</title>
 
     <logo href="/images/tomcat.gif">
       The Apache Tomcat Connectors

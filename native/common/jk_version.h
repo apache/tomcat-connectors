@@ -29,9 +29,6 @@
 #if defined(JK_ISAPI)
 #define JK_DISTNAME "isapi_redirector"
 #define JK_DLL_SUFFIX "dll"
-#elif defined(JK_NSAPI)
-#define JK_DISTNAME "nsapi_redirector"
-#define JK_DLL_SUFFIX "dll"
 #else
 #define JK_DISTNAME "mod_jk"
 #define JK_DLL_SUFFIX "so"

@@ -65,7 +65,7 @@ is contained in the request. In this case the server name is taken from that hea
 <li>local IP address: <code>getLocalAddr()</code>.
 The local IP address was initially not supported. It is available when using version 1.2.41
 for Apache or IIS together with Tomcat version at least
-6.0.42, 7.0.55 or 8.0.11. For older versions or when using the NSAPI redirector, <code>getLocalAddr()</code>
+6.0.42, 7.0.55 or 8.0.11. For older versions, <code>getLocalAddr()</code>
 will incorrectly return the same result as <code>getLocalName()</code>.
 As a workaround you can forward the local IP address by setting
 <code>JkEnvVar SERVER_ADDR</code> and then either using
@@ -83,7 +83,7 @@ if it contains an explicit port, or is equal to the default port of the scheme u
 <li>client port: <code>getRemotePort()</code>.
 The remote port was initially not supported. It is available when using version 1.2.32
 for Apache or IIS together with Tomcat version at least
-5.5.28, 6.0.20 or 7.0.0. For older versions or when using the NSAPI redirector, <code>getRemotePort()</code>
+5.5.28, 6.0.20 or 7.0.0. For older versions, <code>getRemotePort()</code>
 will incorrectly return 0 or -1. As a workaround you can forward the remote port by setting
 <code>JkEnvVar REMOTE_PORT</code> and then either using
 <code>request.getAttribute("REMOTE_PORT")</code> instead of <code>getRemotePort()</code>
