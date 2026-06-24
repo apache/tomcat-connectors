@@ -105,9 +105,9 @@ scp KEYS to the
 /www/www.apache.org/dist/tomcat/tomcat-connectors
 directory on the people.apache.org server.
 
-scp tomcat-connectors-1.2.29-src.tar.gz* to 
+scp tomcat-connectors-1.2.51-src.tar.gz* to 
 /www/www.apache.org/dist/tomcat/tomcat-connectors/jk/source
-scp tomcat-connectors-1.2.29-src.zip* to   
+scp tomcat-connectors-1.2.51-src.zip* to   
 /www/www.apache.org/dist/tomcat/tomcat-connectors/jk/source
 
 ssh to people.apache.org and cd to the
@@ -118,10 +118,10 @@ Modify README.html and update it to the current version.
 Remove the symlinks for current if present and replace them with a soft link
 to the new source distribution files.
 
-ln -s source/tomcat-connectors-1.2.29-src.tar.gz tomcat-connectors-src-current.tar.gz
-ln -s source/tomcat-connectors-1.2.29-src.tar.gz.asc tomcat-connectors-src-current.tar.gz.asc
-ln -s source/tomcat-connectors-1.2.29-src.tar.zip tomcat-connectors-src-current.zip
-ln -s source/tomcat-connectors-1.2.29-src.zip.asc tomcat-connectors-src-current.zip.asc
+ln -s source/tomcat-connectors-1.2.51-src.tar.gz tomcat-connectors-src-current.tar.gz
+ln -s source/tomcat-connectors-1.2.51-src.tar.gz.asc tomcat-connectors-src-current.tar.gz.asc
+ln -s source/tomcat-connectors-1.2.51-src.tar.zip tomcat-connectors-src-current.zip
+ln -s source/tomcat-connectors-1.2.51-src.zip.asc tomcat-connectors-src-current.zip.asc
 
 Make sure the group write bit is set on all files and directories
 in the jk directory.
