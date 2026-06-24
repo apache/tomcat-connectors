@@ -99,6 +99,9 @@ Here is an example for mod_jk 1.2.51
 
 Upload source distribution and documentation to www.apache.org
 -------------------------------------------------------------------
+
+THESE INSTRUCTIONS ARE OUTDATED
+
 First update the KEYS on the server if you have added a new pgp key.
 
 scp KEYS to the
@@ -131,6 +134,8 @@ chmod -R g+w /www/www.apache.org/dist/tomcat/tomcat-connectors/jk
 Build binaries and upload distributions to www.apache.org
 --------------------------------------------------------------
 
+THESE INSTRUCTIONS ARE OUTDATED
+
 Build mod_jk for a specific web server and OS.  Package it as appropriate for
 the OS and sign the archive using PGP. Please include the ASF License, the
 generated docs, and the tools.  Please name the distribution as follows:
@@ -152,6 +157,8 @@ xdocs/miscellaneous/changelog.xml: Start a new section for the new version.
 Remove old release distributions from www.apache.org
 ----------------------------------------------------
 
+THESE INSTRUCTIONS ARE OUTDATED
+
 Verify that the old versions of the source and binary distributions are
 available at /www/archive.apache.org/dist/tomcat/tomcat-connectors/jk .
 Copy old source distributions and binaries as needed, then remove the
@@ -159,6 +166,8 @@ old source and binary distributions.
 
 Arrange the downloads_tomcat-connectors.cgi
 -------------------------------------------
+
+THESE INSTRUCTIONS ARE OUTDATED
 
 Check tomcat-site out:
 
