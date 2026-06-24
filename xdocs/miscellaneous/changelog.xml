@@ -65,10 +65,17 @@
   </subsection>
   <subsection name="Common">
     <changelog>
-      <fix>
+      <update>
         JkStatus Ant Task: Remove unmaintained jkstatus ant task.
         Base classes needed from Tomcat have been removed since Tomcat 9. (rjung)
-      </fix>
+      </update>
+      <update>
+        Perl-based usage reporting: Remove perl scripts to create usage reports
+        from a mod_jk log file when JkRequestLogFormat was used to log
+        requests not only in the access log, but also the mod_jk log.
+        The scripts were unmaintained and not using JkRequestLogFormat is recommended.
+        (rjung)
+      </update>
     </changelog>
   </subsection>
 </section>
