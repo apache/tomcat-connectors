@@ -211,7 +211,7 @@ be unavailable or will misbehave. Those directives will be marked with a <strong
 </p>
 <directives>
 <directive name="type" default="ajp13" required="true">
-Type of the worker (can be one of <b>ajp12</b>, <b>ajp13</b>, <b>ajp14</b>, <b>jni</b>, <b>lb</b> or <b>status</b>). The type of the worker
+Type of the worker (can be one of <b>ajp12</b>, <b>ajp13</b>, <b>ajp14</b>, <b>lb</b> or <b>status</b>). The type of the worker
 defines the directives that can be applied to the worker.
 <p>Type <b>ajp13</b> is the preferred worker type that JK uses for communication
 between web server and Tomcat. This type of worker uses sockets as communication
@@ -221,9 +221,8 @@ used for <a href="../common_howto/loadbalancers.html">load balancing workers</a>
 type <b>status</b> for <a href="../reference/status.html">status workers</a>.
 </p>
 <p>Type <b>ajp14</b> is experimental and not recommended, type <b>ajp12</b>
-is obsolete.
+is obsolete. Support for <b>ajp12</b> and <b>ajp14</b> will be removed soon.
 </p>
-<warn>JNI workers are no longer supported and will likely not work. Do not use them.</warn>
 </directive>
 </directives>
 </subsection>
@@ -384,7 +383,7 @@ percentage depending on your growth rate. Finally you should check,
 whether your web server processes are able to use at least as many threads,
 as you configured as the pool size.
 </p>
-<warn>Do not use connection_pool_size with values higher then 1 on <b>Apache 2.x with prefork MPM</b> or <b>Apache 1.3.x</b>!</warn>
+<warn>Do not use connection_pool_size with values higher then 1 on <b>Apache 2.x with prefork MPM</b>!</warn>
 </directive>
 
 <directive name="connection_pool_minsize" default="(pool+1)/2" required="false">
@@ -392,7 +391,7 @@ Minimum size of the connection pool that will be maintained.
 <p>
 Its default value is (connection_pool_size+1)/2.
 </p>
-<warn>Do not use connection_pool_minsize with values higher then 1 on <b>Apache 2.x with prefork MPM</b> or <b>Apache 1.3.x</b>!</warn>
+<warn>Do not use connection_pool_minsize with values higher then 1 on <b>Apache 2.x with prefork MPM</b>!</warn>
 <p>
 This feature has been added in <b>jk 1.2.16</b>.
 </p>
@@ -1204,7 +1203,7 @@ the number of threads per child process on the Apache HTTP Server with threaded 
 its default value to match the current ThreadsPerChild Apache configuration. For IIS the default
 value is 10.
 </p>
-<warn>Do not use cachesize with values higher then 1 on <b>Apache 2.x with prefork MPM</b> or <b>Apache 1.3.x</b>!</warn>
+<warn>Do not use cachesize with values higher then 1 on <b>Apache 2.x with prefork MPM</b>!</warn>
 </directive>
 
 <directive name="cache_timeout" successor="connection_pool_timeout" default="0" required="false">

@@ -184,8 +184,8 @@ For others, the binary distribution of mod_jk offers simpler installation.
 <p>
 For example JK 1.2.x can be downloaded from a mirror
 <a href="http://tomcat.apache.org/download-connectors.cgi">
-here</a> (look for JK 1.2 Binary Releases). The "JK 1.2 Binary Releases" link contains binary version for a variety of
-operating systems for both Apache 1.3 and Apache 2.x.
+here</a> (look for JK 1.2 Binary Releases). The "JK 1.2 Binary Releases" link might contain a binary version
+for your operating systems for use with Apache 2.x.
 </p>
 
 </section>
@@ -299,8 +299,6 @@ Here is a simple configuration:
 
 <source># Load mod_jk module
 LoadModule    jk_module  modules/mod_jk.so
-# Add the module (activate this lne for Apache 1.3)
-# AddModule     mod_jk.c
 # Where to find workers.properties
 JkWorkersFile /etc/httpd/conf/workers.properties
 # Where to put jk shared memory
@@ -340,8 +338,7 @@ We'll discuss here the mod_jk directives and details behind them
 </source>
 
 <p>
-Since JK 1.2.3 for Apache 2.x and JK 1.2.16 for Apache 1.3 this can also
-be used for piped logging:
+Since JK 1.2.3 for Apache 2.x this can also be used for piped logging:
 </p>
 
 <source>JkLogFile     "|/usr/bin/rotatelogs /var/log/httpd/mod_jk.log 86400"
@@ -708,7 +705,7 @@ JkUnMount /*.gif  worker1
 </source>
 
 <p>
-Starting with mod_jk 1.2.6 for Apache 2.x and 1.2.19 for Apache 1.3, it's possible to exclude some URL/URI from
+Starting with mod_jk 1.2.6 for Apache 2.x, it's possible to exclude some URL/URI from
 jk processing by setting the env var <b>no-jk</b>, for example with the SetEnvIf Directive.
 </p>
 
@@ -819,12 +816,12 @@ You could set <b>CFLAGS</b> and <b>LDFLAGS</b> to add some platform specifics:
 </screen>
 
 <p>
-If you want to build mod_jk for different versions of the Apache HTTP Server, like 1.3 or 2.x,
+If you want to build mod_jk for different versions of the Apache HTTP Server, like 2.4 and 2.2,
 you need to go through the full build process for each of them.
-Please note, that Apache 2.0, 2.2 or 2.4 modules are <b>not</b> binary compatible.
+Please note, that Apache 2.4, 2.2 or 2.0 modules are <b>not</b> binary compatible.
 You have to compile the module using the Apache version you plan to run it in.
 The mod_jk build directory used is "apache-2.0" for all 2.x builds. The source code
-is compatible with Apache HTTP Server 2.0, 2.2 and 2.4.
+is compatible with Apache HTTP Server 2.4, 2.2 and 2.0.
 <ul>
 <li>
 use configure and indicate the correct Apache HTTP Server apxs location (--with-apxs)
@@ -833,7 +830,7 @@ use configure and indicate the correct Apache HTTP Server apxs location (--with-
 use make
 </li>
 <li>
-copy the resulting mod_jk.so binary from the apache-1.3 or apache-2.0 subdirectory
+copy the resulting mod_jk.so binary from the apache-2.0 subdirectory
 to the Apache HTTP Server modules location.
 </li>
 <li>
@@ -905,11 +902,7 @@ However those locks does not work on NFS mounted volumes, so you can use
 <subsection name="Examples of configure use">
 
 <screen>
-<note>Apache 1.3 and 2.x build</note>
-<type>./configure --with-apxs=/usr/sbin/apxs</type><br/>
-<type>make</type><br/>
-<type>cp ./apache-1.3/mod_jk.so /usr/lib/apache</type><br/>
-<type>make clean</type><br/>
+<note>Apache 2.x build on a system where apxs is named apxs2</note>
 <type>./configure --with-apxs=/usr/sbin/apxs2</type><br/>
 <type>make</type><br/>
 <type>cp ./apache-2.0/mod_jk.so /usr/lib/apache2</type><br/>
@@ -956,13 +949,10 @@ environment.
 <note>https://tomcat.apache.org/download-connectors.cgi</note>
 <note>and unpack it</note>
 <typedos>unzip tomcat-connectors-xxx-src.zip</typedos>
-<note>Change directory to the mod_jk source directory.</note>
-<note>To build mod_jk for the Apache HTTP server 2.0, 2.2 or 2.4,</note>
-<note>use the "apache-2.0" directory, for the old</note>
-<note>Apache HTTP server 1.3, the "apache-1.3" directory.</note>
+<note>Change directory to the mod_jk source directory "apache-2.0".</note>
 <typedos>cd tomcat-connectors-xxx-src\native\apache-2.0</typedos>
-<note>Set the environment variable "APACHE1_HOME" resp.</note>
-<note>"APACHE2_HOME" resp. "APACHE22_HOME" resp. "APACHE24_HOME"</note>
+<note>Set the environment variable "APACHE24_HOME"</note>
+<note>resp. "APACHE22_HOME" or "APACHE2_HOME"</note>
 <note>to the installation path of your Apache web server.</note>
 <typedos>set APACHE24_HOME=D:\software\Apache\httpd-2.4.16</typedos>
 </screen>
@@ -1013,11 +1003,7 @@ depending on the chosen build configuration.
 </p>
 <p>
 Finally you need to copy the file mod_jk.so to the modules directory
-of your Apache HTTP server (resp. the libexec directory for the old Apache 1.3).
-</p>
-<p>
-For Apache HTTP Server 1.3, ApacheCore.lib is expected to exist before
-linking mod_jk will succeed.
+of your Apache HTTP server.
 </p>
 </section>
 
@@ -1135,12 +1121,6 @@ Mac OS X (10.2.x) build notes:
 Assuming that you are root:
 </p>
 <screen>
-<note>For Apache 1.3:</note>
-<type>./configure --with-apxs=/usr/sbin/apxs</type>
-<type>cd apache-1.3</type>
-<type>make -f Makefile.apxs</type>
-<type>cp mod_jk.so /etc/libexec/httpd</type>
-
 <note>For Apache 2.x:</note>
 <type>./configure --with-apxs=/usr/local/apache2/bin/apxs</type>
 <note>(you should point to the directory where you installed Apache 2.x)</note>
@@ -1155,7 +1135,6 @@ mod_jk allows to install mod_jk in the Apache source tree to get a statically
 linked mod_jk. Having mod_jk in the Apache executable brings some small performance
 improvements. The configure option --with-apache prepare mod_jk to install it
 in the Apache source tree.
-The option --with-apache works both for Apache 1.3 and Apache 2.x.
 The examples below show how to get mod_jk in the Apache process.
 </p>
 
@@ -1180,34 +1159,6 @@ be added to the configure of httpd-2.x. </note>
 The enable-jk=share and enable-jk=static are not supported. --with-mod_jk only
 allow static linking of mod_jk.
 </p>
-</subsection>
-
-<subsection name="Installation for Apache-1.3">
-<screen>
-<note> /home/apache/apache_1.3.27 is the directory where the apache-1.3 sources
-are located. </note>
-<type>./configure --with-apache=/home/apache/apache_1.3.27</type><br/>
-<type>make</type><br/>
-<note>Install the libjk library, mod_jk.c, includes and other files in
-/home/apache/apache_1.3.27/src/modules/jk: </note>
-<type>make install</type><br/>
-<note> Configure in the Apache sources: </note>
-<type>cd /home/apache/apache_1.3.27</type>
-<type>configure ... --enable-module=dir --disable-shared=dir \</type>
-<typenext>              --activate-module=src/modules/jk/libjk.a \</typenext>
-<typenext>              --disable-shared=jk</typenext>
-<type>make</type>
-<type>make install</type><br/>
-</screen>
-<p>
-The --enable-shared=jk is also working and builds a dso file.
-</p>
-<screen>
-<note> Just change the configure in the Apache sources: </note>
-<type>configure ... --enable-module=dir --enable-shared=dir \</type>
-<typenext>              --activate-module=src/modules/jk/libjk.a \</typenext>
-<typenext>              --enable-shared=jk</typenext>
-</screen>
 </subsection>
 
 </section>

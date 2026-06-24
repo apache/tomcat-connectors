@@ -247,7 +247,6 @@ It will also work with pipe, by using a value of the form "| ...".
 <br/>
 The default value is logs/mod_jk.log.
 <br/>
-Pipes are supported for Apache 1.3 only since version 1.2.16.
 The default value exists only since version 1.2.20.
 </p></attribute>
 <attribute name="JkLogLevel" required="false"><p>
@@ -563,8 +562,7 @@ Take a look at <a href="workers.html">Workers documentation</a> for detailed des
 </source>
 
 <p>
-Since JK 1.2.3 for Apache 2.x and JK 1.2.16 for Apache 1.3 this can also
-be used for piped logging:
+Since JK 1.2.3 this can also be used for piped logging:
 </p>
 
 <source>JkLogFile     "|/usr/bin/rotatelogs /var/log/httpd/mod_jk.log 86400"

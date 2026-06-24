@@ -90,10 +90,6 @@ c) Allow adding of log notes for IIS like we do with Apache.
 
 d) Add error type info to access log notes
 
-e) Refactor: Use the same code files for the request logging functions in Apache 1.3 and 2.0.
-
-f) Refactor: Use the same code files for piped logging in Apache 1.3 and 2.0.
-
 5) ajpget
 ==========
 
