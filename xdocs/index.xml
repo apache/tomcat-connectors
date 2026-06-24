@@ -46,7 +46,7 @@ or simply <strong>AJP</strong> to connect to the backend. Backends known to supp
 are Apache Tomcat, Jetty and JBoss. Although there exist 3 versions of the protocol,
 <strong>ajp12</strong>, <strong>ajp13</strong>, <strong>ajp14</strong>, most installations
 only use ajp13. The older ajp12 does not use persistent connections and is obsolete, the newer
-version ajp14 is still experimental. Support for ajp12 and ajp14 will be dropped soon.
+version ajp14 is still experimental. Support for ajp12 and ajp14 will be removed soon.
 Sometimes ajp13 is called AJP 1.3 or AJPv13, but we will mostly use the name ajp13.
 </p>
 <p>Most features of the plugins are the same for all web servers. Some details vary

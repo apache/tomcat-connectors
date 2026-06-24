@@ -102,8 +102,8 @@ Currently the following worker types that exists are (JK 1.2.5):
   <tr><td>ajp13</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp13 protocol.</td></tr>
   <tr><td>lb</td><td>This is a load balancing worker; it knows how to provide flexible load balancing with a certain level of fault-tolerance.</td></tr>
   <tr><td>status</td><td>This is a status worker for managing load balancers.</td></tr>
-  <tr><td>ajp12</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp12 protocol. It is deprecated</td></tr>
-  <tr><td>ajp14</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp14 protocol. It is experimental</td></tr>
+  <tr><td>ajp12</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp12 protocol. It is deprecated and will be removed soon.</td></tr>
+  <tr><td>ajp14</td><td>This worker knows how to forward requests to out-of-process Tomcat workers using the ajp14 protocol. It is experimental and will be removed soon.</td></tr>
 </table>
 
 <p>
@@ -116,8 +116,7 @@ Where worker name is the name assigned to the worker and the worker type is one 
 in the table (a worker name may only contain any space the characters [a-zA-Z0-9\-_]).
 </p>
 
-<source># Defines a worker named "local" that uses the ajp12 protocol to forward requests to a Tomcat process.
-worker.local.type=ajp12
+<source>
 # Defines a worker named "remote" that uses the ajp13 protocol to forward requests to a Tomcat process.
 worker.remote.type=ajp13
 # Defines a worker named "loadbalancer" that loadbalances several Tomcat processes transparently.
@@ -143,7 +142,7 @@ Each worker has a set of properties that you can set as specified in the followi
 <subsection name="ajp12 Worker Properties">
 <p><warn>
 The worker type <b>ajp12</b> has been <b>deprecated</b> and you should use instead 
-<b>ajp13</b> instead.
+<b>ajp13</b> instead. Support for <b>ajp12</b> will be removed soon.
 </warn></p> 
 <p>
 The ajp12 typed workers forward requests to out-of-process Tomcat workers 

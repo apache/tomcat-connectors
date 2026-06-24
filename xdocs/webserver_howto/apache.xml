@@ -108,8 +108,8 @@ support the ajp13 protocol. Others servlet engines such as <b>Jetty</b> and
 </p>
 
 <p>
-The <b>ajp12</b> protocol has been <b>deprecated</b> and you should no longer use it.
-The <b>ajp14</b> protocol is considered experimental.
+The <b>ajp12</b> protocol has been <b>deprecated</b> and will be removed soon.
+The <b>ajp14</b> protocol is considered experimental and will be removed soon.
 </p>
 
 </subsection>
