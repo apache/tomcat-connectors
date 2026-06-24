@@ -212,65 +212,6 @@ Apache HTTP Server, ie: /usr/lib/apache and you should update your <b>httpd.conf
 </p>
 
 
-<subsection name="Disabling old mod_jserv">
-<p>
-If you've previously configured Apache to use <b>mod_jserv</b>, remove any <b>ApJServMount</b> directives
-from your httpd.conf.
-</p>
-
-<p>If you're including <b>tomcat-apache.conf</b> or <b>tomcat.conf</b>, you'll want to remove them as well -
-they are specific to <b>mod_jserv</b>.
-</p>
-
-<p>
-The mod_jserv configuration directives are not compatible with mod_jk !
-</p>
-</subsection>
-
-<subsection name="Using Tomcat auto-configure">
-<warn>Tomcat auto-configure is deprecated and has been removed in Tomcat 7 and later.</warn>
-<p>
-The auto-configure works only for a single Tomcat running on the same machine where the Apache HTTP Server is running.
-The simplest way to configure Apache HTTP Server to use mod_jk is to turn on the Apache HTTP Server auto-configure setting
-in Tomcat and put the following include directive at the end of your Apache httpd.conf file
-(make sure you replace $TOMCAT_HOME with the correct path for your Tomcat installation:
-</p>
-
-<source># To be added at the end of your httpd.conf
-Include $TOMCAT_HOME/conf/jk/mod_jk.conf-auto
-</source>
-
-<p>
-Note: this file may also be generated as $TOMCAT_HOME/conf/auto/mod_jk.conf
-</p>
-
-<p>
-This will tell the Apache HTTP Server to use directives in the <b>mod_jk.conf-auto</b> file in
-the Apache configuration. This file is created by enabling the Apache
-auto-configuration by creating your workers.properties file at
-$TOMCAT_HOME/conf/jk/workers.properties and adding the listener to the Engine
-element in the server.xml file as per the following example.
-<b>Please note that this example is specific to Tomcat 5.x, unlike other sections of this document
-   which also apply to previous Tomcat branches.</b>
-</p>
-<source>...
-&lt;Engine ...&gt;
-  ...
-    &lt;Listener className="org.apache.jk.config.ApacheConfig" modJk="/path/to/mod_jk.so" /&gt;
-  ...
-&lt;/Engine&gt;
-...
-</source>
-
-<p>
-Then restart Tomcat and mod_jk.conf should be generated. For more information on
-this topic, please refer to the API documentation at the
-<a href="http://tomcat.apache.org/tomcat-6.0-doc/api/org/apache/jk/config/ApacheConfig.html">
-Tomcat docs website</a>.
-</p>
-
-</subsection>
-
 <subsection name="Custom mod_jk configuration">
 <p>
 You should use custom configuration when:
