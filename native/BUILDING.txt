@@ -108,11 +108,11 @@
   the same tools (i.e. full Solaris or full GNU)
 
 
-  Building from the subversion tree
-  =================================
+  Building from the github tree
+  =============================
 
   This is only necessary if you want to build a not yet
-  released versions. When using a subversion tree,
+  released versions. When using a github tree,
   "buildconf.sh" must be run before configure. This script uses
   the auto tools to provide the following files:
 
