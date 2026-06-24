@@ -721,8 +721,8 @@ value is Off.
 <p>
 The mod_jk build use the widely used configure system.
 </p>
-<subsection name="Prepare your mod_jk configure from subversion">
-In case you get source from subversion, ie without an existing configure script,
+<subsection name="Prepare your mod_jk configure from github">
+In case you get source from github, ie without an existing configure script,
 you should have autoconf for configuration and installation.
 <p>
 To create the mod_jk autoconf script, you will need libtool
