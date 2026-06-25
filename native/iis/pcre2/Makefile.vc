@@ -18,17 +18,13 @@ PROJECT = pcre2
 
 TARGET = LIB
 
-!include <..\NMAKEmakefile.inc>
+!include <..\..\common\NMAKEmakefile.inc>
 
 SRCDIR=src
 
 INCLUDES = -I$(SRCDIR)
 
 CFLAGS = $(CFLAGS) -DHAVE_CONFIG_H -DPCRE2_STATIC
-
-RCFLAGS = $(RCFLAGS) /d JK_ISAPI
-
-PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
 
 OBJECTS = \
 	$(WORKDIR)\pcre2_auto_possess.obj \
@@ -64,8 +60,6 @@ OBJECTS = \
 	$(WORKDIR)\pcre2_xclass.obj
 
 ADDFILES= $(SRCDIR)\config.h $(SRCDIR)\pcre2.h $(SRCDIR)\pcre2_chartables.c
-
-LINK_WRAPPER = $(LINK)
 
 BUILDLIB = $(WORKDIR)\$(PROJECT).lib
 

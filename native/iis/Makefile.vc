@@ -21,7 +21,7 @@ TARGET = DLL
 # pcre or pcre2
 PCRE = pcre
 
-!include <NMAKEmakefile.inc>
+!include <..\common\NMAKEmakefile.inc>
 
 !IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
 SRCDIR = ..\common
@@ -47,45 +47,16 @@ CFLAGS = $(CFLAGS) -DPCRE2_STATIC -DPCRE2_CODE_UNIT_WIDTH=8 -DHAVE_PCRE2
 
 RCFLAGS = $(RCFLAGS) /d JK_ISAPI
 
-PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
-
 PCRELIB  = $(PCREDIR)\$(WORKDIR_LIB)\$(PCRE).lib
 
 OBJECTS = \
-	$(WORKDIR)\jk_ajp12_worker.obj \
-	$(WORKDIR)\jk_ajp13.obj \
-	$(WORKDIR)\jk_ajp13_worker.obj \
-	$(WORKDIR)\jk_ajp14.obj \
-	$(WORKDIR)\jk_ajp14_worker.obj \
-	$(WORKDIR)\jk_ajp_common.obj \
-	$(WORKDIR)\jk_connect.obj \
-	$(WORKDIR)\jk_context.obj \
-	$(WORKDIR)\jk_isapi_plugin.obj \
-	$(WORKDIR)\jk_lb_worker.obj \
-	$(WORKDIR)\jk_map.obj \
-	$(WORKDIR)\jk_md5.obj \
-	$(WORKDIR)\jk_msg_buff.obj \
-	$(WORKDIR)\jk_pool.obj \
-	$(WORKDIR)\jk_shm.obj \
-	$(WORKDIR)\jk_sockbuf.obj \
-	$(WORKDIR)\jk_status.obj \
-	$(WORKDIR)\jk_uri_worker_map.obj \
-	$(WORKDIR)\jk_url.obj \
-	$(WORKDIR)\jk_util.obj \
-	$(WORKDIR)\jk_worker.obj
-
-LINK_WRAPPER = $(LINK)
+	$(CMN_OBJECTS) \
+	$(WORKDIR)\jk_isapi_plugin.obj
 
 BUILDBIN = $(WORKDIR)\$(PROJECT).dll
 BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
 BUILDRES = $(WORKDIR)\$(PROJECT).res
 BUILDMFT = $(BUILDBIN).manifest
-
-{$(SRCDIR)\src}.c{$(WORKDIR)}.obj:
-	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
-
-{$(SRCDIR)\os\win32}.c{$(WORKDIR)}.obj:
-	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
 
 all : libpcre $(WORKDIR) $(BUILDBIN)
 
