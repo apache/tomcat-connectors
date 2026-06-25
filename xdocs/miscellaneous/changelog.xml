@@ -78,10 +78,13 @@
         processing. (markt)
       </fix>
       <update>
-        Add PCRE2 support to isapi redirector. (rjung)
+        Add PCRE2 support. (rjung)
       </update>
       <update>
-        Improve makefile for isapi redirector and sync it with Tomcat native. (rjung)
+        Switch build default from PCRE (outdated) to PCRE2. (rjung)
+      </update>
+      <update>
+        Improve makefile and sync it with Tomcat native. (rjung)
       </update>
     </changelog>
   </subsection>
