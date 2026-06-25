@@ -309,6 +309,9 @@ CLEANTARGET=if exist "$(WORKDIR)\$(NULL)" rd /s /q $(WORKDIR)
 MAKEWORKDIR=if not exist "$(WORKDIR)\$(NULL)" mkdir $(WORKDIR)
 MAKEINSTALL=if not exist "$(INSTALLLOC)\$(NULL)" mkdir $(INSTALLLOC)
 
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+
 CMN_OBJECTS = \
         $(WORKDIR)\jk_ajp12_worker.obj \
         $(WORKDIR)\jk_ajp13.obj \

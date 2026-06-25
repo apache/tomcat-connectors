@@ -54,8 +54,6 @@ OBJECTS = \
 	$(WORKDIR)\jk_isapi_plugin.obj
 
 BUILDBIN = $(WORKDIR)\$(PROJECT).dll
-BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
-BUILDRES = $(WORKDIR)\$(PROJECT).res
 BUILDMFT = $(BUILDBIN).manifest
 
 all : libpcre $(WORKDIR) $(BUILDBIN)
