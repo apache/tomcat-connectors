@@ -37,9 +37,15 @@ jobs:
             cd iis
             echo "Building for ${{ matrix.build-arch }}"
             nmake -f Makefile.vc CPU=${{ matrix.build-arch }} STATIC_CRT=Hybrid PCRE=pcre2
+    - name: show dependents
+      shell: cmd
+      run: |
+            echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
+            dumpbin.exe /DEPENDENTS native\iis\WIN10_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
-        name: windows-artifact
+        name: win10-pcre2-isapi_redirect
         path: native\iis\WIN10_X64_DLL_RELEASE\isapi_redirect.dll
   build-pcre:
     strategy:
@@ -70,9 +76,15 @@ jobs:
             cd iis
             echo "Building for ${{ matrix.build-arch }}"
             nmake -f Makefile.vc CPU=${{ matrix.build-arch }} STATIC_CRT=Hybrid PCRE=pcre
+    - name: show dependents
+      shell: cmd
+      run: |
+            echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
+            dumpbin.exe /DEPENDENTS native\iis\WIN10_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
-        name: windows-artifact
+        name: win10-pcre-isapi_redirect
         path: native\iis\WIN10_X64_DLL_RELEASE\isapi_redirect.dll
   build-win7-pcre2:
     strategy:
@@ -103,9 +115,15 @@ jobs:
             cd iis
             echo "Building for ${{ matrix.build-arch }}"
             nmake -f Makefile.vc CPU=${{ matrix.build-arch }} WINVER=WIN7 STATIC_CRT=Hybrid PCRE=pcre2
+    - name: show dependents
+      shell: cmd
+      run: |
+            echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
+            dumpbin.exe /DEPENDENTS native\iis\WIN7_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
-        name: windows-artifact
+        name: win7-pcre2-isapi_redirect
         path: native\iis\WIN7_X64_DLL_RELEASE\isapi_redirect.dll
   build-win7-pcre:
     strategy:
@@ -136,7 +154,13 @@ jobs:
             cd iis
             echo "Building for ${{ matrix.build-arch }}"
             nmake -f Makefile.vc CPU=${{ matrix.build-arch }} WINVER=WIN7 STATIC_CRT=Hybrid PCRE=pcre
+    - name: show dependents
+      shell: cmd
+      run: |
+            echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
+            dumpbin.exe /DEPENDENTS native\iis\WIN7_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
-        name: windows-artifact
+        name: win7-pcre-isapi_redirect
         path: native\iis\WIN7_X64_DLL_RELEASE\isapi_redirect.dll
