@@ -1,4 +1,4 @@
-name: Makefile CI
+name: ISAPI Windows Makefile CI
 
 on:
   push:
