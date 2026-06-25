@@ -36,13 +36,13 @@ jobs:
       run: |
             echo on
             curl -L -o httpd.zip https://www.apachelounge.com/download/VS18/binaries/httpd-$env:APACHE_VERSION-Win64-VS18.zip
-            Expand-Archive httpd.zip -DestinationPath .
+            Expand-Archive httpd.zip -DestinationPath ApacheLounge
     - name: Build using Nmake
       shell: cmd
       run: |
             echo on
             echo %CD%
-            set APACHE2_HOME=%CD%\Apache24
+            set APACHE2_HOME=%CD%\ApacheLounge\Apache24
             dir %APACHE2_HOME%
             call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
             cd native
