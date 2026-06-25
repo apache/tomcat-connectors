@@ -63,7 +63,7 @@ $(WORKDIR) :
 
 libpcre:
 	@cd .\$(PCRE)
-	@$(MAKE) -f Makefile.vc NMAKE_WINVER=$(NMAKE_WINVER) BUILD_CPU=$(BUILD_CPU) CPU_CFLAGS="$(CPU_CFLAGS)"
+	@$(MAKE) -f Makefile.vc WINVER=$(WINVER) CPU=$(CPU)
 	@cd ..
 
 .c{$(WORKDIR)}.obj:

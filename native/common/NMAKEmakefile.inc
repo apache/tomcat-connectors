@@ -92,15 +92,6 @@ MT = mt.exe
 
 LINK_WRAPPER = $(LINK)
 
-# Use BUILD_CPU if CPU was not set
-!IF !DEFINED(CPU) || "$(CPU)" == ""
-!IF "$(BUILD_CPU)" == "i386" || "$(BUILD_CPU)" == "x86" || "$(BUILD_CPU)" == "i686"
-CPU=X86
-!ENDIF
-!IF "$(BUILD_CPU)" == "amd64" || "$(BUILD_CPU)" == "x86_64" || "$(BUILD_CPU)" == "x64"
-CPU=X64
-!ENDIF
-!ENDIF
 # Figure out CPU from the current host
 !IF !DEFINED(CPU) || "$(CPU)" == ""
 !IF "$(PROCESSOR_ARCHITECTURE)" == ""
