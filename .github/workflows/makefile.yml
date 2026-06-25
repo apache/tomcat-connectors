@@ -41,6 +41,7 @@ jobs:
       shell: cmd
       run: |
             echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
             dumpbin.exe /DEPENDENTS native\iis\WIN10_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
@@ -79,6 +80,7 @@ jobs:
       shell: cmd
       run: |
             echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
             dumpbin.exe /DEPENDENTS native\iis\WIN10_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
@@ -117,6 +119,7 @@ jobs:
       shell: cmd
       run: |
             echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
             dumpbin.exe /DEPENDENTS native\iis\WIN7_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
@@ -155,6 +158,7 @@ jobs:
       shell: cmd
       run: |
             echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
             dumpbin.exe /DEPENDENTS native\iis\WIN7_X64_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
