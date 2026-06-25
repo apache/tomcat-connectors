@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 PROJECT = mod_jk
-# Tools
-CC = cl.exe
-LN = link.exe
-RC = rc.exe
+
+TARGET = DLL
+
+!include <..\common\NMAKEmakefile.inc>
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = ..\common
+!ENDIF
 
 !IF !DEFINED(APACHE2_HOME) || "$(APACHE2_HOME)" == ""
 !ERROR Cannot find APACHE2_HOME. Use nmake -f Makefile.vc APACHE2_HOME=dir
@@ -28,87 +33,51 @@ APACHE2_LDIR = lib
 !IF !DEFINED(APACHE2_IDIR) || "$(APACHE2_IDIR)" == ""
 APACHE2_IDIR = include
 !ENDIF
-LDIRS = /libpath:"$(APACHE2_HOME)\$(APACHE2_LDIR)"
-INCLUDES = -I$(APACHE2_HOME)\$(APACHE2_IDIR) -I$(APACHE2_HOME)\$(APACHE2_IDIR)\httpd -I$(APACHE2_HOME)\$(APACHE2_IDIR)\apr-1
 
-CPUFLAGS = -DWIN32 -D_WIN32 -DWIN64 -D_WIN64
-MACHINE = X64
-!IF !DEFINED(WINVER) || "$(WINVER)" == ""
-WINVER = 0x0A00
-!ENDIF
+INCLUDES = -I$(SRCDIR) -I$(APACHE2_HOME)\$(APACHE2_IDIR) -I$(APACHE2_HOME)\$(APACHE2_IDIR)\httpd -I$(APACHE2_HOME)\$(APACHE2_IDIR)\apr-1
 
 # Modify library names or list them when calling nmake
 APACHE2_LIBS = libhttpd.lib libapr-1.lib libaprutil-1.lib
 
-BUILDBIN = $(WORKDIR)\$(PROJECT).so
-BUILDRES = $(WORKDIR)\$(PROJECT).res
-BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+LIBS = $(LIBS) mswsock.lib
+LIBS = $(LIBS) $(APACHE2_LIBS)
 
-WORKDIR = $(MACHINE)_RELEASE
-CLEANTARGET = -rd /S /Q $(WORKDIR) 2>NUL
-MAKEWORKDIR = -md $(WORKDIR) 2>NUL
+LDIRS = /libpath:"$(APACHE2_HOME)\$(APACHE2_LDIR)"
 
-CFLAGS = $(CFLAGS) -DNDEBUG -D_WIN32_WINNT=$(WINVER) -DWINVER=$(WINVER) $(CPUFLAGS)
-CFLAGS = $(CFLAGS) -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE $(EXTRA_CFLAGS)
-CLOPTS = -c -nologo -W3 -O2 -Ob2 -GF -Gs0 -Zi
-PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)
-
-LFLAGS = /nologo /DLL /INCREMENTAL:NO /DEBUG /OPT:REF /MACHINE:$(MACHINE)
-!IF DEFINED(HYBRIDCRT)
-LFLAGS = $(LFLAGS) /NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib $(EXTRA_LDLAGS)
-CLOPTS = $(CLOPTS) -MT
-!ELSE
-CLOPTS = $(CLOPTS) -MD
-!ENDIF
-
-LDLIBS = kernel32.lib advapi32.lib ws2_32.lib mswsock.lib $(APACHE2_LIBS) $(EXTRA_LIBS)
-RFLAGS = /nologo /l 0x409 /n /d NDEBUG /d WIN32 /d WINNT /d WINVER=$(WINVER)
-RFLAGS = $(RFLAGS) /d _WIN32_WINNT=$(WINVER) $(EXTRA_RFLAGS)
+CFLAGS = $(CFAGS) -GF -Gs0
 
 OBJECTS = \
-	$(WORKDIR)\jk_ajp12_worker.obj \
-	$(WORKDIR)\jk_ajp13.obj \
-	$(WORKDIR)\jk_ajp13_worker.obj \
-	$(WORKDIR)\jk_ajp14.obj \
-	$(WORKDIR)\jk_ajp14_worker.obj \
-	$(WORKDIR)\jk_ajp_common.obj \
-	$(WORKDIR)\jk_connect.obj \
-	$(WORKDIR)\jk_context.obj \
-	$(WORKDIR)\jk_lb_worker.obj \
-	$(WORKDIR)\jk_map.obj \
-	$(WORKDIR)\jk_md5.obj \
-	$(WORKDIR)\jk_msg_buff.obj \
-	$(WORKDIR)\jk_pool.obj \
-	$(WORKDIR)\jk_shm.obj \
-	$(WORKDIR)\jk_sockbuf.obj \
-	$(WORKDIR)\jk_status.obj \
-	$(WORKDIR)\jk_uri_worker_map.obj \
-	$(WORKDIR)\jk_url.obj \
-	$(WORKDIR)\jk_util.obj \
-	$(WORKDIR)\jk_worker.obj \
+	$(CMN_OBJECTS) \
 	$(WORKDIR)\mod_jk.obj
 
-CMNDIR = ..\common
+BUILDBIN = $(WORKDIR)\$(PROJECT).so
+BUILDMFT = $(BUILDBIN).manifest
+
+{$(SRCDIR)\src}.c{$(WORKDIR)}.obj:
+        $(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\os\win32}.c{$(WORKDIR)}.obj:
+        $(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
 
 all : $(WORKDIR) $(BUILDBIN)
 
 $(WORKDIR) :
-	@$(MAKEWORKDIR)
+        @$(MAKEWORKDIR)
 
 .c{$(WORKDIR)}.obj:
-	$(CC) $(CLOPTS) $(CFLAGS) -I$(CMNDIR) $(INCLUDES) $(PDBFLAGS) $<
+        $(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
 
-{$(CMNDIR)}.c{$(WORKDIR)}.obj:
-	$(CC) $(CLOPTS) $(CFLAGS) -I$(CMNDIR) $(INCLUDES) $(PDBFLAGS) $<
+{$(SRCDIR)}.c{$(WORKDIR)}.obj:
+        $(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
 
-$(BUILDRES): $(CMNDIR)\jk.rc
-	$(RC) $(RFLAGS) /i $(CMNDIR) /fo $(BUILDRES) $(CMNDIR)\jk.rc
+$(BUILDRES): $(SRCDIR)\jk.rc
+        $(RC) $(RCFLAGS) /i $(SRCDIR) /fo $(BUILDRES) $**
 
-$(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
-	$(LN) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LDIRS) $(LDLIBS) /out:$(BUILDBIN) /pdb:$(BUILDPDB)
+$(BUILDBIN): $(OBJECTS) $(BUILDRES)
+        $(LINK_WRAPPER) $(LFLAGS) $** $(LDIRS) $(LIBS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
 
 install : all
 	-robocopy /NP "$(WORKDIR)" "$(PREFIX)" *.so *.pdb >NUL
 
 clean:
-	@$(CLEANTARGET)
+        @-$(CLEANTARGET) 2>NUL
