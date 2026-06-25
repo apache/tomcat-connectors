@@ -18,8 +18,8 @@ PROJECT = isapi_redirect
 
 TARGET = DLL
 
-# pcre or pcre2
-PCRE = pcre
+# "pcre2" or outdated "pcre"
+PCRE = pcre2
 
 !include <..\common\NMAKEmakefile.inc>
 
