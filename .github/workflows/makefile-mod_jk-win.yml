@@ -1,0 +1,61 @@
+name: mod_jk Windows Makefile CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  APACHE_VERSION: 2.4.68-260617
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Default
+            triplet: x64-windows
+            arch: x64
+            build-arch: X64
+            build-type: Debug
+            generator: "Ninja"
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Download and install strawberryperl
+      shell: pwsh
+      run: |
+            echo on
+            curl -L -o perl.msi https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54021_64bit_UCRT/strawberry-perl-5.40.2.1-64bit.msi
+            msiexec.exe /i perl.msi
+    - name: Download and install ApacheLounge httpd
+      shell: pwsh
+      run: |
+            echo on
+            curl -L -o httpd.zip https://www.apachelounge.com/download/VS18/binaries/httpd-$env:APACHE_VERSION-Win64-VS18.zip
+            Expand-Archive httpd.zip -DestinationPath .
+    - name: Build using Nmake
+      shell: cmd
+      run: |
+            echo on
+            echo %CD%
+            set APACHE2_HOME=%CD%\Apache24
+            dir %APACHE2_HOME%
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
+            cd native
+            cd apache-2.0
+            echo "Building for ${{ matrix.build-arch }}"
+            nmake -f Makefile.vc CPU=${{ matrix.build-arch }} STATIC_CRT=Hybrid APACHE2_HOME=%APACHE2_HOME%
+    - name: show dependents
+      shell: cmd
+      run: |
+            echo on
+            call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
+            dumpbin.exe /DEPENDENTS native\apache-2.0\WIN10_X64_DLL_RELEASE\mod_jk.so
+    - uses: actions/upload-artifact@v7
+      with:
+        name: win10-md_jk
+        path: native\apache-2.0\WIN10_X64_DLL_RELEASE\mod_jk.so
