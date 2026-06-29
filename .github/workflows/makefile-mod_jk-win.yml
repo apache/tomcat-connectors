@@ -52,8 +52,8 @@ jobs:
       run: |
             echo on
             call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
-            dumpbin.exe /DEPENDENTS native\apache-2.0\${{ matrix.winver }}_${{ matrix.cpu }} _DLL_RELEASE\mod_jk.so
+            dumpbin.exe /DEPENDENTS native\apache-2.0\${{ matrix.winver }}_${{ matrix.cpu }}_DLL_RELEASE\mod_jk.so
     - uses: actions/upload-artifact@v7
       with:
         name: ${{ matrix.winver }}-${{ matrix.cpu }}-mod_jk
-        path: native\apache-2.0\${{ matrix.winver }} _${{ matrix.cpu }} _DLL_RELEASE\mod_jk.so
+        path: native\apache-2.0\${{ matrix.winver }} _${{ matrix.cpu }}_DLL_RELEASE\mod_jk.so
