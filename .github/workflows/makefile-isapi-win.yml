@@ -43,5 +43,5 @@ jobs:
             dumpbin.exe /DEPENDENTS native\iis\${{ matrix.winver }}_${{ matrix.cpu }}_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
-        name: ${{ matrix.winver }}-${{ matrix.pcre }}-isapi_redirect
+        name: ${{ matrix.winver }}--${{ matrix.cpu }}-${{ matrix.pcre }}-isapi_redirect
         path: native\iis\${{ matrix.winver }}_${{ matrix.cpu }}_DLL_RELEASE\isapi_redirect.dll
