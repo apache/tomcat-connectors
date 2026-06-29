@@ -35,6 +35,8 @@ jobs:
             curl -L -o httpd.zip https://www.apachelounge.com/download/VS18/binaries/httpd-${APACHE_VERSION}-${{ matrix.httpd_arch }}-VS18.zip
             ls -l
             pwd
+            echo ENV: $GITHUB_WORKSPACE
+            echo GH: ${{ github.workspace }}
             unzip -q httpd.zip -d ApacheLounge
     - name: Build using Nmake
       shell: cmd
