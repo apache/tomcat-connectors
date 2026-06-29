@@ -33,7 +33,9 @@ jobs:
       shell: bash
       run: |
             curl -L -o httpd.zip https://www.apachelounge.com/download/VS18/binaries/httpd-$env:APACHE_VERSION-${{ matrix.httpd_arch }}-VS18.zip
-            unzip -q -d ApacheLounge httpd.zip
+            ls -l
+            pwd
+            unzip -q httpd.zip -d ApacheLounge
     - name: Build using Nmake
       shell: cmd
       run: |
