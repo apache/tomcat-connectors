@@ -81,6 +81,10 @@ jobs:
             bin/httpd.exe -t
             bin/httpd.exe -k install
             bin/httpd.exe -k start
+    - name: test mod_jk
+      shell: bash
+      run: |
             # Check jk-status for magic string
-            curl http://localhost:8000/jk-status > jk-status.out
+            curl -q http://localhost:8000/jk-status > jk-status.out
             grep -q 'JK Status Manager for localhost:8000' jk-status.out
+            grep  'Server Version:' jk-status.out
