@@ -15,12 +15,8 @@ jobs:
         pcre: [pcre2, pcre]
         winver: [WIN10, WIN7]
         include:
-          - name: Default
-            triplet: x64-windows
-            arch: x64
-            build-arch: X64
-            build-type: Debug
-            generator: "Ninja"
+          - arch: amd64
+            cpu: X64
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v7
@@ -37,15 +33,15 @@ jobs:
             call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
             cd native
             cd iis
-            echo "Building for CPU=${{ matrix.build-arch }} WINVER=${{ matrix.winver }} PCRE=${{ matrix.pcre }}"
-            nmake -f Makefile.vc CPU=${{ matrix.build-arch }} WINVER=${{ matrix.winver }} STATIC_CRT=Hybrid PCRE=${{ matrix.pcre }}
+            echo "Building for CPU=${{ matrix.cpu }} WINVER=${{ matrix.winver }} PCRE=${{ matrix.pcre }}"
+            nmake -f Makefile.vc CPU=${{ matrix.cpu }} WINVER=${{ matrix.winver }} STATIC_CRT=Hybrid PCRE=${{ matrix.pcre }}
     - name: show dependents
       shell: cmd
       run: |
             echo on
             call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.arch }}
-            dumpbin.exe /DEPENDENTS native\iis\${{ matrix.winver }}_X64_DLL_RELEASE\isapi_redirect.dll
+            dumpbin.exe /DEPENDENTS native\iis\${{ matrix.winver }}_${{ matrix.cpu }}_DLL_RELEASE\isapi_redirect.dll
     - uses: actions/upload-artifact@v7
       with:
         name: ${{ matrix.winver }}-${{ matrix.pcre }}-isapi_redirect
-        path: native\iis\${{ matrix.winver }}_X64_DLL_RELEASE\isapi_redirect.dll
+        path: native\iis\${{ matrix.winver }}_${{ matrix.cpu }}_DLL_RELEASE\isapi_redirect.dll
