@@ -68,8 +68,8 @@ jobs:
             export APACHE2_HOME="$GITHUB_WORKSPACE\ApacheLounge\Apache24"
             # Replace backslashes by forward slashes
             APACHE2_HOME="${APACHE2_HOME//\\//}"
-            sed -i.orig -e 's# worker.node1.port=8109# worker.node1.port=8009#' -e 's#worker.node2.activation=A#worker.node2.activation=S#' workers.properties
-            sed -i.orig -e 's:# *JkMountFile conf/extra/uriworkermap.properties:JkMountFile conf/extra/uriworkermap.properties:' httpd-jk.conf
+            sed -i.orig -e 's#worker.node1.port=8109#worker.node1.port=8009#' -e 's#worker.node2.activation=A#worker.node2.activation=S#' workers.properties
+            sed -i.orig -e 's:# *JkMountFile conf/extra/uriworkermap.properties:JkMountFile conf/uriworkermap.properties:' httpd-jk.conf
             sed -i.orig -e 's:Listen 80:Listen 8000:' -e 's#Define SRVROOT.*#Define SRVROOT "'"$APACHE2_HOME"'"#' httpd.conf
             echo "Include conf/httpd-jk.conf" >> httpd.conf
             # Show patched config changes (debug)
