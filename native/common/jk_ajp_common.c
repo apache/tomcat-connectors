@@ -36,7 +36,7 @@
  */
 #define IS_SLOT_AVAIL(s) ((s) != NULL && (s)->avail)
 
-const char *response_trans_headers[] = {
+static const char *const response_trans_headers[] = {
     "Content-Type",
     "Content-Language",
     "Content-Length",
@@ -61,7 +61,7 @@ static const char *long_res_header_for_sc(int sc)
     return rc;
 }
 
-static const char *ajp_state_type[] = {
+static const char *const ajp_state_type[] = {
     JK_AJP_STATE_TEXT_IDLE,
     JK_AJP_STATE_TEXT_OK,
     JK_AJP_STATE_TEXT_ERROR,
@@ -70,7 +70,7 @@ static const char *ajp_state_type[] = {
     NULL
 };
 
-static char ajp_cping_mode[] = {
+static char const ajp_cping_mode[] = {
     AJP_CPING_CONNECT_TEXT,
     AJP_CPING_PREPOST_TEXT,
     AJP_CPING_INTERVAL_TEXT,

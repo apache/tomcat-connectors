@@ -50,14 +50,14 @@
 #define JK_WORKER_USABLE(s, activation)   ((s) <= JK_LB_STATE_FORCE && activation == JK_LB_ACTIVATION_ACTIVE)
 #define JK_WORKER_USABLE_STICKY(s, activation)   ((s) <= JK_LB_STATE_FORCE && activation != JK_LB_ACTIVATION_STOPPED)
 
-static const char *lb_locking_type[] = {
+static const char *const lb_locking_type[] = {
     JK_LB_LOCK_TEXT_OPTIMISTIC,
     JK_LB_LOCK_TEXT_PESSIMISTIC,
     "unknown",
     NULL
 };
 
-static const char *lb_method_type[] = {
+static const char *const lb_method_type[] = {
     JK_LB_METHOD_TEXT_REQUESTS,
     JK_LB_METHOD_TEXT_TRAFFIC,
     JK_LB_METHOD_TEXT_BUSYNESS,
@@ -67,7 +67,7 @@ static const char *lb_method_type[] = {
     NULL
 };
 
-static const char *lb_state_type[] = {
+static const char *const lb_state_type[] = {
     JK_LB_STATE_TEXT_IDLE,
     JK_LB_STATE_TEXT_OK,
     JK_LB_STATE_TEXT_RECOVER,
@@ -79,7 +79,7 @@ static const char *lb_state_type[] = {
     NULL
 };
 
-static const char *lb_activation_type[] = {
+static const char *const lb_activation_type[] = {
     JK_LB_ACTIVATION_TEXT_ACTIVE,
     JK_LB_ACTIVATION_TEXT_DISABLED,
     JK_LB_ACTIVATION_TEXT_STOPPED,
@@ -87,7 +87,7 @@ static const char *lb_activation_type[] = {
     NULL
 };
 
-static const char *lb_first_log_names[] = {
+static const char *const lb_first_log_names[] = {
     JK_NOTE_LB_FIRST_NAME,
     JK_NOTE_LB_FIRST_VALUE,
     JK_NOTE_LB_FIRST_ACCESSED,
@@ -101,7 +101,7 @@ static const char *lb_first_log_names[] = {
     NULL
 };
 
-static const char *lb_last_log_names[] = {
+static const char *const lb_last_log_names[] = {
     JK_NOTE_LB_LAST_NAME,
     JK_NOTE_LB_LAST_VALUE,
     JK_NOTE_LB_LAST_ACCESSED,

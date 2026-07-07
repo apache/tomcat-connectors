@@ -113,6 +113,9 @@
       <update>
         Add notice about expected removal of support for ajp12 and ajp14. (rjung)
       </update>
+      <update>
+        Constify static arrays of string constants. (rjung)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Docs">

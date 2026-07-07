@@ -455,7 +455,7 @@ struct status_worker
     jk_worker_env_t   *we;
 };
 
-static const char *worker_type[] = {
+static const char *const worker_type[] = {
     "unknown",
     "ajp12",
     "ajp13",
@@ -465,14 +465,14 @@ static const char *worker_type[] = {
     NULL
 };
 
-static const char *headers_names[] = {
+static const char *const headers_names[] = {
     "Content-Type",
     "Cache-Control",
     "Pragma",
     NULL
 };
 
-static const char *cmd_type[] = {
+static const char *const cmd_type[] = {
     JK_STATUS_CMD_TEXT_UNKNOWN,
     JK_STATUS_CMD_TEXT_LIST,
     JK_STATUS_CMD_TEXT_SHOW,
@@ -485,7 +485,7 @@ static const char *cmd_type[] = {
     NULL
 };
 
-static const char *mime_type[] = {
+static const char *const mime_type[] = {
     JK_STATUS_MIME_TEXT_UNKNOWN,
     JK_STATUS_MIME_TEXT_HTML,
     JK_STATUS_MIME_TEXT_XML,
@@ -496,17 +496,17 @@ static const char *mime_type[] = {
 
 #define HEADERS_NO_CACHE "no-cache", "no-cache", NULL
 
-static const char *headers_vhtml[] = {
+static const char *const headers_vhtml[] = {
     "text/html",
     HEADERS_NO_CACHE
 };
 
-static const char *headers_vxml[] = {
+static const char *const headers_vxml[] = {
     "text/xml",
     HEADERS_NO_CACHE
 };
 
-static const char *headers_vtxt[] = {
+static const char *const headers_vtxt[] = {
     "text/plain",
     HEADERS_NO_CACHE
 };

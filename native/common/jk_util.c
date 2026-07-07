@@ -169,7 +169,7 @@
     extern long _ftol2(double dblSource) { return _ftol(dblSource); }
 #endif
 
-static const char *list_properties[] = {
+static const char *const list_properties[] = {
     BALANCE_WORKERS,
     MOUNT_OF_WORKER,
     USER_OF_WORKER,
@@ -180,7 +180,7 @@ static const char *list_properties[] = {
     NULL
 };
 
-static const char *unique_properties[] = {
+static const char *const unique_properties[] = {
     SECRET_OF_WORKER,
     REFERENCE_OF_WORKER,
     HOST_OF_WORKER,
@@ -243,7 +243,7 @@ static const char *unique_properties[] = {
     NULL
 };
 
-static const char *deprecated_properties[] = {
+static const char *const deprecated_properties[] = {
     SYSPROPS_OF_WORKER,
     STDERR_OF_WORKER,
     STDOUT_OF_WORKER,
@@ -267,7 +267,7 @@ static const char *deprecated_properties[] = {
     NULL
 };
 
-static const char *supported_properties[] = {
+static const char *const supported_properties[] = {
     SYSPROPS_OF_WORKER,
     STDERR_OF_WORKER,
     STDOUT_OF_WORKER,
@@ -351,7 +351,7 @@ static const char *supported_properties[] = {
     NULL
 };
 
-static const char *jk_level_verbs[] = {
+static const char *const jk_level_verbs[] = {
     "[" JK_LOG_TRACE_VERB "] ",
     "[" JK_LOG_DEBUG_VERB "] ",
     "[" JK_LOG_INFO_VERB "] ",

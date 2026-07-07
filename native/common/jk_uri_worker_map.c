@@ -59,7 +59,7 @@
 
 static volatile int map_id_counter = 0;
 
-static const char *uri_worker_map_source_type[] = {
+static const char *const uri_worker_map_source_type[] = {
     "unknown",
     SOURCE_TYPE_TEXT_WORKERDEF,
     SOURCE_TYPE_TEXT_JKMOUNT,
