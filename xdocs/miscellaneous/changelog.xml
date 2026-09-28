@@ -116,6 +116,9 @@
       <update>
         Constify static arrays of string constants. (rjung)
       </update>
+      <add>
+        A a lower bounds check for common response header codes. (markt)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Docs">

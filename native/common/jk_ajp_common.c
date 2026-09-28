@@ -780,7 +780,7 @@ static int ajp_unmarshal_response(jk_msg_buf_t *msg,
                     /* Consume bytes just peeked with jk_b_pget_int */
                     jk_b_get_int(msg);
                     name = name & 0X00FF;
-                    if (name <= SC_RES_HEADERS_NUM) {
+                    if (name > 0 && name <= SC_RES_HEADERS_NUM) {
                         d->header_names[i] =
                             (char *)long_res_header_for_sc(name);
                     }
