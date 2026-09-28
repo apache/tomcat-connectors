@@ -285,7 +285,7 @@ char *jk_b_get_string(jk_msg_buf_t *msg)
     unsigned short size = jk_b_get_int(msg);
     int start = msg->pos;
 
-    if ((size == 0xFFFF) || (size + start > msg->maxlen)) {
+    if ((size == 0xFFFF) || (size + start >= msg->len) || msg->buf[start + size] != '\0') {
         /* Error of overflow in AJP packet.
          * The complete message is probably invalid.
          */
@@ -302,7 +302,7 @@ int jk_b_get_bytes(jk_msg_buf_t *msg, unsigned char *buf, int len)
 {
     int start = msg->pos;
 
-    if ((len < 0) || (len + start > msg->maxlen)) {
+    if ((len < 0) || (len + start > msg->len)) {
         return (-1);
     }
 

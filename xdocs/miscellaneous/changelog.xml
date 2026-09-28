@@ -117,8 +117,11 @@
         Constify static arrays of string constants. (rjung)
       </update>
       <add>
-        A a lower bounds check for common response header codes. (markt)
+        Add a lower bounds check for common response header codes. (markt)
       </add>
+      <fix>
+        Better length checks when processing response header values. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Docs">
