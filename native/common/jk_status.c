@@ -1316,7 +1316,18 @@ static void status_write_form(jk_ws_service_t *s,
     prev = status_cmd_int(arg);
 
     jk_printf(s, l, "<form style=\"display:inline\" method=\"post\" action=\"%s\">", p->req_uri);
-    jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_WORKER, worker);
+
+    if (cmd == JK_STATUS_CMD_SHOW && prev == JK_STATUS_CMD_EDIT) {
+        restore_sub_worker = JK_TRUE;
+    }
+    if (cmd == JK_STATUS_CMD_UNKNOWN) {
+        if (prev == JK_STATUS_CMD_UPDATE ||
+            prev == JK_STATUS_CMD_RESET ||
+            prev == JK_STATUS_CMD_RECOVER) {
+            cmd = from;
+            restore_sub_worker = JK_TRUE;
+        }
+    }
 
     if (cmd != JK_STATUS_CMD_UNKNOWN) {
         jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_CMD, status_cmd_text(cmd));
@@ -1331,7 +1342,9 @@ static void status_write_form(jk_ws_service_t *s,
     if (mime != JK_STATUS_MIME_UNKNOWN) {
         jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_MIME, status_mime_text(mime));
     }
-
+    if (worker && worker[0]) {
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_WORKER, worker);
+    }
     if (sub_worker && sub_worker[0] && cmd != JK_STATUS_CMD_LIST) {
         jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_SUB_WORKER, sub_worker);
     }
@@ -5048,6 +5061,16 @@ static int JK_METHOD service(jk_endpoint_t *e,
         else {
             denied = 2;
         }
+    }
+
+    if (!s->method) {
+        if (is_error) {
+            *is_error = JK_HTTP_BAD_REQUEST;
+        }
+
+        JK_TRACE_EXIT(l);
+
+        return JK_FALSE;
     }
 
     /* Step 0: Unescape request uri and make safe against XSS */
