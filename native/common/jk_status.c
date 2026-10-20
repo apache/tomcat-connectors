@@ -1291,6 +1291,111 @@ static void status_write_uri(jk_ws_service_t *s,
         jk_putv(s, "\">", text, "</a>", NULL);
 }
 
+static void status_write_form(jk_ws_service_t *s,
+                              status_endpoint_t *p,
+                              const char *text,
+                              int cmd, int mime,
+                              const char *worker, const char *sub_worker,
+                              unsigned int add_options, unsigned int rm_options,
+                              const char *attribute,
+                              jk_log_context_t *l)
+{
+    int i;
+    int sz;
+    int from;
+    int restore_sub_worker = JK_FALSE;
+    int save_sub_worker = JK_FALSE;
+    int prev;
+    unsigned int opt = 0;
+    const char *arg;
+    jk_map_t *m = p->req_params;
+
+    status_get_string(p, JK_STATUS_ARG_FROM, NULL, &arg, l);
+    from = status_cmd_int(arg);
+    status_get_string(p, JK_STATUS_ARG_CMD, NULL, &arg, l);
+    prev = status_cmd_int(arg);
+
+    jk_printf(s, l, "<form style=\"display:inline\" method=\"post\" action=\"%s\">", p->req_uri);
+    jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_WORKER, worker);
+
+    if (cmd != JK_STATUS_CMD_UNKNOWN) {
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_CMD, status_cmd_text(cmd));
+        if (cmd == JK_STATUS_CMD_EDIT ||
+            cmd == JK_STATUS_CMD_RESET ||
+            cmd == JK_STATUS_CMD_RECOVER) {
+            jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_FROM, status_cmd_text(prev));
+
+            save_sub_worker = JK_TRUE;
+        }
+    }
+    if (mime != JK_STATUS_MIME_UNKNOWN) {
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_MIME, status_mime_text(mime));
+    }
+
+    if (sub_worker && sub_worker[0] && cmd != JK_STATUS_CMD_LIST) {
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_SUB_WORKER, sub_worker);
+    }
+    if (attribute && attribute[0]) {
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_ATTRIBUTE, attribute);
+    }
+
+    /* propagate additional parameters from the request */
+    sz = jk_map_size(m);
+    for (i = 0; i < sz; i++) {
+        const char *k = jk_map_name_at(m, i);
+        const char *v = jk_map_value_at(m, i);
+        if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
+            continue;
+        }
+        if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
+            continue;
+        }
+        if (!strcmp(k, JK_STATUS_ARG_FROM)) {
+            continue;
+        }
+        if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
+            continue;
+        }
+        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
+            continue;
+        }
+        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
+            continue;
+        }
+        if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
+            continue;
+        }
+        if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
+            continue;
+        }
+        if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
+            opt = atoi(v);
+            continue;
+        }
+        if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
+            if (save_sub_worker == JK_TRUE) {
+                jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                continue;
+            }
+            else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+                continue;
+            }
+            else if (restore_sub_worker == JK_TRUE) {
+                continue;
+            }
+        }
+        if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
+            jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_SUB_WORKER, v);
+            continue;
+        }
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", k, v);
+    }
+    if (opt | add_options | rm_options)
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%u\" />", JK_STATUS_ARG_OPTIONS, (opt | add_options) & ~rm_options);
+    jk_printf(s, l, "<button style=\"border:0; padding:0; background:none; color:blue; text-decoration:underline; cursor:pointer; font:inherit\">%s</button>", text);
+    jk_printf(s, l, "</form>");
+}
+
 static int status_unescape_uri(jk_ws_service_t *s,
                                status_endpoint_t *p,
                                jk_log_context_t *l)
@@ -2466,8 +2571,8 @@ static void display_worker_lb(jk_ws_service_t *s,
             status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                              name, "", 0, 0, "", l);
             jk_puts(s, "|");
-            status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                             name, "", 0, 0, "", l);
+            status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                              name, "", 0, 0, "", l);
         }
         jk_puts(s, "]&nbsp;&nbsp;");
         jk_putv(s, "Worker Status for ", name, "</h3>\n", NULL);
@@ -2701,12 +2806,12 @@ static void display_worker_lb(jk_ws_service_t *s,
                     status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                                      name, sub_name, 0, 0, "", l);
                     jk_puts(s, "|");
-                    status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                                     name, sub_name, 0, 0, "", l);
+                    status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                                      name, "", 0, 0, "", l);
                     if (swr->s->state == JK_LB_STATE_ERROR) {
                         jk_puts(s, "|");
-                        status_write_uri(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
-                                         name, sub_name, 0, 0, "", l);
+                        status_write_form(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
+                                          name, sub_name, 0, 0, "", l);
                     }
                 }
                 jk_puts(s, "]");
@@ -2728,11 +2833,11 @@ static void display_worker_lb(jk_ws_service_t *s,
                         status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                                          name, sub_name, 0, 0, "", l);
                         jk_puts(s, "|");
-                        status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                                         name, sub_name, 0, 0, "", l);
+                        status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                                          name, sub_name, 0, 0, "", l);
                         if (wr->s->state == JK_LB_STATE_ERROR) {
                             jk_puts(s, "|");
-                            status_write_uri(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
+                            status_write_form(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
                                              name, sub_name, 0, 0, "", l);
                         }
                     }
@@ -2841,8 +2946,8 @@ static void display_worker_ajp(jk_ws_service_t *s,
             status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                              name, "", 0, 0, "", l);
             jk_puts(s, "|");
-            status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                             name, "", 0, 0, "", l);
+            status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                              name, "", 0, 0, "", l);
         }
         jk_puts(s, "]&nbsp;&nbsp;");
         jk_putv(s, "Worker Status for ", name, "</h3>\n", NULL);
