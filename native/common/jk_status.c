@@ -37,6 +37,7 @@
 #include "jk_url.h"
 
 #define HUGE_BUFFER_SIZE (8*1024)
+#define JK_STATUS_POST_MAX_SIZE (64 * 1024)
 
 /**
  * Command line reference:
@@ -1418,6 +1419,147 @@ static int status_parse_uri(jk_ws_service_t *s,
             }
         }
     }
+
+    JK_TRACE_EXIT(l);
+    return JK_TRUE;
+}
+
+/*
+ * Parses a POST request into the service's parameter map.
+ *
+ * Only works for application/x-www-form-urlencoded content-type
+ * and a non-chunked transfer encoding.
+ *
+ * If any errors occur, the parameter map will not be modified.
+ *
+ * Returns JK_TRUE on success, JK_FALSE on failure.
+ */
+static int status_parse_post(jk_ws_service_t *s,
+                             status_endpoint_t *p,
+                             jk_log_context_t *l)
+{
+    status_worker_t *w = p->worker;
+    const char *content_type = NULL;
+    unsigned int content_type_count = 0;
+    unsigned int i;
+    unsigned int len;
+    unsigned int offset = 0;
+    char *body;
+    status_endpoint_t post_p;
+    jk_ws_service_t post_s;
+
+    JK_TRACE_ENTER(l);
+
+    /* Reject chunked requests and invalid body lengths. */
+    if (s->is_chunked ||
+        s->content_length < 1 ||
+        s->content_length > JK_STATUS_POST_MAX_SIZE) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST with invalid content length",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    /*
+     * Require exactly one Content-Type header with the expected
+     * media type. Parameters such as charset=UTF-8 are not accepted.
+     */
+    for (i = 0; i < s->num_headers; i++) {
+        if (s->headers_names[i] &&
+            !strcmp(s->headers_names[i], "Content-Type")) {
+            content_type = s->headers_values[i];
+            content_type_count++;
+        }
+    }
+
+    if (content_type_count != 1 || !content_type ||
+        strcasecmp(content_type, "application/x-www-form-urlencoded") != 0) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST with invalid Content-Type",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    /*
+     * Keep POST parsing unambiguous: this initial implementation
+     * accepts body parameters only, with no existing parameter map.
+     */
+    if (p->req_params || (s->query_string && s->query_string[0])) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST with existing URI parameters",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    len = (unsigned int)s->content_length;
+    body = jk_pool_alloc(s->pool, (size_t)len + 1);
+    if (!body) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' could not allocate POST body",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    if (!s->read) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' cannot read POST body",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    /* Read the complete body, allowing for partial reads. */
+    while (offset < len) {
+        unsigned int actually_read = 0;
+
+        if (s->read(s, body + offset, len - offset,
+                    &actually_read) != JK_TRUE ||
+            actually_read == 0 ||
+            actually_read > len - offset) {
+            jk_log(l, JK_LOG_WARNING,
+                   "Status worker '%s' failed reading POST body",
+                   w->name);
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+        offset += actually_read;
+    }
+
+    /* The existing parser expects a NUL-terminated string. */
+    if (memchr(body, '\0', len) != NULL) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST containing NUL bytes",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+    body[len] = '\0';
+
+    /*
+     * Parse into a temporary endpoint. Do not modify the real
+     * parameter map unless the entire parse succeeds.
+     */
+    post_p = *p;
+    post_p.req_params = NULL;
+    post_p.query_string = NULL;
+
+    post_s = *s;
+    post_s.query_string = body;
+
+    if (status_parse_uri(&post_s, &post_p, l) != JK_TRUE) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' failed to parse POST parameters",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    p->req_params = post_p.req_params;
+    p->query_string = post_p.query_string;
 
     JK_TRACE_EXIT(l);
     return JK_TRUE;
@@ -4823,6 +4965,19 @@ static int JK_METHOD service(jk_endpoint_t *e,
         JK_TRACE_EXIT(l);
         return JK_FALSE;
     }
+
+    /* If this is a post, merge POST parameters into any existing GET parameters */
+    if (!err && !strcmp(s->method, "POST")) {
+        if (status_parse_post(s, p, l) != JK_TRUE) {
+            jk_log(l, JK_LOG_ERROR,
+                   "Status worker '%s' failed to parse POST body",
+                   w->name);
+
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+    }
+
     status_get_string(p, JK_STATUS_ARG_CMD, NULL, &arg, l);
     cmd = status_cmd_int(arg);
     cmd_props = status_cmd_props(cmd);
