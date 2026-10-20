@@ -5078,6 +5078,10 @@ static int JK_METHOD service(jk_endpoint_t *e,
                    "Status worker '%s' failed to parse POST body",
                    w->name);
 
+            if (is_error) {
+                *is_error = JK_HTTP_SERVER_ERROR;
+            }
+
             JK_TRACE_EXIT(l);
             return JK_FALSE;
         }
