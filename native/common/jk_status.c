@@ -4813,7 +4813,15 @@ static int JK_METHOD service(jk_endpoint_t *e,
 
     /* Step 1: Process GET params and update configuration */
     if (status_parse_uri(s, p, l) != JK_TRUE) {
-        err = "Error during parsing of URI";
+        if (is_error)
+            *is_error = JK_HTTP_SERVER_ERROR;
+
+        jk_log(l, JK_LOG_ERROR,
+               "Status worker '%s' failed to parse URI",
+               w->name);
+
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
     }
     status_get_string(p, JK_STATUS_ARG_CMD, NULL, &arg, l);
     cmd = status_cmd_int(arg);
