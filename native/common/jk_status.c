@@ -2967,7 +2967,7 @@ static void form_worker(jk_ws_service_t *s,
     jk_putv(s, "<hr/><h3>Edit load balancer settings for ",
             name, "</h3>\n", NULL);
 
-    status_start_form(s, p, "get", JK_STATUS_CMD_UPDATE, NULL, l);
+    status_start_form(s, p, "post", JK_STATUS_CMD_UPDATE, NULL, l);
 
     jk_putv(s, "<table>\n<tr><td>", JK_STATUS_ARG_LB_TEXT_RETRIES,
             ":</td><td><input name=\"",
@@ -3071,7 +3071,7 @@ static void form_member(jk_ws_service_t *s,
 
     jk_putv(s, "<hr/><h3>Edit worker settings for ",
             wr? wr->name : aw->name, "</h3>\n", NULL);
-    status_start_form(s, p, "get", JK_STATUS_CMD_UPDATE, NULL, l);
+    status_start_form(s, p, "post", JK_STATUS_CMD_UPDATE, NULL, l);
 
     if (wr) {
         jk_puts(s, "<table><tbody valign=\"baseline\"><tr><th>Balancing related settings</th>\n");
@@ -3275,7 +3275,7 @@ static void form_all_members(jk_ws_service_t *s,
                 "' for all members of load balancer ",
                 name, "</h3>\n", NULL);
 
-        status_start_form(s, p, "get", JK_STATUS_CMD_UPDATE, NULL, l);
+        status_start_form(s, p, "post", JK_STATUS_CMD_UPDATE, NULL, l);
 
         jk_putv(s, "<table><tr>"
                 "<th>Balanced Worker</th><th>", aname, "</th>"
