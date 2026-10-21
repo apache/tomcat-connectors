@@ -1229,60 +1229,62 @@ static void status_write_uri(jk_ws_service_t *s,
         started=1;
     }
 
-    sz = jk_map_size(m);
-    for (i = 0; i < sz; i++) {
-        const char *k = jk_map_name_at(m, i);
-        const char *v = jk_map_value_at(m, i);
-        if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_FROM)) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
-            if (save_sub_worker == JK_TRUE) {
+    if (m) {
+        sz = jk_map_size(m);
+        for (i = 0; i < sz; i++) {
+            const char *k = jk_map_name_at(m, i);
+            const char *v = jk_map_value_at(m, i);
+            if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_FROM)) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
+                if (save_sub_worker == JK_TRUE) {
+                    jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?",
+                              JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                    started=1;
+                    continue;
+                }
+                else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+                    continue;
+                }
+                else if (restore_sub_worker == JK_TRUE) {
+                    continue;
+                }
+            }
+            if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
                 jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?",
-                          JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                          JK_STATUS_ARG_SUB_WORKER, v);
                 started=1;
                 continue;
             }
-            else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
                 continue;
             }
-            else if (restore_sub_worker == JK_TRUE) {
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
                 continue;
             }
-        }
-        if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
-            jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?",
-                      JK_STATUS_ARG_SUB_WORKER, v);
+            if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
+                opt = atoi(v);
+                continue;
+            }
+            jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?", k, v);
             started=1;
-            continue;
         }
-        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
-            continue;
-        }
-        if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
-            continue;
-        }
-        if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
-            opt = atoi(v);
-            continue;
-        }
-        jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?", k, v);
-        started=1;
     }
     if (opt | add_options | rm_options)
         jk_printf(s, l, "%s%s=%u", started ? "&amp;" : "?",
@@ -1353,55 +1355,57 @@ static void status_write_form(jk_ws_service_t *s,
     }
 
     /* propagate additional parameters from the request */
-    sz = jk_map_size(m);
-    for (i = 0; i < sz; i++) {
-        const char *k = jk_map_name_at(m, i);
-        const char *v = jk_map_value_at(m, i);
-        if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_FROM)) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
-            continue;
-        }
-        if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
-            continue;
-        }
-        if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
-            opt = atoi(v);
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
-            if (save_sub_worker == JK_TRUE) {
-                jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_PREV_SUB_WORKER, v);
+    if (m) {
+        sz = jk_map_size(m);
+        for (i = 0; i < sz; i++) {
+            const char *k = jk_map_name_at(m, i);
+            const char *v = jk_map_value_at(m, i);
+            if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
                 continue;
             }
-            else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+            if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
                 continue;
             }
-            else if (restore_sub_worker == JK_TRUE) {
+            if (!strcmp(k, JK_STATUS_ARG_FROM)) {
                 continue;
             }
+            if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
+                continue;
+            }
+            if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
+                opt = atoi(v);
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
+                if (save_sub_worker == JK_TRUE) {
+                    jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                    continue;
+                }
+                else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+                    continue;
+                }
+                else if (restore_sub_worker == JK_TRUE) {
+                    continue;
+                }
+            }
+            if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
+                jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_SUB_WORKER, v);
+                continue;
+            }
+            jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", k, v);
         }
-        if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
-            jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_SUB_WORKER, v);
-            continue;
-        }
-        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", k, v);
     }
     if (opt | add_options | rm_options)
         jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%u\" />", JK_STATUS_ARG_OPTIONS, (opt | add_options) & ~rm_options);
