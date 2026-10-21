@@ -5204,6 +5204,25 @@ static int JK_METHOD service(jk_endpoint_t *e,
     }
 
     if (!err) {
+        /* Ensure that all modifications are called as a POST */
+        if((JK_STATUS_CMD_UPDATE == cmd
+            || JK_STATUS_CMD_RESET == cmd
+            || JK_STATUS_CMD_RECOVER == cmd)
+           && strcmp("POST", s->method)) {
+            jk_log(l, JK_LOG_WARNING,
+                   "Status worker '%s' command '%s' denied for HTTP method '%s' (not POST) for user '%s' [%s] from %s [%s]",
+                   w->name,
+                   status_cmd_text(cmd),
+                   s->method,
+                   s->remote_user ? s->remote_user : "(null)",
+                   s->auth_type ? s->auth_type : "(null)",
+                   s->remote_addr ? s->remote_addr : "(null)",
+                   s->remote_host ? s->remote_host : "(null)");
+            err = "Method not allowed.";
+        }
+    }
+
+    if (!err) {
         char buf_time[JK_STATUS_TIME_BUF_SZ];
         char buf_tz[JK_STATUS_TIME_BUF_SZ];
         time_t clock = time(NULL);
