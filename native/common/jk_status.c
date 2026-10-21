@@ -1332,26 +1332,26 @@ static void status_write_form(jk_ws_service_t *s,
     }
 
     if (cmd != JK_STATUS_CMD_UNKNOWN) {
-        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_CMD, status_cmd_text(cmd));
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_CMD, status_cmd_text(cmd));
         if (cmd == JK_STATUS_CMD_EDIT ||
             cmd == JK_STATUS_CMD_RESET ||
             cmd == JK_STATUS_CMD_RECOVER) {
-            jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_FROM, status_cmd_text(prev));
+            jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_FROM, status_cmd_text(prev));
 
             save_sub_worker = JK_TRUE;
         }
     }
     if (mime != JK_STATUS_MIME_UNKNOWN) {
-        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_MIME, status_mime_text(mime));
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_MIME, status_mime_text(mime));
     }
     if (worker && worker[0]) {
-        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_WORKER, worker);
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_WORKER, worker);
     }
     if (sub_worker && sub_worker[0] && cmd != JK_STATUS_CMD_LIST) {
-        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_SUB_WORKER, sub_worker);
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_SUB_WORKER, sub_worker);
     }
     if (attribute && attribute[0]) {
-        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_ATTRIBUTE, attribute);
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_ATTRIBUTE, attribute);
     }
 
     /* propagate additional parameters from the request */
@@ -1390,7 +1390,7 @@ static void status_write_form(jk_ws_service_t *s,
             }
             if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
                 if (save_sub_worker == JK_TRUE) {
-                    jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                    jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_PREV_SUB_WORKER, v);
                     continue;
                 }
                 else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
@@ -1401,10 +1401,10 @@ static void status_write_form(jk_ws_service_t *s,
                 }
             }
             if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
-                jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", JK_STATUS_ARG_SUB_WORKER, v);
+                jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_SUB_WORKER, v);
                 continue;
             }
-            jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%s\" />", k, v);
+            jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, k, v);
         }
     }
     if (opt | add_options | rm_options)
