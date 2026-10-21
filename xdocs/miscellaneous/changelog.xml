@@ -122,6 +122,10 @@
       <fix>
         Better length checks when processing response header values. (markt)
       </fix>
+      <update>
+        Change all write commands to use and require POST instead of GET.
+        (schultz)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Docs">
