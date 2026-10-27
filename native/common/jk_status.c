@@ -37,6 +37,7 @@
 #include "jk_url.h"
 
 #define HUGE_BUFFER_SIZE (8*1024)
+#define JK_STATUS_POST_MAX_SIZE (64 * 1024)
 
 /**
  * Command line reference:
@@ -1228,66 +1229,188 @@ static void status_write_uri(jk_ws_service_t *s,
         started=1;
     }
 
-    sz = jk_map_size(m);
-    for (i = 0; i < sz; i++) {
-        const char *k = jk_map_name_at(m, i);
-        const char *v = jk_map_value_at(m, i);
-        if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_FROM)) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
-            if (save_sub_worker == JK_TRUE) {
+    if (m) {
+        sz = jk_map_size(m);
+        for (i = 0; i < sz; i++) {
+            const char *k = jk_map_name_at(m, i);
+            const char *v = jk_map_value_at(m, i);
+            if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_FROM)) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
+                if (save_sub_worker == JK_TRUE) {
+                    jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?",
+                              JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                    started=1;
+                    continue;
+                }
+                else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+                    continue;
+                }
+                else if (restore_sub_worker == JK_TRUE) {
+                    continue;
+                }
+            }
+            if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
                 jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?",
-                          JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                          JK_STATUS_ARG_SUB_WORKER, v);
                 started=1;
                 continue;
             }
-            else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
                 continue;
             }
-            else if (restore_sub_worker == JK_TRUE) {
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
                 continue;
             }
-        }
-        if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
-            jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?",
-                      JK_STATUS_ARG_SUB_WORKER, v);
+            if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
+                opt = atoi(v);
+                continue;
+            }
+            jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?", k, v);
             started=1;
-            continue;
         }
-        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
-            continue;
-        }
-        if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
-            continue;
-        }
-        if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
-            continue;
-        }
-        if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
-            opt = atoi(v);
-            continue;
-        }
-        jk_printf(s, l, "%s%s=%s", started ? "&amp;" : "?", k, v);
-        started=1;
     }
     if (opt | add_options | rm_options)
         jk_printf(s, l, "%s%s=%u", started ? "&amp;" : "?",
                   JK_STATUS_ARG_OPTIONS, (opt | add_options) & ~rm_options);
     if (text)
         jk_putv(s, "\">", text, "</a>", NULL);
+}
+
+static void status_write_form(jk_ws_service_t *s,
+                              status_endpoint_t *p,
+                              const char *text,
+                              int cmd, int mime,
+                              const char *worker, const char *sub_worker,
+                              unsigned int add_options, unsigned int rm_options,
+                              const char *attribute,
+                              jk_log_context_t *l)
+{
+    int i;
+    int sz;
+    int from;
+    int restore_sub_worker = JK_FALSE;
+    int save_sub_worker = JK_FALSE;
+    int prev;
+    unsigned int opt = 0;
+    const char *arg;
+    jk_map_t *m = p->req_params;
+
+    status_get_string(p, JK_STATUS_ARG_FROM, NULL, &arg, l);
+    from = status_cmd_int(arg);
+    status_get_string(p, JK_STATUS_ARG_CMD, NULL, &arg, l);
+    prev = status_cmd_int(arg);
+
+    jk_printf(s, l, "<form style=\"display:inline\" method=\"post\" action=\"%s\">", p->req_uri);
+
+    if (cmd == JK_STATUS_CMD_SHOW && prev == JK_STATUS_CMD_EDIT) {
+        restore_sub_worker = JK_TRUE;
+    }
+    if (cmd == JK_STATUS_CMD_UNKNOWN) {
+        if (prev == JK_STATUS_CMD_UPDATE ||
+            prev == JK_STATUS_CMD_RESET ||
+            prev == JK_STATUS_CMD_RECOVER) {
+            cmd = from;
+            restore_sub_worker = JK_TRUE;
+        }
+    }
+
+    if (cmd != JK_STATUS_CMD_UNKNOWN) {
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_CMD, status_cmd_text(cmd));
+        if (cmd == JK_STATUS_CMD_EDIT ||
+            cmd == JK_STATUS_CMD_RESET ||
+            cmd == JK_STATUS_CMD_RECOVER) {
+            jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_FROM, status_cmd_text(prev));
+
+            save_sub_worker = JK_TRUE;
+        }
+    }
+    if (mime != JK_STATUS_MIME_UNKNOWN) {
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_MIME, status_mime_text(mime));
+    }
+    if (worker && worker[0]) {
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_WORKER, worker);
+    }
+    if (sub_worker && sub_worker[0] && cmd != JK_STATUS_CMD_LIST) {
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_SUB_WORKER, sub_worker);
+    }
+    if (attribute && attribute[0]) {
+        jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_ATTRIBUTE, attribute);
+    }
+
+    /* propagate additional parameters from the request */
+    if (m) {
+        sz = jk_map_size(m);
+        for (i = 0; i < sz; i++) {
+            const char *k = jk_map_name_at(m, i);
+            const char *v = jk_map_value_at(m, i);
+            if (!strcmp(k, JK_STATUS_ARG_CMD) && cmd != JK_STATUS_CMD_UNKNOWN) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_MIME) && mime != JK_STATUS_MIME_UNKNOWN) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_FROM)) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_WORKER) && worker) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && attribute) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_ATTRIBUTE) && cmd != JK_STATUS_CMD_UPDATE && cmd != JK_STATUS_CMD_EDIT) {
+                continue;
+            }
+            if (!strncmp(k, JK_STATUS_ARG_MULT_VALUE_BASE, 3) && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (k[0] == 'v' && cmd != JK_STATUS_CMD_UPDATE) {
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_OPTIONS)) {
+                opt = atoi(v);
+                continue;
+            }
+            if (!strcmp(k, JK_STATUS_ARG_SUB_WORKER)) {
+                if (save_sub_worker == JK_TRUE) {
+                    jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_PREV_SUB_WORKER, v);
+                    continue;
+                }
+                else if (sub_worker || cmd == JK_STATUS_CMD_LIST) {
+                    continue;
+                }
+                else if (restore_sub_worker == JK_TRUE) {
+                    continue;
+                }
+            }
+            if (!strcmp(k, JK_STATUS_ARG_PREV_SUB_WORKER) && restore_sub_worker == JK_TRUE && cmd != JK_STATUS_CMD_LIST) {
+                jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, JK_STATUS_ARG_SUB_WORKER, v);
+                continue;
+            }
+            jk_printf(s, l, JK_STATUS_FORM_HIDDEN_STRING, k, v);
+        }
+    }
+    if (opt | add_options | rm_options)
+        jk_printf(s, l, "<input type=\"hidden\" name=\"%s\" value=\"%u\" />", JK_STATUS_ARG_OPTIONS, (opt | add_options) & ~rm_options);
+    jk_printf(s, l, "<button style=\"border:0; padding:0; background:none; color:blue; text-decoration:underline; cursor:pointer; font:inherit\">%s</button>", text);
+    jk_printf(s, l, "</form>");
 }
 
 static int status_unescape_uri(jk_ws_service_t *s,
@@ -1418,6 +1541,147 @@ static int status_parse_uri(jk_ws_service_t *s,
             }
         }
     }
+
+    JK_TRACE_EXIT(l);
+    return JK_TRUE;
+}
+
+/*
+ * Parses a POST request into the service's parameter map.
+ *
+ * Only works for application/x-www-form-urlencoded content-type
+ * and a non-chunked transfer encoding.
+ *
+ * If any errors occur, the parameter map will not be modified.
+ *
+ * Returns JK_TRUE on success, JK_FALSE on failure.
+ */
+static int status_parse_post(jk_ws_service_t *s,
+                             status_endpoint_t *p,
+                             jk_log_context_t *l)
+{
+    status_worker_t *w = p->worker;
+    const char *content_type = NULL;
+    unsigned int content_type_count = 0;
+    unsigned int i;
+    unsigned int len;
+    unsigned int offset = 0;
+    char *body;
+    status_endpoint_t post_p;
+    jk_ws_service_t post_s;
+
+    JK_TRACE_ENTER(l);
+
+    /* Reject chunked requests and invalid body lengths. */
+    if (s->is_chunked ||
+        s->content_length < 1 ||
+        s->content_length > JK_STATUS_POST_MAX_SIZE) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST with invalid content length",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    /*
+     * Require exactly one Content-Type header with the expected
+     * media type. Parameters such as charset=UTF-8 are not accepted.
+     */
+    for (i = 0; i < s->num_headers; i++) {
+        if (s->headers_names[i] &&
+            !strcmp(s->headers_names[i], "Content-Type")) {
+            content_type = s->headers_values[i];
+            content_type_count++;
+        }
+    }
+
+    if (content_type_count != 1 || !content_type ||
+        strcasecmp(content_type, "application/x-www-form-urlencoded") != 0) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST with invalid Content-Type",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    /*
+     * Keep POST parsing unambiguous: this initial implementation
+     * accepts body parameters only, with no existing parameter map.
+     */
+    if (p->req_params || (s->query_string && s->query_string[0])) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST with existing URI parameters",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    len = (unsigned int)s->content_length;
+    body = jk_pool_alloc(s->pool, (size_t)len + 1);
+    if (!body) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' could not allocate POST body",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    if (!s->read) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' cannot read POST body",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    /* Read the complete body, allowing for partial reads. */
+    while (offset < len) {
+        unsigned int actually_read = 0;
+
+        if (s->read(s, body + offset, len - offset,
+                    &actually_read) != JK_TRUE ||
+            actually_read == 0 ||
+            actually_read > len - offset) {
+            jk_log(l, JK_LOG_WARNING,
+                   "Status worker '%s' failed reading POST body",
+                   w->name);
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+        offset += actually_read;
+    }
+
+    /* The existing parser expects a NUL-terminated string. */
+    if (memchr(body, '\0', len) != NULL) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' rejected POST containing NUL bytes",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+    body[len] = '\0';
+
+    /*
+     * Parse into a temporary endpoint. Do not modify the real
+     * parameter map unless the entire parse succeeds.
+     */
+    post_p = *p;
+    post_p.req_params = NULL;
+    post_p.query_string = NULL;
+
+    post_s = *s;
+    post_s.query_string = body;
+
+    if (status_parse_uri(&post_s, &post_p, l) != JK_TRUE) {
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' failed to parse POST parameters",
+               w->name);
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
+    }
+
+    p->req_params = post_p.req_params;
+    p->query_string = post_p.query_string;
 
     JK_TRACE_EXIT(l);
     return JK_TRUE;
@@ -2324,8 +2588,8 @@ static void display_worker_lb(jk_ws_service_t *s,
             status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                              name, "", 0, 0, "", l);
             jk_puts(s, "|");
-            status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                             name, "", 0, 0, "", l);
+            status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                              name, "", 0, 0, "", l);
         }
         jk_puts(s, "]&nbsp;&nbsp;");
         jk_putv(s, "Worker Status for ", name, "</h3>\n", NULL);
@@ -2559,12 +2823,12 @@ static void display_worker_lb(jk_ws_service_t *s,
                     status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                                      name, sub_name, 0, 0, "", l);
                     jk_puts(s, "|");
-                    status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                                     name, sub_name, 0, 0, "", l);
+                    status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                                      name, sub_name, 0, 0, "", l);
                     if (swr->s->state == JK_LB_STATE_ERROR) {
                         jk_puts(s, "|");
-                        status_write_uri(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
-                                         name, sub_name, 0, 0, "", l);
+                        status_write_form(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
+                                          name, sub_name, 0, 0, "", l);
                     }
                 }
                 jk_puts(s, "]");
@@ -2586,11 +2850,11 @@ static void display_worker_lb(jk_ws_service_t *s,
                         status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                                          name, sub_name, 0, 0, "", l);
                         jk_puts(s, "|");
-                        status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                                         name, sub_name, 0, 0, "", l);
+                        status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                                          name, sub_name, 0, 0, "", l);
                         if (wr->s->state == JK_LB_STATE_ERROR) {
                             jk_puts(s, "|");
-                            status_write_uri(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
+                            status_write_form(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
                                              name, sub_name, 0, 0, "", l);
                         }
                     }
@@ -2699,8 +2963,8 @@ static void display_worker_ajp(jk_ws_service_t *s,
             status_write_uri(s, p, "E", JK_STATUS_CMD_EDIT, JK_STATUS_MIME_UNKNOWN,
                              name, "", 0, 0, "", l);
             jk_puts(s, "|");
-            status_write_uri(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                             name, "", 0, 0, "", l);
+            status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
+                              name, "", 0, 0, "", l);
         }
         jk_puts(s, "]&nbsp;&nbsp;");
         jk_putv(s, "Worker Status for ", name, "</h3>\n", NULL);
@@ -2825,7 +3089,7 @@ static void form_worker(jk_ws_service_t *s,
     jk_putv(s, "<hr/><h3>Edit load balancer settings for ",
             name, "</h3>\n", NULL);
 
-    status_start_form(s, p, "get", JK_STATUS_CMD_UPDATE, NULL, l);
+    status_start_form(s, p, "post", JK_STATUS_CMD_UPDATE, NULL, l);
 
     jk_putv(s, "<table>\n<tr><td>", JK_STATUS_ARG_LB_TEXT_RETRIES,
             ":</td><td><input name=\"",
@@ -2929,7 +3193,7 @@ static void form_member(jk_ws_service_t *s,
 
     jk_putv(s, "<hr/><h3>Edit worker settings for ",
             wr? wr->name : aw->name, "</h3>\n", NULL);
-    status_start_form(s, p, "get", JK_STATUS_CMD_UPDATE, NULL, l);
+    status_start_form(s, p, "post", JK_STATUS_CMD_UPDATE, NULL, l);
 
     if (wr) {
         jk_puts(s, "<table><tbody valign=\"baseline\"><tr><th>Balancing related settings</th>\n");
@@ -3133,7 +3397,7 @@ static void form_all_members(jk_ws_service_t *s,
                 "' for all members of load balancer ",
                 name, "</h3>\n", NULL);
 
-        status_start_form(s, p, "get", JK_STATUS_CMD_UPDATE, NULL, l);
+        status_start_form(s, p, "post", JK_STATUS_CMD_UPDATE, NULL, l);
 
         jk_putv(s, "<table><tr>"
                 "<th>Balanced Worker</th><th>", aname, "</th>"
@@ -4803,6 +5067,16 @@ static int JK_METHOD service(jk_endpoint_t *e,
         }
     }
 
+    if (!s->method) {
+        if (is_error) {
+            *is_error = JK_HTTP_BAD_REQUEST;
+        }
+
+        JK_TRACE_EXIT(l);
+
+        return JK_FALSE;
+    }
+
     /* Step 0: Unescape request uri and make safe against XSS */
     if (status_unescape_uri(s, p, l) != JK_TRUE) {
         if (is_error)
@@ -4813,8 +5087,33 @@ static int JK_METHOD service(jk_endpoint_t *e,
 
     /* Step 1: Process GET params and update configuration */
     if (status_parse_uri(s, p, l) != JK_TRUE) {
-        err = "Error during parsing of URI";
+        if (is_error)
+            *is_error = JK_HTTP_SERVER_ERROR;
+
+        jk_log(l, JK_LOG_ERROR,
+               "Status worker '%s' failed to parse URI",
+               w->name);
+
+        JK_TRACE_EXIT(l);
+        return JK_FALSE;
     }
+
+    /* If this is a post, merge POST parameters into any existing GET parameters */
+    if (!err && !strcmp(s->method, "POST")) {
+        if (status_parse_post(s, p, l) != JK_TRUE) {
+            jk_log(l, JK_LOG_ERROR,
+                   "Status worker '%s' failed to parse POST body",
+                   w->name);
+
+            if (is_error) {
+                *is_error = JK_HTTP_SERVER_ERROR;
+            }
+
+            JK_TRACE_EXIT(l);
+            return JK_FALSE;
+        }
+    }
+
     status_get_string(p, JK_STATUS_ARG_CMD, NULL, &arg, l);
     cmd = status_cmd_int(arg);
     cmd_props = status_cmd_props(cmd);
@@ -4905,6 +5204,25 @@ static int JK_METHOD service(jk_endpoint_t *e,
         else if (cmd_props & JK_STATUS_CMD_PROP_CHECK_WORKER &&
                  (check_worker(s, p, cmd_props & JK_STATUS_CMD_PROP_WILDCARD, l) != JK_TRUE)) {
             err = p->msg;
+        }
+    }
+
+    if (!err) {
+        /* Ensure that all modifications are called as a POST */
+        if((JK_STATUS_CMD_UPDATE == cmd
+            || JK_STATUS_CMD_RESET == cmd
+            || JK_STATUS_CMD_RECOVER == cmd)
+           && strcmp("POST", s->method)) {
+            jk_log(l, JK_LOG_WARNING,
+                   "Status worker '%s' command '%s' denied for HTTP method '%s' (not POST) for user '%s' [%s] from %s [%s]",
+                   w->name,
+                   status_cmd_text(cmd),
+                   s->method,
+                   s->remote_user ? s->remote_user : "(null)",
+                   s->auth_type ? s->auth_type : "(null)",
+                   s->remote_addr ? s->remote_addr : "(null)",
+                   s->remote_host ? s->remote_host : "(null)");
+            err = "Method not allowed.";
         }
     }
 
