@@ -2824,7 +2824,7 @@ static void display_worker_lb(jk_ws_service_t *s,
                                      name, sub_name, 0, 0, "", l);
                     jk_puts(s, "|");
                     status_write_form(s, p, "R", JK_STATUS_CMD_RESET, JK_STATUS_MIME_UNKNOWN,
-                                      name, "", 0, 0, "", l);
+                                      name, sub_name, 0, 0, "", l);
                     if (swr->s->state == JK_LB_STATE_ERROR) {
                         jk_puts(s, "|");
                         status_write_form(s, p, "T", JK_STATUS_CMD_RECOVER, JK_STATUS_MIME_UNKNOWN,
